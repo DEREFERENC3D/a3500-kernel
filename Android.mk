@@ -11,6 +11,7 @@
 ##
 
 
+ifneq ($(filter a3500 a3500fl lcsh82_tb_3gfull_kk, $(TARGET_DEVICE)),)
 MTK_CURRENT_KERNEL_DIR := $(call my-dir)
 ifeq (kernel, $(lastword  $(subst /, , $(MTK_CURRENT_KERNEL_DIR))))
 KERNEL_DIR := kernel
@@ -71,3 +72,5 @@ endif
 
 endif #ifeq ($(TARGET_KMODULES),true)
 endif
+endif # TARGET_DEVICE
+
