@@ -654,12 +654,7 @@ start_filldir:
 		} else
 			inum = iunique(sb, MSDOS_ROOT_INO);
 	}
-	if(fill_len > XATTR_NAME_MAX) {//Fix android dentry 256 bytes issue	
-		printk(KERN_ERR "[DIR_TAG] Dir FileName Too Long:Name(%s)Length(%d)\n", fill_name, fill_len);
 
-
-		goto record_end;
-	}
 	if (filldir(dirent, fill_name, fill_len, *furrfu, inum,
 		    (de->attr & ATTR_DIR) ? DT_DIR : DT_REG) < 0)
 		goto fill_failed;
