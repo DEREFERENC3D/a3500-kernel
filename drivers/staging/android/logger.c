@@ -25,9 +25,15 @@
 #include <linux/poll.h>
 #include <linux/slab.h>
 #include <linux/time.h>
+#include <stdarg.h>
+
 #include "logger.h"
 
 #include <asm/ioctls.h>
+
+static int s_fake_read;
+
+module_param_named(fake_read, s_fake_read, int, 0660);
 
 /*
  * struct logger_log - represents a specific log, such as 'main' or 'radio'
@@ -45,6 +51,7 @@ struct logger_log {
 	size_t			w_off;	/* current write head offset */
 	size_t			head;	/* new readers start here */
 	size_t			size;	/* size of the log */
+  /* } */
 };
 
 /*
@@ -59,6 +66,9 @@ struct logger_reader {
 	size_t			r_off;	/* current read head offset */
 	bool			r_all;	/* reader can read all entries */
 	int			r_ver;	/* reader ABI version */
+
+	size_t                  missing_bytes; /* android log missing warning */
+  /* } */
 };
 
 /* logger_offset - returns index 'n' into the log via (optimized) modulus */
@@ -239,6 +249,60 @@ static size_t get_next_entry_by_uid(struct logger_log *log,
 	return off;
 }
 
+/* for android log missing warning { */
+
+static ssize_t logger_fake_message(struct logger_log *log, struct logger_reader *reader, char __user *buf, const char *fmt, ...) 
+{
+	int len, header_size, entry_len;
+        char message[256], *tag;
+	va_list ap;
+	struct logger_entry *current_entry, scratch;
+	
+	header_size = get_user_hdr_len(reader->r_ver);
+
+	current_entry = get_entry_header(log, reader->r_off, &scratch);
+
+	memset(message, 0, header_size);
+	va_start(ap, fmt);
+        len = vsnprintf(message + header_size + 5, sizeof(message) - (header_size + 5), fmt, ap);
+	va_end(ap);
+
+	entry_len = 5 + len + 1/* message size */;
+	tag = message + header_size;
+	tag[0] = 0x5;
+	tag[1] = 'A';
+	tag[2] = 'E';
+	tag[3] = 'E';
+	tag[4] = 0;
+
+	switch (reader->r_ver) {
+	case 1: {
+		struct user_logger_entry_compat *entryp = (struct user_logger_entry_compat *)message;
+		entryp->sec = current_entry->sec;
+		entryp->nsec = current_entry->nsec;
+		entryp->len = entry_len;
+		break;
+	}
+	case 2: {
+		struct logger_entry *entryp = (struct logger_entry *)message;
+		entryp->sec = current_entry->sec;
+		entryp->nsec = current_entry->nsec;
+		entryp->len = entry_len;
+		entryp->hdr_size = header_size;
+		break;
+	}
+	default:
+		/* FIXME: ? */
+		return 0;
+		break;
+	}
+
+        if (copy_to_user(buf, message, entry_len + header_size))
+		return -EFAULT;
+
+	return entry_len + header_size;
+}
+
 /*
  * logger_read - our log's read() method
  *
@@ -298,6 +362,19 @@ start:
 		mutex_unlock(&log->mutex);
 		goto start;
 	}
+
+	if (unlikely(s_fake_read)) {
+		ret = logger_fake_message(log, reader, buf, "Fake read return string.");
+		goto out;
+	}
+
+	/* for android log missing warning { */
+	if (reader->missing_bytes > 0) {
+		ret = logger_fake_message(log, reader, buf, "some logs have been lost (%u bytes estimated)", reader->missing_bytes);
+		reader->missing_bytes = 0;
+		goto out;
+	}
+	/* } */
 
 	/* get the size of the next entry */
 	ret = get_user_hdr_len(reader->r_ver) +
@@ -383,8 +460,16 @@ static void fix_up_readers(struct logger_log *log, size_t len)
 		log->head = get_next_entry(log, log->head, len);
 
 	list_for_each_entry(reader, &log->readers, list)
-		if (is_between(old, new, reader->r_off))
+		if (is_between(old, new, reader->r_off)) {
+			size_t old_r_off = reader->r_off;
 			reader->r_off = get_next_entry(log, reader->r_off, len);
+			if (reader->r_off >= old_r_off) {
+				reader->missing_bytes += (reader->r_off - old_r_off);
+			}
+			else {
+				reader->missing_bytes += (reader->r_off + (log->size - old_r_off));
+			}
+		}
 }
 
 /*
@@ -403,7 +488,6 @@ static void do_write_log(struct logger_log *log, const void *buf, size_t count)
 		memcpy(log->buffer, buf + len, count - len);
 
 	log->w_off = logger_offset(log, log->w_off + count);
-
 }
 
 /*
@@ -434,7 +518,7 @@ static ssize_t do_write_log_from_user(struct logger_log *log,
 			return -EFAULT;
 
 	log->w_off = logger_offset(log, log->w_off + count);
-
+  
 	return count;
 }
 
@@ -452,15 +536,17 @@ ssize_t logger_aio_write(struct kiocb *iocb, const struct iovec *iov,
 	struct timespec now;
 	ssize_t ret = 0;
 
-	now = current_kernel_time();
 
-	header.pid = current->tgid;
-	header.tid = current->pid;
-	header.sec = now.tv_sec;
-	header.nsec = now.tv_nsec;
-	header.euid = current_euid();
-	header.len = min_t(size_t, iocb->ki_left, LOGGER_ENTRY_MAX_PAYLOAD);
-	header.hdr_size = sizeof(struct logger_entry);
+		// android default timestamp
+		//now = current_kernel_time();
+		getnstimeofday(&now);
+		header.pid = current->tgid;
+		header.tid = current->pid;
+		header.sec = now.tv_sec;
+		header.nsec = now.tv_nsec;
+		header.euid = current_euid();
+		header.len = min_t(size_t, iocb->ki_left, LOGGER_ENTRY_MAX_PAYLOAD);
+		header.hdr_size = sizeof(struct logger_entry);
 
 	/* null writes succeed, return zero */
 	if (unlikely(!header.len))
@@ -536,11 +622,13 @@ static int logger_open(struct inode *inode, struct file *file)
 		reader->r_ver = 1;
 		reader->r_all = in_egroup_p(inode->i_gid) ||
 			capable(CAP_SYSLOG);
+		reader->missing_bytes = 0;
 
 		INIT_LIST_HEAD(&reader->list);
 
 		mutex_lock(&log->mutex);
 		reader->r_off = log->head;
+
 		list_add_tail(&reader->list, &log->readers);
 		mutex_unlock(&log->mutex);
 
@@ -733,10 +821,11 @@ static struct logger_log VAR = { \
 	.size = SIZE, \
 };
 
-DEFINE_LOGGER_DEVICE(log_main, LOGGER_LOG_MAIN, 256*1024)
-DEFINE_LOGGER_DEVICE(log_events, LOGGER_LOG_EVENTS, 256*1024)
-DEFINE_LOGGER_DEVICE(log_radio, LOGGER_LOG_RADIO, 256*1024)
-DEFINE_LOGGER_DEVICE(log_system, LOGGER_LOG_SYSTEM, 256*1024)
+
+DEFINE_LOGGER_DEVICE(log_main, LOGGER_LOG_MAIN, __MAIN_BUF_SIZE)
+DEFINE_LOGGER_DEVICE(log_events, LOGGER_LOG_EVENTS, __EVENTS_BUF_SIZE)
+DEFINE_LOGGER_DEVICE(log_radio, LOGGER_LOG_RADIO, __RADIO_BUF_SIZE)
+DEFINE_LOGGER_DEVICE(log_system, LOGGER_LOG_SYSTEM, __SYSTEM_BUF_SIZE)
 
 static struct logger_log *get_log_from_minor(int minor)
 {
@@ -750,6 +839,7 @@ static struct logger_log *get_log_from_minor(int minor)
 		return &log_system;
 	return NULL;
 }
+
 
 static int __init init_log(struct logger_log *log)
 {
@@ -791,4 +881,135 @@ static int __init logger_init(void)
 out:
 	return ret;
 }
+
+int panic_dump_main(char *buf, size_t size) {
+	static size_t offset = 0; //offset of log buffer
+	static int isFirst = 0;
+	size_t len = 0;
+	size_t distance = 0;
+	size_t realsize = 0;
+	if (isFirst == 0){
+		offset = log_main.head;
+		isFirst++;
+	}
+	distance = (log_main.w_off + log_main.size - offset) & (log_main.size -1);
+	//printk("offset = %d, w_off = %d, head = %d distance = %d\n", offset, log_main.w_off, log_main.head, distance);
+	if(distance > size)
+		realsize = size;
+	else
+		realsize = distance;
+	len = min(realsize, log_main.size - offset);
+	memcpy(buf, log_main.buffer + offset, len);
+	if (realsize != len)
+		memcpy(buf + len, log_main.buffer, realsize - len);
+	offset += realsize;
+	offset &= (log_main.size - 1);
+	return realsize;
+}
+
+int panic_dump_events(char *buf, size_t size) {
+	static size_t offset = 0; //offset of log buffer
+	static int isFirst = 0;
+	size_t len = 0;
+	size_t distance = 0;
+	size_t realsize = 0;
+	if (isFirst == 0){
+		offset = log_events.head;
+		isFirst++;
+	}
+	distance = (log_events.w_off + log_events.size - offset) & (log_events.size -1);
+	//printk("offset = %d, w_off = %d, head = %d distance = %d\n", offset, log_events.w_off, log_events.head, distance);
+	if(distance > size)
+		realsize = size;
+	else
+		realsize = distance;	
+	len = min(realsize, log_events.size - offset);
+	memcpy(buf, log_events.buffer + offset, len);
+	if (realsize != len)
+		memcpy(buf + len, log_events.buffer, realsize - len);
+	offset += realsize;
+	offset &= (log_events.size - 1);
+	return realsize;
+}
+
+int panic_dump_radio(char *buf, size_t size) {
+	static size_t offset = 0; //offset of log buffer
+	static int isFirst = 0;
+	size_t len = 0;
+	size_t distance = 0;
+	size_t realsize = 0;
+	if (isFirst == 0){
+		offset = log_radio.head;
+		isFirst++;
+	}
+	distance = (log_radio.w_off + log_radio.size - offset) & (log_radio.size -1);
+	//printk("offset = %d, w_off = %d, head = %d distance = %d\n", offset, log_radio.w_off, log_radio.head, distance);
+	if(distance > size)
+		realsize = size;
+	else
+		realsize = distance;
+	len = min(realsize, log_radio.size - offset);
+	memcpy(buf, log_radio.buffer + offset, len);
+	if (realsize != len)
+		memcpy(buf + len, log_radio.buffer, realsize - len);
+	offset += realsize;
+	offset &= (log_radio.size - 1);
+	return realsize;
+}
+
+int panic_dump_system(char *buf, size_t size) {
+	static size_t offset = 0; //offset of log buffer
+	static int isFirst = 0;
+	size_t len = 0;
+	size_t distance = 0;
+	size_t realsize = 0;
+	if (isFirst == 0){
+		offset = log_system.head;
+		isFirst++;
+	}
+	distance = (log_system.w_off + log_system.size - offset) & (log_system.size -1);
+	//printk("offset = %d, w_off = %d, head = %d distance = %d\n", offset, log_system.w_off, log_system.head, distance);
+	if(distance > size)
+		realsize = size;
+	else
+		realsize = distance;
+	len = min(realsize, log_system.size - offset);
+	memcpy(buf, log_system.buffer + offset, len);
+	if (realsize != len)
+		memcpy(buf + len, log_system.buffer, realsize - len);
+	offset += realsize;
+	offset &= (log_system.size - 1);
+	return realsize;
+}
+
+
+int panic_dump_android_log(char *buf, size_t size, int type)
+{
+	size_t ret = 0 ;
+	//printk ("type %d, buf %x, size %d\n", type, buf, size) ;
+	memset (buf, 0, size);
+	switch (type)
+	{
+        case 1:
+		ret = panic_dump_main(buf, size);
+		break;
+        case 2:
+		ret = panic_dump_events(buf, size);
+		break;
+        case 3:
+		ret = panic_dump_radio(buf, size);
+		break;
+        case 4:
+		ret = panic_dump_system(buf, size);
+		break;
+        default:
+		ret = 0;
+		break;
+    }
+    if (ret!=0)
+	    ret = size;
+	
+    return ret;
+}
+
 device_initcall(logger_init);

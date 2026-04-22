@@ -37,7 +37,7 @@
 
 void *module_alloc(unsigned long size)
 {
-	if (size == 0 || PAGE_ALIGN(size) > MODULES_LEN)
+	if (PAGE_ALIGN(size) > MODULES_LEN)
 		return NULL;
 	return __vmalloc_node_range(size, 1, MODULES_VADDR, MODULES_END,
 				GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL_EXEC,

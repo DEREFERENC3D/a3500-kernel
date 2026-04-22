@@ -55,6 +55,9 @@
 #include <asm/uaccess.h>
 #include <asm/io.h>
 #include <asm/unistd.h>
+#ifdef CONFIG_MT_PRIO_TRACER
+ #include <linux/prio_tracer.h>
+#endif
 
 #ifndef SET_UNALIGN_CTL
 # define SET_UNALIGN_CTL(a,b)	(-EINVAL)
@@ -167,7 +170,11 @@ static int set_one_prio(struct task_struct *p, int niceval, int error)
 	}
 	if (error == -ESRCH)
 		error = 0;
+#ifdef CONFIG_MT_PRIO_TRACER
+	set_user_nice_syscall(p, niceval);
+#else
 	set_user_nice(p, niceval);
+#endif
 out:
 	return error;
 }
@@ -2149,7 +2156,9 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 					 (int __user *) arg2);
 			break;
 		case PR_SET_VMA:
+#ifdef CONFIG_MT_ENG_BUILD
 			error = prctl_set_vma(arg2, arg3, arg4, arg5);
+#endif 
 			break;
 		default:
 			error = -EINVAL;
