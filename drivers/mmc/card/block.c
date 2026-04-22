@@ -1340,17 +1340,7 @@ static void g_var_clear(unsigned int idx)
 				mmcqd_rd_rq_count[idx]=0;
 }
 #endif
-//#undef FEATURE_STORAGE_PID_LOGGER
-#if defined(FEATURE_STORAGE_PID_LOGGER)
 
-struct struct_pid_logger g_pid_logger[PID_ID_CNT]={{0,0,{0},{0},{0},{0}}};
-
-
-
-unsigned char *page_logger = NULL;
-spinlock_t g_locker;
-
-#endif
 static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 {
 	struct mmc_blk_data *md = mq->data;
@@ -1371,9 +1361,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 	unsigned int diversity=0;
 	unsigned int idx=0;
 	unsigned char i=0;
-#endif
-#if defined(FEATURE_STORAGE_PID_LOGGER)
-	unsigned int index=0;
 #endif
 
 	if (!rqc && !mq->mqrq_prev->req)
@@ -1469,33 +1456,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 				}
 				mmcqd_tag_t1[idx]=time1;
 				g_var_clear(idx);
-#if defined(FEATURE_STORAGE_PID_LOGGER)
-				do {
-					int i;
-					for(index=0; index<PID_ID_CNT; index++) {
-						
-						if( g_pid_logger[index].current_pid!=0 && g_pid_logger[index].current_pid == mmcqd_pid)
-							break;
-					}
-					if( index == PID_ID_CNT )
-						break;
-					for( i=0; i<PID_LOGGER_COUNT; i++) {
-						//printk(KERN_INFO"hank mmcqd %d %d", g_pid_logger[index].pid_logger[i], mmcqd_pid);
-						if( g_pid_logger[index].pid_logger[i] == 0)
-							break;
-						sprintf (g_pid_logger[index].pid_buffer+i*37, "{%05d:%05d:%08d:%05d:%08d}", g_pid_logger[index].pid_logger[i], g_pid_logger[index].pid_logger_counter[i], g_pid_logger[index].pid_logger_length[i], g_pid_logger[index].pid_logger_r_counter[i], g_pid_logger[index].pid_logger_r_length[i]);					
-
-					}
-					if( i != 0) {
-						xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "mmcqd pid:%d %s\n", g_pid_logger[index].current_pid, g_pid_logger[index].pid_buffer);
-						memset( &(g_pid_logger[index].pid_logger), 0, sizeof(struct struct_pid_logger)-(unsigned long)&(((struct struct_pid_logger *)0)->pid_logger));
-
-					}
-					g_pid_logger[index].pid_buffer[0] = '\0';
-					
-				} while(0);
-#endif
-				
 			}
 		if( rqc )
               {
@@ -1752,9 +1712,6 @@ static inline int mmc_blk_readonly(struct mmc_card *card)
 	       !(card->csd.cmdclass & CCC_BLOCK_WRITE);
 }
 
-#if defined(FEATURE_STORAGE_PID_LOGGER)
-extern unsigned int get_memory_size(void);
-#endif
 #ifdef CONFIG_MTK_EXTMEM
 extern void* extmem_malloc_page_align(size_t bytes);
 #endif
@@ -1813,24 +1770,6 @@ static struct mmc_blk_data *mmc_blk_alloc_req(struct mmc_card *card,
 	ret = mmc_init_queue(&md->queue, card, &md->lock, subname);
 	if (ret)
 		goto err_putdisk;
-#if defined(FEATURE_STORAGE_PID_LOGGER)
-	if( !page_logger){
-		//num_page_logger = sizeof(struct page_pid_logger);
-		//page_logger = vmalloc(num_physpages*sizeof(struct page_pid_logger));
-                // solution: use get_memory_size to obtain the size from start pfn to max pfn
-
-                int count = get_memory_size() >> PAGE_SHIFT;
-#ifdef CONFIG_MTK_EXTMEM
-		page_logger = extmem_malloc_page_align(count * sizeof(struct page_pid_logger));
-#else
-		page_logger = vmalloc(count * sizeof(struct page_pid_logger));
-#endif
-		if( page_logger) {
-			memset( page_logger, -1, count*sizeof( struct page_pid_logger));
-		}
-		spin_lock_init(&g_locker);
-	}
-#endif
 
 	md->queue.issue_fn = mmc_blk_issue_rq;
 	md->queue.data = md;
