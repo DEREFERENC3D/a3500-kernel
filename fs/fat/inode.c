@@ -703,15 +703,7 @@ retry:
 	mark_buffer_dirty(bh);
 	err = 0;
 	if (wait)
-	{
 		err = sync_dirty_buffer(bh);
-	}else
-	{
-#ifdef FEATURE_STORAGE_META_LOG
-		if( bh && bh->b_bdev && bh->b_bdev->bd_disk)
-			set_metadata_rw_status(bh->b_bdev->bd_disk->first_minor, NOWAIT_WRITE_CNT);
-#endif
-	}
 	brelse(bh);
 	return err;
 }

@@ -78,7 +78,6 @@ static inline void clear_metadata_rw_status(int mmc_index)
 	memset(	&metadata_logger[mmc_index/check_perdev_minors].metadata_rw_logger, 0, sizeof(struct metadata_rwlogger));
 }
 #define FEATURE_STORAGE_PERF_INDEX
-#define FEATURE_STORAGE_META_LOG
 #endif
 
 

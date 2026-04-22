@@ -1315,10 +1315,6 @@ static unsigned int mmcqd_rd_bit[ID_CNT]={0},mmcqd_rd_tract[ID_CNT]={0};
 static unsigned int mmcqd_wr_break[ID_CNT]={0}, mmcqd_rd_break[ID_CNT]={0};
 static unsigned int mmcqd_rq_count[ID_CNT]={0}, mmcqd_wr_rq_count[ID_CNT]={0}, mmcqd_rd_rq_count[ID_CNT]={0};
 extern u32 g_u32_cid[4];	
-#ifdef FEATURE_STORAGE_META_LOG
-int check_perdev_minors = CONFIG_MMC_BLOCK_MINORS;
-struct metadata_rwlogger metadata_logger[10] = {{{0}}};
-#endif
 
 unsigned int mmcqd_work_percent[ID_CNT]={0};
 unsigned int mmcqd_w_throughput[ID_CNT]={0};
@@ -1375,9 +1371,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 	unsigned int diversity=0;
 	unsigned int idx=0;
 	unsigned char i=0;
-#ifdef FEATURE_STORAGE_META_LOG
-	unsigned int mmcmetaindex=0;
-#endif
 #endif
 #if defined(FEATURE_STORAGE_PID_LOGGER)
 	unsigned int index=0;
@@ -1476,15 +1469,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 				}
 				mmcqd_tag_t1[idx]=time1;
 				g_var_clear(idx);
-#ifdef FEATURE_STORAGE_META_LOG			
-				mmcmetaindex = mmc_get_devidx(md->disk);
-				xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "mmcqd metarw WR:%d NWR:%d HR:%d WDR:%d HDR:%d WW:%d NWW:%d HW:%d\n", 
-					metadata_logger[mmcmetaindex].metadata_rw_logger[0], metadata_logger[mmcmetaindex].metadata_rw_logger[1], 
-					metadata_logger[mmcmetaindex].metadata_rw_logger[2], metadata_logger[mmcmetaindex].metadata_rw_logger[3], 
-					metadata_logger[mmcmetaindex].metadata_rw_logger[4], metadata_logger[mmcmetaindex].metadata_rw_logger[5], 
-					metadata_logger[mmcmetaindex].metadata_rw_logger[6], metadata_logger[mmcmetaindex].metadata_rw_logger[7]);  					
-				clear_metadata_rw_status(md->disk->first_minor);
-#endif
 #if defined(FEATURE_STORAGE_PID_LOGGER)
 				do {
 					int i;
@@ -1846,9 +1830,6 @@ static struct mmc_blk_data *mmc_blk_alloc_req(struct mmc_card *card,
 		}
 		spin_lock_init(&g_locker);
 	}
-#endif
-#if defined(FEATURE_STORAGE_META_LOG)
-	check_perdev_minors = perdev_minors;
 #endif
 
 	md->queue.issue_fn = mmc_blk_issue_rq;
