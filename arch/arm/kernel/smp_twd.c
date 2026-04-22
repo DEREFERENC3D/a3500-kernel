@@ -127,20 +127,6 @@ static int twd_set_next_event(unsigned long evt,
 	return 0;
 }
 
-int localtimer_set_next_event(unsigned long evt)
-{
-	twd_set_next_event(evt,NULL);
-#ifdef LOCAL_TIME_DEBUG	
-	save_localtimer_register(evt, 0, 1);
-#endif
-	return 0;
-}
-
-unsigned long localtimer_get_counter(void)
-{
-	return (__raw_readl(twd_base + TWD_TIMER_COUNTER));
-}
-
 /*
  * local_timer_ack: checks for a local timer interrupt.
  *
