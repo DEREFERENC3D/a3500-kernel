@@ -31,12 +31,6 @@
 
 #include <mtlbprof/mtlbprof.h>
 
-#ifdef CONFIG_MT_LOAD_BALANCE_ENHANCEMENT
-#ifdef CONFIG_LOCAL_TIMERS
-#include <asm/smp_twd.h>
-#endif
-#endif
-
 /*
  * Targeted preemption latency for CPU-bound tasks:
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
@@ -4340,9 +4334,6 @@ struct lb_env {
 	unsigned int		loop;
 	unsigned int		loop_break;
 	unsigned int		loop_max;
-#ifdef CONFIG_MT_LOAD_BALANCE_ENHANCEMENT
-	int			mt_check_cache_in_idle;
-#endif 	
 #ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
 	unsigned int 		fail_reason;
 #endif	
@@ -4363,13 +4354,8 @@ static void move_task(struct task_struct *p, struct lb_env *env)
 /*
  * Is this task likely cache-hot:
  */
-#if defined(CONFIG_MT_LOAD_BALANCE_ENHANCEMENT)
-static int
-task_hot(struct task_struct *p, u64 now, struct sched_domain *sd, int mt_check_cache_in_idle)
-#else
 static int
 task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
-#endif
 {
 	s64 delta;
 
@@ -4382,12 +4368,6 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
 	/*
 	 * Buddy candidates are cache hot:
 	 */
-#ifdef CONFIG_MT_LOAD_BALANCE_ENHANCEMENT
-	if (!mt_check_cache_in_idle){
-		if ( !this_rq()->nr_running && (task_rq(p)->nr_running >= 2) )
-			return 0;
-	}
-#endif 	 
 	if (sched_feat(CACHE_HOT_BUDDY) && this_rq()->nr_running &&
 			(&p->se == cfs_rq_of(&p->se)->next ||
 			 &p->se == cfs_rq_of(&p->se)->last))
@@ -4450,11 +4430,7 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 	 * 1) task is cache cold, or
 	 * 2) too many balance attempts have failed.
 	 */
-#if defined(CONFIG_MT_LOAD_BALANCE_ENHANCEMENT)
-	tsk_cache_hot = task_hot(p, env->src_rq->clock_task, env->sd, env->mt_check_cache_in_idle);
-#else
 	tsk_cache_hot = task_hot(p, env->src_rq->clock_task, env->sd);
-#endif 
 	if (!tsk_cache_hot ||
 		env->sd->nr_balance_failed > env->sd->cache_nice_tries) {
 #ifdef CONFIG_SCHEDSTATS
@@ -4492,9 +4468,6 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 static int move_one_task(struct lb_env *env)
 {
 	struct task_struct *p, *n;
-#ifdef CONFIG_MT_LOAD_BALANCE_ENHANCEMENT
-	env->mt_check_cache_in_idle = 1;
-#endif
 #ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
 	mt_lbprof_stat_set(env->fail_reason, MT_LBPROF_NO_TRIGGER);
 #endif
@@ -6268,9 +6241,6 @@ redo:
 		env.src_cpu	= busiest->cpu;
 		env.src_rq	= busiest;
 		env.loop_max	= min_t(unsigned long, sysctl_sched_nr_migrate, busiest->nr_running);
-#ifdef CONFIG_MT_LOAD_BALANCE_ENHANCEMENT
-		env.mt_check_cache_in_idle = 1;
-#endif
 
 more_balance:
 		local_irq_save(flags);
@@ -6312,39 +6282,6 @@ more_balance:
 				goto redo;
 			goto out_balanced;
 		}
-		
-#ifdef CONFIG_MT_LOAD_BALANCE_ENHANCEMENT
-		if (!ld_moved && ((CPU_NEWLY_IDLE == idle) || (CPU_IDLE == idle) ) ) {
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-			mt_lbprof_stat_set(env.fail_reason, MT_LBPROF_DO_LB);
-#endif
-			env.mt_check_cache_in_idle = 0;	
-			env.loop = 0;
-			local_irq_save(flags);
-			double_rq_lock(this_rq, busiest);
-			if (!env.loop)
-				update_h_load(env.src_cpu);				
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-			if (sd->flags & SD_BALANCE_TG && !cpus_share_cache(env.src_cpu, env.dst_cpu))
-				ld_moved = move_tasks_tg(&env);
-			else{
-				mt_sched_printf("load balance ensd=%lu, src=%d, dst=%d, load_move=%d",
-					sched_domain_span(sd)->bits[0], env.src_cpu, env.dst_cpu, env.load_move);
-				ld_moved = move_tasks(&env);
-			}
-#else /* !MTK_SCHED_CMP_TGS */
-			ld_moved = move_tasks(&env);
-#endif /* MTK_SCHED_CMP_TGS */
-			double_rq_unlock(this_rq, busiest);
-			local_irq_restore(flags);
-
-			/*
-		 	 * some other cpu did the load balance for us.
-		  	*/
-			if (ld_moved && this_cpu != smp_processor_id())
-				resched_cpu(this_cpu);			
-		}
-#endif		
 	}
 
 	if (!ld_moved) {
@@ -6469,37 +6406,16 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 	struct sched_domain *sd;
 	int pulled_task = 0;
 	unsigned long next_balance = jiffies + HZ;	
-#if defined(CONFIG_MT_LOAD_BALANCE_ENHANCEMENT) || defined(CONFIG_MT_LOAD_BALANCE_PROFILER)
+#if defined(CONFIG_MT_LOAD_BALANCE_PROFILER)
 	unsigned long counter = 0;
 #endif
 
 	this_rq->idle_stamp = this_rq->clock;
 
 	mt_lbprof_update_state_has_lock(this_cpu, MT_LBPROF_UPDATE_STATE);
-#ifdef CONFIG_MT_LOAD_BALANCE_ENHANCEMENT
-	#ifdef CONFIG_LOCAL_TIMERS
-		counter = localtimer_get_counter();
-		if ( counter >= 260000 )  // 20ms
-			goto must_do;
-		if ( time_before(jiffies + 2, this_rq->next_balance) )	// 20ms
-			goto must_do;
-	#endif
-#endif
 
-	if (this_rq->avg_idle < sysctl_sched_migration_cost){
-#if defined(CONFIG_MT_LOAD_BALANCE_PROFILER)
-		char strings[128]="";
-		mt_lbprof_update_state_has_lock(this_cpu, MT_LBPROF_ALLOW_UNBLANCE_STATE);
-		snprintf(strings, 128, "%d:idle balance bypass: %llu %lu ", this_cpu, this_rq->avg_idle, counter);
-		mt_lbprof_rqinfo(strings);
-		trace_sched_lbprof_log(strings);
-#endif		
+	if (this_rq->avg_idle < sysctl_sched_migration_cost)
 		return;
-	}
-
-#ifdef CONFIG_MT_LOAD_BALANCE_ENHANCEMENT
-	must_do:
-#endif
 
 	/*
 	 * Drop the rq->lock, but keep IRQ/preempt disabled.
