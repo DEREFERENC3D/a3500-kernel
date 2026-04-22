@@ -70,6 +70,7 @@ static int twd_set_next_event(unsigned long evt,
 
 	__raw_writel(evt, twd_base + TWD_TIMER_COUNTER);
 	__raw_writel(ctrl, twd_base + TWD_TIMER_CONTROL);
+
 	return 0;
 }
 
@@ -103,12 +104,9 @@ static void twd_timer_stop(struct clock_event_device *clk)
  */
 static void twd_update_frequency(void *data)
 {
-	/* remove it for not suport adjust time clock dynamic */
-#if 0	
 	twd_timer_rate = clk_get_rate(twd_clk);
-	
+
 	clockevents_update_freq(*__this_cpu_ptr(twd_evt), twd_timer_rate);
-#endif	
 }
 
 static int twd_cpufreq_transition(struct notifier_block *nb,
@@ -175,6 +173,7 @@ static void __cpuinit twd_calibrate_rate(void)
 			udelay(10);
 
 		count = __raw_readl(twd_base + TWD_TIMER_COUNTER);
+
 		twd_timer_rate = (0xFFFFFFFFU - count) * (HZ / 5);
 
 		printk("%lu.%02luMHz.\n", twd_timer_rate / 1000000,
@@ -185,14 +184,15 @@ static void __cpuinit twd_calibrate_rate(void)
 static irqreturn_t twd_handler(int irq, void *dev_id)
 {
 	struct clock_event_device *evt = *(struct clock_event_device **)dev_id;
+
 	if (twd_timer_ack()) {
 		evt->event_handler(evt);
 		return IRQ_HANDLED;
 	}
+
 	return IRQ_NONE;
 }
 
-#if 0	
 static struct clk *twd_get_clock(void)
 {
 	struct clk *clk;
@@ -219,9 +219,8 @@ static struct clk *twd_get_clock(void)
 		return ERR_PTR(err);
 	}
 
-	return clk;	
+	return clk;
 }
-#endif
 
 /*
  * Setup the local clock events for a CPU.
@@ -230,7 +229,6 @@ static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
 {
 	struct clock_event_device **this_cpu_clk;
 
-#if 0 // remove clj releated
 	if (!twd_clk)
 		twd_clk = twd_get_clock();
 
@@ -238,9 +236,7 @@ static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
 		twd_timer_rate = clk_get_rate(twd_clk);
 	else
 		twd_calibrate_rate();
-#else
-  twd_calibrate_rate();
-#endif
+
 	__raw_writel(0, twd_base + TWD_TIMER_CONTROL);
 
 	clk->name = "local_timer";
@@ -253,6 +249,7 @@ static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
 
 	this_cpu_clk = __this_cpu_ptr(twd_evt);
 	*this_cpu_clk = clk;
+
 	clockevents_config_and_register(clk, twd_timer_rate,
 					0xf, 0xffffffff);
 	enable_percpu_irq(clk->irq, 0);
@@ -304,8 +301,7 @@ int __init twd_local_timer_register(struct twd_local_timer *tlt)
 
 	twd_ppi	= tlt->res[1].start;
 
-	//twd_base = ioremap(tlt->res[0].start, resource_size(&tlt->res[0]));
-	twd_base = (void *)tlt->res[0].start;
+	twd_base = ioremap(tlt->res[0].start, resource_size(&tlt->res[0]));
 	if (!twd_base)
 		return -ENOMEM;
 
