@@ -10,7 +10,6 @@
 #include <linux/fs.h>
 #include <linux/buffer_head.h>
 #include <linux/time.h>
-#include <linux/blkdev.h>
 #include "fat.h"
 
 /*
@@ -266,16 +265,10 @@ EXPORT_SYMBOL_GPL(fat_time_unix2fat);
 int fat_sync_bhs(struct buffer_head **bhs, int nr_bhs)
 {
 	int i, err = 0;
-	struct blk_plug plug; //per-process plug
-
-	blk_start_plug(&plug); //start plug
 
 	for (i = 0; i < nr_bhs; i++)
-	{
 		write_dirty_buffer(bhs[i], WRITE);
-	}
 
-	blk_finish_plug(&plug); //end plug
 	for (i = 0; i < nr_bhs; i++) {
 		wait_on_buffer(bhs[i]);
 		if (!err && !buffer_uptodate(bhs[i]))
