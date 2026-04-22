@@ -975,11 +975,6 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 	char *p;
 	size_t plen;
 	char special;
-#ifdef CONFIG_MT_SCHED_MONITOR
-    int in_irq_disable, in_non_preempt;
-    in_irq_disable = irqs_disabled();
-    in_non_preempt = in_atomic();
-#endif
 
 	boot_delay_msec();
 	printk_delay();
@@ -1073,14 +1068,8 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 				unsigned tlen;
 				unsigned long long t;
 				unsigned long nanosec_rem;
-#ifdef CONFIG_MT_SCHED_MONITOR
-                if(in_irq_disable)
-                    state = '-';
-                else
-                    state = ' ';
-#else
-                state = ' ';
-#endif
+
+				state = ' ';
 				t = cpu_clock(printk_cpu);
 				nanosec_rem = do_div(t, 1000000000);
 #ifdef CONFIG_MT_PRINTK_UART_CONSOLE                                                    
@@ -1156,14 +1145,6 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 	lockdep_on();
 out_restore_irqs:
 	local_irq_restore(flags);
-#ifdef CONFIG_MT_SCHED_MONITOR
-    if(__raw_get_cpu_var(mtsched_mon_enabled)== 8){
-        int loglevel = 99;
-        log_prefix(fmt, &loglevel, NULL);
-        if(loglevel < 6 && (irqs_disabled()))
-            mt_printk_sched("\nLog:%s loglevel:%d in irq-disabled state\n",fmt, loglevel);
-    }
-#endif
 	return printed_len;
 }
 EXPORT_SYMBOL(printk);
@@ -1446,28 +1427,10 @@ void printk_tick(void)
 	}
 }
 
-#ifdef CONFIG_MT_SCHED_MONITOR
-static DEFINE_PER_CPU(int, mt_printk_pending);
-static DEFINE_PER_CPU(char [PRINTK_BUF_SIZE], mt_printk_sched_buf);
-static DEFINE_PER_CPU(int, mt_printk_sched_length);
-void mt_printk_tick(void)
-{
-	if (__this_cpu_read(mt_printk_pending)) {
-		int pending = __this_cpu_xchg(mt_printk_pending, 0);
-		if (pending & PRINTK_PENDING_SCHED) {
-			char *buf = __get_cpu_var(mt_printk_sched_buf);
-			printk(KERN_WARNING "[Error Loglevel Usage:start]\n");
-			printk(KERN_WARNING "%s", buf);
-			printk(KERN_WARNING "[Error Loglevel Usage:end]\n");
-		}
-	}
-    __get_cpu_var(mt_printk_sched_length) = 0;
-}
-#else
+// TODO: remove
 void mt_printk_tick(void)
 {
 }
-#endif
 int printk_needs_cpu(int cpu)
 {
 	if (cpu_is_offline(cpu))
@@ -1943,39 +1906,11 @@ int printk_sched(const char *fmt, ...)
 	return r;
 }
 
-#ifdef CONFIG_MT_SCHED_MONITOR
-int mt_printk_sched(const char *fmt, ...)
-{
-	unsigned long flags;
-	va_list args;
-	char *buf;
-	int r;
-    int buf_length;
-	local_irq_save(flags);
-	buf = __get_cpu_var(mt_printk_sched_buf);
-    buf_length = __get_cpu_var(mt_printk_sched_length);
-
-	va_start(args, fmt);
-    if(PRINTK_BUF_SIZE >= buf_length){
-	    r = vsnprintf((buf_length + buf), PRINTK_BUF_SIZE-buf_length, fmt, args);
-        __get_cpu_var(mt_printk_sched_length) += r;
-    }else{
-        printk("mt delayed log buf overflow,  size:%d\n", buf_length);
-        r = 0;
-    }
-	va_end(args);
-
-	__this_cpu_or(mt_printk_pending, PRINTK_PENDING_SCHED);
-	local_irq_restore(flags);
-
-	return r;
-}
-#else
+// TODO: remove
 int mt_printk_sched(const char *fmt, ...)
 {
     return 0;
 }
-#endif
 
 /*
  * printk rate limiting, lifted from the networking subsystem.

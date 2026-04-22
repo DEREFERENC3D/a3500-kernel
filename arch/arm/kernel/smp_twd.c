@@ -253,23 +253,11 @@ static void __cpuinit twd_calibrate_rate(void)
 static irqreturn_t twd_handler(int irq, void *dev_id)
 {
 	struct clock_event_device *evt = *(struct clock_event_device **)dev_id;
-#ifdef CONFIG_MT_SCHED_MONITOR
-// add timer event tracer for wdt debug
-    __raw_get_cpu_var(local_timer_ts) = sched_clock();
-	if (twd_timer_ack()) {
-		evt->event_handler(evt);
-        __raw_get_cpu_var(local_timer_te) = sched_clock();
-		return IRQ_HANDLED;
-	}
-    __raw_get_cpu_var(local_timer_te) = sched_clock();
-	return IRQ_NONE;
-#else
 	if (twd_timer_ack()) {
 		evt->event_handler(evt);
 		return IRQ_HANDLED;
 	}
 	return IRQ_NONE;
-#endif
 }
 
 #if 0	

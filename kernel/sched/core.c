@@ -3473,10 +3473,6 @@ void scheduler_tick(void)
 	raw_spin_unlock(&rq->lock);
 
 	perf_event_task_tick();
-#ifdef CONFIG_MT_SCHED_MONITOR
-    if(smp_processor_id() == 0) //only record by CPU#0
-        mt_save_irq_counts();
-#endif
 #ifdef CONFIG_SMP
 	rq->idle_balance = idle_cpu(cpu);
 	trigger_load_balance(rq, cpu);
@@ -3653,10 +3649,6 @@ pick_next_task(struct rq *rq)
 /*
  * __schedule() is the main scheduler function.
  */
-#ifdef CONFIG_MT_SCHED_MONITOR
-static DEFINE_PER_CPU(unsigned long long, ts_sched);
-static DEFINE_PER_CPU(unsigned long long, te_sched);
-#endif
 static void __sched __schedule(void)
 {
 	struct task_struct *prev, *next;
@@ -3675,10 +3667,7 @@ need_resched:
 
 	if (sched_feat(HRTICK))
 		hrtick_clear(rq);
-#ifdef CONFIG_MT_SCHED_MONITOR
-    __raw_get_cpu_var(MT_trace_in_sched) = 1;
-    __raw_get_cpu_var(ts_sched) = sched_clock();
-#endif
+
 	raw_spin_lock_irq(&rq->lock);
 
 	switch_count = &prev->nivcsw;
@@ -3731,12 +3720,7 @@ need_resched:
 		rq = cpu_rq(cpu);
 	} else
 		raw_spin_unlock_irq(&rq->lock);
-#ifdef CONFIG_MT_SCHED_MONITOR
-        __raw_get_cpu_var(te_sched) = sched_clock();
-        if((__raw_get_cpu_var(te_sched) - __raw_get_cpu_var(ts_sched)) > 10000000)
-            printk("Sched Warning: %llu ns > 10 ms(s:%llu e:%llu)\n", __raw_get_cpu_var(te_sched) - __raw_get_cpu_var(ts_sched), __raw_get_cpu_var(ts_sched), __raw_get_cpu_var(te_sched));
-    __raw_get_cpu_var(MT_trace_in_sched) = 0;
-#endif
+
 	post_schedule(rq);
 
 	sched_preempt_enable_no_resched();
