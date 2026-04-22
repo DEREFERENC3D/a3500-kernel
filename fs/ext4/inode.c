@@ -44,7 +44,6 @@
 #include "truncate.h"
 
 #include <trace/events/ext4.h>
-#include <linux/blkdev.h>
 
 #define MPAGE_DA_EXTENT_TAIL 0x01
 
@@ -2694,28 +2693,6 @@ static sector_t ext4_bmap(struct address_space *mapping, sector_t block)
 
 static int ext4_readpage(struct file *file, struct page *page)
 {
-	
-#if 0
-		struct page_pid_logger *tmp_logger;
-		extern unsigned char *page_logger;
-		extern spinlock_t g_locker;
-		if( page_logger && page) {
-			int page_index;
-			//printk(KERN_INFO"fat read hank logger count:%d init %x currentpid:%d page:%x mem_map:%x pfn:%d\n", num_physpages, page_logger, current->pid, page, mem_map, (unsigned)((page) - mem_map));
-	
-			page_index = (unsigned long)((page) - mem_map) ;
-			tmp_logger =((struct page_pid_logger *)page_logger) + page_index;
-			spin_lock(&g_locker);
-			if( page_index < num_physpages) {
-				if( tmp_logger->pid1 == 0XFFFF)
-					tmp_logger->pid1 = current->pid;
-				else if( tmp_logger->pid1 != current->pid )
-					tmp_logger->pid2 = current->pid;
-			}
-			spin_unlock(&g_locker);
-			//printk(KERN_INFO"tmp logger pid1:%u pid2:%u pfn:%d \n", tmp_logger->pid1, tmp_logger->pid2, (unsigned long)((page) - mem_map) );
-		}
-#endif
 	trace_ext4_readpage(page);
 	return mpage_readpage(page, ext4_get_block);
 }
@@ -3684,7 +3661,6 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
 		return ERR_PTR(-ENOMEM);
 	if (!(inode->i_state & I_NEW))
 		return inode;
-
 
 	ei = EXT4_I(inode);
 	iloc.bh = NULL;
