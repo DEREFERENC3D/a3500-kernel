@@ -2340,11 +2340,7 @@ int dump_seek(struct file *file, loff_t off)
 		if (file->f_op->llseek(file, off, SEEK_CUR) < 0)
 			return 0;
 	} else {
-#ifndef CONFIG_MTK_PAGERECORDER
 		char *buf = (char *)get_zeroed_page(GFP_KERNEL);
-#else
-		char *buf = (char *)get_zeroed_page_nopagedebug(GFP_KERNEL);
-#endif
 		if (!buf)
 			return 0;
 		while (off > 0) {
@@ -2358,11 +2354,7 @@ int dump_seek(struct file *file, loff_t off)
 			}
 			off -= n;
 		}
-#ifndef CONFIG_MTK_PAGERECORDER
 		free_page((unsigned long)buf);
-#else
-		free_page_nopagedebug((unsigned long)buf);
-#endif
 	}
 	return ret;
 }

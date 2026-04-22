@@ -427,11 +427,7 @@ static inline int free_area(unsigned long pfn, unsigned long end, char *s)
 		struct page *page = pfn_to_page(pfn);
 		ClearPageReserved(page);
 		init_page_count(page);
-#ifndef CONFIG_MTK_PAGERECORDER
 		__free_page(page);
-#else
-		__free_page_nopagedebug(page);
-#endif
 		pages++;
 	}
 

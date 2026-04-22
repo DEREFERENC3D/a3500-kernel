@@ -1076,11 +1076,7 @@ static void free_switcher_pte_pages(void)
 
 	for_each_possible_cpu(i)
 	{
-#ifndef CONFIG_MTK_PAGERECORDER
 		free_page((long)switcher_pte_page(i));
-#else //CONFIG_MTK_PAGERECORDER
-		free_page_nopagedebug((long)switcher_pte_page(i));
-#endif
 	}
 }
 
