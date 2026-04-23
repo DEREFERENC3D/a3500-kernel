@@ -3707,18 +3707,6 @@ done:
  *
  * preempt must be disabled.
  */
-#ifdef CONFIG_MTK_SCHED_CMP_TGS_WAKEUP
-extern struct cpumask *get_domain_cpus(int cluster_id, bool exclusiveOffline);
-static void check_cpus(int id, int i, struct cpumask *cpus)
-{
-	if(0 == cpus){
-		printk(KERN_EMERG "check_cpus %d: i=%d, cpus = 0\n", id, i);
-	}else if(cpumask_empty(cpus) && (0 != id)){
-		printk(KERN_EMERG "check_cpus %d: i=%d, *cpus = 0, onlineCPU=%lu\n",
-			id, i, cpu_online_mask->bits[0]);
-	}
-}
-#endif
 static int
 select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
 {
@@ -3729,9 +3717,6 @@ select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
 	int want_affine = 0;
 	int want_sd = 1;
 	int sync = wake_flags & WF_SYNC;
-#ifdef CONFIG_MTK_SCHED_CMP_TGS_WAKEUP
-	int prefer_local=0;
-#endif
 #ifdef CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK	
 	int buddy_cpu = per_cpu(sd_pack_buddy, cpu);
 #endif
@@ -3776,120 +3761,12 @@ select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
 	}
 #endif /* CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK */		
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS_WAKEUP
-{
-	int i, j;
-	int max_cnt=0, cnt;
-	int max_clid=-1;
-	int idle_cnt, max_idle_cnt=0;
-	int max_idle_clid=-1;
-	int in_prev=0;
-	struct cpumask *cpus;
-	int num_cluster=cluster_nr();
-	for(i=0; i< num_cluster; i++) {
-		cnt = p->group_leader->thread_group_info[i].nr_running;
-		mt_sched_printf("wakeup %d %s clid=%d cnt=%d max_cnt=%d",
-			p->pid, p->comm, i, cnt, max_cnt); 
-
-		idle_cnt = 0;
-		cpus = get_domain_cpus(i, 1);
-		check_cpus(0, i, cpus);
-
-		if(cpus!=0){
-			for_each_cpu(j, cpus){
-				if ( 0 == cpu_rq(j)->nr_running)
-					idle_cnt++;
-			}
-		}
-
-		if(idle_cnt == 0){
-			mt_sched_printf("wakeup %d %s clid=%d cnt=%d ldle_cnt=%d",
-				p->pid, p->comm, i, cnt, idle_cnt); 
-			continue;
-		}
-
-		if(cnt!=0){
-			mt_sched_printf("wakeup %d %s clid=%d cnt=%d max_cnt=%d",
-				p->pid, p->comm, i, cnt, max_cnt); 
-			if (cnt > max_cnt) {
-				if(i==cmp_cpu_domain(cpu)->cluster_id) {
-					in_prev=1;
-				}else{
-					in_prev=0;
-				}
-				max_clid = i;
-				max_cnt = cnt;
-				mt_sched_printf("wakeup %d %s clid=%d max_clid=%d max_cnt=%d",
-					p->pid, p->comm, i, max_clid, max_cnt); 
-			}
-
-			if(cnt == max_cnt){
-				if(i==cmp_cpu_domain(cpu)->cluster_id) {
-					in_prev=1;
-					max_clid = i;
-					max_cnt = cnt;
-				}
-			}
-		}else if( 0 == max_cnt ){
-	
-			if(idle_cnt > max_idle_cnt){
-				max_idle_clid = i;
-				max_idle_cnt = idle_cnt;
-			}
-			mt_sched_printf("wakeup %d %s i=%d idle_cnt=%d max_idle_clid=%d max_idle_cnt=%d",
-				p->pid, p->comm, i, idle_cnt, max_idle_clid, max_idle_cnt); 
-		}
-			
-	}
-
-	mt_sched_printf("wakeup %d %s cpu=%d, max_clid=%d max_idle_clid=%d in_prev=%d",
-		p->pid, p->comm, cpu, max_clid, max_idle_clid, in_prev); 
-
-	if (-1 != max_clid) {
-		if (!in_prev) {
-			struct cpumask *cpus;
-			cpus = get_domain_cpus(max_clid, 1);
-			check_cpus(1, max_clid, cpus);
-			cpu = cpumask_any(cpus);	
-
-			mt_sched_printf("wakeup %d %s cpu=%d, max_clid=%d",
-				p->pid, p->comm, cpu, max_clid); 
-		}
-	}else if( -1 != max_idle_clid){
-		struct cpumask *cpus;
-		cpus = get_domain_cpus(max_idle_clid, 1);
-		check_cpus(2, max_idle_clid, cpus);
-		cpu = cpumask_any(cpus);
-
-		mt_sched_printf("wakeup %d %s cpu=%d, max_idle_clid=%d",
-			p->pid, p->comm, cpu, max_idle_clid);
-	}
-
 	if (sd_flag & SD_BALANCE_WAKE) {
 		if (cpumask_test_cpu(cpu, tsk_cpus_allowed(p)))
 			want_affine = 1;
 		new_cpu = prev_cpu;
 	}
 
-	if( (-1 != max_clid) ||  (-1 != max_idle_clid) ){
-		prefer_local = 1;
-		new_cpu = cpu;
-		mt_sched_printf("wakeup %d %s prefer_local=%d", p->pid, p->comm, prefer_local);
-		// debug only
-		if ( ( 8 == new_cpu ) || ( 8 == cpu )){
-			printk(KERN_EMERG "check_cpus new_cpu=%d, cpu=%d, cpus=%lu, onlineCPU=%lu, max_clid=%d, max_idle_clid=%d\n",
-				new_cpu, cpu, cpus->bits[0], cpu_online_mask->bits[0], max_clid, max_idle_clid);
-		}
-	}
-}
-#else
-	if (sd_flag & SD_BALANCE_WAKE) {
-		if (cpumask_test_cpu(cpu, tsk_cpus_allowed(p)))
-			want_affine = 1;
-		new_cpu = prev_cpu;
-	}
-
-#endif
 	rcu_read_lock();
 	for_each_domain(cpu, tmp) {
 		mt_sched_printf("wakeup %d %s cpu=%d, prev_cpu=%d, new_cpu=%d, want_affine=%d, want_sd=%d tmp->flags=%x",
@@ -3938,31 +3815,12 @@ select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flags)
 		}
 
 		if (!(tmp->flags & sd_flag)){
-#ifdef CONFIG_MTK_SCHED_CMP_TGS_WAKEUP
-			if( !prefer_local ){
-				mt_sched_printf("wakeup %d %s tmp->flags=%x sd_flag=%x prefer_local=%d",
-					p->pid, p->comm, tmp->flags, sd_flag, prefer_local);
-				continue;
-			}
-#else
 			continue;
-#endif
-			
 		}
 
 		if (want_sd){
 			sd = tmp;
 		}
-#ifdef CONFIG_MTK_SCHED_CMP_TGS_WAKEUP
-		if (prefer_local){
-			sd = tmp;
-
-			mt_sched_printf("wakeup %d %s prefer_local=%x",
-				p->pid, p->comm, prefer_local);
-
-			break;
-		}
-#endif
 	}
 	mt_sched_printf("wakeup %d %s",
 		p->pid, p->comm);
@@ -4607,10 +4465,6 @@ static int move_tasks_tg(struct lb_env *env)
 	struct list_head tg_tasks, other_tasks;
 	int src_clid, dst_clid;
 	int src_nr_cpus;
-#ifdef CONFIG_MTK_SCHED_CMP_TGS_WAKEUP
-
-	struct cpumask *cpus;
-#endif
 #ifdef MTK_QUICK 
 	int flag = 0;
 #endif
@@ -4627,9 +4481,6 @@ static int move_tasks_tg(struct lb_env *env)
 	BUG_ON(dst_clid == -1 || src_clid == -1);
 	src_nr_cpus = nr_cpu_of_cluster(src_clid, 0);
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS_WAKEUP
-	cpus = get_domain_cpus(src_clid, 1);
-#endif
 	mt_sched_printf("move_tasks_tg start: src:cpu=%d clid=%d runnable_load=%lu dst:cpu=%d clid=%d runnable_load=%lu imbalance=%ld curr->on_rq=%d",
 		env->src_cpu, src_clid, cpu_rq(env->src_cpu)->cfs.runnable_load_avg,
 		env->dst_cpu, dst_clid, cpu_rq(env->dst_cpu)->cfs.runnable_load_avg, env->load_move,
@@ -4668,14 +4519,6 @@ static int move_tasks_tg(struct lb_env *env)
 				p->pid, p->comm, p->se.avg.load_avg_ratio, 
 				src_clid, src_tginfo->nr_running, src_nr_cpus,
 				src_tginfo->load_avg_ratio);
-#endif
-#ifdef CONFIG_MTK_SCHED_CMP_TGS_WAKEUP
-			if ((src_tginfo->nr_running <= src_nr_cpus) && 
-		    	   (src_tginfo->nr_running > dst_tginfo->nr_running)){
-				mt_sched_printf("hit ruleA: bypass pid=%d comm=%s src:nr_running=%ld nr_cpus=%ld dst:nr_running=%ld", 
-				p->pid, p->comm, src_tginfo->nr_running, src_nr_cpus, dst_tginfo->nr_running);
-				continue;
-			}
 #endif
 
 			if ((p->se.avg.load_avg_ratio*4  >=  NICE_0_LOAD*3) &&
