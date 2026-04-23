@@ -1503,13 +1503,9 @@ static void sched_ttwu_pending(void)
 
 void scheduler_ipi(void)
 {
-    mt_trace_ISR_start(IPI_RESCHEDULE);
-	if (llist_empty(&this_rq()->wake_list) && !got_nohz_idle_kick()){
-        mt_trace_ISR_end(IPI_RESCHEDULE);
+	if (llist_empty(&this_rq()->wake_list) && !got_nohz_idle_kick())
         return;
-    }
-    // check kernel/arch/arm/kernel/smp.c
-    // IPI_RESCHEDULE = 3
+
 	/*
 	 * Not all reschedule IPI handlers call irq_enter/irq_exit, since
 	 * traditionally all their work was done from the interrupt return
@@ -1533,7 +1529,6 @@ void scheduler_ipi(void)
 		this_rq()->idle_balance = 1;
 		raise_softirq_irqoff(SCHED_SOFTIRQ);
 	}
-    mt_trace_ISR_end(IPI_RESCHEDULE);
 	irq_exit();
 }
 
