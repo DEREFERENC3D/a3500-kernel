@@ -47,8 +47,8 @@ static DEFINE_SPINLOCK(dbe_lock);
 #ifdef MODULE_START
 void *module_alloc(unsigned long size)
 {
-	return __vmalloc_node_range(size, 1, MODULE_START, MODULE_END,
-				GFP_KERNEL, PAGE_KERNEL, -1,
+	return size == 0 ? NULL : __vmalloc_node_range(size, 1, MODULE_START,
+				MODULE_END, GFP_KERNEL, PAGE_KERNEL, -1,
 				__builtin_return_address(0));
 }
 #endif
