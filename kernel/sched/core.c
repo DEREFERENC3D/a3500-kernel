@@ -98,13 +98,6 @@
  #include <linux/prio_tracer.h>
 #endif
 
-#ifdef CONFIG_MTK_SCHED_TRACERS
-#ifdef CREATE_TRACE_POINTS
-    #undef CREATE_TRACE_POINTS
-#endif
-#include <trace/events/mtk_events.h>
-#endif
-
 void start_bandwidth_timer(struct hrtimer *period_timer, ktime_t period)
 {
 	unsigned long delta;
@@ -1531,9 +1524,6 @@ void scheduler_ipi(void)
     mt_trace_ISR_start(IPI_RESCHEDULE);
 	if (llist_empty(&this_rq()->wake_list) && !got_nohz_idle_kick()){
         mt_trace_ISR_end(IPI_RESCHEDULE);
-#ifdef CONFIG_MTK_SCHED_TRACERS
-        trace_ipi_handler_exit(IPI_RESCHEDULE);
-#endif
         return;
     }
     // check kernel/arch/arm/kernel/smp.c
@@ -1562,9 +1552,6 @@ void scheduler_ipi(void)
 		raise_softirq_irqoff(SCHED_SOFTIRQ);
 	}
     mt_trace_ISR_end(IPI_RESCHEDULE);
-#ifdef CONFIG_MTK_SCHED_TRACERS
-    trace_ipi_handler_exit(IPI_RESCHEDULE);
-#endif
 	irq_exit();
 }
 

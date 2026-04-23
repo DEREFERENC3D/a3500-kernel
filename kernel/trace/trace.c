@@ -42,12 +42,6 @@
 #include "trace.h"
 #include "trace_output.h"
 
-#ifdef CONFIG_MTK_SCHED_TRACERS
-#include <linux/mtk_ftrace.h>
-#define CREATE_TRACE_POINTS
-#include <trace/events/mtk_events.h>
-#endif
-
 /*
  * On boot up, the ring buffer is set to the minimum size, so that
  * we do not waste memory on systems that are not using tracing.
@@ -246,15 +240,6 @@ int tracing_is_enabled(void)
 
 static unsigned long		trace_buf_size = TRACE_BUF_SIZE_DEFAULT;
 
-#ifdef CONFIG_MTK_SCHED_TRACERS
-#define CPUX_TRACE_BUF_SIZE_DEFAULT 4194304UL
-#define CPU0_to_CPUX_RATIO (1.2)
-extern unsigned int get_max_DRAM_size (void);
-static unsigned long        trace_buf_size_cpu0 = (CPUX_TRACE_BUF_SIZE_DEFAULT * CPU0_to_CPUX_RATIO);
-static unsigned long        trace_buf_size_cpuX = CPUX_TRACE_BUF_SIZE_DEFAULT;
-static unsigned int         trace_buf_size_updated_from_cmdline = 0;
-#endif
-
 /* trace_types holds a link list of available tracers. */
 static struct tracer		*trace_types __read_mostly;
 
@@ -352,17 +337,9 @@ static inline void trace_access_lock_init(void)
 static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
 
 /* trace_flags holds trace_options default values */
-#ifdef CONFIG_MTK_SCHED_TRACERS
-unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
-	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO | TRACE_ITER_SLEEP_TIME |
-	TRACE_ITER_GRAPH_TIME ;
-    //mtk04259: remove TRACE_ITER_OVERWRITE by default for boot-time ftrace
-    //          it will be resotred after collecting is done
-#else
 unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
 	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO | TRACE_ITER_SLEEP_TIME |
 	TRACE_ITER_GRAPH_TIME | TRACE_ITER_RECORD_CMD | TRACE_ITER_OVERWRITE ;
-#endif
 
 static int trace_stop_count;
 static DEFINE_RAW_SPINLOCK(tracing_start_lock);
@@ -454,11 +431,6 @@ static int __init set_buf_size(char *str)
 	if (buf_size == 0)
 		return 0;
 	trace_buf_size = buf_size;
-#ifdef CONFIG_MTK_SCHED_TRACERS
-    trace_buf_size_cpu0 = 
-        trace_buf_size_cpuX = buf_size ;
-    trace_buf_size_updated_from_cmdline = 1;
-#endif
 	return 1;
 }
 __setup("trace_buf_size=", set_buf_size);
@@ -1115,12 +1087,6 @@ void tracing_start(void)
 	ftrace_start();
  out:
 	raw_spin_unlock_irqrestore(&tracing_start_lock, flags);
-    
-#ifdef CONFIG_MTK_SCHED_TRACERS
-    // reset ring buffer when all readers left
-    if(reset_ftrace == 1 && trace_stop_count == 0)
-        tracing_reset_current_online_cpus();
-#endif
 }
 
 /**
@@ -1251,49 +1217,6 @@ int trace_find_tgid(int pid)
 	return tgid;
 }
 
-#ifdef CONFIG_MTK_SCHED_TRACERS
-int get_irq_pid(int irq)
-{
-	return CONFIG_BASE_SMALL ? ((PID_MAX_DEFAULT - 96) + irq): ((PID_MAX_DEFAULT - 2768) + irq);
-}
-void tracing_record_isr(int irq, char* name){
-
-	unsigned irq_pid, idx, pid;
-	int i;
-
-	irq_pid =get_irq_pid(irq);
-
-	if (!arch_spin_trylock(&trace_cmdline_lock))
-		return;
-
-	idx = map_pid_to_cmdline[irq_pid];
-	if (idx == NO_CMDLINE_MAP) {
-		idx = (cmdline_idx + 1) % SAVED_CMDLINES;
-
-		/*
-		 * Check whether the cmdline buffer at idx has a pid
-		 * mapped. We are going to overwrite that entry so we
-		 * need to clear the map_pid_to_cmdline. Otherwise we
-		 * would read the new comm for the old pid.
-		 */
-		pid = map_cmdline_to_pid[idx];
-		if (pid!= NO_CMDLINE_MAP)
-			map_pid_to_cmdline[pid] = NO_CMDLINE_MAP;
-
-		map_cmdline_to_pid[idx] = irq_pid;
-		map_pid_to_cmdline[irq_pid] = idx;
-		cmdline_idx = idx;
-	}
-	memcpy(&saved_cmdlines[idx], name, TASK_COMM_LEN);
-	for(i = 0 ;i <TASK_COMM_LEN ;i++){
-		if(saved_cmdlines[idx][i]=='-')
-			saved_cmdlines[idx][i] = '_';
-	}
-	saved_cmdlines[idx][TASK_COMM_LEN-1] = 0;
-	arch_spin_unlock(&trace_cmdline_lock);
-	
-}
-#endif
 void tracing_record_cmdline(struct task_struct *tsk)
 {
 	if (atomic_read(&trace_record_cmdline_disabled) || !tracer_enabled ||
@@ -2092,9 +2015,6 @@ static void print_event_info(struct trace_array *tr, struct seq_file *m)
 	get_total_entries(tr, &total, &entries);
 	seq_printf(m, "# entries-in-buffer/entries-written: %lu/%lu   #P:%d\n",
 		   entries, total, num_online_cpus());
-#ifdef CONFIG_MTK_SCHED_TRACERS
-    print_enabled_events(m);
-#endif
 	seq_puts(m, "#\n");
 }
 
@@ -3173,14 +3093,8 @@ tracing_ctrl_write(struct file *filp, const char __user *ubuf,
 			if (current_trace->start)
 				current_trace->start(tr);
 			tracing_start();
-#ifdef CONFIG_MTK_SCHED_TRACERS            
-            trace_tracing_on(val);
-#endif
 		} else {
 			tracer_enabled = 0;
-#ifdef CONFIG_MTK_SCHED_TRACERS            
-            trace_tracing_on(val);
-#endif
 			tracing_stop();
 			if (current_trace->stop)
 				current_trace->stop(tr);
@@ -3360,26 +3274,8 @@ int tracing_update_buffers(void)
 
 	mutex_lock(&trace_types_lock);
 	if (!ring_buffer_expanded)
-#ifdef CONFIG_MTK_SCHED_TRACERS
-    {
-        if(get_max_DRAM_size() >= 0x40000000 && !trace_buf_size_updated_from_cmdline){
-            trace_buf_size_cpu0 = (CPUX_TRACE_BUF_SIZE_DEFAULT * CPU0_to_CPUX_RATIO * 1.25);
-            trace_buf_size_cpuX = (CPUX_TRACE_BUF_SIZE_DEFAULT * 1.25);
-        }
-
-        for_each_tracing_cpu(i){
-            ret = __tracing_resize_ring_buffer((i==0?trace_buf_size_cpu0:trace_buf_size_cpuX), i); 
-            if(ret < 0){
-                printk("[ftrace]fail to update cpu%d ring buffer to %lu KB \n",
-                        i, (i==0?(trace_buf_size_cpu0>>10):(trace_buf_size_cpuX>>10)));
-                break;
-            }
-        }
-    }
-#else
 		ret = __tracing_resize_ring_buffer(trace_buf_size,
 						RING_BUFFER_ALL_CPUS);
-#endif
 	mutex_unlock(&trace_types_lock);
 
 	return ret;
@@ -5072,17 +4968,10 @@ rb_simple_write(struct file *filp, const char __user *ubuf,
         if(ring_buffer_record_is_on(buffer) ^ val)
         printk("[ftrace]tracing_on is toggled to %lu\n", val);
 
-		if (val){
+		if (val)
 			ring_buffer_record_on(buffer);
-#ifdef CONFIG_MTK_SCHED_TRACERS            
-            trace_tracing_on(val);
-#endif
-        }else{
-#ifdef CONFIG_MTK_SCHED_TRACERS            
-            trace_tracing_on(val);
-#endif
+        else
 			ring_buffer_record_off(buffer);
-        }
 	}
 
 	(*ppos)++;
