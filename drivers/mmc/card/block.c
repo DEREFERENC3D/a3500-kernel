@@ -1829,10 +1829,6 @@ static struct mmc_blk_data *mmc_blk_alloc_req(struct mmc_card *card,
 static struct mmc_blk_data *mmc_blk_alloc(struct mmc_card *card)
 {
 	sector_t size;
-#ifdef MTK_EMMC_SUPPORT
-    unsigned int l_reserve;
-	struct storage_info s_info = {0};
-#endif
 	struct mmc_blk_data *md;
 
 	if (!mmc_card_sd(card) && mmc_card_blockaddr(card)) {
@@ -1849,14 +1845,6 @@ static struct mmc_blk_data *mmc_blk_alloc(struct mmc_card *card)
 		size = card->csd.capacity << (card->csd.read_blkbits - 9);
 	}
 
-	if(!mmc_card_sd(card)){
-#ifdef MTK_EMMC_SUPPORT
-            msdc_get_info(EMMC_CARD_BOOT, EMMC_RESERVE, &s_info);
-            l_reserve =  s_info.emmc_reserve;
-            printk("l_reserve = 0x%x\n", l_reserve);
-            size -= l_reserve;                         /*reserved for 64MB (emmc otp + emmc combo offset + reserved)*/
-#endif    
-    }
 	md = mmc_blk_alloc_req(card, &card->dev, size, false, NULL,
 					MMC_BLK_DATA_AREA_MAIN);
 	return md;
@@ -2069,6 +2057,7 @@ static const struct mmc_fixup blk_fixups[] =
 	END_FIXUP
 };
 
+// TODO: Remove after fixing fstab
 #if defined(MTK_EMMC_SUPPORT)
 	extern void emmc_create_sys_symlink (struct mmc_card *card);
 #endif
@@ -2111,6 +2100,7 @@ static int mmc_blk_probe(struct mmc_card *card)
 		if (mmc_add_disk(part_md))
 			goto out;
 	}
+// TODO: Remove after fixing fstab
 #if defined(MTK_EMMC_SUPPORT)
 	emmc_create_sys_symlink(card);
 #endif
