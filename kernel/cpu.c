@@ -19,9 +19,6 @@
 #ifdef MTK_CPU_HOTPLUG_DEBUG_0
 #include <linux/kallsyms.h>
 #endif //MTK_CPU_HOTPLUG_DEBUG_0
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-#include <mtlbprof/mtlbprof.h>
-#endif
 
 /*******************************************************************************
 * 20121113 marc.huang                                                          *
@@ -326,10 +323,6 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
 	 */
 	while (!idle_cpu(cpu))
 		cpu_relax();
-
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	mt_lbprof_update_state(cpu, MT_LBPROF_HOTPLUG_STATE);
-#endif
 
 	/* This actually kills the CPU. */
 	__cpu_die(cpu);

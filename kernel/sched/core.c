@@ -745,17 +745,6 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
 		rq->nr_uninterruptible--;
 
 	enqueue_task(rq, p, flags);
-	
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	if( 2 <=  rq->nr_running){
-		if (1 == cpumask_weight(&p->cpus_allowed))
-			mt_lbprof_update_state_has_lock(rq->cpu, MT_LBPROF_AFFINITY_STATE);
-		else
-			mt_lbprof_update_state_has_lock(rq->cpu, MT_LBPROF_N_TASK_STATE);
-	}else if ( (1 == rq->nr_running)){
-		mt_lbprof_update_state_has_lock(rq->cpu, MT_LBPROF_ONE_TASK_STATE);
-	}
-#endif
 }
 
 void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
@@ -764,13 +753,6 @@ void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
 		rq->nr_uninterruptible++;
 
 	dequeue_task(rq, p, flags);
-	
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	if ( 1 == rq->nr_running )
-		mt_lbprof_update_state_has_lock(rq->cpu, MT_LBPROF_ONE_TASK_STATE);
-	else if (0 == rq->nr_running)
-		mt_lbprof_update_state_has_lock(rq->cpu, MT_LBPROF_NO_TASK_STATE);
-#endif
 }
 
 #ifdef CONFIG_IRQ_TIME_ACCOUNTING
@@ -1668,14 +1650,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 
 	cpu = select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
 	if (task_cpu(p) != cpu) {
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER		
-		char strings[128]="";
-#endif
 		wake_flags |= WF_MIGRATED;
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-		snprintf(strings, 128, "%d:%d:%s:wakeup:%d:%d:%s", task_cpu(current), current->pid, current->comm, cpu, p->pid, p->comm);
-		trace_sched_lbprof_log(strings);
-#endif		
 		set_task_cpu(p, cpu);
 	} else {
 		if (sched_feat(TTWU_QUEUE) &&

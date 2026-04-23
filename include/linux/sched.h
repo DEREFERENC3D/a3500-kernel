@@ -998,9 +998,6 @@ struct sched_domain {
 	unsigned long last_balance;	/* init to jiffies. units in jiffies */
 	unsigned int balance_interval;	/* initialise to 1. units in ms. */
 	unsigned int nr_balance_failed; /* initialise to 0 */
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	unsigned int mt_lbprof_nr_balance_failed; /* initialise to 0 */
-#endif	
 
 	u64 last_update;
 

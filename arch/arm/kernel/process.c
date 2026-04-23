@@ -41,9 +41,6 @@
 #include <asm/mach/time.h>
 #include <mach/system.h>
 
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-#include <mtlbprof/mtlbprof.h>
-#endif
 #ifdef CONFIG_CC_STACKPROTECTOR
 #include <linux/stackprotector.h>
 unsigned long __stack_chk_guard __read_mostly;
@@ -293,9 +290,6 @@ EXPORT_SYMBOL(pm_idle);
 void cpu_idle(void)
 {
 	local_fiq_enable();
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	mt_lbprof_update_state(smp_processor_id(), MT_LBPROF_NO_TASK_STATE);
-#endif
 
 	/* endless idle loop with no priority at all */
 	while (1) {
@@ -315,9 +309,6 @@ void cpu_idle(void)
 #endif	
 #endif
 
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-			mt_lbprof_update_state(smp_processor_id(), MT_LBPROF_IDLE_STATE);
-#endif
 			/*
 			 * We need to disable interrupts here
 			 * to ensure we don't miss a wakeup call.
@@ -339,9 +330,6 @@ void cpu_idle(void)
 				 * return with IRQs enabled.
 				 */
 				WARN_ON(irqs_disabled());
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER				
-				mt_lbprof_update_state(smp_processor_id(), MT_LBPROF_NO_TASK_STATE);
-#endif				
 			} else
 				local_irq_enable();
 		}

@@ -4075,9 +4075,6 @@ struct lb_env {
 	unsigned int		loop;
 	unsigned int		loop_break;
 	unsigned int		loop_max;
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	unsigned int 		fail_reason;
-#endif	
 };
 
 /*
@@ -4139,30 +4136,12 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 	 */
 	if (!cpumask_test_cpu(env->dst_cpu, tsk_cpus_allowed(p))) {
 		schedstat_inc(p, se.statistics.nr_failed_migrations_affine);
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-		mt_lbprof_stat_or(env->fail_reason, MT_LBPROF_AFFINITY);
-		if(mt_lbprof_lt (env->sd->mt_lbprof_nr_balance_failed, MT_LBPROF_NR_BALANCED_FAILED_UPPER_BOUND)){
-			char strings[128]="";
-			snprintf(strings, 128, "%d:balance fail:affinity:%d:%d:%s:0x%lu"
-				, env->dst_cpu, env->src_cpu, p->pid, p->comm, p->cpus_allowed.bits[0]);
-			trace_sched_lbprof_log(strings);
-		}
-#endif		
 		return 0;
 	}
 	env->flags &= ~LBF_ALL_PINNED;
 
 	if (task_running(env->src_rq, p)) {
 		schedstat_inc(p, se.statistics.nr_failed_migrations_running);
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-		mt_lbprof_stat_or(env->fail_reason, MT_LBPROF_RUNNING);
-		if( mt_lbprof_lt (env->sd->mt_lbprof_nr_balance_failed, MT_LBPROF_NR_BALANCED_FAILED_UPPER_BOUND)){
-			char strings[128]="";
-			snprintf(strings, 128, "%d:balance fail:running:%d:%d:%s"
-				, env->dst_cpu, env->src_cpu, p->pid, p->comm);
-			trace_sched_lbprof_log(strings);
-		}
-#endif		
 		return 0;
 	}
 
@@ -4185,15 +4164,6 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 
 	if (tsk_cache_hot) {
 		schedstat_inc(p, se.statistics.nr_failed_migrations_hot);
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-		mt_lbprof_stat_or(env->fail_reason, MT_LBPROF_CACHEHOT);
-		if(mt_lbprof_lt (env->sd->mt_lbprof_nr_balance_failed, MT_LBPROF_NR_BALANCED_FAILED_UPPER_BOUND)){
-			char strings[128]="";
-			snprintf(strings, 128, "%d:balance fail:cache hot:%d:%d:%s"
-				, env->dst_cpu, env->src_cpu, p->pid, p->comm);
-			trace_sched_lbprof_log(strings);
-		}
-#endif		
 		return 0;
 	}
 	return 1;
@@ -4209,15 +4179,8 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 static int move_one_task(struct lb_env *env)
 {
 	struct task_struct *p, *n;
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	mt_lbprof_stat_set(env->fail_reason, MT_LBPROF_NO_TRIGGER);
-#endif
 
 	list_for_each_entry_safe(p, n, &env->src_rq->cfs_tasks, se.group_node) {
-#ifdef CONFIG_MTK_SCHED_CMP_LAZY_BALANCE
-		if(need_lazy_balance(env->dst_cpu, env->src_cpu, p))
-			continue;
-#endif			
 		if (throttled_lb_pair(task_group(p), env->src_rq->cpu, env->dst_cpu))
 			continue;
 
@@ -4951,19 +4914,11 @@ fix_small_capacity(struct sched_domain *sd, struct sched_group *group)
  * @balance: Should we balance.
  * @sgs: variable to hold the statistics for this group.
  */
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER  
-static inline void update_sg_lb_stats(struct sched_domain *sd,
-			struct sched_group *group, int this_cpu,
-			enum cpu_idle_type idle, int load_idx,
-			int local_group, const struct cpumask *cpus,
-			int *balance, struct sg_lb_stats *sgs, struct lb_env *env)
-#else
 static inline void update_sg_lb_stats(struct sched_domain *sd,
 			struct sched_group *group, int this_cpu,
 			enum cpu_idle_type idle, int load_idx,
 			int local_group, const struct cpumask *cpus,
 			int *balance, struct sg_lb_stats *sgs)
-#endif
 {
 	unsigned long load, max_cpu_load, min_cpu_load, max_nr_running;
 	int i;
@@ -4997,11 +4952,6 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
 			}
 			if (min_cpu_load > load)
 				min_cpu_load = load;
-
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER  
-			if((load_idx > 0) && (load == cpu_rq(i)->cpu_load[load_idx-1]))
-				mt_lbprof_stat_or(env->fail_reason, MT_LBPROF_HISTORY);
-#endif
 		}
 
 		sgs->group_load += load;
@@ -5067,19 +5017,11 @@ static inline void update_sg_lb_stats(struct sched_domain *sd,
  * Determine if @sg is a busier group than the previously selected
  * busiest group.
  */
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-static bool update_sd_pick_busiest(struct sched_domain *sd,
-				   struct sd_lb_stats *sds,
-				   struct sched_group *sg,
-				   struct sg_lb_stats *sgs,
-				   int this_cpu, struct lb_env *env)
-#else
 static bool update_sd_pick_busiest(struct sched_domain *sd,
 				   struct sd_lb_stats *sds,
 				   struct sched_group *sg,
 				   struct sg_lb_stats *sgs,
 				   int this_cpu)
-#endif
 {
 	if (sgs->avg_load <= sds->max_load) {
 		mt_lbprof_stat_or(env->fail_reason, MT_LBPROF_PICK_BUSIEST_FAIL_1);
@@ -5119,15 +5061,9 @@ static bool update_sd_pick_busiest(struct sched_domain *sd,
  * @balance: Should we balance.
  * @sds: variable to hold the statistics for this sched_domain.
  */
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER 
-static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
-			enum cpu_idle_type idle, const struct cpumask *cpus,
-			int *balance, struct sd_lb_stats *sds, struct lb_env *env)
-#else
 static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
 			enum cpu_idle_type idle, const struct cpumask *cpus,
 			int *balance, struct sd_lb_stats *sds)
-#endif
 {
 	struct sched_domain *child = sd->child;
 	struct sched_group *sg = sd->groups;
@@ -5145,14 +5081,8 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
 
 		local_group = cpumask_test_cpu(this_cpu, sched_group_cpus(sg));
 		memset(&sgs, 0, sizeof(sgs));
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER 				
-		update_sg_lb_stats(sd, sg, this_cpu, idle, load_idx,
-				local_group, cpus, balance, &sgs, env);
-#else
 		update_sg_lb_stats(sd, sg, this_cpu, idle, load_idx,
 				local_group, cpus, balance, &sgs);
-
-#endif
 
 		if (local_group && !(*balance))
 			return;
@@ -5180,11 +5110,7 @@ static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
 			sds->this_load_per_task = sgs.sum_weighted_load;
 			sds->this_has_capacity = sgs.group_has_capacity;
 			sds->this_idle_cpus = sgs.idle_cpus;
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER				
-		} else if (update_sd_pick_busiest(sd, sds, sg, &sgs, this_cpu, env)) {
-#else
 		} else if (update_sd_pick_busiest(sd, sds, sg, &sgs, this_cpu)) {
-#endif 
 			sds->max_load = sgs.avg_load;
 			sds->busiest = sg;
 			sds->busiest_nr_running = sgs.sum_nr_running;
@@ -5411,17 +5337,10 @@ static inline void calculate_imbalance(struct sd_lb_stats *sds, int this_cpu,
  *		   return the least loaded group whose CPUs can be
  *		   put to idle by rebalancing its tasks onto our group.
  */
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER 
-static struct sched_group *
-find_busiest_group(struct sched_domain *sd, int this_cpu,
-		   unsigned long *imbalance, enum cpu_idle_type idle,
-		   const struct cpumask *cpus, int *balance, struct lb_env *env)
-#else
 static struct sched_group *
 find_busiest_group(struct sched_domain *sd, int this_cpu,
 		   unsigned long *imbalance, enum cpu_idle_type idle,
 		   const struct cpumask *cpus, int *balance)
-#endif
 {
 	struct sd_lb_stats sds;
 
@@ -5431,11 +5350,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
 	 * Compute the various statistics relavent for load balancing at
 	 * this level.
 	 */
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER 	 
-	update_sd_lb_stats(sd, this_cpu, idle, cpus, balance, &sds, env);
-#else
 	update_sd_lb_stats(sd, this_cpu, idle, cpus, balance, &sds);
-#endif
 
 	/*
 	 * this_cpu is not the appropriate cpu to perform load balancing at
@@ -5653,9 +5568,6 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 		.dst_rq		= this_rq,
 		.idle		= idle,
 		.loop_break	= sched_nr_migrate_break,
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-		.fail_reason= MT_LBPROF_NO_TRIGGER,
-#endif
 	};
 
 	cpumask_copy(cpus, cpu_active_mask);
@@ -5663,13 +5575,8 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 	schedstat_inc(sd, lb_count[idle]);
 
 redo:
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER	
-	group = find_busiest_group(sd, this_cpu, &imbalance, idle,
-				   cpus, balance, &env);
-#else
 	group = find_busiest_group(sd, this_cpu, &imbalance, idle,
 			 	   cpus, balance);
-#endif
 
 	if (*balance == 0)
 		goto out_balanced;
@@ -5840,20 +5747,6 @@ out:
 		mt_lbprof_stat_set(sd->mt_lbprof_nr_balance_failed, 0);
 	}	
 
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	if( CPU_NEWLY_IDLE == idle){
-		char strings[128]="";
-		snprintf(strings, 128, "%d:idle balance:%d:0x%x ", this_cpu, ld_moved, env.fail_reason);
-		mt_lbprof_rqinfo(strings);
-		trace_sched_lbprof_log(strings);
-	}else{
-		char strings[128]="";
-		snprintf(strings, 128, "%d:periodic balance:%d:0x%x ", this_cpu, ld_moved, env.fail_reason);
-		mt_lbprof_rqinfo(strings);
-		trace_sched_lbprof_log(strings);
-	}
-#endif
-
 	return ld_moved;
 }
 
@@ -5865,10 +5758,7 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 {
 	struct sched_domain *sd;
 	int pulled_task = 0;
-	unsigned long next_balance = jiffies + HZ;	
-#if defined(CONFIG_MT_LOAD_BALANCE_PROFILER)
-	unsigned long counter = 0;
-#endif
+	unsigned long next_balance = jiffies + HZ;
 
 	this_rq->idle_stamp = this_rq->clock;
 

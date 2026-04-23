@@ -480,61 +480,6 @@ TRACE_EVENT(sched_log,
 );
 #endif
 
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-
-TRACE_EVENT(sched_lbprof_status,
-
-    TP_PROTO(char *strings),
-
-    TP_ARGS(strings),
-
-    TP_STRUCT__entry(
-	__array(    char,  strings, 128)
-    ),
-
-    TP_fast_assign(
-	memcpy(__entry->strings, strings, 128);
-    ),
-
-    TP_printk("%s",__entry->strings)
-);
-
-TRACE_EVENT(sched_lbprof_update,
-
-    TP_PROTO(char *strings),
-
-    TP_ARGS(strings),
-
-    TP_STRUCT__entry(
-	__array(    char,  strings, 128)
-    ),
-
-    TP_fast_assign(
-	memcpy(__entry->strings, strings, 128);
-    ),
-
-    TP_printk("%s",__entry->strings)
-);
-
-TRACE_EVENT(sched_lbprof_log,
-
-    TP_PROTO(char *strings),
-
-    TP_ARGS(strings),
-
-    TP_STRUCT__entry(
-	__array(    char,  strings, 128)
-    ),
-
-    TP_fast_assign(
-	memcpy(__entry->strings, strings, 128);
-    ),
-
-    TP_printk("%s",__entry->strings)
-);
-
-#endif
-
 #ifdef CONFIG_MTK_SCHED_CMP
 TRACE_EVENT(sched_task_entity_avg,
 

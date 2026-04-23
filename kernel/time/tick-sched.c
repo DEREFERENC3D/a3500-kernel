@@ -34,10 +34,6 @@ struct workqueue_struct *rq_wq;
 spinlock_t rq_lock;
 #endif
 
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-#include <mtlbprof/mtlbprof.h>
-#endif
-
 /*
  * Per cpu nohz control structure
  */
@@ -222,10 +218,6 @@ static void tick_nohz_stop_idle(int cpu, ktime_t now)
 	#endif
 	ts->idle_active = 0;
 	
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	mt_lbprof_update_state(cpu, MT_LBPROF_NO_TASK_STATE);
-#endif
-
 	sched_clock_idle_wakeup_event(0);
 }
 
@@ -239,10 +231,6 @@ static ktime_t tick_nohz_start_idle(int cpu, struct tick_sched *ts)
 	#endif
 	ts->idle_active = 1;
 	
-#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
-	mt_lbprof_update_state(cpu, MT_LBPROF_NO_TASK_STATE);
-#endif	
-
 	sched_clock_idle_sleep_event();
 	return now;
 }
