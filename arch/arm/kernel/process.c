@@ -32,7 +32,6 @@
 #include <linux/hw_breakpoint.h>
 #include <linux/cpuidle.h>
 #include <linux/console.h>
-#include <linux/mtk_ram_console.h>
 
 #include <asm/cacheflush.h>
 #include <asm/processor.h>
@@ -678,9 +677,6 @@ EXPORT_SYMBOL(kernel_thread);
 unsigned long get_wchan(struct task_struct *p)
 {
 	struct stackframe frame;
-	unsigned long stack_top;
-	unsigned long stack_bottom;
-	int ret;
 	int count = 0;
 	if (!p || p == current || p->state == TASK_RUNNING)
 		return 0;
@@ -689,17 +685,8 @@ unsigned long get_wchan(struct task_struct *p)
 	frame.sp = thread_saved_sp(p);
 	frame.lr = 0;			/* recovered from the stack */
 	frame.pc = thread_saved_pc(p);
-	stack_top = frame.sp;
-	stack_bottom = ALIGN(stack_top, THREAD_SIZE);
 	do {
-	  if (frame.fp < (stack_top + 4) || frame.fp >= (stack_bottom - 4)) {
-	    /* remove stack dump debug info
-	    show_data(task_thread_info(p), THREAD_SIZE, "Stack");
-	    aee_kernel_warning("Kernel", "Stack corruption");
-	    */
-	    return 0;
-	  }
-		ret = unwind_frame(&frame);
+		int ret = unwind_frame(&frame);
 		if (ret < 0)
 			return 0;
 		if (!in_sched_functions(frame.pc))
