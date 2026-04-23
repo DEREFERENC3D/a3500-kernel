@@ -109,11 +109,7 @@ unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
   */
 unsigned int sysctl_sched_cfs_bandwidth_slice = 5000UL;
 #endif
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-#ifdef CONFIG_MTK_SCHED_CMP_LAZY_BALANCE
-static int need_lazy_balance(int dst_cpu, int src_cpu, struct task_struct *p);
-#endif
-#endif
+
 /*
  * Increase the granularity value when there are more CPUs,
  * because with more CPUs the 'effective latency' as visible
@@ -1597,68 +1593,6 @@ static inline void subtract_blocked_load_contrib(struct cfs_rq *cfs_rq,
 
 static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq);
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-int group_leader_is_empty(struct task_struct *p){
-
-	struct task_struct *tg = p->group_leader;
-
-	if (SIGNAL_GROUP_EXIT & p->signal->flags){
-	//	pr_warn("[%s] (0x%p/0x%p)(#%d/%s) leader: pid(%d) state(%d) exit_state(%d)signal_flags=%x p->signal->flags=%x group_exit_code=%x\n", __func__,
-	//	p, tg, get_nr_threads(p), thread_group_empty(p) ? "empty" : "not empty",
-	//	p->tgid, tg->state, tg->exit_state, tg->state, p->signal->flags, p->signal->group_exit_code);
-		return 1;
-	}	
-
-	// workaround debug codes
-	if(tg->state == 0x6b6b6b6b){
-	//	pr_warn("[%s] (0x%p/0x%p)(#%d/%s) leader: state(%d) exit_state(%d)\n", __func__,
-	//	p, tg, get_nr_threads(p), thread_group_empty(p) ? "empty" : "not empty",
-	//	tg->state, tg->exit_state);
-		return 1;
-	}
-	
-	return 0;
-}
-
-static inline void update_tg_info(struct cfs_rq *cfs_rq, struct sched_entity *se, long ratio_delta)
-{
-	struct task_struct *p = task_of(se);
-	struct task_struct *tg = p->group_leader;
-	int id;
-	unsigned long flags;
-
-	if (group_leader_is_empty(p))
-		return;
-
-	id = cluster_id(cfs_rq->rq->cpu);
-	raw_spin_lock_irqsave(&tg->thread_group_info_lock, flags);
-	tg->thread_group_info[id].load_avg_ratio += ratio_delta;
-	raw_spin_unlock_irqrestore(&tg->thread_group_info_lock, flags);
-
-#ifdef CONFIG_MT_SCHED_INFO
-	mt_sched_printf("update_tg_info %d:%s %d:%s %ld %ld %d %d %lu:%lu:%lu update",
-	   tg->pid, tg->comm, p->pid, p->comm, 
-	   se->avg.load_avg_ratio, ratio_delta,
-	   cfs_rq->rq->cpu, id,
-	   tg->thread_group_info[id].nr_running,
-	   tg->thread_group_info[id].cfs_nr_running,
-	   tg->thread_group_info[id].load_avg_ratio);
-/*
-	mt_sched_printf("update %d:%s %d:%s %ld %ld %d %d %lu %lu %lu, %lu %lu %lu",
-	   tg->pid, tg->comm, p->pid, p->comm,
-	   se->avg.load_avg_ratio, ratio_delta,
-	   id, cfs_rq->rq->cpu,
-	   tg->thread_group_info[0].nr_running,
-	   tg->thread_group_info[0].cfs_nr_running,
-	   tg->thread_group_info[0].load_avg_ratio,
-	   tg->thread_group_info[1].nr_running,
-	   tg->thread_group_info[1].cfs_nr_running,
-	   tg->thread_group_info[1].load_avg_ratio);
-*/
-#endif
-
-}
-#endif 
 /* Update a sched_entity's runnable average */
 static inline void update_entity_load_avg(struct sched_entity *se,
 					  int update_cfs_rq)
@@ -1682,11 +1616,6 @@ static inline void update_entity_load_avg(struct sched_entity *se,
 			ratio_delta = __update_task_entity_ratio(se);
 			trace_sched_task_entity_avg(task_of(se), &se->avg);
 		
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-			if (se->on_rq) {
-				update_tg_info(cfs_rq, se, ratio_delta);
-			}
-#endif
 			return;
 		}
 	}
@@ -1708,14 +1637,8 @@ static inline void update_entity_load_avg(struct sched_entity *se,
 	if (!update_cfs_rq)
 		return;
 
-	if (se->on_rq) {
+	if (se->on_rq)
 		cfs_rq->runnable_load_avg += contrib_delta;
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-		if (entity_is_task(se)) {
-			update_tg_info(cfs_rq, se, ratio_delta);
-		}
-#endif
-	}
 	else
 		subtract_blocked_load_contrib(cfs_rq, -contrib_delta);
 }
@@ -1807,11 +1730,6 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
 	}
 
 	cfs_rq->runnable_load_avg += se->avg.load_avg_contrib;
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	if(entity_is_task(se)){
-		update_tg_info(cfs_rq, se, se->avg.load_avg_ratio);
-	}	
-#endif
 	/* we force update consideration on load-balancer moves */
 	update_cfs_rq_blocked_load(cfs_rq, !wakeup);
 }
@@ -1830,11 +1748,6 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
 	update_cfs_rq_blocked_load(cfs_rq, !sleep);
 
 	cfs_rq->runnable_load_avg -= se->avg.load_avg_contrib;
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	if(entity_is_task(se)){
-		update_tg_info(cfs_rq, se, -se->avg.load_avg_ratio);
-	}	
-#endif
 	if (sleep) {
 		cfs_rq->blocked_load_avg += se->avg.load_avg_contrib;
 		se->avg.decay_count = atomic64_read(&cfs_rq->decay_counter);
@@ -3168,21 +3081,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		inc_nr_running(rq);
 	}
 	hrtick_update(rq);
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	{
-	int id;
-	unsigned long flags;
-	struct task_struct *tg = p->group_leader;
-
-	if (group_leader_is_empty(p))
-		return;
-
-	id = cluster_id(rq->cpu);
-	raw_spin_lock_irqsave(&tg->thread_group_info_lock, flags);
-	tg->thread_group_info[id].cfs_nr_running++;
-	raw_spin_unlock_irqrestore(&tg->thread_group_info_lock, flags);
-	}
-#endif
 }
 
 static void set_next_buddy(struct sched_entity *se);
@@ -3245,21 +3143,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		update_rq_runnable_avg(rq, 1);
 	}
 	hrtick_update(rq);
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	{
-	int id;
-	unsigned long flags;
-	struct task_struct *tg = p->group_leader;
-
-	if (group_leader_is_empty(p))
-		return;
-
-	id = cluster_id(rq->cpu);
-	raw_spin_lock_irqsave(&tg->thread_group_info_lock, flags);
-	tg->thread_group_info[id].cfs_nr_running--;
-	raw_spin_unlock_irqrestore(&tg->thread_group_info_lock, flags);
-	}
-#endif
 }
 
 #ifdef CONFIG_SMP
@@ -4445,262 +4328,6 @@ next:
 
 	return pulled;
 }
-
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-/*
- * move_tasks tries to move up to load_move weighted load from busiest to
- * this_rq, as part of a balancing operation within domain "sd".
- * Returns 1 if successful and 0 otherwise.
- *
- * Called with both runqueues locked.
- */
-static int move_tasks_tg(struct lb_env *env)
-{
-	struct list_head *tasks = &env->src_rq->cfs_tasks;
-	struct task_struct *p;
-	unsigned long load = 0;
-	int pulled = 0;
-
-	long tg_load_move, other_load_move;
-	struct list_head tg_tasks, other_tasks;
-	int src_clid, dst_clid;
-	int src_nr_cpus;
-#ifdef MTK_QUICK 
-	int flag = 0;
-#endif
-
-	if (env->load_move <= 0)
-		return 0;
-
-	tg_load_move = env->load_move;
-	other_load_move = env->load_move;
-	INIT_LIST_HEAD(&tg_tasks);
-	INIT_LIST_HEAD(&other_tasks);
-	src_clid = cluster_id(env->src_cpu);
-	dst_clid = cluster_id(env->dst_cpu);
-	BUG_ON(dst_clid == -1 || src_clid == -1);
-	src_nr_cpus = nr_cpu_of_cluster(src_clid, 0);
-
-	mt_sched_printf("move_tasks_tg start: src:cpu=%d clid=%d runnable_load=%lu dst:cpu=%d clid=%d runnable_load=%lu imbalance=%ld curr->on_rq=%d",
-		env->src_cpu, src_clid, cpu_rq(env->src_cpu)->cfs.runnable_load_avg,
-		env->dst_cpu, dst_clid, cpu_rq(env->dst_cpu)->cfs.runnable_load_avg, env->load_move,
-		env->dst_rq->curr->on_rq);
-
-	while (!list_empty(tasks)) {
-		struct thread_group_info_t *src_tginfo, *dst_tginfo;
-
-		p = list_first_entry(tasks, struct task_struct, se.group_node);
-
-#ifdef CONFIG_MT_SCHED_INFO
-		mt_sched_printf("check: pid=%d comm=%s load_avg_contrib=%lu h_load=%lu runnable_load_avg=%lu loop=%d max=%d env->load_move=%d tg_load_move=%d",
-			p->pid, p->comm, p->se.avg.load_avg_contrib,
-			task_cfs_rq(p)->h_load, task_cfs_rq(p)->runnable_load_avg,
-			env->loop, env->loop_max, 
-			env->load_move, tg_load_move);
-#endif
-
-		env->loop++;
-		/* We've more or less seen every task there is, call it quits */
-		if (env->loop > env->loop_max)
-			break;
-
-		if (env->load_move <= 0)
-			break;
-
-		load = task_h_load(p);
-		BUG_ON(p == NULL || p->group_leader == NULL);
-		src_tginfo = &p->group_leader->thread_group_info[src_clid];
-		dst_tginfo = &p->group_leader->thread_group_info[dst_clid];
-
-		/* rule0 */
-		if (can_migrate_task(p, env)) {
-#ifdef CONFIG_MT_SCHED_INFO
-			mt_sched_printf("check rule0: pid=%d comm=%s load=%ld src:clid=%d tginfo->nr_running=%ld nr_cpus=%d load_avg_ratio=%ld",
-				p->pid, p->comm, p->se.avg.load_avg_ratio, 
-				src_clid, src_tginfo->nr_running, src_nr_cpus,
-				src_tginfo->load_avg_ratio);
-#endif
-
-			if ((p->se.avg.load_avg_ratio*4  >=  NICE_0_LOAD*3) &&
-			    src_tginfo->nr_running > src_nr_cpus &&
-			    src_tginfo->load_avg_ratio*10 > NICE_0_LOAD*src_nr_cpus*9) {
-				//pr_warn("[%s] hit rule0, candidate_load_move/load_move (%ld/%ld)\n",
-				//	__func__, candidate_load_move, env->load_move);
-				pulled++;
-				env->load_move -= load;
-				tg_load_move -= load;
-				other_load_move -= load;
-				mt_sched_printf("hit rule0: pid=%d comm=%s load=%ld imbalance=%ld tg_imbalance=%ld other_load_move=%ld",
-					p->pid, p->comm, load, env->load_move, tg_load_move, other_load_move);
-				move_task(p, env);
-
-				continue;
-			}
-		} else {
-			mt_sched_printf("can not migrate: pid=%d comm=%s",
-				p->pid, p->comm);
-			goto next;
-		}
-
-#if 0 // TO check
-		/* take a breather every nr_migrate tasks */
-		if (env->loop > env->loop_break) {
-			env->loop_break += sched_nr_migrate_break;
-			env->flags |= LBF_NEED_BREAK;
-			break;
-		}
-#endif
-
-		if (throttled_lb_pair(task_group(p), env->src_cpu, env->dst_cpu)) {
-			mt_sched_printf("can not migrate: pid=%d comm=%s throttled_lb_pair",
-				p->pid, p->comm );
-			goto next;
-		}
-
-		if (sched_feat(LB_MIN) && load < 16 && !env->sd->nr_balance_failed) {
-			mt_sched_printf("can not migrate: pid=%d comm=%s sched_feat",
-				p->pid, p->comm );
-			goto next;
-		}
-
-		if ((load / 2) > env->load_move) {
-			mt_sched_printf("can not migrate: pid=%d comm=%s load=%ld imbalance=%ld",
-				p->pid, p->comm, load, env->load_move );
-			goto next;
-		}
-
-
-		if ((load / 2) > tg_load_move) {
-			mt_sched_printf("can not migrate: pid=%d comm=%s load=%ld imbalance=%ld",
-				p->pid, p->comm, load, tg_load_move );
-			goto next;
-		}
-
-#ifdef MTK_QUICK 
-		if (candidate_load_move <= 0) {
-			mt_sched_printf("check: pid=%d comm=%s candidate_load_move=%d",
-				p->pid, p->comm, candidate_load_move);
-			goto next;
-		}
-#endif
-
-		/* rule1 */
-#ifdef CONFIG_MT_SCHED_INFO
-		mt_sched_printf("check rule1: pid=%d p->comm=%s thread_group_cnt=%d",
-			p->pid, p->comm, 
-			p->group_leader->thread_group_info[0].nr_running + 
-			p->group_leader->thread_group_info[1].nr_running);
-#endif
-		if (thread_group_empty(p)) {
-			list_move_tail(&p->se.group_node, &tg_tasks);
-			tg_load_move -= load;
-			other_load_move -= load;
-			mt_sched_printf("hit rule1: pid=%d p->comm=%s load=%ld tg_imbalance=%ld",
-			   p->pid, p->comm, load, tg_load_move);
-			continue;
-		}
-
-		/* rule2 */
-#ifdef CONFIG_MT_SCHED_INFO
-		mt_sched_printf("check rule2: pid=%d p->comm=%s %ld, %ld, %ld, %ld, %ld",
-			p->pid, p->comm, src_tginfo->nr_running, src_tginfo->cfs_nr_running, dst_tginfo->nr_running, 
-			p->se.avg.load_avg_ratio, src_tginfo->load_avg_ratio);
-#endif
-		if ((src_tginfo->nr_running < dst_tginfo->nr_running) &&
-		   ((p->se.avg.load_avg_ratio * src_tginfo->cfs_nr_running) <= 
-		    src_tginfo->load_avg_ratio)) {
-			list_move_tail(&p->se.group_node, &tg_tasks);
-			tg_load_move -= load;
-			other_load_move -= load;
-			mt_sched_printf("hit rule2: pid=%d p->comm=%s load=%ld tg_imbalance=%ld",
-			   p->pid, p->comm, load, tg_load_move);
-			continue;
-		}
-#ifdef CONFIG_MTK_SCHED_CMP_LAZY_BALANCE
-		if(need_lazy_balance(env->dst_cpu, env->src_cpu, p))
-			goto next;
-#endif
-		if ((load / 2) > other_load_move)
-			goto next;
-/*
-		if (other_load_move <= 0)
-			goto next;
-*/
-
-		/* original rule */
-		list_move_tail(&p->se.group_node, &other_tasks);
-		other_load_move -= load;
-		continue;
-next:
-		list_move_tail(&p->se.group_node, tasks);
-	} // end of while()
-
-	while (!list_empty(&tg_tasks)) {
-		p = list_first_entry(&tg_tasks, struct task_struct, se.group_node);
-		list_move_tail(&p->se.group_node, tasks);
-
-		if (env->load_move > 0) {
-			load = task_h_load(p);
-			if (load / 2 > env->load_move){
-				mt_sched_printf("overload rule1,2: pid=%d p->comm=%s load=%ld imbalance=%ld",
-		   	   	   p->pid, p->comm, load, env->load_move);
-#ifdef MTK_QUICK 
-
-				flag=1;
-#endif
-				continue;
-			}
-
-			move_task(p, env);
-			env->load_move -= load;
-			pulled++;
-
-			mt_sched_printf("migrate hit rule1,2: pid=%d p->comm=%s load=%ld imbalance=%ld",
-		   	   p->pid, p->comm, load, env->load_move);
-		}
-	}
-
-	mt_sched_printf("move_tasks_tg finish rule migrate");
-
-	while (!list_empty(&other_tasks)) {
-		p = list_first_entry(&other_tasks, struct task_struct, se.group_node);
-		list_move_tail(&p->se.group_node, tasks);
-
-#ifdef MTK_QUICK
-		if (!flag && (env->load_move > 0)) {
-#else
-		if (env->load_move > 0) {
-#endif
-			load = task_h_load(p);
-
-			if ((load / 2) > env->load_move){
-				mt_sched_printf("overload others: pid=%d p->comm=%s load=%ld imbalance=%ld",
-		   	   	   p->pid, p->comm, load, env->load_move);
-				continue;
-			}
-
-			move_task(p, env);
-			env->load_move -= load;
-			pulled++;
-
-			mt_sched_printf("migrate others: pid=%d p->comm=%s load=%ld imbalance=%ld",
-		  	   p->pid, p->comm, load, env->load_move);
-		}
-	}
-
-	/*
-	 * Right now, this is one of only two places move_task() is called,
-	 * so we can safely collect move_task() stats here rather than
-	 * inside move_task().
-	 */
-	schedstat_add(env->sd, lb_gained[env->idle], pulled);
-
- 	mt_sched_printf("move_tasks_tg finish pulled=%d imbalance=%ld", pulled, env->load_move);
-
-	return pulled;
-}
-
-#endif /* CONFIG_MTK_SCHED_CMP_TGS */
 
 #ifdef CONFIG_MTK_SCHED_CMP_LAZY_BALANCE
 static int need_lazy_balance(int dst_cpu, int src_cpu, struct task_struct *p)
@@ -6088,20 +5715,10 @@ redo:
 more_balance:
 		local_irq_save(flags);
 		double_rq_lock(this_rq, busiest);
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-		env.loop_max	= min_t(unsigned long, sysctl_sched_nr_migrate, busiest->nr_running);
-#endif /* MTK_SCHED_CMP_TGS */
 		if (!env.loop)
 			update_h_load(env.src_cpu);
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-		if (sd->flags & SD_BALANCE_TG && !cpus_share_cache(env.src_cpu, env.dst_cpu))
-			ld_moved += move_tasks_tg(&env);
-		else
-			ld_moved += move_tasks(&env);
-#else /* !MTK_SCHED_CMP_TGS */
 		ld_moved += move_tasks(&env);
-#endif /* MTK_SCHED_CMP_TGS */
 
 		double_rq_unlock(this_rq, busiest);
 		local_irq_restore(flags);
@@ -6439,30 +6056,7 @@ static int find_new_ilb(int cpu)
 	int ilb = cpumask_first(nohz.idle_cpus_mask);
 	struct sched_group *ilbg;
 	struct sched_domain *sd;
-#ifdef CONFIG_MTK_SCHED_CMP_TGS	
-	int new_ilb;
-#endif
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	/* Find nohz balancing to occur in the same cluster firstly */
-	if(per_cpu(cmp_cpu_domain, cpu) != NULL)
-	{
-		//Find idle cpu with online one
-		new_ilb = cpumask_first_and(nohz.idle_cpus_mask,
-		          	&cmp_cpu_domain(cpu)->cpus);					
-		if (new_ilb < nr_cpu_ids && idle_cpu(new_ilb))
-		{
-#ifdef CONFIG_MTK_SCHED_CMP_POWER_AWARE_CONTROLLER
-			if(new_ilb != ilb)
-			{
-				mt_sched_printf("[PA]find_new_ilb(cpu%x), new_ilb = %d, ilb = %d\n", cpu, new_ilb, ilb);
-				AVOID_WAKE_UP_FROM_CPUX_TO_CPUY_COUNT[cpu][ilb]++;
-			}
-#endif				
-			return new_ilb;
-		}			
-	}
-#endif 
 	/*
 	 * Have idle load balancer selection from semi-idle packages only
 	 * when power-aware load balancing is enabled

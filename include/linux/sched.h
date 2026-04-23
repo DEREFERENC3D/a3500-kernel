@@ -868,9 +868,6 @@ enum cpu_idle_type {
 #define SD_ASYM_PACKING		0x0800  /* Place busy groups earlier in the domain */
 #define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
 #define SD_OVERLAP		0x2000	/* sched_domains of this level overlap */
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-#define SD_BALANCE_TG		0x4000  /* Balance for thread group */
-#endif
 #ifdef CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK
 #define SD_SHARE_POWERLINE	0x8000	/* Domain members share power domain */
 #endif
@@ -1317,19 +1314,6 @@ enum perf_event_task_context {
 	perf_nr_task_contexts,
 };
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-#define MAX_NUM_CLUSTER 2
-struct thread_group_info_t {
-	/* # of cfs threas in the thread group per cluster*/
-	unsigned long cfs_nr_running; 
-	/* # of threads in the thread group per cluster */
-	unsigned long nr_running;
-	/* runnable load of the thread group per cluster */
-	unsigned long load_avg_ratio;
-};
-
-#endif
-
 #ifdef CONFIG_MT_SCHED_NOTICE
   #ifdef CONFIG_MT_SCHED_DEBUG
 #define mt_sched_printf(x...) \
@@ -1466,11 +1450,6 @@ struct task_struct {
 	struct list_head children;	/* list of my children */
 	struct list_head sibling;	/* linkage in my parent's children list */
 	struct task_struct *group_leader;	/* threadgroup leader */
-
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	raw_spinlock_t thread_group_info_lock;
-	struct thread_group_info_t thread_group_info[MAX_NUM_CLUSTER];
-#endif
 
 	/*
 	 * ptraced is the list of tasks this task is using ptrace on.

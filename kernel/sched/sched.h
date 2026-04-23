@@ -905,9 +905,6 @@ extern void idle_balance(int this_cpu, struct rq *this_rq);
 # ifdef CONFIG_MTK_SCHED_CMP
 extern void idle_enter_fair(struct rq *this_rq);
 extern void idle_exit_fair(struct rq *this_rq);
-#  ifdef CONFIG_MTK_SCHED_CMP_TGS 
-extern int group_leader_is_empty(struct task_struct *p);
-#  endif 
 # endif
 #else	/* CONFIG_SMP */
 

@@ -732,95 +732,11 @@ static void set_load_weight(struct task_struct *p)
 	load->inv_weight = prio_to_wmult[prio];
 }
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-static void sched_tg_enqueue(struct rq *rq, struct task_struct *p)
-{
-	int id;
-	unsigned long flags;
-	struct task_struct *tg = p->group_leader;
-
-	if(group_leader_is_empty(p))
-		return;
-
-	id = cluster_id(rq->cpu);
-	raw_spin_lock_irqsave(&tg->thread_group_info_lock, flags);
-	tg->thread_group_info[id].nr_running++;
-	raw_spin_unlock_irqrestore(&tg->thread_group_info_lock, flags);
-
-#if 0 
-     	mt_sched_printf("enqueue %d:%s %d:%s %d %lu %lu %lu, %lu %lu %lu",
-			tg->pid, tg->comm, p->pid, p->comm, id, rq->cpu,
-			tg->thread_group_info[0].nr_running,
-			tg->thread_group_info[0].cfs_nr_running,
-			tg->thread_group_info[0].load_avg_ratio,
-			tg->thread_group_info[1].nr_running,
-			tg->thread_group_info[1].cfs_nr_running,
-			tg->thread_group_info[1].load_avg_ratio);
-#endif
-	//tgs_log(rq, p);
-}
-
-static void sched_tg_dequeue(struct rq *rq, struct task_struct *p)
-{
-	int id;
-	unsigned long flags;
-	struct task_struct *tg = p->group_leader;
-
-	if(group_leader_is_empty(p))
-		return;
-
-	id = cluster_id(rq->cpu);
-	raw_spin_lock_irqsave(&tg->thread_group_info_lock, flags);
-	//WARN_ON(!tg->thread_group_info[id].nr_running);
-	tg->thread_group_info[id].nr_running--;
-	raw_spin_unlock_irqrestore(&tg->thread_group_info_lock, flags);
-
-#if 0 
-     	mt_sched_printf("dequeue %d:%s %d:%s %d %d %lu %lu %lu, %lu %lu %lu",
-			tg->pid, tg->comm, p->pid, p->comm, id, rq->cpu,
-			tg->thread_group_info[0].nr_running,
-			tg->thread_group_info[0].cfs_nr_running,
-			tg->thread_group_info[0].load_avg_ratio,
-			tg->thread_group_info[1].nr_running,
-			tg->thread_group_info[1].cfs_nr_running,
-			tg->thread_group_info[1].load_avg_ratio);
-#endif
-	//tgs_log(rq, p);
-}
-
-#endif
-
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-static void tgs_log(struct rq *rq, struct task_struct *p)
-{
-#ifdef CONFIG_MT_SCHED_INFO
-	struct task_struct *tg = p->group_leader;
-
-	if(group_leader_is_empty(p))
-		return;
-
-      //  if(!strncmp(tg->comm,"sched_test", 10)){
-                mt_sched_printf("%d:%s %d:%s %lu %lu %lu, %lu %lu %lu", tg->pid, tg->comm, p->pid, p->comm,
-			tg->thread_group_info[0].nr_running,
-			tg->thread_group_info[0].cfs_nr_running,
-			tg->thread_group_info[0].load_avg_ratio,
-			tg->thread_group_info[1].nr_running,
-			tg->thread_group_info[1].cfs_nr_running,
-			tg->thread_group_info[1].load_avg_ratio);
-       // }
-#endif
-}
-#endif
-
 static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	update_rq_clock(rq);
 	sched_info_queued(p);
 	p->sched_class->enqueue_task(rq, p, flags);
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	sched_tg_enqueue(rq, p);
-	tgs_log(rq, p);	
-#endif
 }
 
 static void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
@@ -828,10 +744,6 @@ static void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	update_rq_clock(rq);
 	sched_info_dequeued(p);
 	p->sched_class->dequeue_task(rq, p, flags);
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	sched_tg_dequeue(rq, p);
-	tgs_log(rq, p);	
-#endif
 }
 
 void activate_task(struct rq *rq, struct task_struct *p, int flags)
@@ -6047,38 +5959,7 @@ static void set_rq_offline(struct rq *rq)
 		rq->online = 0;
 	}
 }
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-static void cpu_domain_online_cpu(int cpu)
-{
-	struct	cpu_domain *cluster = get_cpu_domain(cpu);
 
-	
-	if(cluster){
-		cpumask_set_cpu(cpu, &cluster->cpus);
-//		printk("cpu_domain_online_cpu(cpu%d), cpus = %lu, onlineCPU=%lu\n", 
-//			cpu,cluster->cpus.bits[0], cpu_online_mask->bits[0]);
-	}
-	else {
-		printk("cpu_domain_online_cpu(cpu%d), cluster info is NULL, onlineCPU=%lu\n", 
-			cpu, cpu_online_mask->bits[0]);
-	}	
-}
-
-static void cpu_domain_offline_cpu(int cpu)
-{
-	struct	cpu_domain *cluster = get_cpu_domain(cpu);
-
-	if(cluster) {
-		cpumask_clear_cpu(cpu, &cluster->cpus);
-//		printk("cpu_domain_offline_cpu(cpu%d), cpus = %lu, onlineCPU=%lu\n", 
-//			cpu,cluster->cpus.bits[0], cpu_online_mask->bits[0]);
-	}
-	else {
-		printk("cpu_domain_offline_cpu(cpu%d), cluster info is NULL, onlineCPU=%lu\n", 
-			cpu, cpu_online_mask->bits[0]);
-	}
-}
-#endif
 /*
  * migration_call - callback that gets triggered when a CPU is added.
  * Here we can start up the necessary migration thread for the new CPU.
@@ -6101,10 +5982,6 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
 		raw_spin_lock_irqsave(&rq->lock, flags);
 		if (rq->rd) {
 			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-//			printk("migration_call(CPU_ONLINE), cpu%d\n", cpu);
-			cpu_domain_online_cpu(cpu);
-#endif
 			set_rq_online(rq);
 		}
 		raw_spin_unlock_irqrestore(&rq->lock, flags);
@@ -6116,11 +5993,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
 		/* Update our root-domain */
 		raw_spin_lock_irqsave(&rq->lock, flags);
 		if (rq->rd) {
-			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-//			printk("migration_call(CPU_DYING), cpu%d\n", cpu);			
-			cpu_domain_offline_cpu(cpu);
-#endif			
+			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));	
 			set_rq_offline(rq);
 		}
 		migrate_tasks(cpu);
@@ -7633,9 +7506,6 @@ void __init sched_init(void)
 	int i, j;
 	unsigned long alloc_size = 0, ptr;
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	init_cpu_domain_early();	
-#endif
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	alloc_size += 2 * nr_cpu_ids * sizeof(void **);
 #endif

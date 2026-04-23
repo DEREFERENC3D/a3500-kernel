@@ -1131,32 +1131,6 @@ static void posix_cpu_timers_init(struct task_struct *tsk)
 	INIT_LIST_HEAD(&tsk->cpu_timers[2]);
 }
 
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-static void mt_init_thread_group(struct task_struct *p){
-#ifdef CONFIG_MT_SCHED_INFO
-	struct task_struct *tg = p->group_leader;
-#endif
-
-	p->thread_group_info[0].cfs_nr_running = 0;
-	p->thread_group_info[0].nr_running = 0 ;
-	p->thread_group_info[0].load_avg_ratio = 0;
-	p->thread_group_info[1].cfs_nr_running = 0;
-	p->thread_group_info[1].nr_running = 0;
-	p->thread_group_info[1].load_avg_ratio = 0;
-
-#ifdef CONFIG_MT_SCHED_INFO
-	mt_sched_printf("fork %d:%s %d:%s %lu %lu %lu, %lu %lu %lu",
-	   tg->pid, tg->comm, p->pid, p->comm,
-	   tg->thread_group_info[0].nr_running,
-	   tg->thread_group_info[0].cfs_nr_running,
-	   tg->thread_group_info[0].load_avg_ratio,
-	   tg->thread_group_info[1].cfs_nr_running,
-	   tg->thread_group_info[1].nr_running,
-	   tg->thread_group_info[1].load_avg_ratio);
-#endif
-}
-#endif
-
 /*
  * This creates a new process as a copy of the old one,
  * but does not actually start it yet.
@@ -1225,9 +1199,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	ftrace_graph_init_task(p);
 
 	rt_mutex_init_task(p);
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	raw_spin_lock_init(&p->thread_group_info_lock);
-#endif
 
 #ifdef CONFIG_PROVE_LOCKING
 	DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
@@ -1445,9 +1416,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	p->group_leader = p;
 	INIT_LIST_HEAD(&p->thread_group);
     INIT_HLIST_HEAD(&p->task_works);
-#ifdef CONFIG_MTK_SCHED_CMP_TGS
-	mt_init_thread_group(p);
-#endif
 	
 	/* Now that the task is set up, run cgroup callbacks if
 	 * necessary. We need to run them before the task is visible
