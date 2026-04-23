@@ -31,7 +31,6 @@
 
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
-#include <mach/mtk_memcfg.h>
 
 #include "mm.h"
 
@@ -1192,10 +1191,6 @@ static void __init map_lowmem(void)
 	for_each_memblock(memory, reg) {
 		start = reg->base;
 		end = start + reg->size;
-                MTK_MEMCFG_LOG_AND_PRINTK(KERN_ALERT"[PHY layout]kernel   :   0x%08llx - 0x%08llx (0x%08llx)\n",
-                      (unsigned long long)start,
-                      (unsigned long long)end - 1,
-                      (unsigned long long)reg->size);
 
 		if (end > lowmem_limit)
 			end = lowmem_limit;
@@ -1207,10 +1202,6 @@ static void __init map_lowmem(void)
 		map.length = end - start;
 		map.type = MT_MEMORY;
 
-                printk(KERN_ALERT"creating mapping start pa: 0x%08llx @ 0x%08llx "
-                        ", end pa: 0x%08llx @ 0x%08llx\n",
-                       (unsigned long long)start, (unsigned long long)map.virtual,
-                       (unsigned long long)end, (unsigned long long)__phys_to_virt(end));
 		create_mapping(&map, false);
 	}
 
