@@ -16,7 +16,6 @@
 #include <asm/hwcap.h>
 #include <asm/pgtable-hwdef.h>
 #include <asm/pgtable.h>
-#include <asm/vfpmacros.h>
 
 #include "proc-macros.S"
 
@@ -154,17 +153,6 @@ ENDPROC(cpu_v7_do_resume)
  *	It is assumed that:
  *	- cache type register is implemented
  */
-        
-    @mrc    p15, 0, r10, c1, c0, 1
-    @orr    r10, r10, #1 << 28
-    @mcr    p15, 0, r10, c1, c0, 1
-
-    @stmfd sp!, {r1, r5}
-	@VFPFMRX	r1, FPEXC		@ Is the VFP enabled?
-	@orr	r1, r1, #FPEXC_EN	@ user FPEXC has the enable bit set
-	@bic	r5, r1, #FPEXC_EX	@ make sure exceptions are disabled
-	@VFPFMXR	FPEXC, r5		@ enable VFP, disable any pending
-    @ldmfd sp!, {r1, r5}
 __v7_ca5mp_setup:
 __v7_ca9mp_setup:
 	mov	r10, #(1 << 0)			@ TLB ops broadcasting
