@@ -346,11 +346,16 @@ __setup("reboot=", reboot_setup);
 void machine_shutdown(void)
 {
 #ifdef CONFIG_SMP
-  printk("machine_shutdown: start, Proess(%s:%d)\n", current->comm, current->pid);
-  dump_stack();
-  preempt_disable();
+	/*
+	 * Disable preemption so we're guaranteed to
+	 * run to power off or reboot and prevent
+	 * the possibility of switching to another
+	 * thread that might wind up blocking on
+	 * one of the stopped CPUs.
+	 */
+	preempt_disable();
+
 	smp_send_stop();
-  printk("machine_shutdown: done\n");
 #endif
 }
 
@@ -374,7 +379,7 @@ last_kmsg_store_to_emmc();
 void machine_restart(char *cmd)
 {
 	machine_shutdown();
-    printk("Reboot:machine restart...\n");
+
 	/* Flush the console to make sure all the relevant messages make it
 	 * out to the console drivers */
 	arm_machine_flush_console();
