@@ -299,14 +299,7 @@ void cpu_idle(void)
 		while (!need_resched()) {
 #ifdef CONFIG_HOTPLUG_CPU
 			if (cpu_is_offline(smp_processor_id()))
-#ifdef CONFIG_MTK_IDLE_TIME_FIX			
-			{
-			  tick_set_cpu_plugoff_flag(1);
 				cpu_die();
-			}
-#else			
-				cpu_die();
-#endif	
 #endif
 
 			/*
