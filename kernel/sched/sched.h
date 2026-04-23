@@ -916,9 +916,6 @@ static inline void idle_balance(int cpu, struct rq *rq)
 
 extern void sysrq_sched_debug_show(void);
 extern void sched_init_granularity(void);
-#ifdef CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK
-extern void update_packing_domain(int cpu);
-#endif /* CONFIG_HMP_PACK_SMALL_TASK */
 extern void update_max_interval(void);
 extern int update_runtime(struct notifier_block *nfb, unsigned long action, void *hcpu);
 extern void init_sched_rt_class(void);

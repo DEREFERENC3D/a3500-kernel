@@ -43,12 +43,6 @@
 
 struct cputopo_arm cpu_topology[NR_CPUS];
 
-#ifdef CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK
-int arch_sd_share_power_line(void)
-{
-	return 0*SD_SHARE_POWERLINE;
-}
-#endif /* CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK */
 const struct cpumask *cpu_coregroup_mask(int cpu)
 {
 	return &cpu_topology[cpu].core_sibling;

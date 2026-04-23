@@ -6412,9 +6412,6 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
 	rcu_assign_pointer(rq->sd, sd);
 	destroy_sched_domains(tmp, cpu);
 
-#ifdef CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK
-	update_packing_domain(cpu);
-#endif /* CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK */
 	update_top_cache_domain(cpu);
 }
 
@@ -6721,12 +6718,6 @@ int __weak arch_sd_sibling_asym_packing(void)
        return 0*SD_ASYM_PACKING;
 }
 
-#ifdef CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK
-int __weak arch_sd_share_power_line(void)
-{
-	return 0*SD_SHARE_POWERLINE;
-}
-#endif /* CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK */
 /*
  * Initializers for schedule domains
  * Non-inlined to reduce accumulated stack pressure in build_sched_domains()
