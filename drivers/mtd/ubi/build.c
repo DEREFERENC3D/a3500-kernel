@@ -45,9 +45,6 @@
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include "ubi.h"
-#ifdef MTK_COMBO_NAND_SUPPORT
-#include "combo_nand.h"
-#endif
 
 /* Maximum length of the 'mtd=' parameter */
 #define MTD_PARAM_LEN_MAX 64
@@ -663,13 +660,8 @@ static int io_init(struct ubi_device *ubi)
 	 * physical eraseblocks maximum.
 	 */
 
-#ifdef MTK_COMBO_NAND_SUPPORT
-	ubi->peb_size   = COMBO_NAND_BLOCK_SIZE;
-	ubi->peb_count  = (int)div_u64(ubi->mtd->size, ubi->peb_size);
-#else
 	ubi->peb_size   = ubi->mtd->erasesize;
 	ubi->peb_count  = mtd_div_by_eb(ubi->mtd->size, ubi->mtd);
-#endif
 	ubi->flash_size = ubi->mtd->size;
 
 	if (mtd_can_have_bb(ubi->mtd))
@@ -680,13 +672,8 @@ static int io_init(struct ubi_device *ubi)
 		ubi->nor_flash = 1;
 	}
 
-#ifdef MTK_COMBO_NAND_SUPPORT
-	ubi->min_io_size = COMBO_NAND_PAGE_SIZE;
-	ubi->hdrs_min_io_size = ubi->min_io_size >> ubi->mtd->subpage_sft;
-#else
 	ubi->min_io_size = ubi->mtd->writesize;
 	ubi->hdrs_min_io_size = ubi->mtd->writesize >> ubi->mtd->subpage_sft;
-#endif
 
 	/*
 	 * Make sure minimal I/O unit is power of 2. Note, there is no
@@ -703,11 +690,7 @@ static int io_init(struct ubi_device *ubi)
 	ubi_assert(ubi->hdrs_min_io_size <= ubi->min_io_size);
 	ubi_assert(ubi->min_io_size % ubi->hdrs_min_io_size == 0);
 
-#ifdef MTK_COMBO_NAND_SUPPORT
-	ubi->max_write_size = COMBO_NAND_PAGE_SIZE;
-#else
 	ubi->max_write_size = ubi->mtd->writebufsize;
-#endif
 	/*
 	 * Maximum write size has to be greater or equivalent to min. I/O
 	 * size, and be multiple of min. I/O size.
