@@ -51,7 +51,6 @@
 
 #include "cdc-acm.h"
 
-#define dbg_mtk(dev, format, args...) do{}while(0)
 
 #define DRIVER_AUTHOR "Armin Fuerst, Pavel Machek, Johannes Erdfelt, Vojtech Pavlik, David Kubicek, Johan Hovold"
 #define DRIVER_DESC "USB Abstract Control Model driver for USB modems and ISDN adapters"
@@ -527,7 +526,7 @@ static int acm_tty_open(struct tty_struct *tty, struct file *filp)
 {
 	struct acm *acm = tty->driver_data;
 
-	dev_dbg(&acm->control->dev, "%s\n", __func__);
+	dev_dbg(tty->dev, "%s\n", __func__);
 
 	return tty_port_open(&acm->port, tty, filp);
 }
@@ -648,7 +647,6 @@ static void acm_tty_close(struct tty_struct *tty, struct file *filp)
 {
 	struct acm *acm = tty->driver_data;
 	dev_dbg(&acm->control->dev, "%s\n", __func__);
-	dbg_mtk(&acm->control->dev, "%s port_cnt=%d", __func__, acm->port.count);
 	tty_port_close(&acm->port, tty, filp);
 }
 
@@ -1152,8 +1150,9 @@ skip_normal_probe:
 		return -EBUSY;
 	}
 
+
 	if (data_interface->cur_altsetting->desc.bNumEndpoints < 2 ||
-			control_interface->cur_altsetting->desc.bNumEndpoints == 0)
+	    control_interface->cur_altsetting->desc.bNumEndpoints == 0)
 		return -EINVAL;
 
 	epctrl = &control_interface->cur_altsetting->endpoint[0].desc;
@@ -1441,7 +1440,7 @@ static int acm_suspend(struct usb_interface *intf, pm_message_t message)
 {
 	struct acm *acm = usb_get_intfdata(intf);
 	int cnt;
-	dbg_mtk(&acm->control->dev, "%s intf=%d", __func__, intf->cur_altsetting->desc.bInterfaceNumber);
+
 	if (PMSG_IS_AUTO(message)) {
 		int b;
 
@@ -1475,7 +1474,6 @@ static int acm_resume(struct usb_interface *intf)
 	int cnt;
 
 	spin_lock_irq(&acm->read_lock);
-	dbg_mtk(&acm->control->dev, "%s intf=%d", __func__, intf->cur_altsetting->desc.bInterfaceNumber);
 	acm->susp_count -= 1;
 	cnt = acm->susp_count;
 	spin_unlock_irq(&acm->read_lock);
@@ -1764,6 +1762,7 @@ static int __init acm_init(void)
 	acm_tty_driver = alloc_tty_driver(ACM_TTY_MINORS);
 	if (!acm_tty_driver)
 		return -ENOMEM;
+	acm_tty_driver->owner = THIS_MODULE,
 	acm_tty_driver->driver_name = "acm",
 	acm_tty_driver->name = "ttyACM",
 	acm_tty_driver->major = ACM_TTY_MAJOR,
