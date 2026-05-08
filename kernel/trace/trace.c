@@ -985,14 +985,8 @@ void tracing_reset_current_online_cpus(void)
 #define SIZEOF_MAP_PID_TO_CMDLINE (sizeof(unsigned)*(PID_MAX_DEFAULT+1))
 #define SIZEOF_MAP_CMDLINE_TO_PID (sizeof(unsigned)*(SAVED_CMDLINES))
 
-#ifdef CONFIG_MTK_EXTMEM
-extern void* extmem_malloc_page_align(size_t bytes);
-static unsigned * map_pid_to_cmdline = NULL;
-static unsigned * map_cmdline_to_pid = NULL;
-#else
 static unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
 static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
-#endif
 
 static char saved_cmdlines[SAVED_CMDLINES][TASK_COMM_LEN];
 static unsigned saved_tgids[SAVED_CMDLINES];
@@ -1003,22 +997,9 @@ static arch_spinlock_t trace_cmdline_lock = __ARCH_SPIN_LOCK_UNLOCKED;
 static atomic_t trace_record_cmdline_disabled __read_mostly;
 
 static void trace_init_cmdlines(void)
-{
-#ifdef CONFIG_MTK_EXTMEM
-	map_pid_to_cmdline = (unsigned *) extmem_malloc_page_align(SIZEOF_MAP_PID_TO_CMDLINE);
-	if(map_pid_to_cmdline == NULL)
-		panic("%s[%s] memory alloc failed!!!\n", __FILE__, __FUNCTION__);
-
-	map_cmdline_to_pid = (unsigned *) extmem_malloc_page_align(SIZEOF_MAP_CMDLINE_TO_PID);
-	if(map_pid_to_cmdline == NULL)
-		panic("%s[%s] memory alloc failed!!!\n", __FILE__, __FUNCTION__);
-	
-	memset(map_pid_to_cmdline, NO_CMDLINE_MAP, SIZEOF_MAP_PID_TO_CMDLINE);
-	memset(map_cmdline_to_pid, NO_CMDLINE_MAP, SIZEOF_MAP_CMDLINE_TO_PID);	
-#else    
+{ 
 	memset(&map_pid_to_cmdline, NO_CMDLINE_MAP, sizeof(map_pid_to_cmdline));
 	memset(&map_cmdline_to_pid, NO_CMDLINE_MAP, sizeof(map_cmdline_to_pid));
-#endif
 
 	cmdline_idx = 0;
 }

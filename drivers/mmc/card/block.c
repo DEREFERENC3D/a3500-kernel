@@ -1480,9 +1480,6 @@ static inline int mmc_blk_readonly(struct mmc_card *card)
 	       !(card->csd.cmdclass & CCC_BLOCK_WRITE);
 }
 
-#ifdef CONFIG_MTK_EXTMEM
-extern void* extmem_malloc_page_align(size_t bytes);
-#endif
 static struct mmc_blk_data *mmc_blk_alloc_req(struct mmc_card *card,
 					      struct device *parent,
 					      sector_t size,

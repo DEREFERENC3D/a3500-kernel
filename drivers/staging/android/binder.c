@@ -352,11 +352,7 @@ static int log_disable;
 #ifdef RT_PRIO_INHERIT
 #define BINDER_RT_LOG_ENABLE	0x8
 #endif
-#ifdef CONFIG_MTK_EXTMEM
-extern void* extmem_malloc_page_align(size_t bytes);
-#else
 static struct binder_transaction_log_entry entry_t[MAX_ENG_TRANS_LOG_BUFF_LEN];
-#endif
 #endif
 
 struct binder_work {
@@ -6034,16 +6030,8 @@ static int __init binder_init(void)
 	binder_transaction_log_failed.entry = &entry_failed[0];
 	binder_transaction_log_failed.size  = ARRAY_SIZE(entry_failed);
 
-#ifdef CONFIG_MTK_EXTMEM
-	binder_transaction_log.entry = extmem_malloc_page_align(sizeof(struct binder_transaction_log_entry)*MAX_ENG_TRANS_LOG_BUFF_LEN);
-	binder_transaction_log.size  = MAX_ENG_TRANS_LOG_BUFF_LEN;
-
-	if(binder_transaction_log.entry == NULL)
-		panic("%s[%s] memory alloc failed!!!\n", __FILE__, __FUNCTION__);
-#else
 	binder_transaction_log.entry = &entry_t[0];
 	binder_transaction_log.size  = ARRAY_SIZE(entry_t);
-#endif    
 #endif
 
 	binder_deferred_workqueue = create_singlethread_workqueue("binder");
