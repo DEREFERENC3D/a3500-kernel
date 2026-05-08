@@ -1075,9 +1075,7 @@ static void free_switcher_pte_pages(void)
 	unsigned int i;
 
 	for_each_possible_cpu(i)
-	{
 		free_page((long)switcher_pte_page(i));
-	}
 }
 
 /*H:520
