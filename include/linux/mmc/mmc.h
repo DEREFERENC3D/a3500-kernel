@@ -24,10 +24,6 @@
 #ifndef LINUX_MMC_MMC_H
 #define LINUX_MMC_MMC_H
 
-#ifndef USER_BUILD_KERNEL
-    //#define MTK_MMC_PERFORMANCE_TEST   /* for get transfer time with each trunk size, default not open */
-#endif
-
 /* Standard MMC commands (4.1)           type  argument     response */
    /* class 1 */
 #define MMC_GO_IDLE_STATE         0   /* bc                          */
