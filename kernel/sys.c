@@ -2156,9 +2156,6 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 					 (int __user *) arg2);
 			break;
 		case PR_SET_VMA:
-#ifdef CONFIG_MT_ENG_BUILD
-			error = prctl_set_vma(arg2, arg3, arg4, arg5);
-#endif 
 			break;
 		default:
 			error = -EINVAL;

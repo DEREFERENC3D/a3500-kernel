@@ -81,17 +81,6 @@ static pid_t system_server_pid;
 /************************************************************************************************************************/
 #define MTK_DEATH_NOTIFY_MONITOR	"v0.1"
 
-/**
- * Revision history of binder monitor
- *
- * v0.1   - enhance debug log
- * v0.2   - transaction timeout log
- * v0.2.1 - buffer allocation debug
- */
-#ifdef CONFIG_MT_ENG_BUILD
-#define BINDER_MONITOR			"v0.2.1" /* BINDER_MONITOR only turn on for eng build */
-#endif
-
 #ifdef BINDER_MONITOR
 #define MAX_SERVICE_NAME_LEN		32
 /************************************************************************************************************************/

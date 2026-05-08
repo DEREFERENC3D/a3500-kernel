@@ -1205,10 +1205,6 @@ static void balance_dirty_pages(struct address_space *mapping,
 	struct backing_dev_info *bdi = mapping->backing_dev_info;
 	unsigned long start_time = jiffies;
 
-#ifdef CONFIG_MT_ENG_BUILD
-	void add_kmem_status_writeback_counter(void);
-	add_kmem_status_writeback_counter();
-#endif
 	for (;;) {
 		unsigned long now = jiffies;
 

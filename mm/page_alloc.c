@@ -2178,10 +2178,6 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
 	struct reclaim_state reclaim_state;
 	bool drained = false;
 
-#ifdef CONFIG_MT_ENG_BUILD
-	void add_kmem_status_page_reclaim_counter(void);
-        add_kmem_status_page_reclaim_counter();
-#endif
 	cond_resched();
 
 	/* We now go into synchronous reclaim */
@@ -2306,20 +2302,6 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 /* To record minfree[0] in LMK. Initial value is 0. */
 size_t lmk_adjz_minfree = 0;
 
-/* Add for kswapd need too much CPU ANR issue */
-#ifdef CONFIG_MT_ENG_BUILD
-#include <linux/xlog.h>
-#define WAKEUP_KSWAPD_TAG "WAKEUP_KSWAPD"
-static uint32_t wakeup_kswapd_count = 0;
-static unsigned long print_wakeup_kswapd_timeout = 0;
-
-static uint32_t wakeup_kswapd_dump_log_order = 1;
-static uint32_t wakeup_kswapd_dump_bt_order = 1000;
-
-module_param_named(dump_log_order, wakeup_kswapd_dump_log_order, uint, S_IRUGO | S_IWUSR);
-module_param_named(dump_bt_order, wakeup_kswapd_dump_bt_order, uint, S_IRUGO | S_IWUSR);
-#endif
-
 static inline struct page *
 __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 	struct zonelist *zonelist, enum zone_type high_zoneidx,
@@ -2358,28 +2340,6 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
 
 restart:
 	if (!(gfp_mask & __GFP_NO_KSWAPD)) {
-	#ifdef CONFIG_MT_ENG_BUILD
-	    int print_debug_info = 0;
-	    wakeup_kswapd_count++;
-	    
-	    if (time_after_eq(jiffies, print_wakeup_kswapd_timeout)) {
-	        print_debug_info = 1;
-	        print_wakeup_kswapd_timeout = jiffies+HZ;
-        }        
-        if(print_debug_info) {
-            if(order >= wakeup_kswapd_dump_log_order) {
-                xlog_printk(ANDROID_LOG_INFO, WAKEUP_KSWAPD_TAG,
-                            "%s wakeup kswapd, order:%d, mode:0x%x, trigger_count:%d\n",
-                            current->comm, order, gfp_mask, wakeup_kswapd_count);
-            }
-            
-	        if(order >= wakeup_kswapd_dump_bt_order) {
-	           xlog_printk(ANDROID_LOG_INFO, WAKEUP_KSWAPD_TAG, "dump_stack\n");
-	           dump_stack();
-	        }
-	        wakeup_kswapd_count = 0;/*reset*/
-	    }
-	#endif
 		wake_all_kswapd(order, zonelist, high_zoneidx,
 						zone_idx(preferred_zone));
     }

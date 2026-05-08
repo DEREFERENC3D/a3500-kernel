@@ -1658,10 +1658,6 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 	struct page *page;
 	pgoff_t size;
 	int ret = 0;
-#ifdef CONFIG_MT_ENG_BUILD
-	void add_kmem_status_filemap_fault_counter(void);
-	add_kmem_status_filemap_fault_counter();
-#endif
 	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
 	if (offset >= size) {
                 printk(KERN_ALERT"SIGBUS debug: %s, %d, offset: %lu, size: %lu\n", 

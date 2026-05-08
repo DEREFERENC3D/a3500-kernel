@@ -1500,10 +1500,6 @@ static int do_execve_common(const char *filename,
 	bool clear_in_exec;
 	int retval;
 	const struct cred *cred = current_cred();
-#ifdef CONFIG_MT_ENG_BUILD
-    int *argv_p0;
-//    int argv0;
-#endif
 
 	/*
 	 * We move the actual failure in case of RLIMIT_NPROC excess from
@@ -1576,24 +1572,11 @@ static int do_execve_common(const char *filename,
 	if (retval < 0)
 		goto out;
 
-#ifdef CONFIG_MT_ENG_BUILD
-    argv_p0 = (int *)get_user_arg_ptr(argv, 0);
-//    if(argv_p0 != 0)
- //       argv0 = *argv_p0;
-#endif
-
 	retval = copy_strings(bprm->argc, argv, bprm);
 	if (retval < 0)
 		goto out;
 
 	retval = search_binary_handler(bprm,regs);
-#ifdef CONFIG_MT_ENG_BUILD
-    if(retval == -999){
-	printk("[exec done]\n");
-//        printk("[exec done] argv[0] = 0x%x\n", argv0);
-//        printk("[exec done] argv0_ptr = 0x%x\n", (unsigned int)argv_p0);
-    }
-#endif
 	if (retval < 0)
 		goto out;
 
