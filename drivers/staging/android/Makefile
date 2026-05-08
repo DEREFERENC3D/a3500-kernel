@@ -4,10 +4,6 @@ ifeq ($(MTK_INTERNAL), yes)
 KBUILD_CFLAGS += -DMTK_INTERNAL_BUILD  # add for LMK
 endif
 
-ifeq ($(MTK_LCA_RAM_OPTIMIZE), yes)
-KBUILD_CFLAGS += -DMTK_LCA_RAM_OPTIMIZE  # add for LCA LMK
-endif
-
 obj-$(CONFIG_ANDROID_BINDER_IPC)	+= binder.o
 obj-$(CONFIG_ASHMEM)			+= ashmem.o
 obj-$(CONFIG_ANDROID_LOGGER)		+= logger.o

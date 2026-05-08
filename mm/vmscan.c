@@ -1942,27 +1942,6 @@ static int vmscan_swappiness(struct mem_cgroup_zone *mz,
 	return mem_cgroup_swappiness(mz->mem_cgroup);
 }
 
-#if defined(CONFIG_ZRAM) && defined(MTK_LCA_RAM_OPTIMIZE)
-// vmscan debug
-static int vmscan_swap_sum = 200;
-static int vmscan_swap_file_ratio = 1;
-module_param_named(swap_sum, vmscan_swap_sum, int, S_IRUGO | S_IWUSR);
-module_param_named(swap_file_ratio, vmscan_swap_file_ratio, int, S_IRUGO | S_IWUSR);
-
-static int vmscan_scan_file_sum = 0;
-static int vmscan_scan_anon_sum = 0;
-static int vmscan_recent_scanned_anon = 0;
-static int vmscan_recent_scanned_file = 0;
-static int vmscan_recent_rotated_anon = 0;
-static int vmscan_recent_rotated_file = 0;
-module_param_named(scan_file_sum, vmscan_scan_file_sum, int, S_IRUGO);
-module_param_named(scan_anon_sum, vmscan_scan_anon_sum, int, S_IRUGO);
-module_param_named(recent_scanned_anon, vmscan_recent_scanned_anon, int, S_IRUGO);
-module_param_named(recent_scanned_file, vmscan_recent_scanned_file, int, S_IRUGO);
-module_param_named(recent_rotated_anon, vmscan_recent_rotated_anon, int, S_IRUGO);
-module_param_named(recent_rotated_file, vmscan_recent_rotated_file, int, S_IRUGO);
-#endif // CONFIG_ZRAM
-
 /*
  * Determine how aggressively the anon and file LRU lists should be
  * scanned.  The relative value of each set of LRU lists is determined
@@ -2028,18 +2007,8 @@ static void get_scan_count(struct mem_cgroup_zone *mz, struct scan_control *sc,
 	 * With swappiness at 100, anonymous and file have the same priority.
 	 * This scanning priority is essentially the inverse of IO cost.
 	 */
-#if defined(CONFIG_ZRAM) && defined(MTK_LCA_RAM_OPTIMIZE)
-    if (vmscan_swap_file_ratio) {
-	    anon_prio = (vmscan_swappiness(mz, sc) * anon) / (anon + file + 1);
-	    file_prio = (vmscan_swap_sum - vmscan_swappiness(mz, sc)) * file / (anon + file + 1);
-	} else {
-	    anon_prio = vmscan_swappiness(mz, sc);
-	    file_prio = vmscan_swap_sum - vmscan_swappiness(mz, sc);
-    }
-#else // CONFIG_ZRAM
 	anon_prio = vmscan_swappiness(mz, sc);
 	file_prio = 200 - vmscan_swappiness(mz, sc);
-#endif // CONFIG_ZRAM
 
 	/*
 	 * OK, so we have swap space and a fair amount of page cache
