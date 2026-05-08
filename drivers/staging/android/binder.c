@@ -160,16 +160,6 @@ static const struct file_operations binder_##name##_fops = { \
 }
 #endif
 
-//LCH add, for binder pages leakage debug
-#ifdef CONFIG_MT_ENG_BUILD
-#define MTK_BINDER_PAGE_USED_RECORD
-#endif
-
-#ifdef MTK_BINDER_PAGE_USED_RECORD
-static unsigned int binder_page_used = 0;
-static unsigned int binder_page_used_peak = 0;
-#endif
-
 static int binder_proc_show(struct seq_file *m, void *unused);
 BINDER_DEBUG_ENTRY(proc);
 
@@ -511,10 +501,6 @@ struct binder_proc {
 	int bc_t;
 	struct binder_bc_stats *bc_stats[BC_STATS_NR];	
 	struct binder_timeout_stats to_stats;
-#endif
-#ifdef MTK_BINDER_PAGE_USED_RECORD
-	unsigned int page_used;
-	unsigned int page_used_peak;
 #endif
 };
 
@@ -1773,14 +1759,6 @@ static int binder_update_page_range(struct binder_proc *proc, int allocate,
 					"for page at %p\n", proc->pid, page_addr);
 			goto err_alloc_page_failed;
 		}
-#ifdef MTK_BINDER_PAGE_USED_RECORD
-		binder_page_used++;
-		proc->page_used++;
-		if(binder_page_used > binder_page_used_peak)
-			binder_page_used_peak = binder_page_used;
-		if (proc->page_used > proc->page_used_peak)
-			proc->page_used_peak = proc->page_used;
-#endif
 
 		tmp_area.addr = page_addr;
 		tmp_area.size = PAGE_SIZE + PAGE_SIZE /* guard page? */;
@@ -1821,12 +1799,6 @@ err_vm_insert_page_failed:
 err_map_kernel_failed:
 		__free_page(*page);
 		*page = NULL;
-#ifdef MTK_BINDER_PAGE_USED_RECORD
-		if(binder_page_used > 0)
-			binder_page_used--;
-		if (proc->page_used > 0)
-			proc->page_used--;
-#endif
 err_alloc_page_failed:
 		;
 	}
@@ -4818,12 +4790,6 @@ static void binder_deferred_release(struct binder_proc *proc)
 						PAGE_SIZE);
 				__free_page(proc->pages[i]);
 				page_count++;				
-#ifdef MTK_BINDER_PAGE_USED_RECORD
-				if(binder_page_used > 0)
-					binder_page_used--;
-				if (proc->page_used > 0)
-					proc->page_used--;
-#endif				
 			}
 		}
 		kfree(proc->pages);
@@ -5978,35 +5944,6 @@ static ssize_t binder_transaction_log_enable_write(struct file *filp,
 BINDER_DEBUG_SETTING_ENTRY(transaction_log_enable);
 # endif
 
-#ifdef MTK_BINDER_PAGE_USED_RECORD
-static int binder_page_used_show(struct seq_file *s, void *p)
-{
-	struct binder_proc *proc;
-	struct hlist_node *pos;
-	int do_lock = !binder_debug_no_lock;
-	seq_printf(s, "page_used:%d[%dMB]\npage_used_peak:%d[%dMB]\n",
-	               binder_page_used, binder_page_used>>8,
-	               binder_page_used_peak, binder_page_used_peak>>8);
-
-	if (do_lock)
-		binder_lock(__func__);
-	seq_puts(s, "binder page stats by binder_proc:\n");
-	hlist_for_each_entry(proc, pos, &binder_procs, proc_node)
-	{
-		seq_printf(s, "    proc %d(%s):page_used:%d[%dMB] page_used_peak:%d[%dMB]\n",
-				proc->pid, proc->tsk ? proc->tsk->comm : " ",
-				proc->page_used, proc->page_used>>8,
-				proc->page_used_peak, proc->page_used_peak>>8);
-	}
-	if (do_lock)
-		binder_unlock(__func__);
-
-	return 0;
-}
-
-BINDER_DEBUG_ENTRY(page_used);
-#endif
-
 BINDER_DEBUG_ENTRY(state);
 BINDER_DEBUG_ENTRY(stats);
 BINDER_DEBUG_ENTRY(transactions);
@@ -6101,13 +6038,6 @@ static int __init binder_init(void)
 				    NULL,
 				    &binder_perf_stats_fops);
 
-#endif
-#ifdef MTK_BINDER_PAGE_USED_RECORD
-        debugfs_create_file("page_used",
-                    S_IRUGO,
-                    binder_debugfs_dir_entry_root,
-                    NULL,
-                    &binder_page_used_fops);
 #endif
 	}
 	return ret;
