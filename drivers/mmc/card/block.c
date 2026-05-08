@@ -1523,19 +1523,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 			ret = __blk_end_request(req, 0,
 						brq->data.bytes_xfered);
 			spin_unlock_irq(&md->lock);
-#ifdef MTK_IO_PERFORMANCE_DEBUG
-    if ((1 == g_mtk_mmc_perf_dbg) && (2 == g_mtk_mmc_dbg_range)){
-        if ((brq->mrq.cmd->arg >= g_dbg_range_start) && (brq->mrq.cmd->arg <= g_dbg_range_end) && (brq->mrq.data) && (brq->mrq.cmd->opcode == g_check_read_write)){ 
-			if(rqc)
-				g_mmcqd_buf[g_dbg_req_count-1][9] = sched_clock(); 
-			else
-            	g_mmcqd_buf[g_dbg_req_count][9] = sched_clock(); 
-			//g_dbg_req_count ++;
-			//printk("g_dbg_req_count<%d>\n",g_dbg_req_count);
-            g_i = 0;
-        }
-    }
-#endif
 			/*
 			 * If the blk_end_request function returns non-zero even
 			 * though all data has been transferred and no errors
