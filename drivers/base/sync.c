@@ -317,16 +317,7 @@ static int sync_fence_copy_pts(struct sync_fence *dst, struct sync_fence *src)
 	list_for_each(pos, &src->pt_list_head) {
 		struct sync_pt *orig_pt =
 			container_of(pos, struct sync_pt, pt_list);
-		// [MTK] {{{
-		// rjan Eide <orjan.eide@arm.com>
-		struct sync_pt *new_pt;
-
-		/* Skip already signaled points */
-		if (1 == orig_pt->status)
-			continue;
-		// [MTK] }}}
-
-		new_pt = sync_pt_dup(orig_pt);
+		struct sync_pt *new_pt = sync_pt_dup(orig_pt);
 
 		if (new_pt == NULL)
 			return -ENOMEM;
@@ -346,13 +337,6 @@ static int sync_fence_merge_pts(struct sync_fence *dst, struct sync_fence *src)
 		struct sync_pt *src_pt =
 			container_of(src_pos, struct sync_pt, pt_list);
 		bool collapsed = false;
-
-		// [MTK] {{{
-		// rjan Eide <orjan.eide@arm.com>
-		/* Skip already signaled points */
-		if (1 == src_pt->status)
-			continue;
-		// [MTK] }}}
 
 		list_for_each_safe(dst_pos, n, &dst->pt_list_head) {
 			struct sync_pt *dst_pt =
@@ -480,19 +464,6 @@ struct sync_fence *sync_fence_merge(const char *name,
 	err = sync_fence_merge_pts(fence, b);
 	if (err < 0)
 		goto err;
-
-	// [MTK] {{{
-	// rjan Eide <orjan.eide@arm.com>
-	/* Make sure there is at least one point in the fence */
-	if (list_empty(&fence->pt_list_head)) {
-		struct sync_pt *orig_pt = list_first_entry(&a->pt_list_head,
-						struct sync_pt, pt_list);
-		struct sync_pt *new_pt = sync_pt_dup(orig_pt);
-
-		new_pt->fence = fence;
-		list_add(&new_pt->pt_list, &fence->pt_list_head);
-	}
-	// [MTK] }}}
 
 	list_for_each(pos, &fence->pt_list_head) {
 		struct sync_pt *pt =
