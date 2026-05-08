@@ -26,7 +26,6 @@
 #include <linux/shrinker.h>
 #include <linux/types.h>
 #include <linux/miscdevice.h>
-#include <linux/ion_drv.h>
 
 
 struct ion_buffer *ion_handle_buffer(struct ion_handle *handle);
