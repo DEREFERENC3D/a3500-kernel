@@ -162,9 +162,6 @@ struct ion_handle {
 	struct rb_node node;
 	unsigned int kmap_cnt;
 	int id;
-#if ION_RUNTIME_DEBUGGER
-        struct ion_handle_debug dbg;
-#endif
 };
 
 void ion_buffer_destroy(struct ion_buffer *buffer);
