@@ -1,9 +1,5 @@
 ccflags-y += -I$(src)			# needed for trace events
 
-ifeq ($(MTK_INTERNAL), yes)
-KBUILD_CFLAGS += -DMTK_INTERNAL_BUILD  # add for LMK
-endif
-
 obj-$(CONFIG_ANDROID_BINDER_IPC)	+= binder.o
 obj-$(CONFIG_ASHMEM)			+= ashmem.o
 obj-$(CONFIG_ANDROID_LOGGER)		+= logger.o

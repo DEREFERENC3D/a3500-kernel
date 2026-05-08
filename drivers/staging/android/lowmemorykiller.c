@@ -53,9 +53,6 @@
 #include <linux/aee.h>
 #include <linux/disp_assert_layer.h>
 static uint32_t in_lowmem = 0;
-#if defined (MTK_INTERNAL_BUILD)
-static int next_aee_dump = 0;
-#endif
 #endif
 
 #ifdef CONFIG_MT_ENG_BUILD
@@ -350,31 +347,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			lowmem_print(1, "low memory info:\n");
 			show_free_areas_minimum();
         	}
-#endif
-		/*
-		 * when kill adj=0 process trigger kernel warning, only in MTK internal eng load
-		 */
-#if defined (CONFIG_MTK_AEE_FEATURE) && defined (CONFIG_MT_ENG_BUILD) && \
-		defined (MTK_INTERNAL_BUILD) /* mtk internal */
-		if (selected_oom_score_adj <= 0) { // can set 16 for test
-			lowmem_print(1, "\n\n[LMK] low memory trigger kernel warning!\n\n");
-#if 0
-#ifdef CONFIG_ION
-			/* To fix deadlock */
-			spin_unlock(&lowmem_shrink_lock);
-			/* Show ION status */
-			ion_mm_heap_total_memory();
-			/* To fix deadlock */
-			spin_lock(&lowmem_shrink_lock);
-#endif
-#endif
-			/* To avoid too frequent aee warning! */
-			if ((next_aee_dump--) == 0) {
-				aee_kernel_warning_api("LMK", 0, DB_OPT_DEFAULT|DB_OPT_DUMPSYS_ACTIVITY|DB_OPT_LOW_MEMORY_KILLER,
-						"Framework low memory\nCRDISPATCH_KEY:FLM_APAF", "please contact AP/AF memory module owner\n");
-				next_aee_dump = NR_CPUS << 1;
-			}
-		}
 #endif
 		/*
 		 * show an indication if low memory
