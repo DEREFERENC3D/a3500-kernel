@@ -17,7 +17,6 @@
 #include <linux/log2.h>
 #include <linux/workqueue.h>
 
-//#define RTC_LEGACY_ALARM_IMPL	"v0.2"
 //static int IPO=0;
 
 static int rtc_timer_enqueue(struct rtc_device *rtc, struct rtc_timer *timer);
@@ -306,9 +305,6 @@ done:
 
 int rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 {
-#ifdef RTC_LEGACY_ALARM_IMPL
-	return __rtc_read_alarm(rtc, alarm);
-#else	
 	int err;
 
 	err = mutex_lock_interruptible(&rtc->ops_lock);
@@ -326,16 +322,11 @@ int rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 	mutex_unlock(&rtc->ops_lock);
 
 	return err;
-#endif	
 }
 EXPORT_SYMBOL_GPL(rtc_read_alarm);
 
 static int __rtc_set_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 {
-#ifdef RTC_LEGACY_ALARM_IMPL
-	WARN(1, "__rtc_set_alarm() is not supported!!\n");
-	return -EPERM;
-#else	
 	struct rtc_time tm;
 	long now, scheduled;
 	int err;
@@ -365,7 +356,6 @@ static int __rtc_set_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 		err = rtc->ops->set_alarm(rtc->dev.parent, alarm);
 
 	return err;
-#endif	
 }
 
 int rtc_set_alarm_poweron(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
@@ -403,14 +393,6 @@ int rtc_set_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 	err = mutex_lock_interruptible(&rtc->ops_lock);
 	if (err)
 		return err;
-#ifdef RTC_LEGACY_ALARM_IMPL
-	if (!rtc->ops)
-		err = -ENODEV;
-	else if (!rtc->ops->set_alarm)
-		err = -EINVAL;
-	else
-		err = rtc->ops->set_alarm(rtc->dev.parent, alarm);
-#else
 	if (rtc->aie_timer.enabled) {
 //		printk("rtc_set_alarm remove\n");
 		rtc_timer_remove(rtc, &rtc->aie_timer);
@@ -421,7 +403,6 @@ int rtc_set_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 //		printk("rtc_set_alarm enqueue\n");
 		err = rtc_timer_enqueue(rtc, &rtc->aie_timer);
 	}
-#endif	
 	mutex_unlock(&rtc->ops_lock);
 	return err;
 }
@@ -430,9 +411,6 @@ EXPORT_SYMBOL_GPL(rtc_set_alarm);
 /* Called once per device from rtc_device_register */
 int rtc_initialize_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 {
-#ifdef RTC_LEGACY_ALARM_IMPL
-	return 0;
-#else		
 	int err;
 	struct rtc_time now;
 
@@ -460,7 +438,6 @@ int rtc_initialize_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 	}
 	mutex_unlock(&rtc->ops_lock);
 	return err;
-#endif	
 }
 EXPORT_SYMBOL_GPL(rtc_initialize_alarm);
 
@@ -585,13 +562,9 @@ void rtc_handle_legacy_irq(struct rtc_device *rtc, int num, int mode)
  */
 void rtc_aie_update_irq(void *private)
 {
-#ifdef RTC_LEGACY_ALARM_IMPL
-	WARN(1, "rtc_aie_update_irq() is not supported!!\n");
-#else	
 	struct rtc_device *rtc = (struct rtc_device *)private;
 	printk("rtc_aie_update_irq\n");
 	rtc_handle_legacy_irq(rtc, 1, RTC_AF);
-#endif	
 }
 
 
@@ -642,22 +615,6 @@ enum hrtimer_restart rtc_pie_update_irq(struct hrtimer *timer)
 void rtc_update_irq(struct rtc_device *rtc,
 		unsigned long num, unsigned long events)
 {
-#ifdef RTC_LEGACY_ALARM_IMPL
-	unsigned long flags;
-
-	spin_lock_irqsave(&rtc->irq_lock, flags);
-	rtc->irq_data = (rtc->irq_data + (num << 8)) | events;
-	spin_unlock_irqrestore(&rtc->irq_lock, flags);
-
-	spin_lock_irqsave(&rtc->irq_task_lock, flags);
-	if (rtc->irq_task)
-		rtc->irq_task->func(rtc->irq_task->private_data);
-	spin_unlock_irqrestore(&rtc->irq_task_lock, flags);
-
-	wake_up_interruptible(&rtc->irq_queue);
-	kill_fasync(&rtc->async_queue, SIGIO, POLL_IN);
-#else
-
 //	if(IPO==1)
 //	{	
 //		printk("rtc_update_irq, without alarmqueue");
@@ -668,7 +625,6 @@ void rtc_update_irq(struct rtc_device *rtc,
 //		printk("rtc_update_irq, with alarmqueue");
 		schedule_work(&rtc->irqwork);
 //	}	
-#endif	
 }
 EXPORT_SYMBOL_GPL(rtc_update_irq);
 
