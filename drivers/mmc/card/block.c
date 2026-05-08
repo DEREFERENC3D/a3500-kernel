@@ -1295,18 +1295,9 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 	struct mmc_queue_req *mq_rq;
 	struct request *req;
 	struct mmc_async_req *areq;
-  unsigned long long time1 = 0,time2 = 0;
 
 	if (!rqc && !mq->mqrq_prev->req)
 		return 0;
-	time1 = sched_clock();
-	if( rqc )
-	{
-		if (unlikely(dumpMMCqd())) {	
-			AddStorageTrace(STORAGE_LOGGER_MSG_ISSUE_RQ,mmc_blk_issue_rq,(rq_data_dir(rqc) == WRITE),
-							 (int)blk_rq_pos(rqc),(int)blk_rq_sectors(rqc));
-		}
-	}
 
 	do {
 		if (rqc) {
@@ -1404,11 +1395,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 			mmc_start_req(card->host, &mq_rq->mmc_active, NULL);
 		}
 	} while (ret);
-	time2 = sched_clock();
-	if (unlikely(dumpMMCqd()))
-	{
-		AddStorageTrace(STORAGE_LOGGER_MSG_ISSUE_RQ_1,mmc_blk_issue_rq,(time2-time1));
-	}
 
 	return 1;
 
