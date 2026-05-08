@@ -109,13 +109,6 @@ enum fullness_group {
  */
 static const int fullness_threshold_frac = 4;
 
-/*
- * https://git.kernel.org/
- * f553646a67cb215577402cb702b67c8cf8fdb46f
- * move definition of mapping_area to zsmalloc-main.c
- */
-
-
 struct size_class {
 	/*
 	 * Size of objects stored in this class. Must be multiple

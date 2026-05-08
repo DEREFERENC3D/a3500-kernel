@@ -90,9 +90,6 @@
 #define FULLNESS_MASK	((1 << FULLNESS_BITS) - 1)
 
 /*
- * https://git.kernel.org/
- * f553646a67cb215577402cb702b67c8cf8fdb46f
- *
  * By default, zsmalloc uses a copy-based object mapping method to access
  * allocations that span two pages. However, if a particular architecture
  * performs VM mapping faster than copying, then it should be added here
@@ -442,8 +439,8 @@ static struct page *alloc_zspage(struct size_class *class, gfp_t flags)
 	error = -ENOMEM;
 	for (i = 0; i < class->pages_per_zspage; i++) {
 		struct page *page;
-			page = alloc_page(flags);
 
+		page = alloc_page(flags);
 		if (!page)
 			goto cleanup;
 
@@ -534,11 +531,6 @@ static inline void __zs_unmap_object(struct mapping_area *area,
 
 	flush_cache_vunmap(addr, end);
 	unmap_kernel_range_noflush(addr, PAGE_SIZE * 2);
-
-	/*
- 	 * https://git.kernel.org/
-	 * 9915518887e83764269d5b617d01782893877ed3
-	 */
 	flush_tlb_kernel_range(addr, end);
 }
 
@@ -871,9 +863,6 @@ void *zs_map_object(struct zs_pool *pool, unsigned long handle,
 	BUG_ON(!handle);
 
 	/*
-	 * https://git.kernel.org/
-	 * c60369f011251c60de506994aab088f1afb90bf4
-	 *
 	 * Because we use per-cpu mapping areas shared among the
 	 * pools/users, we can't allow mapping in interrupt context
 	 * because it can corrupt another users mappings.
