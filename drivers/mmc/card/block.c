@@ -48,22 +48,6 @@
 
 #include "queue.h"
 
-#include <linux/xlog.h>
-#include <asm/div64.h>
-#include <linux/vmalloc.h>
-
-#include <mach/mt_storage_logger.h>
-#include <linux/mmc/sd_misc.h>
-
-#define FEATURE_STORAGE_PERF_INDEX
-
-//enable storage log in user load
-#if 0
-#ifdef USER_BUILD_KERNEL
-#undef FEATURE_STORAGE_PERF_INDEX
-#endif
-#endif
-
 MODULE_ALIAS("mmc:block");
 #ifdef MODULE_PARAM_PREFIX
 #undef MODULE_PARAM_PREFIX
@@ -1301,46 +1285,6 @@ static int mmc_blk_cmd_err(struct mmc_blk_data *md, struct mmc_card *card,
 	return ret;
 }
 
-#if defined(FEATURE_STORAGE_PERF_INDEX)
-#define PRT_TIME_PERIOD	500000000
-#define UP_LIMITS_4BYTE		4294967295UL	//((4*1024*1024*1024)-1)
-#define ID_CNT 10
-pid_t mmcqd[ID_CNT]={0};
-static unsigned long long mmcqd_tag_t1[ID_CNT]={0}, mmcqd_last_t2[ID_CNT]={0}, mmccid_tag_t1=0;
-static unsigned long long mmcqd_t_usage_wr[ID_CNT]={0}, mmcqd_t_usage_rd[ID_CNT]={0};
-static unsigned int mmcqd_rq_size_wr[ID_CNT]={0}, mmcqd_rq_size_rd[ID_CNT]={0};
-static unsigned int mmcqd_wr_offset_tag[ID_CNT]={0}, mmcqd_rd_offset_tag[ID_CNT]={0}, mmcqd_wr_offset[ID_CNT]={0}, mmcqd_rd_offset[ID_CNT]={0};
-static unsigned int mmcqd_wr_bit[ID_CNT]={0},mmcqd_wr_tract[ID_CNT]={0};
-static unsigned int mmcqd_rd_bit[ID_CNT]={0},mmcqd_rd_tract[ID_CNT]={0};
-static unsigned int mmcqd_wr_break[ID_CNT]={0}, mmcqd_rd_break[ID_CNT]={0};
-static unsigned int mmcqd_rq_count[ID_CNT]={0}, mmcqd_wr_rq_count[ID_CNT]={0}, mmcqd_rd_rq_count[ID_CNT]={0};
-extern u32 g_u32_cid[4];	
-
-unsigned int mmcqd_work_percent[ID_CNT]={0};
-unsigned int mmcqd_w_throughput[ID_CNT]={0};
-unsigned int mmcqd_r_throughput[ID_CNT]={0};
-unsigned int mmcqd_read_clear[ID_CNT]={0};
-
-static void g_var_clear(unsigned int idx)
-{
-				mmcqd_t_usage_wr[idx]=0;
-				mmcqd_t_usage_rd[idx]=0;
-				mmcqd_rq_size_wr[idx]=0;
-				mmcqd_rq_size_rd[idx]=0;
-				mmcqd_rq_count[idx]=0;
-				mmcqd_wr_offset[idx]=0;
-				mmcqd_rd_offset[idx]=0;				
-				mmcqd_wr_break[idx]=0;
-				mmcqd_rd_break[idx]=0;				
-				mmcqd_wr_tract[idx]=0; 
-				mmcqd_wr_bit[idx]=0; 
-				mmcqd_rd_tract[idx]=0; 
-				mmcqd_rd_bit[idx]=0; 				
-				mmcqd_wr_rq_count[idx]=0;
-				mmcqd_rd_rq_count[idx]=0;
-}
-#endif
-
 static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 {
 	struct mmc_blk_data *md = mq->data;
@@ -1352,16 +1296,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 	struct request *req;
 	struct mmc_async_req *areq;
   unsigned long long time1 = 0,time2 = 0;
-#if defined(FEATURE_STORAGE_PERF_INDEX)
-	pid_t mmcqd_pid=0;
-	unsigned long long t_period=0, t_usage=0;
-	unsigned int t_percent=0;
-	unsigned int perf_meter=0; 
-	unsigned int rq_byte=0,rq_sector=0,sect_offset=0;
-	unsigned int diversity=0;
-	unsigned int idx=0;
-	unsigned char i=0;
-#endif
 
 	if (!rqc && !mq->mqrq_prev->req)
 		return 0;
@@ -1373,128 +1307,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 							 (int)blk_rq_pos(rqc),(int)blk_rq_sectors(rqc));
 		}
 	}
-
-#if defined(FEATURE_STORAGE_PERF_INDEX)
-			mmcqd_pid = task_pid_nr(current);
-			if(mmcqd[0] ==0)
-					mmcqd[0] = mmcqd_pid;			
-
-			for(i=0;i<ID_CNT;i++)			
-			{
-				if(mmcqd_pid == mmcqd[i]) 
-				{
-					idx=i;
-					break;			
-				}			
-				if ((mmcqd[i] == 0) ||( i==ID_CNT-1))
-				{
-					mmcqd[i]=mmcqd_pid;
-					idx=i;
-					break;
-				}				
-			}
-			
-			mmcqd_read_clear[idx] = 1;
-			if(mmccid_tag_t1==0)
-				mmccid_tag_t1 = time1;
-			t_period = time1 - mmccid_tag_t1;
-			if(t_period >= (unsigned long long )((PRT_TIME_PERIOD)*(unsigned long long )10))
-			{
-				xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "MMC Queue Thread:%d, %d, %d, %d, %d \n", mmcqd[0], mmcqd[1], mmcqd[2], mmcqd[3], mmcqd[4]);  
-				xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "MMC CID: %lx %lx %lx %lx \n", g_u32_cid[0], g_u32_cid[1], g_u32_cid[2], g_u32_cid[3]);
-				mmccid_tag_t1 = time1;
-			}
-			if(mmcqd_tag_t1[idx]==0)
-				mmcqd_tag_t1[idx] = time1;			
-			t_period = time1 - mmcqd_tag_t1[idx];
-			
-			if(t_period >= (unsigned long long )PRT_TIME_PERIOD)
-			{
-				mmcqd_read_clear[idx] = 2;
-				mmcqd_work_percent[idx] = 1;
-				mmcqd_r_throughput[idx] = 0;
-				mmcqd_w_throughput[idx] = 0;
-				t_usage = mmcqd_t_usage_wr [idx] + mmcqd_t_usage_rd[idx];
-				if(t_period > t_usage*100)
-					xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "mmcqd:%d Workload < 1%%, duty %lld, period %lld, req_cnt=%d \n", mmcqd[idx], t_usage, t_period, mmcqd_rq_count[idx]);
-				else
-				{
-					do_div(t_period, 100);	//boundary issue
-					t_percent =((unsigned int)t_usage)/((unsigned int)t_period);						
-					mmcqd_work_percent[idx] = t_percent;
-					xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "mmcqd:%d Workload=%d%%, duty %lld, period %lld00, req_cnt=%d \n", mmcqd[idx], t_percent, t_usage, t_period, mmcqd_rq_count[idx]);	//period %lld00 == period %lld x100
-				}
-				if(mmcqd_wr_rq_count[idx] >= 2)
-				{
-					diversity = mmcqd_wr_offset[idx]/(mmcqd_wr_rq_count[idx]-1);
-					xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "mmcqd:%d Write Diversity=%d sectors offset, req_cnt=%d, break_cnt=%d, tract_cnt=%d, bit_cnt=%d\n", mmcqd[idx], diversity, mmcqd_wr_rq_count[idx], mmcqd_wr_break[idx], mmcqd_wr_tract[idx], mmcqd_wr_bit[idx]);
-				}
-				if(mmcqd_rd_rq_count[idx] >= 2)
-				{
-					diversity = mmcqd_rd_offset[idx]/(mmcqd_rd_rq_count[idx]-1);
-					xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "mmcqd:%d Read Diversity=%d sectors offset, req_cnt=%d, break_cnt=%d, tract_cnt=%d, bit_cnt=%d\n", mmcqd[idx], diversity, mmcqd_rd_rq_count[idx], mmcqd_rd_break[idx], mmcqd_rd_tract[idx], mmcqd_rd_bit[idx]);
-				}
-				if(mmcqd_t_usage_wr[idx])
-				{
-					do_div(mmcqd_t_usage_wr[idx], 1000000);	//boundary issue
-					if(mmcqd_t_usage_wr[idx])	// discard print if duration will <1ms
-					{
-						perf_meter = (mmcqd_rq_size_wr[idx])/((unsigned int)mmcqd_t_usage_wr[idx]); //kb/s
-						mmcqd_w_throughput[idx] = perf_meter;
-						xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "mmcqd:%d Write Throughput=%d kB/s, size: %d bytes, time:%lld ms\n", mmcqd[idx], perf_meter, mmcqd_rq_size_wr[idx], mmcqd_t_usage_wr[idx]);
-					}
-				}
-				if(mmcqd_t_usage_rd[idx])
-				{
-					do_div(mmcqd_t_usage_rd[idx], 1000000);	//boundary issue
-					if(mmcqd_t_usage_rd[idx])	// discard print if duration will <1ms
-					{
-						perf_meter = (mmcqd_rq_size_rd[idx])/((unsigned int)mmcqd_t_usage_rd[idx]); //kb/s					
-						mmcqd_r_throughput[idx] = perf_meter;
-						xlog_printk(ANDROID_LOG_DEBUG, "BLOCK_TAG", "mmcqd:%d Read Throughput=%d kB/s, size: %d bytes, time:%lld ms\n", mmcqd[idx], perf_meter, mmcqd_rq_size_rd[idx], mmcqd_t_usage_rd[idx]);  					
-					}
-				}
-				mmcqd_tag_t1[idx]=time1;
-				g_var_clear(idx);
-			}
-		if( rqc )
-              {
-			rq_byte = blk_rq_bytes(rqc);
-			rq_sector = blk_rq_sectors(rqc);			
-			if(rq_data_dir(rqc) == WRITE)
-			{
-				mmcqd_wr_rq_count[idx]++;				
-				if(mmcqd_wr_offset_tag[idx]>0)
-				{
-					sect_offset = abs(blk_rq_pos(rqc) - mmcqd_wr_offset_tag[idx]);  
-					mmcqd_wr_offset[idx] += sect_offset;
-					if(sect_offset == 1)
-						mmcqd_wr_break[idx]++;	
-				}
-				mmcqd_wr_offset_tag[idx] = blk_rq_pos(rqc) + rq_sector;				
-				if(rq_sector <= 1)	//512 bytes
-					mmcqd_wr_bit[idx] ++;
-				else if(rq_sector >= 1016)					//508kB
-					mmcqd_wr_tract[idx] ++;
-			}
-			else	//read
-			{
-				mmcqd_rd_rq_count[idx]++;
-				if(mmcqd_rd_offset_tag[idx]>0)
-				{
-					sect_offset = abs(blk_rq_pos(rqc) - mmcqd_rd_offset_tag[idx]);  
-					mmcqd_rd_offset[idx] += sect_offset;
-					if(sect_offset == 1)
-						mmcqd_rd_break[idx]++;		
-				}
-				mmcqd_rd_offset_tag[idx] = blk_rq_pos(rqc) + rq_sector;				
-				if(rq_sector <= 1)	//512 bytes
-					mmcqd_rd_bit[idx] ++;
-				else if(rq_sector >= 1016)					//508kB
-					mmcqd_rd_tract[idx] ++;
-			}
-              }
-#endif
 
 	do {
 		if (rqc) {
@@ -1597,23 +1409,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 	{
 		AddStorageTrace(STORAGE_LOGGER_MSG_ISSUE_RQ_1,mmc_blk_issue_rq,(time2-time1));
 	}
-#if defined(FEATURE_STORAGE_PERF_INDEX)
-	if( rqc )
-        {
-		if(rq_data_dir(rqc) == WRITE)
-		{
-			mmcqd_t_usage_wr[idx] += time2-time1;
-			mmcqd_rq_size_wr[idx] += rq_byte;
-		}
-		else
-		{
-			mmcqd_t_usage_rd[idx] += time2-time1;
-			mmcqd_rq_size_rd[idx] += rq_byte;				
-		}
-		mmcqd_rq_count[idx]++;
-		mmcqd_last_t2[idx] = time2;
-	}
-#endif
 
 	return 1;
 
