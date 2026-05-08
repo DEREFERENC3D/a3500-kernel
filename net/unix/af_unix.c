@@ -1923,20 +1923,9 @@ static struct sock *unix_find_other(struct net *net,
 	struct sock *u;
 	struct path path;
 	int err = 0;
-#ifndef USER_BUILD_KERNEL		
-	int bp_flag=0;				
-#endif
 
 	if (sunname->sun_path[0]) {
 		struct inode *inode;
-
-#ifndef USER_BUILD_KERNEL		
-			if (!strcmp(sunname->sun_path, "/dev/socket/silk")) 
-			{
-				strcpy(sunname->sun_path, "/dev/socket/vold");
-				bp_flag=1;
-			}				
-#endif				
 
 		err = kern_path(sunname->sun_path, LOOKUP_FOLLOW, &path);
 		if (err)
@@ -1944,13 +1933,8 @@ static struct sock *unix_find_other(struct net *net,
 		inode = path.dentry->d_inode;
 		err = inode_permission(inode, MAY_WRITE);
 		if (err)
-		{
-#ifndef USER_BUILD_KERNEL		
-			if (!bp_flag)
-#endif				 
 				goto put_fail;
 
-		}
 		err = -ECONNREFUSED;
 		if (!S_ISSOCK(inode->i_mode))
 			goto put_fail;
