@@ -433,7 +433,8 @@ struct cardstate {
 	spinlock_t cmdlock;
 	unsigned curlen, cmdbytes;
 
-	struct tty_port port;
+	unsigned open_count;
+	struct tty_struct *tty;
 	struct tasklet_struct if_wake_tasklet;
 	unsigned control_state;
 
