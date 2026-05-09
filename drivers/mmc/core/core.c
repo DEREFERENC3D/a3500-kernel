@@ -274,13 +274,6 @@ static int __mmc_start_req(struct mmc_host *host, struct mmc_request *mrq)
 static void mmc_wait_for_req_done(struct mmc_host *host,
 				  struct mmc_request *mrq)
 {
-#if 0
-    struct scatterlist *sg;
-    unsigned int  num;
-    unsigned int  left;
-    unsigned int  *ptr;
-    unsigned int  i;
-#endif
 
 	struct mmc_command *cmd;
 
@@ -297,35 +290,6 @@ static void mmc_wait_for_req_done(struct mmc_host *host,
 
             printk(KERN_ERR "MSDC wait request timeout DAT<%d>\n",(mrq->data->blocks) * (mrq->data->blksz));
         }
-
-#if 0
-    if ((mrq->cmd->arg == 0) && (mrq->data) && 
-            ((mrq->cmd->opcode == 17)||(mrq->cmd->opcode == 18))){ 
-        printk("read MBR  cmd%d: blocks %d arg %08x, sg_len = %d\n", mrq->cmd->opcode, mrq->data->blocks, mrq->cmd->arg, mrq->data->sg_len);
-            sg = mrq->data->sg;
-            num = mrq->data->sg_len;
-
-            while (num) {
-                left = sg_dma_len(sg);
-                ptr = sg_virt(sg);
-
-                printk("====left: %d\n===\n", left);
-                for (i = 0; i <= left/4; i++){
-                    printk("0x%x ", *(ptr + i));
-                    if (0 == (i + 1)%16)
-                        printk("\n");
-                }
-
-                //page = sg_to_page(sg);
-
-                /* physic addr */
-                //paddr = page_to_phys(page);
-
-                sg = sg_next(sg); 
-                num--;
-            }; 
-    }
-#endif
 
         cmd = mrq->cmd;
         if (!cmd->error || !cmd->retries ||
