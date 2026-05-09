@@ -274,34 +274,30 @@ static int __mmc_start_req(struct mmc_host *host, struct mmc_request *mrq)
 static void mmc_wait_for_req_done(struct mmc_host *host,
 				  struct mmc_request *mrq)
 {
-
 	struct mmc_command *cmd;
 
 	while (1) {
-		if(!wait_for_completion_timeout(&mrq->completion,DAT_TIMEOUT)){
+		if (!wait_for_completion_timeout(&mrq->completion,DAT_TIMEOUT)) {
 			printk(KERN_ERR "MSDC wait request timeout CMD<%d>ARG<0x%x>\n",mrq->cmd->opcode,mrq->cmd->arg);
-			if(mrq->data){
+			if (mrq->data){
 				host->ops->dma_error_reset(host);
-				}
+				mrq->data->error = (unsigned int)-ETIMEDOUT;
+			}
 
-            if(mrq->data)
-                mrq->data->error = (unsigned int)-ETIMEDOUT;
-
-
-            printk(KERN_ERR "MSDC wait request timeout DAT<%d>\n",(mrq->data->blocks) * (mrq->data->blksz));
+			printk(KERN_ERR "MSDC wait request timeout DAT<%d>\n",(mrq->data->blocks) * (mrq->data->blksz));
         }
 
-        cmd = mrq->cmd;
-        if (!cmd->error || !cmd->retries ||
-                mmc_card_removed(host->card))
-            break;
+		cmd = mrq->cmd;
+		if (!cmd->error || !cmd->retries ||
+		    mmc_card_removed(host->card))
+			break;
 
-        pr_debug("%s: req failed (CMD%u): %d, retrying...\n",
-                mmc_hostname(host), cmd->opcode, cmd->error);
-        cmd->retries--;
-        cmd->error = 0;
-        host->ops->request(host, mrq);
-    }
+		pr_debug("%s: req failed (CMD%u): %d, retrying...\n",
+			 mmc_hostname(host), cmd->opcode, cmd->error);
+		cmd->retries--;
+		cmd->error = 0;
+		host->ops->request(host, mrq);
+	}
 }
 
 /**
@@ -316,13 +312,13 @@ static void mmc_wait_for_req_done(struct mmc_host *host,
  *	performed while another request is running on the host.
  */
 static void mmc_pre_req(struct mmc_host *host, struct mmc_request *mrq,
-        bool is_first_req)
+		 bool is_first_req)
 {
-    if (host->ops->pre_req) {
-        mmc_host_clk_hold(host);
-        host->ops->pre_req(host, mrq, is_first_req);
-        mmc_host_clk_release(host);
-    }
+	if (host->ops->pre_req) {
+		mmc_host_clk_hold(host);
+		host->ops->pre_req(host, mrq, is_first_req);
+		mmc_host_clk_release(host);
+	}
 }
 
 /**
@@ -370,31 +366,28 @@ struct mmc_async_req *mmc_start_req(struct mmc_host *host,
 	struct mmc_async_req *data = host->areq;
 
 	/* Prepare a new request */
-    if (areq)
-        mmc_pre_req(host, areq->mrq, !host->areq);
+	if (areq)
+		mmc_pre_req(host, areq->mrq, !host->areq);
 
 	if (host->areq) {
 		mmc_wait_for_req_done(host, host->areq->mrq);
 		host->ops->send_stop(host,host->areq->mrq); //add for MTK msdc host <Yuchi Xu>
-		do{
-			host->ops->tuning(host, host->areq->mrq);	//add for MTK msdc host <Yuchi Xu>
+		do {
+			host->ops->tuning(host, host->areq->mrq); //add for MTK msdc host <Yuchi Xu>
 			retry_times++;
-		}while((host->ops->check_written_data(host,host->areq->mrq))&&(retry_times<10));
+		} while (host->ops->check_written_data(host,host->areq->mrq) && retry_times < 10);
 		err = host->areq->err_check(host->card, host->areq);
 	}
-
 
 	if (!err && areq) {
 		trace_mmc_blk_rw_start(areq->mrq->cmd->opcode,
 				       areq->mrq->cmd->arg,
 				       areq->mrq->data);
-
 		start_err = __mmc_start_req(host, areq->mrq);
-
-    }
-	if (host->areq){
-		mmc_post_req(host, host->areq->mrq, 0);
 	}
+
+	if (host->areq)
+		mmc_post_req(host, host->areq->mrq, 0);
 
 	 /* Cancel a prepared request if it was not started. */
 	if ((err || start_err) && areq)
@@ -1659,7 +1652,7 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 	if (mmc_host_is_spi(card->host))
 		goto out;
 
-    timeout = jiffies + msecs_to_jiffies(MMC_CORE_TIMEOUT_MS);
+	timeout = jiffies + msecs_to_jiffies(MMC_CORE_TIMEOUT_MS);
 	do {
 		memset(&cmd, 0, sizeof(struct mmc_command));
 		cmd.opcode = MMC_SEND_STATUS;
@@ -1686,7 +1679,6 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 
 	} while (!(cmd.resp[0] & R1_READY_FOR_DATA) ||
 		 R1_CURRENT_STATE(cmd.resp[0]) == R1_STATE_PRG);
-
 out:
 
 	trace_mmc_blk_erase_end(arg, fr, nr);
@@ -2159,9 +2151,9 @@ void mmc_rescan(struct work_struct *work)
 
  out:
 #ifdef CONFIG_MTK_HIBERNATION
-    if (unlikely(host->index == 1)) {
-        mmc_rescan_wait_finish();
-    }
+	if (unlikely(host->index == 1)) {
+		mmc_rescan_wait_finish();
+	}
 #endif
 	if (extend_wakelock)
 		wake_lock_timeout(&host->detect_wake_lock, HZ / 2);
