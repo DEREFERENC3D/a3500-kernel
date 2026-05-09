@@ -1418,8 +1418,7 @@ void mmc_detect_change(struct mmc_host *host, unsigned long delay)
 	host->detect_change = 1;
 
 	wake_lock(&host->detect_wake_lock);
-	ret = mmc_schedule_delayed_work(&host->detect, delay);
-	printk(KERN_INFO"msdc: %d,mmc_schedule_delayed_work ret= %d\n",host->index,ret);
+	mmc_schedule_delayed_work(&host->detect, delay);
 }
 
 EXPORT_SYMBOL(mmc_detect_change);
