@@ -44,11 +44,6 @@
 #include "sd_ops.h"
 #include "sdio_ops.h"
 
-/* If the device is not responding */
-#define MMC_CORE_TIMEOUT_MS	(10 * 60 * 1000) /* 10 minute timeout */
-
-#define DAT_TIMEOUT         (HZ    * 5)
-
 static struct workqueue_struct *workqueue;
 
 /*
@@ -277,15 +272,7 @@ static void mmc_wait_for_req_done(struct mmc_host *host,
 	struct mmc_command *cmd;
 
 	while (1) {
-		if (!wait_for_completion_timeout(&mrq->completion,DAT_TIMEOUT)) {
-			printk(KERN_ERR "MSDC wait request timeout CMD<%d>ARG<0x%x>\n",mrq->cmd->opcode,mrq->cmd->arg);
-			if (mrq->data){
-				host->ops->dma_error_reset(host);
-				mrq->data->error = (unsigned int)-ETIMEDOUT;
-			}
-
-			printk(KERN_ERR "MSDC wait request timeout DAT<%d>\n",(mrq->data->blocks) * (mrq->data->blksz));
-        }
+		wait_for_completion(&mrq->completion);
 
 		cmd = mrq->cmd;
 		if (!cmd->error || !cmd->retries ||
@@ -361,8 +348,6 @@ struct mmc_async_req *mmc_start_req(struct mmc_host *host,
 {
 	int err = 0;
 	int start_err = 0;
-	int retry_times = 0;
-
 	struct mmc_async_req *data = host->areq;
 
 	/* Prepare a new request */
@@ -371,11 +356,6 @@ struct mmc_async_req *mmc_start_req(struct mmc_host *host,
 
 	if (host->areq) {
 		mmc_wait_for_req_done(host, host->areq->mrq);
-		host->ops->send_stop(host,host->areq->mrq); //add for MTK msdc host <Yuchi Xu>
-		do {
-			host->ops->tuning(host, host->areq->mrq); //add for MTK msdc host <Yuchi Xu>
-			retry_times++;
-		} while (host->ops->check_written_data(host,host->areq->mrq) && retry_times < 10);
 		err = host->areq->err_check(host->card, host->areq);
 	}
 
@@ -1401,7 +1381,6 @@ void mmc_detach_bus(struct mmc_host *host)
  */
 void mmc_detect_change(struct mmc_host *host, unsigned long delay)
 {
-	int ret;
 #ifdef CONFIG_MMC_DEBUG
 	unsigned long flags;
 	spin_lock_irqsave(&host->lock, flags);
@@ -1569,7 +1548,6 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 {
 	struct mmc_command cmd = {0};
 	unsigned int qty = 0;
-	unsigned long timeout;
 	unsigned int fr, nr;
 	int err;
 
@@ -1652,7 +1630,6 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 	if (mmc_host_is_spi(card->host))
 		goto out;
 
-	timeout = jiffies + msecs_to_jiffies(MMC_CORE_TIMEOUT_MS);
 	do {
 		memset(&cmd, 0, sizeof(struct mmc_command));
 		cmd.opcode = MMC_SEND_STATUS;
@@ -1666,17 +1643,6 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 			err = -EIO;
 			goto out;
 		}
-
-		/* Timeout if the device never becomes ready for data and
-		 * never leaves the program state.
-		 */
-		if (time_after(jiffies, timeout)) {
-			pr_err("%s: Card stuck in programming state! %s\n",
-				mmc_hostname(card->host), __func__);
-			err =  -EIO;
-			goto out;
-		}
-
 	} while (!(cmd.resp[0] & R1_READY_FOR_DATA) ||
 		 R1_CURRENT_STATE(cmd.resp[0]) == R1_STATE_PRG);
 out:
@@ -1763,7 +1729,7 @@ EXPORT_SYMBOL(mmc_can_erase);
 
 int mmc_can_trim(struct mmc_card *card)
 {
-	if ((card->ext_csd.sec_feature_support & EXT_CSD_SEC_GB_CL_EN) && !(card->quirks & MMC_QUIRK_TRIM_UNSTABLE))
+	if (card->ext_csd.sec_feature_support & EXT_CSD_SEC_GB_CL_EN  && !(card->quirks & MMC_QUIRK_TRIM_UNSTABLE))
 		return 1;
 	return 0;
 }
