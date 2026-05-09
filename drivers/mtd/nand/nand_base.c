@@ -93,8 +93,6 @@ static struct nand_ecclayout nand_oob_128 = {
 		 .length = 78} }
 };
 
-#define PMT_POOL_SIZE (2)
-
 static int nand_get_device(struct nand_chip *chip, struct mtd_info *mtd,
 			   int new_state);
 
@@ -869,6 +867,7 @@ static void panic_nand_wait(struct mtd_info *mtd, struct nand_chip *chip,
  */
 static int nand_wait(struct mtd_info *mtd, struct nand_chip *chip)
 {
+
 	unsigned long timeo = jiffies;
 	int status, state = chip->state;
 
@@ -1886,8 +1885,7 @@ static int nand_read_oob(struct mtd_info *mtd, loff_t from,
 	ops->retlen = 0;
 
 	/* Do not allow reads past end of device */
-	if (ops->datbuf && (from + ops->len) > mtd->size)
-	{
+	if (ops->datbuf && (from + ops->len) > mtd->size) {
 		pr_debug("%s: attempt to read beyond end of device\n",
 				__func__);
 		return -EINVAL;
@@ -2326,7 +2324,6 @@ static int panic_nand_write(struct mtd_info *mtd, loff_t to, size_t len,
 	ret = nand_do_write_ops(mtd, to, &ops);
 
 	*retlen = ops.retlen;
-
 	return ret;
 }
 
@@ -2455,7 +2452,7 @@ static int nand_write_oob(struct mtd_info *mtd, loff_t to,
 	ops->retlen = 0;
 
 	/* Do not allow writes past end of device */
-	if (ops->datbuf && (to + ops->len) > (mtd->size +  PMT_POOL_SIZE*mtd->erasesize)) {
+	if (ops->datbuf && (to + ops->len) > mtd->size) {
 		pr_debug("%s: attempt to write beyond end of device\n",
 				__func__);
 		return -EINVAL;
@@ -2609,6 +2606,7 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 		chip->erase_cmd(mtd, page & chip->pagemask);
 
 		status = chip->waitfunc(mtd, chip);
+
 		/*
 		 * See if operation failed and additional status checks are
 		 * available
@@ -2961,7 +2959,6 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 			break;
 
 	chip->onfi_version = 0;
-
 	if (!type->name || !type->pagesize) {
 		/* Check is chip is ONFI compliant */
 		ret = nand_flash_detect_onfi(mtd, chip, &busw);
@@ -3034,10 +3031,8 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 			mtd->writesize = 1024 << (extid & 0x03);
 			extid >>= 2;
 			/* Calc oobsize */
-			if(!mtd->oobsize){
-				mtd->oobsize = (8 << (extid & 0x01)) *
-					(mtd->writesize >> 9);
-			}
+			mtd->oobsize = (8 << (extid & 0x01)) *
+				(mtd->writesize >> 9);
 			extid >>= 2;
 			/* Calc blocksize. Blocksize is multiples of 64KiB */
 			mtd->erasesize = (64 * 1024) << (extid & 0x03);
