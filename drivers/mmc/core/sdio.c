@@ -1198,6 +1198,7 @@ int mmc_attach_sdio(struct mmc_host *host)
 		if (err)
 			goto remove_added;
 	}
+
 	mmc_claim_host(host);
 	return 0;
 
