@@ -510,7 +510,6 @@ static int sd_set_bus_speed_mode(struct mmc_card *card, u8 *status)
 {
 	int err;
 	unsigned int timing = 0;
-	int retry = 3;
 
 	switch (card->sd_bus_speed) {
 	case UHS_SDR104_BUS_SPEED:
@@ -537,17 +536,13 @@ static int sd_set_bus_speed_mode(struct mmc_card *card, u8 *status)
 		return 0;
 	}
 
-reswitch:
 	err = mmc_sd_switch(card, 1, 0, card->sd_bus_speed, status);
 	if (err)
 		return err;
 
-	if ((status[16] & 0xF) != card->sd_bus_speed) {
+	if ((status[16] & 0xF) != card->sd_bus_speed)
 		pr_warning("%s: Problem setting bus speed mode!\n",
 			mmc_hostname(card->host));
-		if(retry--)
-			goto reswitch;
-		}
 	else {
 		mmc_set_timing(card->host, timing);
 		mmc_set_clock(card->host, card->sw_caps.uhs_max_dtr);
