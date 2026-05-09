@@ -17,8 +17,6 @@
 #include <linux/log2.h>
 #include <linux/workqueue.h>
 
-//static int IPO=0;
-
 static int rtc_timer_enqueue(struct rtc_device *rtc, struct rtc_timer *timer);
 static void rtc_timer_remove(struct rtc_device *rtc, struct rtc_timer *timer);
 
@@ -394,13 +392,11 @@ int rtc_set_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 	if (err)
 		return err;
 	if (rtc->aie_timer.enabled) {
-//		printk("rtc_set_alarm remove\n");
 		rtc_timer_remove(rtc, &rtc->aie_timer);
 	}
 	rtc->aie_timer.node.expires = rtc_tm_to_ktime(alarm->time);
 	rtc->aie_timer.period = ktime_set(0, 0);
 	if (alarm->enabled) {
-//		printk("rtc_set_alarm enqueue\n");
 		err = rtc_timer_enqueue(rtc, &rtc->aie_timer);
 	}
 	mutex_unlock(&rtc->ops_lock);
@@ -535,7 +531,6 @@ void rtc_handle_legacy_irq(struct rtc_device *rtc, int num, int mode)
 {
 	unsigned long flags;
 
-	printk("rtc_handle_legacy_irq\n");
 	/* mark one irq of the appropriate mode */
 	spin_lock_irqsave(&rtc->irq_lock, flags);
 	rtc->irq_data = (rtc->irq_data + (num << 8)) | (RTC_IRQF|mode);
@@ -544,9 +539,7 @@ void rtc_handle_legacy_irq(struct rtc_device *rtc, int num, int mode)
 	/* call the task func */
 	spin_lock_irqsave(&rtc->irq_task_lock, flags);
 	if (rtc->irq_task)
-	{
 		rtc->irq_task->func(rtc->irq_task->private_data);
-	}
 	spin_unlock_irqrestore(&rtc->irq_task_lock, flags);
 
 	wake_up_interruptible(&rtc->irq_queue);
@@ -563,7 +556,6 @@ void rtc_handle_legacy_irq(struct rtc_device *rtc, int num, int mode)
 void rtc_aie_update_irq(void *private)
 {
 	struct rtc_device *rtc = (struct rtc_device *)private;
-	printk("rtc_aie_update_irq\n");
 	rtc_handle_legacy_irq(rtc, 1, RTC_AF);
 }
 
@@ -577,7 +569,6 @@ void rtc_aie_update_irq(void *private)
 void rtc_uie_update_irq(void *private)
 {
 	struct rtc_device *rtc = (struct rtc_device *)private;
-	printk("rtc_uie_update_irq\n");
 	rtc_handle_legacy_irq(rtc, 1,  RTC_UF);
 }
 
@@ -615,16 +606,7 @@ enum hrtimer_restart rtc_pie_update_irq(struct hrtimer *timer)
 void rtc_update_irq(struct rtc_device *rtc,
 		unsigned long num, unsigned long events)
 {
-//	if(IPO==1)
-//	{	
-//		printk("rtc_update_irq, without alarmqueue");
-//		rtc_handle_legacy_irq(rtc, 1,  RTC_AF);
-//	}
-//	else
-//	{
-//		printk("rtc_update_irq, with alarmqueue");
-		schedule_work(&rtc->irqwork);
-//	}	
+	schedule_work(&rtc->irqwork);
 }
 EXPORT_SYMBOL_GPL(rtc_update_irq);
 
@@ -890,24 +872,17 @@ again:
 	now = rtc_tm_to_ktime(tm);
 	while ((next = timerqueue_getnext(&rtc->timerqueue))) {
 		if (next->expires.tv64 > now.tv64)
-		{
-			printk("rtc_timer_do_work break, next->expires.tv64=%lld, now.tv64=%lld\n", next->expires.tv64, now.tv64);
 			break;
-		}
-		printk("rtc_timer_do_work break, next->expires.tv64=%lld\n", next->expires.tv64);
-		
+
 		/* expire timer */
 		timer = container_of(next, struct rtc_timer, node);
 		timerqueue_del(&rtc->timerqueue, &timer->node);
 		timer->enabled = 0;
 		if (timer->task.func)
-		{	
-//			printk("rtc_timer_do_work\n");
 			timer->task.func(timer->task.private_data);
-		}
+
 		/* Re-add/fwd periodic timers */
 		if (ktime_to_ns(timer->period)) {
-//			printk("rtc_timer_do_work 2\n");
 			timer->node.expires = ktime_add(timer->node.expires,
 							timer->period);
 			timer->enabled = 1;
@@ -926,7 +901,7 @@ again:
 			goto again;
 	} else
 		rtc_alarm_disable(rtc);
-//	printk("rtc_timer_do_work 3\n");
+
 	mutex_unlock(&rtc->ops_lock);
 }
 
@@ -986,13 +961,5 @@ int rtc_timer_cancel(struct rtc_device *rtc, struct rtc_timer* timer)
 	mutex_unlock(&rtc->ops_lock);
 	return ret;
 }
-/*
-void Set_IPO_flag(void)
-{
-	IPO=1;
-}
 
-void Clr_IPO_flag(void)
-{
-	IPO=0;
-}*/
+
