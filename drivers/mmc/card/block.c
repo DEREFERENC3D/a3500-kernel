@@ -1852,8 +1852,6 @@ static int mmc_blk_probe(struct mmc_card *card)
 
 	mmc_set_drvdata(card, md);
 	mmc_fixup_device(card, blk_fixups);
-    
-	printk("[%s]: %s by manufacturer settings, quirks=0x%x\n", __func__, md->disk->disk_name, card->quirks); 
 
 #ifdef CONFIG_MMC_BLOCK_DEFERRED_RESUME
 	mmc_set_bus_resume_policy(card->host, 1);
