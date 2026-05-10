@@ -14,92 +14,10 @@
 #include <asm/page.h>
 #include <asm/pgtable.h>
 #include "internal.h"
-/// M: LCA @{
-#include <linux/export.h>
-/// @}
 
 void __attribute__((weak)) arch_report_meminfo(struct seq_file *m)
 {
 }
-
-/// M: LCA @{
-int extra_log_meminfo_lite(void)
-{
-#ifdef CONFIG_ZRAM
-	struct sysinfo i;
-	unsigned long committed;
-	struct vmalloc_info vmi;
-	long cached;
-	unsigned long pages[NR_LRU_LISTS];
-	int lru;
-
-/*
- * display in kilobytes.
- */
-#define K(x) ((x) << (PAGE_SHIFT - 10))
-	si_meminfo(&i);
-	si_swapinfo(&i);
-	committed = percpu_counter_read_positive(&vm_committed_as);
-	cached = global_page_state(NR_FILE_PAGES) -
-			total_swapcache_pages - i.bufferram;
-	if (cached < 0)
-		cached = 0;
-
-	get_vmalloc_info(&vmi);
-
-	for (lru = LRU_BASE; lru < NR_LRU_LISTS; lru++)
-		pages[lru] = global_page_state(NR_LRU_BASE + lru);
-
-	/*
-	 * Tagged format, for easy grepping and expansion.
-	 */
-	printk(KERN_INFO "[MTK_MSR]meminfo"\
-		"(%lu)"			// (MemFree)
-		"(%lu"			// (Buffers, Cache, SwapCached)
-		",%lu"
-		",%lu)"
-		"(%lu"			// (Active, Inactive, Unevictable, MLocked)
-		",%lu"
-		",%lu"
-		",%lu"
-		",%lu"
-		",%lu"
-		",%lu"
-		",%lu)"
-		"(%lu"			// (Swap total, Swap Free)
-		",%lu)"
-		"(%lu"			// (Anon, Mapped)
-		",%lu)"
-		"(%lu"			// (Slab KStack, PageTable)
-		",%lu"
-		",%lu)\n"
-		,
-		K(i.freeram),
-		K(i.bufferram),
-		K(cached),
-		K(total_swapcache_pages),
-		K(pages[LRU_ACTIVE_ANON]   + pages[LRU_ACTIVE_FILE]),
-		K(pages[LRU_INACTIVE_ANON] + pages[LRU_INACTIVE_FILE]),
-		K(pages[LRU_ACTIVE_ANON]),
-		K(pages[LRU_INACTIVE_ANON]),
-		K(pages[LRU_ACTIVE_FILE]),
-		K(pages[LRU_INACTIVE_FILE]),
-		K(pages[LRU_UNEVICTABLE]),
-		K(global_page_state(NR_MLOCK)),
-		K(i.totalswap),
-		K(i.freeswap),
-		K(global_page_state(NR_ANON_PAGES)),
-		K(global_page_state(NR_FILE_MAPPED)),
-		K(global_page_state(NR_SLAB_RECLAIMABLE) + global_page_state(NR_SLAB_UNRECLAIMABLE)),
-		global_page_state(NR_KERNEL_STACK) * THREAD_SIZE >> 10,
-		K(global_page_state(NR_PAGETABLE))
-		);
-#undef K
-#endif	/* CONFIG_ZRAM */
-	return 0;
-}
-EXPORT_SYMBOL(extra_log_meminfo_lite);
-/// @}
 
 static int meminfo_proc_show(struct seq_file *m, void *v)
 {
@@ -267,7 +185,7 @@ static const struct file_operations meminfo_proc_fops = {
 	.llseek		= seq_lseek,
 	.release	= single_release,
 };
-//////////////////////////////////////////////////////
+
 static int __init proc_meminfo_init(void)
 {
 	proc_create("meminfo", 0, NULL, &meminfo_proc_fops);
