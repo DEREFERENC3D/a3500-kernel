@@ -36,6 +36,7 @@ static int debug_mask = ANDROID_ALARM_PRINT_INFO | \
 						ANDROID_ALARM_PRINT_IO | \
 						ANDROID_ALARM_PRINT_INT;
 module_param_named(debug_mask, debug_mask, int, S_IRUGO | S_IWUSR | S_IWGRP);
+
 #define pr_alarm(debug_level_mask, args...) \
 	do { \
 		if (debug_mask & ANDROID_ALARM_PRINT_##debug_level_mask) { \
@@ -68,6 +69,7 @@ struct devalarm {
 };
 
 static struct devalarm alarms[ANDROID_ALARM_TYPE_COUNT];
+
 
 static int is_wakeup(enum android_alarm_type type)
 {
@@ -330,7 +332,6 @@ static void devalarm_triggered(struct devalarm *alarm)
 	uint32_t alarm_type_mask = 1U << alarm->type;
 
 	pr_alarm(INT, "devalarm_triggered type %d\n", alarm->type);
-
 	spin_lock_irqsave(&alarm_slock, flags);
 	if (alarm_enabled & alarm_type_mask) {
 		wake_lock_timeout(&alarm_wake_lock, 5 * HZ);
@@ -346,8 +347,6 @@ static enum hrtimer_restart devalarm_hrthandler(struct hrtimer *hrt)
 {
 	struct devalarm *devalrm = container_of(hrt, struct devalarm, u.hrt);
 
-	pr_alarm(INT, "devalarm_hrthandler\n");
-	
 	devalarm_triggered(devalrm);
 	return HRTIMER_NORESTART;
 }
@@ -357,8 +356,6 @@ static enum alarmtimer_restart devalarm_alarmhandler(struct alarm *alrm,
 {
 	struct devalarm *devalrm = container_of(alrm, struct devalarm, u.alrm);
 
-	pr_alarm(INT, "devalarm_alarmhandler\n");
-	
 	devalarm_triggered(devalrm);
 	return ALARMTIMER_NORESTART;
 }
