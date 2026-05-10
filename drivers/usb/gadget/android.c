@@ -23,7 +23,6 @@
 #include <linux/kernel.h>
 #include <linux/utsname.h>
 #include <linux/platform_device.h>
-#include <linux/xlog.h>
 
 #include <linux/usb/ch9.h>
 #include <linux/usb/composite.h>
@@ -32,7 +31,6 @@
 #include <linux/musb/mtk_musb.h>
 /* Add for HW/SW connect */
 #include "gadget_chips.h"
-#include "logger.h"
 
 /*
  * Kbuild is not very cooperative with respect to linking separately
@@ -76,8 +74,6 @@ static const char longname[] = "Gadget Android";
 /* Default manufacturer and product string , overridden by userspace */
 #define MANUFACTURER_STRING "MediaTek"
 #define PRODUCT_STRING "Lenovo A3500-FL"
-
-#define USB_LOG "USB"
 
 struct android_usb_function {
 	char *name;
@@ -212,15 +208,13 @@ static void android_work(struct work_struct *data)
 	else
 			is_hwconnected = false;
 
-	xlog_printk(ANDROID_LOG_INFO, USB_LOG, "%s: is_hwconnected=%d \n", __func__, is_hwconnected);
 	/* Add for HW/SW connect */
 
 	spin_lock_irqsave(&cdev->lock, flags);
-	if (cdev->config) {
+	if (cdev->config)
 		uevent_envp = configured;
-	} else if (dev->connected != dev->sw_connected) {
+	else if (dev->connected != dev->sw_connected)
 		uevent_envp = dev->connected ? connected : disconnected;
-	}
 
 	dev->sw_connected = dev->connected;
 
@@ -236,17 +230,18 @@ static void android_work(struct work_struct *data)
 
 	if (uevent_envp) {
 		kobject_uevent_env(&dev->dev->kobj, KOBJ_CHANGE, uevent_envp);
-		xlog_printk(ANDROID_LOG_INFO, USB_LOG, "%s: sent uevent %s\n", __func__, uevent_envp[0]);
+		pr_info("%s: sent uevent %s\n", __func__, uevent_envp[0]);
+	} else {
+		pr_info("%s: did not send uevent (%d %d %p)\n", __func__,
+			 dev->connected, dev->sw_connected, cdev->config);
 	}
 
 	if (!is_hwconnected) {
 		kobject_uevent_env(&dev->dev->kobj, KOBJ_CHANGE, hwdisconnected);
-		xlog_printk(ANDROID_LOG_INFO, USB_LOG, "%s: sent uevent %s\n", __func__, hwdisconnected[0]);
 	}
 
 	if (uevent_envp_cdrom) {
 		kobject_uevent_env(&dev->dev->kobj, KOBJ_CHANGE, uevent_envp_cdrom);
-		xlog_printk(ANDROID_LOG_INFO, USB_LOG, "%s: sent uevent %s\n", __func__, uevent_envp_cdrom[0]);
 	}
 
 }
@@ -261,7 +256,7 @@ static void android_enable(struct android_dev *dev)
 	if (--dev->disable_depth == 0) {
 		usb_add_config(cdev, &android_config_driver,
 					android_bind_config);
-	usb_gadget_connect(cdev->gadget);
+		usb_gadget_connect(cdev->gadget);
 	}
 }
 
@@ -962,8 +957,6 @@ eem_function_bind_config(struct android_usb_function *f,
 	int ret;
 	struct eem_function_config *eem = f->config;
 
-	xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: \n", __func__);
-
 	if (!eem) {
 		pr_err("%s: rndis_pdata\n", __func__);
 		return -1;
@@ -1061,8 +1054,6 @@ rndis_function_bind_config(struct android_usb_function *f,
 {
 	int ret;
 	struct rndis_function_config *rndis = f->config;
-
-	xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: \n", __func__);
 
 	if (!rndis) {
 		pr_err("%s: rndis_pdata\n", __func__);
@@ -1271,7 +1262,6 @@ static int mass_storage_function_init(struct android_usb_function *f,
 	err = sysfs_create_link(&f->dev->kobj,
 				&common->luns[0].dev.kobj,
 				"lun");
-
 	if (err) {
 		kfree(config);
 		return err;
@@ -1476,9 +1466,6 @@ static int android_init_functions(struct android_usb_function **functions,
 
 	for (; (f = *functions++); index++) {
 		f->dev_name = kasprintf(GFP_KERNEL, "f_%s", f->name);
-		/* Added for USB Develpment debug, more log for more debuging help */
-		xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: f->dev_name = %s, f->name = %s", __func__, f->dev_name, f->name);
-		/* Added for USB Develpment debug, more log for more debuging help */
 		f->dev = device_create(android_class, dev->dev,
 				MKDEV(0, index), f, f->dev_name);
 		if (IS_ERR(f->dev)) {
@@ -1494,8 +1481,6 @@ static int android_init_functions(struct android_usb_function **functions,
 				pr_err("%s: Failed to init %s", __func__,
 								f->name);
 				goto err_out;
-			} else {
-				xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: init %s success!!", __func__, f->name);
 			}
 
 		}
@@ -1544,10 +1529,6 @@ android_bind_enabled_functions(struct android_dev *dev,
 	struct android_usb_function *f;
 	int ret;
 
-	/* Added for USB Develpment debug, more log for more debuging help */
-	xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: ", __func__);
-	/* Added for USB Develpment debug, more log for more debuging help */
-
 	list_for_each_entry(f, &dev->enabled_functions, enabled_list) {
 		ret = f->bind_config(f, c);
 		if (ret) {
@@ -1575,10 +1556,6 @@ static int android_enable_function(struct android_dev *dev, char *name)
 	struct android_usb_function **functions = dev->functions;
 	struct android_usb_function *f;
 	while ((f = *functions++)) {
-
-		/* Added for USB Develpment debug, more log for more debuging help */
-		xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: name = %s, f->name=%s \n", __func__, name, f->name);
-		/* Added for USB Develpment debug, more log for more debuging help */
 		if (!strcmp(name, f->name)) {
 			list_add_tail(&f->enabled_list,
 						&dev->enabled_functions);
@@ -1597,10 +1574,6 @@ functions_show(struct device *pdev, struct device_attribute *attr, char *buf)
 	struct android_dev *dev = dev_get_drvdata(pdev);
 	struct android_usb_function *f;
 	char *buff = buf;
-
-	/* Added for USB Develpment debug, more log for more debuging help */
-	xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: ", __func__);
-	/* Added for USB Develpment debug, more log for more debuging help */
 
 	mutex_lock(&dev->mutex);
 
@@ -1635,19 +1608,11 @@ functions_store(struct device *pdev, struct device_attribute *attr,
 
 	INIT_LIST_HEAD(&dev->enabled_functions);
 
-	/* Added for USB Develpment debug, more log for more debuging help */
-	xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: \n", __func__);
-	/* Added for USB Develpment debug, more log for more debuging help */
-
 	strlcpy(buf, buff, sizeof(buf));
 	b = strim(buf);
 
 	while (b) {
 		name = strsep(&b, ",");
-
-		/* Added for USB Develpment debug, more log for more debuging help */
-		xlog_printk(ANDROID_LOG_INFO, USB_LOG, "%s: name = %s \n", __func__, name);
-		/* Added for USB Develpment debug, more log for more debuging help */
 
 		if (!name)
 			continue;
@@ -1708,10 +1673,6 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 
 	mutex_lock(&dev->mutex);
 
-	/* Added for USB Develpment debug, more log for more debuging help */
-	xlog_printk(ANDROID_LOG_DEBUG, USB_LOG, "%s: device_attr->attr.name: %s\n", __func__, attr->attr.name);
-	/* Added for USB Develpment debug, more log for more debuging help */
-
 	sscanf(buff, "%d", &enabled);
 	if (enabled && !dev->enabled) {
 		/*
@@ -1739,16 +1700,7 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 		android_enable(dev);
 		dev->enabled = true;
 
-		/* Added for USB Develpment debug, more log for more debuging help */
-		xlog_printk(ANDROID_LOG_INFO, USB_LOG, "%s: enable 0->1 case, device_desc.idVendor = 0x%x, device_desc.idProduct = 0x%x, ", __func__, device_desc.idVendor, device_desc.idProduct);
-		/* Added for USB Develpment debug, more log for more debuging help */
-
 	} else if (!enabled && dev->enabled) {
-
-		/* Added for USB Develpment debug, more log for more debuging help */
-		xlog_printk(ANDROID_LOG_INFO, USB_LOG, "%s: enable 1->0 case, device_desc.idVendor = 0x%x, device_desc.idProduct = 0x%x, ", __func__, device_desc.idVendor, device_desc.idProduct);
-		/* Added for USB Develpment debug, more log for more debuging help */
-
 		android_disable(dev);
 		list_for_each_entry(f, &dev->enabled_functions, enabled_list) {
 			if (f->disable)
@@ -1761,7 +1713,6 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 		/* Add for HW/SW connect */
 		if (!usb_cable_connected()) {
 			schedule_work(&dev->work);
-			xlog_printk(ANDROID_LOG_VERBOSE, USB_LOG, "%s: enable 0->0 case - no usb cable", __func__);
 		}
 		/* Add for HW/SW connect */
 	}
@@ -2010,10 +1961,6 @@ static void android_disconnect(struct usb_gadget *gadget)
 	struct usb_composite_dev *cdev = get_gadget_data(gadget);
 	unsigned long flags;
 
-	/* Added for USB Develpment debug, more log for more debuging help */
-	xlog_printk(ANDROID_LOG_VERBOSE, USB_LOG, "%s: \n", __func__);
-	/* Added for USB Develpment debug, more log for more debuging help */
-
 	composite_disconnect(gadget);
 	/* accessory HID support can be active while the
 	   accessory function is not actually enabled,
@@ -2024,10 +1971,6 @@ static void android_disconnect(struct usb_gadget *gadget)
 	spin_lock_irqsave(&cdev->lock, flags);
 	dev->connected = 0;
 	schedule_work(&dev->work);
-
-	/* Added for USB Develpment debug, more log for more debuging help */
-	xlog_printk(ANDROID_LOG_VERBOSE, USB_LOG, "%s: dev->connected = %d \n", __func__, dev->connected);
-	/* Added for USB Develpment debug, more log for more debuging help */
 
 	spin_unlock_irqrestore(&cdev->lock, flags);
 }
