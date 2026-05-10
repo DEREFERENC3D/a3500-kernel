@@ -1236,22 +1236,9 @@ static int mass_storage_function_init(struct android_usb_function *f,
 	if (!config)
 		return -ENOMEM;
 
-#ifdef MTK_MULTI_STORAGE_SUPPORT
-#ifdef MTK_SHARED_SDCARD
-#define NLUN_STORAGE 1
-#else
-#define NLUN_STORAGE 2
-#endif
-#else
-#define NLUN_STORAGE 1
-#endif
-
-	config->fsg.nluns = NLUN_STORAGE;
-
-	for(i = 0; i < config->fsg.nluns; i++) {
-		config->fsg.luns[i].removable = 1;
-		config->fsg.luns[i].nofua = 1;
-	}
+	config->fsg.nluns = 1;
+	config->fsg.luns[0].removable = 1;
+	config->fsg.luns[0].nofua = 1;
 
 	common = fsg_common_init(NULL, cdev, &config->fsg);
 	if (IS_ERR(common)) {
