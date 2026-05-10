@@ -112,14 +112,7 @@ struct task_group {
 	struct cfs_rq **cfs_rq;
 	unsigned long shares;
 
-#ifdef CONFIG_MTK_SCHED_CMP
-#ifdef CONFIG_SMP
-	atomic_long_t load_avg;
-	atomic_t runnable_avg;
-#endif
-#else /* !CONFIG_MTK_SCHED_CMP */
 	atomic_t load_weight;
-#endif
 #endif
 
 #ifdef CONFIG_RT_GROUP_SCHED
@@ -230,35 +223,6 @@ struct cfs_rq {
 	unsigned int nr_spread_over;
 #endif
 
-#ifdef CONFIG_MTK_SCHED_CMP
-#ifdef CONFIG_SMP
-	/*
-	 * CFS Load tracking
-	 * Under CFS, load is tracked on a per-entity basis and aggregated up.
-	 * This allows for the description of both thread and group usage (in
-	 * the FAIR_GROUP_SCHED case).
-	 */
-	unsigned long runnable_load_avg, blocked_load_avg;
-	atomic64_t decay_counter;
-	u64 last_decay;
-	atomic_long_t removed_load;
-
-#ifdef CONFIG_FAIR_GROUP_SCHED
-	/* Required to track per-cpu representation of a task_group */
-	u32 tg_runnable_contrib;
-	unsigned long tg_load_contrib;
-#endif /* CONFIG_FAIR_GROUP_SCHED */
-
-	/*
-	 *   h_load = weight * f(tg)
-	 *
-	 * Where f(tg) is the recursive weight fraction assigned to
-	 * this group.
-	 */
-	unsigned long h_load;
-#endif /* CONFIG_SMP */
-#endif /* CONFIG_MTK_SCHED_CMP */
-
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	struct rq *rq;	/* cpu runqueue to which this cfs_rq is attached */
 
@@ -274,7 +238,6 @@ struct cfs_rq {
 	struct list_head leaf_cfs_rq_list;
 	struct task_group *tg;	/* group that "owns" this runqueue */
 
-#ifndef CONFIG_MTK_SCHED_CMP
 #ifdef CONFIG_SMP
 	/*
 	 *   h_load = weight * f(tg)
@@ -297,17 +260,12 @@ struct cfs_rq {
 
 	unsigned long load_contribution;
 #endif /* CONFIG_SMP */
-#endif /* !CONFIG_MTK_SCHED_CMP */
 #ifdef CONFIG_CFS_BANDWIDTH
 	int runtime_enabled;
 	u64 runtime_expires;
 	s64 runtime_remaining;
 
 	u64 throttled_timestamp;
-# ifdef CONFIG_MTK_SCHED_CMP
-	u64 throttled_clock_task;
-	u64 throttled_clock_task_time;
-# endif
 
 	int throttled, throttle_count;
 	struct list_head throttled_list;
@@ -507,10 +465,6 @@ struct rq {
 
 #ifdef CONFIG_SMP
 	struct llist_head wake_list;
-#endif
-
-#ifdef CONFIG_MTK_SCHED_CMP
-	struct sched_avg avg;
 #endif
 };
 
@@ -902,10 +856,6 @@ extern void update_group_power(struct sched_domain *sd, int cpu);
 extern void trigger_load_balance(struct rq *rq, int cpu);
 extern void idle_balance(int this_cpu, struct rq *this_rq);
 
-# ifdef CONFIG_MTK_SCHED_CMP
-extern void idle_enter_fair(struct rq *this_rq);
-extern void idle_exit_fair(struct rq *this_rq);
-# endif
 #else	/* CONFIG_SMP */
 
 static inline void idle_balance(int cpu, struct rq *rq)
@@ -927,13 +877,7 @@ extern void resched_cpu(int cpu);
 extern struct rt_bandwidth def_rt_bandwidth;
 extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
 
-#ifdef CONFIG_MTK_SCHED_CMP
-extern void update_idle_cpu_load(struct rq *this_rq);
-
-extern void init_task_runnable_average(struct task_struct *p);
-#else
 extern void update_cpu_load(struct rq *this_rq);
-#endif
 
 #ifdef CONFIG_CGROUP_CPUACCT
 #include <linux/cgroup.h>

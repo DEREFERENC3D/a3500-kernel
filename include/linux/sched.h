@@ -147,9 +147,6 @@ extern unsigned long long mt_get_thread_cputime(pid_t pid);
 extern unsigned long long mt_get_cpu_idle(int cpu);
 extern unsigned long long mt_sched_clock(void);
 extern void calc_global_load(unsigned long ticks);
-#ifdef CONFIG_MTK_SCHED_CMP
-extern void update_cpu_load_nohz(void);
-#endif
 
 extern unsigned long get_parent_ip(unsigned long addr);
 
@@ -1141,9 +1138,6 @@ struct sched_class {
 
 #ifdef CONFIG_SMP
 	int  (*select_task_rq)(struct task_struct *p, int sd_flag, int flags);
- #ifdef CONFIG_MTK_SCHED_CMP
-	void (*migrate_task_rq)(struct task_struct *p, int next_cpu);
- #endif
 
 	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
 	void (*post_schedule) (struct rq *this_rq);
@@ -1177,22 +1171,6 @@ struct sched_class {
 struct load_weight {
 	unsigned long weight, inv_weight;
 };
-
-#ifdef CONFIG_MTK_SCHED_CMP
-struct sched_avg {
-	/*
-	 * These sums represent an infinite geometric series and so are bound
-	 * above by 1024/(1-y).  Thus we only need a u32 to store them for for all
-	 * choices of y < 1-2^(-32)*1024.
-	 */
-	u32 runnable_avg_sum, runnable_avg_period;
-	u64 last_runnable_update;
-	s64 decay_count;
-	unsigned long load_avg_contrib;
-	unsigned long load_avg_ratio;
-	u32 usage_avg_sum;
-};
-#endif
 
 #ifdef CONFIG_SCHEDSTATS
 struct sched_statistics {
@@ -1268,13 +1246,6 @@ struct sched_entity {
 	int			mtk_isr_count;
 	struct mtk_isr_info  *mtk_isr;
 #endif
-
-#ifdef CONFIG_MTK_SCHED_CMP
-#ifdef CONFIG_SMP
-	/* Per-entity load-tracking */
-	struct sched_avg	avg;
-#endif
-#endif /* CONFIG_MTK_SCHED_CMP */
 };
 
 struct sched_rt_entity {

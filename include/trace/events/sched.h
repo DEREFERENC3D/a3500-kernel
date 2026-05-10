@@ -480,36 +480,6 @@ TRACE_EVENT(sched_log,
 );
 #endif
 
-#ifdef CONFIG_MTK_SCHED_CMP
-TRACE_EVENT(sched_task_entity_avg,
-
-	TP_PROTO(struct task_struct *tsk, struct sched_avg *avg),
-
-	TP_ARGS(tsk, avg),
-
-	TP_STRUCT__entry(
-		__array(	char, 		comm,	TASK_COMM_LEN	)
-		__field(	pid_t, 		tgid			)
-		__field(	pid_t, 		pid			)
-		__field(	unsigned long, 	contrib			)
-		__field(	unsigned long, 	ratio			)
-		__field(	u32,		usage_sum		)
-	),
-
-	TP_fast_assign(
-		memcpy(__entry->comm, tsk->comm, TASK_COMM_LEN);
-		__entry->tgid      = task_pid_nr(tsk->group_leader);
-		__entry->pid       = task_pid_nr(tsk);
-		__entry->contrib   = avg->load_avg_contrib;
-		__entry->ratio     = avg->load_avg_ratio;
-		__entry->usage_sum = avg->usage_avg_sum;
-	),
-
-	TP_printk("comm=%s tgid=%d pid=%d contrib=%lu ratio=%lu usage_sum=%d",
-		  __entry->comm, __entry->tgid, __entry->pid,
-		  __entry->contrib, __entry->ratio, __entry->usage_sum)
-);
-#endif
 #endif /* _TRACE_SCHED_H */
 
 /* This part must be outside protection */

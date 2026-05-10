@@ -22,7 +22,6 @@
 #include "sched.h"
 
 //#define TEST_SCHED_DEBUG_ENHANCEMENT
-//#define MTK_SCHED_CMP_PRINT 1
 #define TRYLOCK_NUM 10
 #include <linux/delay.h>
 
@@ -81,30 +80,13 @@ static void print_cfs_group_stats(struct seq_file *m, int cpu, struct task_group
 {
 	struct sched_entity *se = tg->se[cpu];
 
-#ifndef CONFIG_MTK_SCHED_CMP
 	if (!se)
 		return;
-#endif
 
 #define P(F) \
 	SEQ_printf(m, "  .%-30s: %lld\n", #F, (long long)F)
 #define PN(F) \
 	SEQ_printf(m, "  .%-30s: %lld.%06ld\n", #F, SPLIT_NS((long long)F))
-
-#ifdef CONFIG_MTK_SCHED_CMP
-	if (!se) {
-# if defined(MTK_SCHED_CMP_PRINT)
-		struct sched_avg *avg = &cpu_rq(cpu)->avg;
-		P(avg->runnable_avg_sum);
-		P(avg->runnable_avg_period);
-
-		/* usage_avg_sum & load_avg_ratio are based on Linaro 12.11 */
-		P(avg->usage_avg_sum);
-		P(avg->last_runnable_update);
-# endif
-		return;
-	}
-#endif
 
 
 	PN(se->exec_start);
@@ -123,19 +105,6 @@ static void print_cfs_group_stats(struct seq_file *m, int cpu, struct task_group
 	P(se->statistics.wait_count);
 #endif
 	P(se->load.weight);
-#if defined(CONFIG_MTK_SCHED_CMP) && defined(MTK_SCHED_CMP_PRINT)
-#ifdef CONFIG_SMP
-	P(se->avg.runnable_avg_sum);
-	P(se->avg.runnable_avg_period);
-	P(se->avg.load_avg_contrib);
-	P(se->avg.decay_count);
-
-	/* usage_avg_sum & load_avg_ratio are based on Linaro 12.11 */
-	P(se->avg.usage_avg_sum);
-	P(se->avg.load_avg_ratio);
-	P(se->avg.last_runnable_update);
-#endif
-#endif
 #undef PN
 #undef P
 }
@@ -255,42 +224,6 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 			cfs_rq->nr_spread_over);
 	SEQ_printf(m, "  .%-30s: %ld\n", "nr_running", cfs_rq->nr_running);
 	SEQ_printf(m, "  .%-30s: %ld\n", "load", cfs_rq->load.weight);
-#ifndef CONFIG_MTK_SCHED_CMP
-#ifdef CONFIG_FAIR_GROUP_SCHED
-#ifdef CONFIG_SMP
-	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "load_avg",
-			SPLIT_NS(cfs_rq->load_avg));
-	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "load_period",
-			SPLIT_NS(cfs_rq->load_period));
-	SEQ_printf(m, "  .%-30s: %ld\n", "load_contrib",
-			cfs_rq->load_contribution);
-	SEQ_printf(m, "  .%-30s: %d\n", "load_tg",
-			atomic_read(&cfs_rq->tg->load_weight));
-#endif
-#endif
-#endif
-
-/*
- * restrict the output unless enabled on purpose.
- */
-#if defined(CONFIG_MTK_SCHED_CMP) && defined(MTK_SCHED_CMP_PRINT)
-#ifdef CONFIG_SMP
-	SEQ_printf(m, "  .%-30s: %ld\n", "runnable_load_avg",
-			cfs_rq->runnable_load_avg);
-	SEQ_printf(m, "  .%-30s: %ld\n", "blocked_load_avg",
-			cfs_rq->blocked_load_avg);
-#ifdef CONFIG_FAIR_GROUP_SCHED
-	SEQ_printf(m, "  .%-30s: %ld\n", "tg_load_contrib",
-			cfs_rq->tg_load_contrib);
-	SEQ_printf(m, "  .%-30s: %d\n", "tg_runnable_contrib",
-			cfs_rq->tg_runnable_contrib);
-	SEQ_printf(m, "  .%-30s: %ld\n", "tg->load_avg",
-			atomic_long_read(&cfs_rq->tg->load_avg));
-	SEQ_printf(m, "  .%-30s: %d\n", "tg->runnable_avg",
-			atomic_read(&cfs_rq->tg->runnable_avg));
-#endif
-#endif
-#endif
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	print_cfs_group_stats(m, cpu, cfs_rq->tg);
@@ -581,19 +514,6 @@ void proc_sched_show_task(struct task_struct *p, struct seq_file *m)
 		   "nr_involuntary_switches", (long long)p->nivcsw);
 
 	P(se.load.weight);
-#if defined(CONFIG_MTK_SCHED_CMP) && defined(MTK_SCHED_CMP_PRINT)
-#ifdef CONFIG_SMP
-	P(se.avg.runnable_avg_sum);
-	P(se.avg.runnable_avg_period);
-	P(se.avg.load_avg_contrib);
-	P(se.avg.decay_count);
-
-	/* usage_avg_sum & load_avg_ratio are based on Linaro 12.11 */
-	P(se.avg.usage_avg_sum);
-	P(se.avg.load_avg_ratio);
-	P(se.avg.last_runnable_update);
-#endif
-#endif
 	P(policy);
 	P(prio);
 #undef PN
@@ -787,28 +707,6 @@ void print_cfs_rq_at_KE(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 			cfs_rq->nr_spread_over);
 	SEQ_printf(m, "  .%-30s: %ld\n", "nr_running", cfs_rq->nr_running);
 	SEQ_printf(m, "  .%-30s: %ld\n", "load", cfs_rq->load.weight);
-/*
- * different from print_cfs_rq(), print_cfs_rq_at_KE() is internally developed.
- * print w/o checking MTK_SCHED_CMP_PRINT.
- */
-#ifdef CONFIG_MTK_SCHED_CMP
-# ifdef CONFIG_SMP
-	SEQ_printf(m, "  .%-30s: %ld\n", "runnable_load_avg",
-			cfs_rq->runnable_load_avg);
-	SEQ_printf(m, "  .%-30s: %ld\n", "blocked_load_avg",
-			cfs_rq->blocked_load_avg);
-#  ifdef CONFIG_FAIR_GROUP_SCHED
-	SEQ_printf(m, "  .%-30s: %ld\n", "tg_load_contrib",
-			cfs_rq->tg_load_contrib);
-	SEQ_printf(m, "  .%-30s: %d\n", "tg_runnable_contrib",
-			cfs_rq->tg_runnable_contrib);
-	SEQ_printf(m, "  .%-30s: %ld\n", "tg->load_avg",
-			atomic_long_read(&cfs_rq->tg->load_avg));
-	SEQ_printf(m, "  .%-30s: %d\n", "tg->runnable_avg",
-			atomic_read(&cfs_rq->tg->runnable_avg));
-#  endif
-# endif
-#else /* !CONFIG_MTK_SCHED_CMP */
 # ifdef CONFIG_FAIR_GROUP_SCHED
 #  ifdef CONFIG_SMP
 	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "load_avg",
@@ -821,7 +719,6 @@ void print_cfs_rq_at_KE(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 			atomic_read(&cfs_rq->tg->load_weight));
 #  endif
 # endif
-#endif
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	print_cfs_group_stats(m, cpu, cfs_rq->tg);
