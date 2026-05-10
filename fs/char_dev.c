@@ -24,29 +24,6 @@
 
 #include "internal.h"
 
-#include <linux/aee.h>
-
-/* -------------------------------------------------------------*/
-/* This is for central management of MTK char device number -- */
-#ifdef CONFIG_MT_CHRDEV_REG
-
-#define MTCHRDEV_REG(num, name) CHDEV_##name,
-
-#define MAKE_MTCHRDEV_ENUM
-#include <mach/mtchrdev_table.h>
-
-#undef MTCHRDEV_REG
-#define MTCHRDEV_REG(num, name) \
-    [CHDEV_##name] = {num, #name},
-
-struct{
-    const int dev_num;
-    const char *name;
-}mtchrdev_info[MTCHRDEV_COUNT] = {
-    [ DNY_CHRDEV ] = { 0, "dynamic" },
-#include <mach/mtchrdev_table.h>
-};
-#endif/* end of CONFIG_MT_CHRDEV_REG*/
 int dynamic_chardev_num = CHRDEV_MAJOR_HASH_SIZE;
 /* -------------------------------------------------------------*/
 
@@ -98,19 +75,7 @@ void chrdev_show(struct seq_file *f, off_t offset)
     if (offset < CHRDEV_MAJOR_HASH_SIZE) {
         mutex_lock(&chrdevs_lock);
         for (cd = chrdevs[offset]; cd; cd = cd->next){
-#ifdef CONFIG_MT_CHRDEV_REG
-            int i;
-            for (i = 0; i< dynamic_chardev_num; i++){
-                if(cd->major == mtchrdev_info[i].dev_num)
-                    break;
-            }
-            if(i == dynamic_chardev_num && cd->major < dynamic_chardev_num)
-                seq_printf(f, "%3d %s (not MT default dev)\n", cd->major, cd->name);
-            else
-                seq_printf(f, "%3d %s\n", cd->major, cd->name);
-#else
             seq_printf(f, "%3d %s\n", cd->major, cd->name);
-#endif
         }
         mutex_unlock(&chrdevs_lock);
     }
@@ -143,15 +108,6 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 
 	mutex_lock(&chrdevs_lock);
 
-#ifdef CONFIG_MT_CHRDEV_REG
-    for (i = 0; i< MTCHRDEV_COUNT; i++){
-        if(major == mtchrdev_info[i].dev_num)
-        break;
-    }
-    if(i == MTCHRDEV_COUNT)
-        printk(KERN_WARNING "[CharDev WARN!!] Not MT char device: %d:%s\n", major, name);
-    
-#endif
 	/* temporary */
 	if (major == 0) {
 		for (i = ARRAY_SIZE(chrdevs)-1; i > 0; i--) {
