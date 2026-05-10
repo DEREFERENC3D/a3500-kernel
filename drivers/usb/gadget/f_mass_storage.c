@@ -407,9 +407,6 @@ struct fsg_common {
 
 	struct kref		ref;
 
-#ifdef MTK_BICR_SUPPORT
-	int  bicr;
-#endif
 	void (*android_callback)(unsigned char);
 
 	struct work_struct fsync_work;
@@ -654,16 +651,7 @@ static int fsg_setup(struct usb_function *f,
 			return -EDOM;
 		VDBG(fsg, "get max LUN\n");
 
-#ifdef MTK_BICR_SUPPORT
-		if(fsg->common->bicr) {
-			/*When enable bicr, only share ONE LUN.*/
-			*(u8 *)req->buf = 0;
-		} else {
-			*(u8 *)req->buf = fsg->common->nluns - 1;
-		}
-#else
 		*(u8 *)req->buf = fsg->common->nluns - 1;
-#endif
 
 		INFO(fsg, "get max LUN = %d\n",*(u8 *)req->buf);
 		/* Respond with data/status */
@@ -2847,9 +2835,6 @@ static struct fsg_common *fsg_common_init(struct fsg_common *common,
 	common->ep0 = gadget->ep0;
 	common->ep0req = cdev->req;
 	common->cdev = cdev;
-#ifdef MTK_BICR_SUPPORT
-	common->bicr = 0;
-#endif
 	/* Maybe allocate device-global string IDs, and patch descriptors */
 	if (fsg_strings[FSG_STRING_INTERFACE].id == 0) {
 		rc = usb_string_id(cdev);
