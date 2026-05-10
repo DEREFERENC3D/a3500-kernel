@@ -119,11 +119,6 @@ static bool suitable_migration_target(struct page *page)
 	if (migratetype == MIGRATE_ISOLATE || migratetype == MIGRATE_RESERVE)
 		return false;
 
-#ifdef CONFIG_MTKPASR
-	if (migratetype == MIGRATE_MTKPASR)
-		return false;
-#endif
-
 	/* If the page is a large free page, then allow migration */
 	if (PageBuddy(page) && page_order(page) >= pageblock_order)
 		return true;
@@ -838,14 +833,8 @@ static void kick_compaction_early_suspend(struct early_suspend *h)
 	}
 }
 
-#ifdef CONFIG_MTKPASR
-extern void shrink_mtkpasr_late_resume(void);
-#endif
 static void kick_compaction_late_resume(struct early_suspend *h)
 {
-#ifdef CONFIG_MTKPASR
-	shrink_mtkpasr_late_resume();
-#endif
 }
 
 static struct early_suspend kick_compaction_early_suspend_desc = {

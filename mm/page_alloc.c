@@ -246,12 +246,6 @@ static void set_pageblock_migratetype(struct page *page, int migratetype)
 	set_pageblock_flags_group(page, (unsigned long)migratetype,
 					PB_migrate, PB_migrate_end);
 }
-#ifdef CONFIG_MTKPASR
-void __meminit set_pageblock_mobility(struct page *page, int mobility)
-{
-	set_pageblock_migratetype(page, mobility);
-}
-#endif
 
 bool oom_killer_disabled __read_mostly;
 
@@ -906,18 +900,10 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
  * the free lists for the desirable migrate type are depleted
  */
 static int fallbacks[MIGRATE_TYPES][MIGRATE_TYPES-1] = {
-#ifndef CONFIG_MTKPASR
 	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,   MIGRATE_RESERVE },
 	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_RESERVE },
 	[MIGRATE_MOVABLE]     = { MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_RESERVE },
 	[MIGRATE_RESERVE]     = { MIGRATE_RESERVE,     MIGRATE_RESERVE,   MIGRATE_RESERVE }, /* Never used */
-#else
-	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,     /*MIGRATE_MTKPASR,*/   MIGRATE_RESERVE },
-	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,     /*MIGRATE_MTKPASR,*/   MIGRATE_RESERVE },
-	[MIGRATE_MOVABLE]     = { MIGRATE_MTKPASR,     MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_RESERVE },
-	[MIGRATE_MTKPASR]     = { MIGRATE_MOVABLE,     MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_RESERVE },
-	[MIGRATE_RESERVE]     = { MIGRATE_RESERVE }, /* Never used */
-#endif
 };
 
 /*
@@ -1018,18 +1004,7 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 
 			/* MIGRATE_RESERVE handled later if necessary */
 			if (migratetype == MIGRATE_RESERVE)
-#ifndef CONFIG_MTKPASR
 				continue;
-#else
-				break;
-#endif
-
-#ifdef CONFIG_MTKPASR	/* To Check */
-			/* We can't go through fallbacks if we are in MTKPASR stage */
-			if (unlikely(current->flags & PF_MTKPASR))
-				if (migratetype == MIGRATE_MTKPASR)
-					continue;		// break -> continue
-#endif
 
 			area = &(zone->free_area[current_order]);
 			if (list_empty(&area->free_list[migratetype]))
@@ -1038,16 +1013,6 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 			page = list_entry(area->free_list[migratetype].next,
 					struct page, lru);
 			area->nr_free--;
-#ifdef CONFIG_MTKPASR
-			/* We don't want move pages with other mobilities to MIGRATE_MTKPASR */
-			/* We don't want move pages with MIGRATE_MTKPASR to other mobilities either! */
-			if (start_migratetype == MIGRATE_MTKPASR || migratetype == MIGRATE_MTKPASR) {
-				/* Remove the page from the freelists */
-				list_del(&page->lru);
-				rmv_page_order(page);
-				goto no_move;
-			}
-#endif
 			/*
 			 * If breaking a large block of pages, move all free
 			 * pages to the preferred allocation list. If falling
@@ -1080,9 +1045,6 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 			if (current_order >= pageblock_order)
 				change_pageblock_range(page, current_order,
 							start_migratetype);
-#ifdef CONFIG_MTKPASR
-no_move:
-#endif
 			expand(zone, page, order, current_order, area, migratetype);
 
 			trace_mm_page_alloc_extfrag(page, order, current_order,
@@ -1156,13 +1118,6 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 			list_add(&page->lru, list);
 		else
 			list_add_tail(&page->lru, list);
-
-#ifdef CONFIG_MTKPASR
-		mt = get_pageblock_migratetype(page);
-		/* No change on the mobility of "MIGRATE_MTKPASR" page */
-		if (mt != MIGRATE_MTKPASR && migratetype != MIGRATE_MTKPASR)
-			mt = migratetype;
-#endif
 
 		set_page_private(page, mt);
 
@@ -2567,11 +2522,7 @@ retry_cpuset:
 	if (unlikely(!page)) {
                 if (gfp_mask & __GFP_SLOWHIGHMEM) {
                         // setup highmem flag for slowhighmem
-#ifndef CONFIG_MTKPASR
                         gfp_mask |= __GFP_HIGHMEM;
-#else
-                        gfp_mask |= GFP_MTKPASR_HIGHUSER;
-#endif
                         high_zoneidx = gfp_zone(gfp_mask);
                         first_zones_zonelist(zonelist, high_zoneidx,
                                 nodemask ? : &cpuset_current_mems_allowed,
@@ -2579,24 +2530,6 @@ retry_cpuset:
                         if (!preferred_zone)
                                 goto out;
                 }
-		
-#ifdef CONFIG_MTKPASR
-		else if (gfp_mask & __GFP_WAIT) {
-			if (gfp_mask & GFP_NO_MTKPASR) {
-				/* Do nothing, just go ahead */
-			} else {
-#ifdef CONFIG_HIGHMEM
-				if (high_zoneidx == ZONE_HIGHMEM) {
-#endif
-				gfp_mask |= GFP_MTKPASR_HIGHUSER;
-				migratetype = MIGRATE_MOVABLE;
-#ifdef CONFIG_HIGHMEM
-				}
-#endif
-			}
-		}
-#endif
-
 		page = __alloc_pages_slowpath(gfp_mask, order,
 				zonelist, high_zoneidx, nodemask,
 				preferred_zone, migratetype);
@@ -4555,11 +4488,7 @@ static inline int pageblock_default_order(unsigned int order)
 
 #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
 
-#ifdef CONFIG_MTKPASR
-extern void init_mtkpasr_range(struct zone *zone);
-#else
 #define init_mtkpasr_range(zone)	do {} while (0)
-#endif
 
 /*
  * Set up the zone data structures:
@@ -5987,71 +5916,3 @@ void dump_page(struct page *page)
 	mem_cgroup_print_bad_page(page);
 }
 EXPORT_SYMBOL(dump_page);
-
-#ifdef CONFIG_MTKPASR
-/* Find free pages - Caller must acquire zone->lock */
-int pasr_find_free_page(struct page *page, struct list_head *freelist)
-{
-	struct zone *z = page_zone(page);
-	unsigned int order;
-	int free_count, i; 
-
-	/* Remove page from free list */
-	order = page_order(page);
-	list_del(&page->lru);
-	z->free_area[order].nr_free--;
-	rmv_page_order(page);
-	__mod_zone_page_state(z, NR_FREE_PAGES, -(1UL << order));
-
-	/* Split into individual pages */
-	set_page_refcounted(page);
-	split_page(page, order);
-
-	/* Add to freelist */
-	free_count = 1 << order;
-	for (i = 0; i < free_count; i++) {
-		list_add(&page->lru, freelist);
-		page++;
-	}
-
-	return free_count;
-}
-EXPORT_SYMBOL(pasr_find_free_page);
-
-/* Given an offset and return corresponding valid, inuse page */
-struct page *pasr_acquire_inuse_page(enum zone_type ztype, unsigned long which_pfn)
-{
-	struct page *page;
-
-	/* Check & Return inuse page */
-	if (pfn_valid(which_pfn)) {
-		page = pfn_to_page(which_pfn);
-		if (page_count(page) != 0) {
-			return page;
-		}
-	}
-
-	return NULL;
-}
-EXPORT_SYMBOL(pasr_acquire_inuse_page);
-
-/* Compute maximum safe order for page allocation */
-int pasr_compute_safe_order(void)
-{
-#ifdef CONFIG_HIGHMEM
-	struct zone *z = &NODE_DATA(0)->node_zones[ZONE_NORMAL];
-	int order;
-	unsigned long watermark = low_wmark_pages(z);
-	long free_pages = zone_page_state(z, NR_FREE_PAGES);
-
-	/* Start from order:1 to make system more robust */
-	for (order = 1; order < MAX_ORDER; ++order) {
-		if (!__zone_watermark_ok(z, order, (watermark + (1 << order)), 0/*ZONE_HIGHMEM*/, 0, free_pages)) {
-			return (order - 2);
-		}
-	}
-#endif
-	return (MAX_ORDER - 1);
-}
-EXPORT_SYMBOL(pasr_compute_safe_order);
-#endif /* CONFIG_MTKPASR */
