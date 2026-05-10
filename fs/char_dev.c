@@ -24,9 +24,6 @@
 
 #include "internal.h"
 
-int dynamic_chardev_num = CHRDEV_MAJOR_HASH_SIZE;
-/* -------------------------------------------------------------*/
-
 /*
  * capabilities for /dev/mem, /dev/kmem and similar directly mappable character
  * devices
@@ -72,13 +69,13 @@ static inline int major_to_index(unsigned major)
 void chrdev_show(struct seq_file *f, off_t offset)
 {
 	struct char_device_struct *cd;
-    if (offset < CHRDEV_MAJOR_HASH_SIZE) {
-        mutex_lock(&chrdevs_lock);
-        for (cd = chrdevs[offset]; cd; cd = cd->next){
-            seq_printf(f, "%3d %s\n", cd->major, cd->name);
-        }
-        mutex_unlock(&chrdevs_lock);
-    }
+
+	if (offset < CHRDEV_MAJOR_HASH_SIZE) {
+		mutex_lock(&chrdevs_lock);
+		for (cd = chrdevs[offset]; cd; cd = cd->next)
+			seq_printf(f, "%3d %s\n", cd->major, cd->name);
+		mutex_unlock(&chrdevs_lock);
+	}
 }
 
 #endif /* CONFIG_PROC_FS */
@@ -101,7 +98,7 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	struct char_device_struct *cd, **cp;
 	int ret = 0;
 	int i;
-    char aee_str[40];
+
 	cd = kzalloc(sizeof(struct char_device_struct), GFP_KERNEL);
 	if (cd == NULL)
 		return ERR_PTR(-ENOMEM);
@@ -116,13 +113,10 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 		}
 
 		if (i == 0) {
-            sprintf( aee_str, "[%s]reg cdev fail", name);
-            printk(KERN_ERR"No enough cdev number!!\n");
 			ret = -EBUSY;
 			goto out;
 		}
 		major = i;
-        dynamic_chardev_num = i;
 		ret = major;
 	}
 
@@ -149,19 +143,12 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 
 		/* New driver overlaps from the left.  */
 		if (new_max >= old_min && new_max <= old_max) {
-            sprintf( aee_str, "Driver:%s cdev reg fail", name);
-            printk(KERN_ERR"\n!!\n");
-            printk(KERN_ERR"[%s] register cdev error at MAJOR %d. Already used by [%s]\n!!\n\n",name, major, (*cp)->name);
-    		ret = -EBUSY;
+			ret = -EBUSY;
 			goto out;
 		}
 
 		/* New driver overlaps from the right.  */
 		if (new_min <= old_max && new_min >= old_min) {
-            sprintf( aee_str, "Driver:%s:cdev reg fail", name);
-            printk(KERN_ERR"\n!!\n");
-            printk(KERN_ERR"[%s] register cdev error at MAJOR %d. Already used by [%s]\n!!\n\n",name, major, (*cp)->name);
-
 			ret = -EBUSY;
 			goto out;
 		}
@@ -174,7 +161,6 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 out:
 	mutex_unlock(&chrdevs_lock);
 	kfree(cd);
-    aee_kernel_warning( aee_str,"cdev reg\n");
 	return ERR_PTR(ret);
 }
 

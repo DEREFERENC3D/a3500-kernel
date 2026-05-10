@@ -2142,12 +2142,10 @@ int block_read_full_page(struct page *page, get_block_t *get_block)
 	 */
 	for (i = 0; i < nr; i++) {
 		bh = arr[i];
-		if (buffer_uptodate(bh)) {
+		if (buffer_uptodate(bh))
 			end_buffer_async_read(bh, 1);
-		}
-		else{
+		else
 			submit_bh(READ, bh);
-		}
 	}
 	return 0;
 }

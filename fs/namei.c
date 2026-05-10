@@ -38,15 +38,6 @@
 #include "internal.h"
 #include "mount.h"
 
-#define VFS_CREATE_LIMIT   1
-#if VFS_CREATE_LIMIT
-#include <linux/statfs.h>
-
-#define CHECK_1TH  (10 * 1024 * 1024)
-#define CHECK_2TH  (1 * 1024 * 1024)
-extern long long store;
-#endif
-
 /* [Feb-1997 T. Schoebel-Theuer]
  * Fundamental changes in the pathname lookup mechanisms (namei)
  * were necessary because of omirr.  The reason is that omirr needs
@@ -125,7 +116,6 @@ extern long long store;
  * POSIX.1 2.4: an empty pathname is invalid (ENOENT).
  * PATH_MAX includes the nul terminator --RR.
  */
-
 static int do_getname(const char __user *filename, char *page)
 {
 	int retval;
@@ -1123,7 +1113,6 @@ static struct dentry *lookup_real(struct inode *dir, struct dentry *dentry,
 	}
 
 	old = dir->i_op->lookup(dir, dentry, nd);
-
 	if (unlikely(old)) {
 		dput(dentry);
 		dentry = old;
@@ -1131,23 +1120,17 @@ static struct dentry *lookup_real(struct inode *dir, struct dentry *dentry,
 	return dentry;
 }
 
-
-
-
 static struct dentry *__lookup_hash(struct qstr *name,
 		struct dentry *base, struct nameidata *nd)
 {
 	bool need_lookup;
 	struct dentry *dentry;
-	struct dentry *res_dentry;
 
 	dentry = lookup_dcache(name, base, nd, &need_lookup);
-
 	if (!need_lookup)
 		return dentry;
-	res_dentry = lookup_real(base->d_inode, dentry, nd);
 
-	return res_dentry;
+	return lookup_real(base->d_inode, dentry, nd);
 }
 
 /*
@@ -1236,7 +1219,6 @@ done:
 	if (err)
 		nd->flags |= LOOKUP_JUMPED;
 	*inode = path->dentry->d_inode;
-
 	return 0;
 
 need_lookup:
@@ -2077,15 +2059,6 @@ void unlock_rename(struct dentry *p1, struct dentry *p2)
 int vfs_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 		struct nameidata *nd)
 {
-#if VFS_CREATE_LIMIT
-	struct mount *mount_data;
-	const char *mnt_point;
-	struct super_block *mnt_sb;
-	struct kstatfs stat;
-	char *file_list[10] = {"ccci_fsd", "ccci2_fsd", "eemcs_fsd", NULL};
-	int num = 0;
-#endif
-
 	int error = may_create(dir, dentry);
 
 	if (error)
@@ -2093,33 +2066,6 @@ int vfs_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 
 	if (!dir->i_op->create)
 		return -EACCES;	/* shouldn't it be ENOSYS? */
-#if VFS_CREATE_LIMIT
-	if(nd != NULL){	
-		mount_data = real_mount(nd->path.mnt);
-		mnt_sb = nd->path.mnt->mnt_sb;
-		mnt_point = mount_data->mnt_mountpoint->d_name.name;
-
-		if(!memcmp(mnt_point,"data",4)){			
-			if (store  <= CHECK_1TH) {
-				vfs_ustat(mnt_sb->s_dev,&stat);	
-				store = stat.f_bfree * stat.f_bsize;
-				//printk("[low storage]initialize data free size 0x%llx when create %s \n",store,dentry->d_name.name);
-
-				if (store <= CHECK_2TH) {
-					for (; file_list[num] != NULL; num ++) {
-						if (!strcmp(current->comm, file_list[num])) 
-							break;
-					}
-					if (file_list[num] == NULL) {
-						//printk("[low storage]create %s by %s fail, because data have no space\n",dentry->d_name.name,current->comm);
-						return -ENOSPC;
-					} 
-				}
-		
-			}
-		}
-	}
-#endif
 	mode &= S_IALLUGO;
 	mode |= S_IFREG;
 	error = security_inode_create(dir, dentry, mode);
@@ -2899,9 +2845,11 @@ static long do_unlinkat(int dfd, const char __user *pathname)
 	struct dentry *dentry;
 	struct nameidata nd;
 	struct inode *inode = NULL;
+
 	error = user_path_parent(dfd, pathname, &nd, &name);
 	if (error)
 		return error;
+
 	error = -EISDIR;
 	if (nd.last_type != LAST_NORM)
 		goto exit1;
