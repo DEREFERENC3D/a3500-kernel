@@ -119,9 +119,9 @@ static long alarm_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	enum android_alarm_type alarm_type = ANDROID_ALARM_IOCTL_TO_TYPE(cmd);
 	uint32_t alarm_type_mask = 1U << alarm_type;
 
- 	if (alarm_type >= ANDROID_ALARM_TYPE_COUNT &&
-	    alarm_type != ANDROID_ALARM_POWER_ON &&
-	    alarm_type != ANDROID_ALARM_POWER_ON_LOGO) {
+	if (alarm_type >= ANDROID_ALARM_TYPE_COUNT &&
+		alarm_type != ANDROID_ALARM_POWER_ON &&
+		alarm_type != ANDROID_ALARM_POWER_ON_LOGO) {
 		return -EINVAL;
 	}
 
@@ -190,7 +190,7 @@ from_old_alarm_set:
 			break;
 		}
 		spin_lock_irqsave(&alarm_slock, flags);
-	
+
 		alarm_enabled |= alarm_type_mask;
 		devalarm_start(&alarms[alarm_type],
 			timespec_to_ktime(new_alarm_time));
@@ -223,7 +223,7 @@ from_old_alarm_set:
 			goto err1;
 		}
 		rtc_time_to_tm(new_rtc_time.tv_sec, &new_rtc_tm);
-		
+
 		pr_alarm(IO, "set rtc %ld %ld - rtc %02d:%02d:%02d %02d/%02d/%04d\n",
 		new_rtc_time.tv_sec, new_rtc_time.tv_nsec,
 		new_rtc_tm.tm_hour, new_rtc_tm.tm_min,
@@ -260,7 +260,7 @@ from_old_alarm_set:
 			break;
 		case ANDROID_ALARM_POWER_ON:
 		case ANDROID_ALARM_POWER_ON_LOGO:
-			break;		
+			break;
 		}
 		if (copy_to_user((void __user *)arg, &tmp_time,
 		    sizeof(tmp_time))) {
