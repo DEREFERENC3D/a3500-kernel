@@ -29,7 +29,6 @@
 #include <linux/tracepoint.h>
 #include "internal.h"
 
-
 /*
  * 4MB minimal write chunk size
  */
