@@ -65,8 +65,6 @@ static pid_t system_server_pid;
 
 #define RT_PRIO_INHERIT			"v1.7"
 
-#define MTK_BINDER_DEBUG 		"v0.1" /* defined for mtk internal added debug code */
-
 /************************************************************************************************************************/
 /*	MTK Death Notify	|		  									*/
 /*	Debug Log Prefix	|	Description									*/
@@ -822,9 +820,6 @@ static struct binder_buffer *binder_alloc_buf(struct binder_proc *proc,
 	void *has_page_addr;
 	void *end_page_addr;
 	size_t size;
-#ifdef MTK_BINDER_DEBUG	
-	size_t proc_max_size;
-#endif
 	if (proc->vma == NULL) {
 		printk(KERN_ERR "binder: %d: binder_alloc_buf, no vma\n",
 		       proc->pid);
@@ -840,29 +835,11 @@ static struct binder_buffer *binder_alloc_buf(struct binder_proc *proc,
 		return NULL;
 	}
 
-#ifdef MTK_BINDER_DEBUG    
-	proc_max_size = (is_async ? (proc->buffer_size/2) : proc->buffer_size);
-
-	if(proc_max_size < size + sizeof(struct binder_buffer)){
-		binder_user_error("binder: %d: got transaction with too large size "
-				"%s alloc size %d-%d allowed size %d\n", proc->pid, 
-				is_async ? "async" : "sync", data_size, offsets_size,
-				(proc_max_size - sizeof(struct binder_buffer)));
-		return NULL;
-	}
-#endif
-
 	if (is_async &&
-	    proc->free_async_space < size + sizeof(struct binder_buffer)) {
-#ifdef MTK_BINDER_DEBUG
-		printk(KERN_ERR "binder: %d: binder_alloc_buf size %zd "
-				"failed, no async space left (%zd)\n", 
-				proc->pid, size, proc->free_async_space);
-#else		
+	    proc->free_async_space < size + sizeof(struct binder_buffer)) {	
 		binder_debug(BINDER_DEBUG_BUFFER_ALLOC,
 			     "%d: binder_alloc_buf size %zd failed, no async space left\n",
 			      proc->pid, size);
-#endif
 		return NULL;
 	}
 
@@ -1578,16 +1555,6 @@ static void binder_transaction(struct binder_proc *proc,
 		thread->transaction_stack = in_reply_to->to_parent;
 		target_thread = in_reply_to->from;
 		if (target_thread == NULL) {
-#ifdef MTK_BINDER_DEBUG
-			binder_user_error("binder: %d:%d got reply transaction "
-				"with bad transaction reply_from, "
-				"transaction %d has target %d:%d\n",
-				proc->pid, thread->pid, in_reply_to->debug_id,
-				in_reply_to->to_proc ?
-				in_reply_to->to_proc->pid : 0,
-				in_reply_to->to_thread ?
-				in_reply_to->to_thread->pid : 0);
-#endif
 			return_error = BR_DEAD_REPLY;
 			goto err_dead_binder;
 		}
@@ -1620,11 +1587,6 @@ static void binder_transaction(struct binder_proc *proc,
 		} else {
 			target_node = binder_context_mgr_node;
 			if (target_node == NULL) {
-#ifdef MTK_BINDER_DEBUG
-				binder_user_error("binder: %d:%d "
-					"binder_context_mgr_node is NULL\n",
-					proc->pid, thread->pid);
-#endif
 				return_error = BR_DEAD_REPLY;
 				goto err_no_context_mgr_node;
 			}
@@ -1632,10 +1594,6 @@ static void binder_transaction(struct binder_proc *proc,
 		e->to_node = target_node->debug_id;
 		target_proc = target_node->proc;
 		if (target_proc == NULL) {
-#ifdef MTK_BINDER_DEBUG
-			binder_user_error("binder: %d:%d target_proc is NULL\n",
-				proc->pid, thread->pid);
-#endif
 			return_error = BR_DEAD_REPLY;
 			goto err_dead_binder;
 		}
@@ -1677,10 +1635,6 @@ static void binder_transaction(struct binder_proc *proc,
 	/* TODO: reuse incoming transaction for reply */
 	t = kzalloc(sizeof(*t), GFP_KERNEL);
 	if (t == NULL) {
-#ifdef MTK_BINDER_DEBUG
-		binder_user_error("binder: %d:%d transaction allocation failed\n",
-			proc->pid, thread->pid);
-#endif
 		return_error = BR_FAILED_REPLY;
 		goto err_alloc_t_failed;
 	}
@@ -1688,10 +1642,6 @@ static void binder_transaction(struct binder_proc *proc,
 
 	tcomplete = kzalloc(sizeof(*tcomplete), GFP_KERNEL);
 	if (tcomplete == NULL) {
-#ifdef MTK_BINDER_DEBUG
-		binder_user_error("binder: %d:%d tcomplete allocation failed\n",
-			proc->pid, thread->pid);
-#endif
 		return_error = BR_FAILED_REPLY;
 		goto err_alloc_tcomplete_failed;
 	}
@@ -1795,10 +1745,6 @@ out_err:
 	t->buffer = binder_alloc_buf(target_proc, tr->data_size,
 		tr->offsets_size, !reply && (t->flags & TF_ONE_WAY));
 	if (t->buffer == NULL) {
-#ifdef MTK_BINDER_DEBUG
-		binder_user_error("binder: %d:%d buffer allocation failed "
-			"on %d:0\n", proc->pid, thread->pid, target_proc->pid);
-#endif
 		return_error = BR_FAILED_REPLY;
 		goto err_binder_alloc_buf_failed;
 	}
@@ -1852,10 +1798,6 @@ out_err:
 			if (node == NULL) {
 				node = binder_new_node(proc, fp->binder, fp->cookie);
 				if (node == NULL) {
-#ifdef MTK_BINDER_DEBUG
-					binder_user_error("binder: %d:%d create new node failed\n",
-						proc->pid, thread->pid);
-#endif
 					return_error = BR_FAILED_REPLY;
 					goto err_binder_new_node_failed;
 				}
@@ -1876,10 +1818,6 @@ out_err:
 			}
 			ref = binder_get_ref_for_node(target_proc, node);
 			if (ref == NULL) {
-#ifdef MTK_BINDER_DEBUG
-				binder_user_error("binder: %d:%d get binder ref failed\n",
-					proc->pid, thread->pid);
-#endif
 				return_error = BR_FAILED_REPLY;
 				goto err_binder_get_ref_for_node_failed;
 			}
@@ -1929,10 +1867,6 @@ out_err:
 				struct binder_ref *new_ref;
 				new_ref = binder_get_ref_for_node(target_proc, ref->node);
 				if (new_ref == NULL) {
-#ifdef MTK_BINDER_DEBUG
-					binder_user_error("binder: %d:%d get new binder ref failed\n",
-						proc->pid, thread->pid);
-#endif
 					return_error = BR_FAILED_REPLY;
 					goto err_binder_get_ref_for_node_failed;
 				}
@@ -1980,10 +1914,6 @@ out_err:
 			target_fd = task_get_unused_fd_flags(target_proc, O_CLOEXEC);
 			if (target_fd < 0) {
 				fput(file);
-#ifdef MTK_BINDER_DEBUG
-				binder_user_error("binder: %d:%d no unused fd available, %d\n",
-					proc->pid, thread->pid, target_fd);
-#endif
 				return_error = BR_FAILED_REPLY;
 				goto err_get_unused_fd_failed;
 			}
@@ -2041,15 +1971,6 @@ out_err:
 				wake_up_interruptible(target_wait);
 				break;
 			}
-# ifdef MTK_BINDER_DEBUG
-			if (tsk->state == TASK_UNINTERRUPTIBLE) {
-				printk(KERN_ERR "binder: from %d:%d to %d:%d target "
-						"thread state: %ld\n",
-						proc->pid, thread->pid,
-						tsk->tgid, tsk->pid, tsk->state);
-				show_stack(tsk, NULL);
-			}
-# endif
 			if (!reply && (t->policy == SCHED_RR || t->policy == SCHED_FIFO)&&
 			    t->rt_prio > tsk->rt_priority &&
 			    !(t->flags & TF_ONE_WAY)) {
@@ -3018,18 +2939,6 @@ static int binder_free_thread(struct binder_proc *proc,
 			     t->debug_id,
 			     (t->to_thread == thread) ? "in" : "out");
 
-#ifdef MTK_BINDER_DEBUG
-		printk(KERN_ERR "binder: %d: %p from %d:%d to %d:%d code %x flags %x "
-				"pri %ld r%d "
-				,
-				t->debug_id, t,
-				t->from ? t->from->proc->pid : 0,
-				t->from ? t->from->pid : 0,
-				t->to_proc ? t->to_proc->pid : 0,
-				t->to_thread ? t->to_thread->pid : 0,
-				t->code, t->flags, t->priority, t->need_reply
-				);
-#endif
 		if (t->to_thread == thread) {
 			t->to_proc = NULL;
 			t->to_thread = NULL;
@@ -3430,9 +3339,6 @@ static void binder_deferred_release(struct binder_proc *proc)
 	struct binder_transaction *t;
 	struct rb_node *n;
 	int threads, nodes, incoming_refs, outgoing_refs, buffers, active_transactions, page_count;
-#ifdef MTK_BINDER_DEBUG
-	bool sys_reg = false;
-#endif
 
 	BUG_ON(proc->vma);
 	BUG_ON(proc->files);
@@ -3481,11 +3387,6 @@ static void binder_deferred_release(struct binder_proc *proc)
 						     "[DN #3]binder: %d: cookie 0x%p\n",
 						     proc->pid, ref->death->cookie);
 #endif
-#ifdef MTK_BINDER_DEBUG
-					if (!sys_reg &&
-					    ref->proc->pid == system_server_pid)
-						sys_reg = true;
-#endif
 					death++;
 					if (list_empty(&ref->death->work.entry)) {
 						ref->death->work.type = BINDER_WORK_DEAD_BINDER;
@@ -3501,11 +3402,6 @@ static void binder_deferred_release(struct binder_proc *proc)
 				     incoming_refs, death);
 		}
 	}
-#ifdef MTK_BINDER_DEBUG
-	printk(KERN_INFO "binder: %d:%s exits %s system_server DeathNotify\n",
-			 proc->pid, proc->tsk ? proc->tsk->comm : "",
-			 sys_reg ? "with" : "W/O");
-#endif
 	outgoing_refs = 0;
 	while ((n = rb_first(&proc->refs_by_desc))) {
 		struct binder_ref *ref = rb_entry(n, struct binder_ref,
@@ -3528,18 +3424,6 @@ static void binder_deferred_release(struct binder_proc *proc)
 			       "transaction %d, not freed\n",
 			       proc->pid, t->debug_id);
 			/*BUG();*/
-#ifdef MTK_BINDER_DEBUG
-			printk(KERN_ERR "binder: %d: %p from %d:%d to %d:%d code %x flags %x "
-					"pri %ld r%d "
-					,
-					t->debug_id, t,
-					t->from ? t->from->proc->pid : 0,
-					t->from ? t->from->pid : 0,
-					t->to_proc ? t->to_proc->pid : 0,
-					t->to_thread ? t->to_thread->pid : 0,
-					t->code, t->flags, t->priority, t->need_reply
-					);
-#endif
 		}
 		binder_free_buf(proc, buffer);
 		buffers++;
@@ -4187,31 +4071,11 @@ static int binder_proc_show(struct seq_file *m, void *unused)
 {
 	struct binder_proc *proc = m->private;
 	int do_lock = !binder_debug_no_lock;
-#ifdef MTK_BINDER_DEBUG
-	struct binder_proc *tmp_proc;
-	struct hlist_node *pos;
-	bool find = false;
-#endif
 
 	if (do_lock)
 		binder_lock(__func__);
 	seq_puts(m, "binder proc state:\n");
-#ifdef MTK_BINDER_DEBUG
-	hlist_for_each_entry(tmp_proc, pos, &binder_procs, proc_node)
-	{
-		if (proc == tmp_proc)
-		{
-			find = true;
-			break;
-		}
-	}
-	if (find == true)
-#endif
 		print_binder_proc(m, proc, 1);
-#ifdef MTK_BINDER_DEBUG
-	else
-		printk(KERN_INFO "binder: show proc addr 0x%p exit\n", proc);
-#endif
 	if (do_lock)
 		binder_unlock(__func__);
 	return 0;
