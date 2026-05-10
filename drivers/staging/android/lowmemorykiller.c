@@ -30,26 +30,18 @@
  *
  */
 
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/oom.h>
 #include <linux/sched.h>
-#include <linux/fs.h>
 #include <linux/swap.h>
 #include <linux/rcupdate.h>
-#include <linux/sched.h>
 #include <linux/notifier.h>
 
-#ifdef CONFIG_HIGHMEM
-#include <linux/highmem.h>
-#endif
-
-extern void show_free_areas_minimum(void);
-
-static uint32_t lowmem_debug_level = 2;
-static DEFINE_SPINLOCK(lowmem_shrink_lock);
-
+static uint32_t lowmem_debug_level = 1;
 static int lowmem_adj[6] = {
 	0,
 	1,
@@ -65,36 +57,13 @@ static int lowmem_minfree[6] = {
 };
 static int lowmem_minfree_size = 4;
 
-#ifdef CONFIG_HIGHMEM
-static int total_low_ratio = 1;
-#endif
-
-static struct task_struct *lowmem_deathpending;
 static unsigned long lowmem_deathpending_timeout;
 
 #define lowmem_print(level, x...)			\
 	do {						\
 		if (lowmem_debug_level >= (level))	\
-			printk(x);			\
+			pr_info(x);			\
 	} while (0)
-
-static int
-task_notify_func(struct notifier_block *self, unsigned long val, void *data);
-
-static struct notifier_block task_nb = {
-	.notifier_call  = task_notify_func,
-};
-
-static int
-task_notify_func(struct notifier_block *self, unsigned long val, void *data)
-{
-	struct task_struct *task = data;
-
-	if (task == lowmem_deathpending)
-		lowmem_deathpending = NULL;
-
-	return NOTIFY_DONE;
-}
 
 static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 {
@@ -111,47 +80,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	int other_free = global_page_state(NR_FREE_PAGES) - totalreserve_pages;
 	int other_file = global_page_state(NR_FILE_PAGES) -
 						global_page_state(NR_SHMEM);
-
-	/*
-	 * If we already have a death outstanding, then
-	 * bail out right away; indicating to vmscan
-	 * that we have nothing further to offer on
-	 * this pass.
-	 *
-	 */
-	if (lowmem_deathpending &&
-		time_before_eq(jiffies, lowmem_deathpending_timeout))
-		return 0;
-
-#ifdef CONFIG_SWAP
-	other_file -= total_swapcache_pages;
-#endif
-
-#ifdef CONFIG_HIGHMEM
-    	/* 
-	 * Check whether it is caused by low memory in normal zone!
-	 * This will help solve over-reclaiming situation while total free pages is enough, but normal zone is under low memory.
-	 */
-	if (gfp_zone(sc->gfp_mask) == ZONE_NORMAL) {
-		int nid;
-		struct zone *z;
-		/* Go through all memory nodes & substract (free, file) from ZONE_HIGHMEM */
-		for_each_online_node(nid) {
-			z = &NODE_DATA(nid)->node_zones[ZONE_HIGHMEM];
-			other_free -= zone_page_state(z, NR_FREE_PAGES);
-			other_file -= zone_page_state(z, NR_FILE_PAGES);
-			/* Don't substract it twice! */
-			other_file += zone_page_state(z, NR_SHMEM);
-		}
-		other_free *= total_low_ratio;
-		other_file *= total_low_ratio;
-	}
-#endif
-
-	if (!spin_trylock(&lowmem_shrink_lock)){
-		lowmem_print(4, "lowmem_shrink lock faild\n");
-		return -1;
-	}
 
 	if (lowmem_adj_size < array_size)
 		array_size = lowmem_adj_size;
@@ -175,10 +103,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	if (sc->nr_to_scan <= 0 || min_score_adj == OOM_SCORE_ADJ_MAX + 1) {
 		lowmem_print(5, "lowmem_shrink %lu, %x, return %d\n",
 			     sc->nr_to_scan, sc->gfp_mask, rem);
-		/*
-		 * disable indication if low memory
-		 */
-		spin_unlock(&lowmem_shrink_lock);
 		return rem;
 	}
 	selected_oom_score_adj = min_score_adj;
@@ -197,31 +121,16 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 
 		if (test_tsk_thread_flag(p, TIF_MEMDIE) &&
 		    time_before_eq(jiffies, lowmem_deathpending_timeout)) {
-			static pid_t last_dying_pid = 0;
-			if (last_dying_pid != p->pid) {
-				lowmem_print(1, "lowmem_shrink return directly, due to  %d (%s) is dying\n",
-					p->pid, p->comm);
-				last_dying_pid = p->pid;
-			}
 			task_unlock(p);
 			rcu_read_unlock();
-			spin_unlock(&lowmem_shrink_lock);
 			return 0;
 		}
-#ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES
 		oom_score_adj = p->signal->oom_score_adj;
-#else
-		oom_score_adj = p->signal->oom_adj;
-#endif
 		if (oom_score_adj < min_score_adj) {
 			task_unlock(p);
 			continue;
 		}
-
 		tasksize = get_mm_rss(p->mm);
-#ifdef CONFIG_SWAP
-		tasksize += get_mm_counter(p->mm, MM_SWAPENTS);
-#endif
 		task_unlock(p);
 		if (tasksize <= 0)
 			continue;
@@ -238,12 +147,11 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		lowmem_print(2, "select '%s' (%d), adj %d, size %d, to kill\n",
 			     p->comm, p->pid, oom_score_adj, tasksize);
 	}
-
 	if (selected) {
 		lowmem_print(1, "Killing '%s' (%d), adj %d,\n" \
 				"   to free %ldkB on behalf of '%s' (%d) because\n" \
 				"   cache %ldkB is below limit %ldkB for oom_score_adj %d\n" \
-				"   Free memory is %ldkB above reserved [gfp(0x%x)]\n",
+				"   Free memory is %ldkB above reserved\n",
 			     selected->comm, selected->pid,
 			     selected_oom_score_adj,
 			     selected_tasksize * (long)(PAGE_SIZE / 1024),
@@ -251,46 +159,15 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			     other_file * (long)(PAGE_SIZE / 1024),
 			     minfree * (long)(PAGE_SIZE / 1024),
 			     min_score_adj,
-			     other_free * (long)(PAGE_SIZE / 1024),
-			     sc->gfp_mask);
-		lowmem_deathpending = selected;
+			     other_free * (long)(PAGE_SIZE / 1024));
 		lowmem_deathpending_timeout = jiffies + HZ;
-
-		/* Double check current usage for adj-0 */
-		if (selected_oom_score_adj <= 0) {
-			other_free = global_page_state(NR_FREE_PAGES) - totalreserve_pages;
-#ifdef CONFIG_HIGHMEM
-			if (gfp_zone(sc->gfp_mask) == ZONE_NORMAL) {
-				int nid;
-				struct zone *z;
-				/* Go through all memory nodes & substract (free, file) from ZONE_HIGHMEM */
-				for_each_online_node(nid) {
-					z = &NODE_DATA(nid)->node_zones[ZONE_HIGHMEM];
-					other_free -= zone_page_state(z, NR_FREE_PAGES);
-				}
-				other_free *= total_low_ratio;
-			}
-#endif	
-			/* Check free */
-			if (other_free > minfree) {
-				rcu_read_unlock();
-				spin_unlock(&lowmem_shrink_lock);
-				return 0;
-			}
-		}
-
-		/*
-		 * show an indication if low memory
-		 */
 		send_sig(SIGKILL, selected, 0);
 		set_tsk_thread_flag(selected, TIF_MEMDIE);
 		rem -= selected_tasksize;
 	}
 	lowmem_print(4, "lowmem_shrink %lu, %x, return %d\n",
-			sc->nr_to_scan, sc->gfp_mask, rem);
-	
+		     sc->nr_to_scan, sc->gfp_mask, rem);
 	rcu_read_unlock();
-	spin_unlock(&lowmem_shrink_lock);
 	return rem;
 }
 
@@ -301,30 +178,13 @@ static struct shrinker lowmem_shrinker = {
 
 static int __init lowmem_init(void)
 {
-#ifdef CONFIG_HIGHMEM
-	unsigned long normal_pages;
-#endif
-
-#ifdef CONFIG_ZRAM
-	vm_swappiness = 100;
-#endif
-
-	task_free_register(&task_nb);
 	register_shrinker(&lowmem_shrinker);
-
-#ifdef CONFIG_HIGHMEM
-	normal_pages = totalram_pages - totalhigh_pages;
-	total_low_ratio = (totalram_pages + normal_pages - 1) / normal_pages;
-	printk(KERN_ALERT "[LMK]total_low_ratio[%d] - totalram_pages[%lu] - totalhigh_pages[%lu]\n",total_low_ratio,totalram_pages,totalhigh_pages);
-#endif
-
 	return 0;
 }
 
 static void __exit lowmem_exit(void)
 {
 	unregister_shrinker(&lowmem_shrinker);
-	task_free_unregister(&task_nb);
 }
 
 #ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES
@@ -404,6 +264,7 @@ static const struct kparam_array __param_arr_adj = {
 };
 #endif
 
+// TODO: MTK Nuke after removing "ALMK"
 /*
  * get_min_free_pages
  * returns the low memory killer watermark of the given pid,
@@ -449,6 +310,7 @@ out:
 }
 EXPORT_SYMBOL(get_min_free_pages);
 
+// TODO: MTK Nuke after removing "ALMK"
 /* Query LMK minfree settings */
 /* To query default value, you can input index with value -1. */
 size_t query_lmk_minfree(int index)
@@ -490,8 +352,8 @@ module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
 			 S_IRUGO | S_IWUSR);
 module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
 
-late_initcall(lowmem_init);
-//module_init(lowmem_init);
+module_init(lowmem_init);
 module_exit(lowmem_exit);
 
 MODULE_LICENSE("GPL");
+
