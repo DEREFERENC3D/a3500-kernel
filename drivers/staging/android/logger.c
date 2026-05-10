@@ -51,7 +51,6 @@ struct logger_log {
 	size_t			w_off;	/* current write head offset */
 	size_t			head;	/* new readers start here */
 	size_t			size;	/* size of the log */
-  /* } */
 };
 
 /*
@@ -68,7 +67,6 @@ struct logger_reader {
 	int			r_ver;	/* reader ABI version */
 
 	size_t                  missing_bytes; /* android log missing warning */
-  /* } */
 };
 
 /* logger_offset - returns index 'n' into the log via (optimized) modulus */
@@ -488,6 +486,7 @@ static void do_write_log(struct logger_log *log, const void *buf, size_t count)
 		memcpy(log->buffer, buf + len, count - len);
 
 	log->w_off = logger_offset(log, log->w_off + count);
+
 }
 
 /*
@@ -518,7 +517,7 @@ static ssize_t do_write_log_from_user(struct logger_log *log,
 			return -EFAULT;
 
 	log->w_off = logger_offset(log, log->w_off + count);
-  
+
 	return count;
 }
 
@@ -537,16 +536,16 @@ ssize_t logger_aio_write(struct kiocb *iocb, const struct iovec *iov,
 	ssize_t ret = 0;
 
 
-		// android default timestamp
-		//now = current_kernel_time();
-		getnstimeofday(&now);
-		header.pid = current->tgid;
-		header.tid = current->pid;
-		header.sec = now.tv_sec;
-		header.nsec = now.tv_nsec;
-		header.euid = current_euid();
-		header.len = min_t(size_t, iocb->ki_left, LOGGER_ENTRY_MAX_PAYLOAD);
-		header.hdr_size = sizeof(struct logger_entry);
+	// android default timestamp
+	//now = current_kernel_time();
+	getnstimeofday(&now);
+	header.pid = current->tgid;
+	header.tid = current->pid;
+	header.sec = now.tv_sec;
+	header.nsec = now.tv_nsec;
+	header.euid = current_euid();
+	header.len = min_t(size_t, iocb->ki_left, LOGGER_ENTRY_MAX_PAYLOAD);
+	header.hdr_size = sizeof(struct logger_entry);
 
 	/* null writes succeed, return zero */
 	if (unlikely(!header.len))
@@ -628,7 +627,6 @@ static int logger_open(struct inode *inode, struct file *file)
 
 		mutex_lock(&log->mutex);
 		reader->r_off = log->head;
-
 		list_add_tail(&reader->list, &log->readers);
 		mutex_unlock(&log->mutex);
 
@@ -839,7 +837,6 @@ static struct logger_log *get_log_from_minor(int minor)
 		return &log_system;
 	return NULL;
 }
-
 
 static int __init init_log(struct logger_log *log)
 {
