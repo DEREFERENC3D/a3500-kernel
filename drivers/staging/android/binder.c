@@ -59,19 +59,6 @@ static int binder_last_id;
 static struct workqueue_struct *binder_deferred_workqueue;
 static pid_t system_server_pid;
 
-/************************************************************************************************************************/
-/*	MTK Death Notify	|		  									*/
-/*	Debug Log Prefix	|	Description									*/
-/*	---------------------------------------------------------------------						*/
-/*	[DN #1]			|	Some one requests Death Notify from upper layer.				*/
-/*	[DN #2]			|	Some one cancels Death Notify from upper layer.					*/
-/*	[DN #3]			|	Binder Driver sends Death Notify to all requesters' Binder Thread.		*/
-/*	[DN #4]			|	Some requester's binder_thread_read() handles Death Notify works.		*/
-/*	[DN #5]			|	Some requester sends confirmation to Binder Driver. (In IPCThreadState.cpp)	*/
-/*	[DN #6]			|	Finally receive requester's confirmation from upper layer.			*/
-/************************************************************************************************************************/
-#define MTK_DEATH_NOTIFY_MONITOR	"v0.1"
-
 #define BINDER_DEBUG_ENTRY(name) \
 static int binder_##name##_open(struct inode *inode, struct file *file) \
 { \
@@ -2118,17 +2105,6 @@ int binder_thread_write(struct binder_proc *proc, struct binder_thread *thread,
 					target);
 				break;
 			}
-#ifdef MTK_DEATH_NOTIFY_MONITOR
-			binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
-				     "[DN #%s]binder: %d:%d %s %d cookie 0x%p\n",
-				     cmd == BC_REQUEST_DEATH_NOTIFICATION ? "1" : "2",
-				     proc->pid, thread->pid,
-				     cmd == BC_REQUEST_DEATH_NOTIFICATION ?
-				         "BC_REQUEST_DEATH_NOTIFICATION" :
-				         "BC_CLEAR_DEATH_NOTIFICATION",
-				     ref->node->proc ? ref->node->proc->pid : 0,
-				     cookie);
-#else
 			binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
 				     "binder: %d:%d %s %p ref %d desc %d s %d w %d for node %d\n",
 				     proc->pid, thread->pid,
@@ -2137,7 +2113,6 @@ int binder_thread_write(struct binder_proc *proc, struct binder_thread *thread,
 				     "BC_CLEAR_DEATH_NOTIFICATION",
 				     cookie, ref->debug_id, ref->desc,
 				     ref->strong, ref->weak, ref->node->debug_id);
-#endif
 
 			if (cmd == BC_REQUEST_DEATH_NOTIFICATION) {
 				if (ref->death) {
@@ -2211,11 +2186,6 @@ int binder_thread_write(struct binder_proc *proc, struct binder_thread *thread,
 			struct binder_ref_death *death = NULL;
 			if (get_user(cookie, (void __user * __user *)ptr))
 				return -EFAULT;
-
-#ifdef MTK_DEATH_NOTIFY_MONITOR
-			binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
-				     "[DN #6]binder: %d:%d cookie 0x%p\n", proc->pid, thread->pid, cookie);
-#endif
 
 			ptr += sizeof(void *);
 			list_for_each_entry(w, &proc->delivered_death, entry) {
@@ -2469,31 +2439,6 @@ retry:
 
 			death = container_of(w, struct binder_ref_death, work);
 
-#ifdef MTK_DEATH_NOTIFY_MONITOR
-			switch (w->type) {
-				case BINDER_WORK_DEAD_BINDER:
-					binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
-						     "[DN #4]binder: %d:%d BINDER_WORK_DEAD_BINDER cookie 0x%p\n",
-						     proc->pid, thread->pid, death->cookie);
-					break;
-				case BINDER_WORK_DEAD_BINDER_AND_CLEAR:
-					binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
-						     "[DN #4]binder: %d:%d BINDER_WORK_DEAD_BINDER_AND_CLEAR cookie "
-						     "0x%p\n", proc->pid, thread->pid, death->cookie);
-					break;
-				case BINDER_WORK_CLEAR_DEATH_NOTIFICATION:
-					binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
-						     "[DN #4]binder: %d:%d BINDER_WORK_CLEAR_DEATH_NOTIFICATION cookie "
-						     "0x%p\n", proc->pid, thread->pid, death->cookie);
-					break;
-				default:
-					binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
-						     "[DN #4]binder: %d:%d UNKNOWN-%d cookie 0x%p\n",
-						     proc->pid, thread->pid, w->type, death->cookie);
-					break;
-			}
-#endif
-
 			if (w->type == BINDER_WORK_CLEAR_DEATH_NOTIFICATION)
 				cmd = BR_CLEAR_DEATH_NOTIFICATION_DONE;
 			else
@@ -2505,7 +2450,6 @@ retry:
 				return -EFAULT;
 			ptr += sizeof(void *);
 			binder_stat_br(proc, thread, cmd);
-#ifndef MTK_DEATH_NOTIFY_MONITOR
 			binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
 				     "binder: %d:%d %s %p\n",
 				      proc->pid, thread->pid,
@@ -2513,7 +2457,6 @@ retry:
 				      "BR_DEAD_BINDER" :
 				      "BR_CLEAR_DEATH_NOTIFICATION_DONE",
 				      death->cookie);
-#endif
 
 			if (w->type == BINDER_WORK_CLEAR_DEATH_NOTIFICATION) {
 				list_del(&w->entry);
@@ -3162,11 +3105,6 @@ static void binder_deferred_release(struct binder_proc *proc)
 			hlist_for_each_entry(ref, pos, &node->refs, node_entry) {
 				incoming_refs++;
 				if (ref->death) {
-#ifdef MTK_DEATH_NOTIFY_MONITOR
-					binder_debug(BINDER_DEBUG_DEATH_NOTIFICATION,
-						     "[DN #3]binder: %d: cookie 0x%p\n",
-						     proc->pid, ref->death->cookie);
-#endif
 					death++;
 					if (list_empty(&ref->death->work.entry)) {
 						ref->death->work.type = BINDER_WORK_DEAD_BINDER;
