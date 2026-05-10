@@ -40,10 +40,6 @@
 #include <linux/kthread.h>
 #include <linux/rtc.h>
 
-#ifdef CONFIG_MT_PRIO_TRACER
- #include <linux/prio_tracer.h>
-#endif
-
 #include "binder.h"
 #include "binder_trace.h"
 
@@ -543,22 +539,14 @@ static void binder_set_nice(long nice)
 {
 	long min_nice;
 	if (can_nice(current, nice)) {
-#ifdef CONFIG_MT_PRIO_TRACER
-		set_user_nice_binder(current, nice);
-#else
 		set_user_nice(current, nice);
-#endif
 		return;
 	}
 	min_nice = 20 - current->signal->rlim[RLIMIT_NICE].rlim_cur;
 	binder_debug(BINDER_DEBUG_PRIORITY_CAP,
 		     "binder: %d: nice value %ld not allowed use "
 		     "%ld instead\n", current->pid, nice, min_nice);
-#ifdef CONFIG_MT_PRIO_TRACER
-	set_user_nice_binder(current, min_nice);
-#else
 	set_user_nice(current, min_nice);
-#endif
 	if (min_nice < 20)
 		return;
 	binder_user_error("binder: %d RLIMIT_NICE not set\n", current->pid);
