@@ -5,12 +5,6 @@
 #include <linux/rcupdate.h>
 #include <linux/vmalloc.h>
 #include <linux/reboot.h>
-/*******************************************************************************
-* 20121204 marc.huang                                                          *
-* CPU Hotplug and AEE integration for debug purpose                            *
-*******************************************************************************/
-#include <linux/mtk_ram_console.h>
-/******************************************************************************/
 
 /*
  *	Notifier list for kernel code which wants to be called
@@ -96,7 +90,6 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
 			continue;
 		}
 #endif
-
 		ret = nb->notifier_call(nb, val, v);
 
 		if (nr_calls)
