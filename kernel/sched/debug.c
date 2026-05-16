@@ -21,7 +21,6 @@
 
 #include "sched.h"
 
-//#define TEST_SCHED_DEBUG_ENHANCEMENT
 #define TRYLOCK_NUM 10
 #include <linux/delay.h>
 
@@ -329,27 +328,11 @@ static const char *sched_tunable_scaling_names[] = {
 	"linear"
 };
 
-#ifdef TEST_SCHED_DEBUG_ENHANCEMENT
-extern void lock_timekeeper(void);		
-#endif
 static int sched_debug_show(struct seq_file *m, void *v)
 {
 	u64 ktime, sched_clk, cpu_clk;
 	unsigned long flags;
 	int cpu;
-
-#ifdef TEST_SCHED_DEBUG_ENHANCEMENT
-	static int i=0;
-	i++;
-	if(i==10){
-		struct rq *rq = cpu_rq(0);
-		//lock_timekeeper();	
-		raw_spin_lock_irq(&rq->lock);
-		spin_lock_irqsave(&sched_debug_lock, flags);
-		write_lock_irqsave(&tasklist_lock, flags);
-		BUG_ON(1);
-	}
-#endif
 
 	local_irq_save(flags);
 	ktime = ktime_to_ns(ktime_get());
