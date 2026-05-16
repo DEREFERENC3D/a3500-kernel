@@ -15,9 +15,6 @@
 #include <linux/seq_file.h>
 #include <linux/kallsyms.h>
 #include <linux/utsname.h>
-#ifdef CONFIG_KGDB_KDB
-#include <linux/kdb.h>
-#endif
 
 #include "sched.h"
 
@@ -30,25 +27,13 @@ static DEFINE_SPINLOCK(sched_debug_lock);
  * This allows printing both to /proc/sched_debug and
  * to the console
  */
-#ifndef CONFIG_KGDB_KDB
 #define SEQ_printf(m, x...)			\
  do {						\
 	if (m)					\
 		seq_printf(m, x);		\
-	else						\
-		printk(x);				\
+	else					\
+		printk(x);			\
  } while (0)
-#else
-#define SEQ_printf(m, x...)			\
- do {						\
-	if (m)					\
-		seq_printf(m, x);		\
-	else if (__get_cpu_var(kdb_in_use) == 1)		\
-		kdb_printf(x);			\
-	else						\
-		printk(x);				\
- } while (0)
-#endif
 /*
  * Ease the printing of nsec fields:
  */
