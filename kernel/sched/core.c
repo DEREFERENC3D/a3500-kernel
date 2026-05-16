@@ -83,14 +83,8 @@
 
 #include "sched.h"
 #include "../workqueue_sched.h"
-#include "linux/aee.h"
-#include "linux/mtk_ram_console.h"
-#include <linux/mt_sched_mon.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/sched.h>
-
-#include <mtlbprof/mtlbprof.h>
-#include <mtlbprof/mtlbprof_stat.h>
 
 void start_bandwidth_timer(struct hrtimer *period_timer, ktime_t period)
 {
