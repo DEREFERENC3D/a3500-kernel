@@ -3274,21 +3274,6 @@ void __kprobes sub_preempt_count(int val)
 #ifdef CONFIG_PREEMPT_MONITOR
         if(unlikely(__raw_get_cpu_var(mtsched_mon_enabled) & 0x1)){
             MT_trace_preempt_on();
-#if 0
-            unsigned long long t;
-            current->t_sub_prmpt = sched_clock();
-            t = current->t_sub_prmpt - current->t_add_prmpt;    
-            if(unlikely(t > 30000000 && current->t_add_prmpt!=0 ))
-            {
-                if(t > 55000000){
-                    //aee_kernel_exception( "preempt disable > 55ms\n","sched monitor\n");
-                    printk("[Sched Latency:Preempt Monitor][%d:%s] Duration: %llu ns > 55 ms \n",current->pid, current->comm, t);
-                }else{
-                    printk("[Sched Latency:Preempt Monitor][%d:%s] Duration: %llu ns > 30 ms \n",current->pid, current->comm, t);
-                }
-                dump_stack();
-            }
-#endif
         }    
 #endif
     }
