@@ -176,7 +176,7 @@ static void tick_nohz_stop_idle(int cpu, ktime_t now)
 
 	update_ts_time_stats(cpu, ts, now, NULL);
 	ts->idle_active = 0;
-	
+
 	sched_clock_idle_wakeup_event(0);
 }
 
@@ -186,7 +186,6 @@ static ktime_t tick_nohz_start_idle(int cpu, struct tick_sched *ts)
 
 	ts->idle_entrytime = now;
 	ts->idle_active = 1;
-	
 	sched_clock_idle_sleep_event();
 	return now;
 }
@@ -271,7 +270,6 @@ u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time)
 	return ktime_to_us(iowait);
 }
 EXPORT_SYMBOL_GPL(get_cpu_iowait_time_us);
-
 
 static void tick_nohz_stop_sched_tick(struct tick_sched *ts)
 {
@@ -483,6 +481,7 @@ void tick_nohz_idle_enter(void)
 	 */
 	ts->inidle = 1;
 	tick_nohz_stop_sched_tick(ts);
+
 	local_irq_enable();
 }
 
@@ -866,8 +865,7 @@ void tick_cancel_sched_timer(int cpu)
 		hrtimer_cancel(&ts->sched_timer);
 # endif
 
-	//memset(ts, 0, sizeof(*ts));
-	ts->nohz_mode = NOHZ_MODE_INACTIVE;
+	memset(ts, 0, sizeof(*ts));
 }
 #endif
 
