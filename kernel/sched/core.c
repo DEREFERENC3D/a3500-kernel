@@ -83,6 +83,7 @@
 
 #include "sched.h"
 #include "../workqueue_sched.h"
+
 #define CREATE_TRACE_POINTS
 #include <trace/events/sched.h>
 
@@ -960,8 +961,7 @@ static int irqtime_account_si_update(void)
 
 void sched_set_stop_task(int cpu, struct task_struct *stop)
 {
-	//struct sched_param param = { .sched_priority = MAX_RT_PRIO - 1 };
-	struct sched_param param = { .sched_priority = RTPM_PRIO_CPU_CALLBACK };
+	struct sched_param param = { .sched_priority = MAX_RT_PRIO - 1 };
 	struct task_struct *old_stop = cpu_rq(cpu)->stop;
 
 	if (stop) {
@@ -1486,7 +1486,7 @@ static void sched_ttwu_pending(void)
 void scheduler_ipi(void)
 {
 	if (llist_empty(&this_rq()->wake_list) && !got_nohz_idle_kick())
-        return;
+		return;
 
 	/*
 	 * Not all reschedule IPI handlers call irq_enter/irq_exit, since
@@ -1629,10 +1629,6 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	if (task_cpu(p) != cpu) {
 		wake_flags |= WF_MIGRATED;
 		set_task_cpu(p, cpu);
-	} else {
-		if (sched_feat(TTWU_QUEUE) &&
-		    !cpus_share_cache(smp_processor_id(), cpu))
-			trace_sched_wakeup(p, false);
 	}
 #endif /* CONFIG_SMP */
 
@@ -2167,12 +2163,15 @@ unsigned long this_cpu_load(void)
 	struct rq *this = this_rq();
 	return this->cpu_load[0];
 }
+
+// TODO: MTK Nuke after removing dependency
 unsigned long get_cpu_load(int cpu)                                                                     
 {   
     struct rq *this = cpu_rq(cpu);                                                                      
     return this->cpu_load[0];                                                                           
 }
 EXPORT_SYMBOL(get_cpu_load);
+
 
 /*
  * Global load-average calculations
@@ -3175,11 +3174,12 @@ void scheduler_tick(void)
 
 	raw_spin_lock(&rq->lock);
 	update_rq_clock(rq);
-	curr->sched_class->task_tick(rq, curr, 0);
 	update_cpu_load_active(rq);
+	curr->sched_class->task_tick(rq, curr, 0);
 	raw_spin_unlock(&rq->lock);
 
 	perf_event_task_tick();
+
 #ifdef CONFIG_SMP
 	rq->idle_balance = idle_cpu(cpu);
 	trigger_load_balance(rq, cpu);
@@ -3216,13 +3216,8 @@ void __kprobes add_preempt_count(int val)
 	DEBUG_LOCKS_WARN_ON((preempt_count() & PREEMPT_MASK) >=
 				PREEMPT_MASK - 10);
 #endif
-	//if (preempt_count() == val)
-	//	trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
-    if (preempt_count() == (val & ~PREEMPT_ACTIVE)){
-#ifdef CONFIG_PREEMPT_TRACER
-        trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
-#endif
-    }
+	if (preempt_count() == val)
+		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
 }
 EXPORT_SYMBOL(add_preempt_count);
 
@@ -3242,13 +3237,8 @@ void __kprobes sub_preempt_count(int val)
 		return;
 #endif
 
-	//if (preempt_count() == val)
-	//	trace_preempt_on(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
-    if (preempt_count() == (val & ~PREEMPT_ACTIVE)){
-#ifdef CONFIG_PREEMPT_TRACER
-        trace_preempt_on(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
-#endif
-    }
+	if (preempt_count() == val)
+		trace_preempt_on(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
 	preempt_count() -= val;
 }
 EXPORT_SYMBOL(sub_preempt_count);
@@ -4008,7 +3998,6 @@ out_unlock:
 	__task_rq_unlock(rq);
 }
 #endif
-
 void set_user_nice(struct task_struct *p, long nice)
 {
 	int old_prio, delta, on_rq;
@@ -4210,21 +4199,6 @@ static bool check_same_owner(struct task_struct *p)
 	return match;
 }
 
-static int check_mt_allow_rt(struct sched_param *param)
-{
-    int allow = 0;
-	if(0 == MT_ALLOW_RT_PRIO_BIT){
-		//this condition check will be removed
-		return 1;
-	}
-
-    if(param->sched_priority & MT_ALLOW_RT_PRIO_BIT){
-        param->sched_priority &= ~MT_ALLOW_RT_PRIO_BIT;
-        allow = 1;
-    }
-    return allow;
-}   
-
 static int __sched_setscheduler(struct task_struct *p, int policy,
 				const struct sched_param *param, bool user)
 {
@@ -4250,13 +4224,6 @@ recheck:
 				policy != SCHED_IDLE)
 			return -EINVAL;
 	}
-
-    if(rt_policy(policy)){                                                                                
-        if (!check_mt_allow_rt((struct sched_param *)param)){
-            printk("[RT_MONITOR]WARNNING [%d:%s] SET NOT ALLOW RT Prio [%d] for proc [%d:%s]\n", current->pid, current->comm, param->sched_priority, p->pid, p->comm);
-			//dump_stack();
-        }
-    }
 
 	/*
 	 * Valid priorities for SCHED_FIFO and SCHED_RR are
@@ -4434,9 +4401,8 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
 	rcu_read_lock();
 	retval = -ESRCH;
 	p = find_process_by_pid(pid);
-	if (p != NULL) {
+	if (p != NULL)
 		retval = sched_setscheduler(p, policy, &lparam);
-	}
 	rcu_read_unlock();
 
 	return retval;
@@ -4545,7 +4511,6 @@ long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 	if (!p) {
 		rcu_read_unlock();
 		put_online_cpus();
-		printk(KERN_ERR "SCHED: setaffinity find process %d fail\n", pid); 
 		return -ESRCH;
 	}
 
@@ -4555,32 +4520,24 @@ long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 
 	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL)) {
 		retval = -ENOMEM;
-		printk(KERN_ERR "SCHED: setaffinity allo_cpumask_var for cpus_allowed fail\n"); 
 		goto out_put_task;
 	}
 	if (!alloc_cpumask_var(&new_mask, GFP_KERNEL)) {
 		retval = -ENOMEM;
-		printk(KERN_ERR "SCHED: setaffinity allo_cpumask_var for new_mask fail\n");  
 		goto out_free_cpus_allowed;
 	}
 	retval = -EPERM;
-	if (!check_same_owner(p) && !ns_capable(task_user_ns(p), CAP_SYS_NICE)){
-		printk(KERN_ERR "SCHED: setaffinity check_same_owner and task_ns_capable fail\n");  
+	if (!check_same_owner(p) && !ns_capable(task_user_ns(p), CAP_SYS_NICE))
 		goto out_unlock;
-	}
 
 	retval = security_task_setscheduler(p);
-	if (retval){
-		printk(KERN_ERR "SCHED: setaffinity security_task_setscheduler fail, status: %d\n", retval);  
+	if (retval)
 		goto out_unlock;
-	}
 
 	cpuset_cpus_allowed(p, cpus_allowed);
 	cpumask_and(new_mask, in_mask, cpus_allowed);
 again:
 	retval = set_cpus_allowed_ptr(p, new_mask);
-	if (retval)
-		printk(KERN_ERR "SCHED: set_cpus_allowed_ptr status %d\n", retval);   
 
 	if (!retval) {
 		cpuset_cpus_allowed(p, cpus_allowed);
@@ -4601,8 +4558,6 @@ out_free_cpus_allowed:
 out_put_task:
 	put_task_struct(p);
 	put_online_cpus();
-	if (retval)
-		printk(KERN_ERR "SCHED: setaffinity status %d\n", retval);
 	return retval;
 }
 
@@ -4650,16 +4605,12 @@ long sched_getaffinity(pid_t pid, struct cpumask *mask)
 
 	retval = -ESRCH;
 	p = find_process_by_pid(pid);
-	if (!p){
-		printk(KERN_ERR "SCHED: getaffinity find process %d fail\n", pid);  
+	if (!p)
 		goto out_unlock;
-	}
 
 	retval = security_task_getscheduler(p);
-	if (retval){
-		printk(KERN_ERR "SCHED: getaffinity security_task_getscheduler fail, status: %d\n", retval); 
+	if (retval)
 		goto out_unlock;
-	}
 
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
 	cpumask_and(mask, &p->cpus_allowed, cpu_online_mask);
@@ -4669,9 +4620,6 @@ out_unlock:
 	rcu_read_unlock();
 	put_online_cpus();
 
-	if (retval){
-		printk(KERN_ERR "SCHED: getaffinity status %d\n", retval);   
-	}
 	return retval;
 }
 
@@ -5027,6 +4975,7 @@ out_unlock:
 }
 
 static const char stat_nam[] = TASK_STATE_TO_CHAR_STR;
+
 void sched_show_task(struct task_struct *p)
 {
 	unsigned long free = 0;
@@ -5196,13 +5145,11 @@ int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 
 	if (!cpumask_intersects(new_mask, cpu_active_mask)) {
 		ret = -EINVAL;
-		printk(KERN_ERR "SCHED: intersects new_mask: %lu, cpu_active_mask: %lu\n", new_mask->bits[0], cpu_active_mask->bits[0]);
 		goto out;
 	}
 
 	if (unlikely((p->flags & PF_THREAD_BOUND) && p != current)) {
 		ret = -EINVAL;
-		printk(KERN_ERR "SCHED: set_cpus_allowed_ptr error. flag: %d, task_pid: %d, current: %d\n", p->flags, p->pid, current->pid );
 		goto out;
 	}
 
@@ -5362,12 +5309,6 @@ static void migrate_tasks(unsigned int dead_cpu)
 	 */
 	rq->stop = NULL;
 
-	/*
-	  * Ensure rt_rq is not throttled so its threads can be migrated using
-	  * pick_next_task_rt
-	  */
-	unthrottle_offline_rt_rqs(rq);
-	
 	/* Ensure any throttled groups are reachable by pick_next_task */
 	unthrottle_offline_cfs_rqs(rq);
 
@@ -5615,6 +5556,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
 		raw_spin_lock_irqsave(&rq->lock, flags);
 		if (rq->rd) {
 			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
+
 			set_rq_online(rq);
 		}
 		raw_spin_unlock_irqrestore(&rq->lock, flags);
@@ -5626,7 +5568,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
 		/* Update our root-domain */
 		raw_spin_lock_irqsave(&rq->lock, flags);
 		if (rq->rd) {
-			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));	
+			BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
 			set_rq_offline(rq);
 		}
 		migrate_tasks(cpu);
@@ -6666,7 +6608,6 @@ static int build_sched_domains(const struct cpumask *cpu_map,
 	struct s_data d;
 	int i, ret = -ENOMEM;
 
-	printk("[Sched] build_sched_domains\n");
 	alloc_state = __visit_domain_allocation_hell(&d, cpu_map);
 	if (alloc_state != sa_rootdomain)
 		goto error;
@@ -7044,7 +6985,6 @@ static int cpuset_cpu_active(struct notifier_block *nfb, unsigned long action,
 
 	case CPU_ONLINE:
 	case CPU_DOWN_FAILED:
-		printk("[Sched] cpuset_cpu_active %lu\n", action);
 		cpuset_update_active_cpus();
 		break;
 	default:
@@ -7200,9 +7140,6 @@ void __init sched_init(void)
 		rq->nr_running = 0;
 		rq->calc_load_active = 0;
 		rq->calc_load_update = jiffies + LOAD_FREQ;
-#ifdef CONFIG_PROVE_LOCKING
-		rq->cpu = i;
-#endif
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt, rq);
 #ifdef CONFIG_FAIR_GROUP_SCHED
@@ -7918,7 +7855,7 @@ static int cpu_cgroup_can_attach(struct cgroup *cgrp,
 	cgroup_taskset_for_each(task, cgrp, tset) {
 #ifdef CONFIG_RT_GROUP_SCHED
 		if (!sched_rt_can_attach(cgroup_tg(cgrp), task))
-		return -ERTGROUP;
+			return -EINVAL;
 #else
 		/* We don't support RT-tasks being in separate groups */
 		if (task->sched_class != &fair_sched_class)
@@ -8501,6 +8438,8 @@ struct cgroup_subsys cpuacct_subsys = {
 	.subsys_id = cpuacct_subsys_id,
 };
 #endif	/* CONFIG_CGROUP_CPUACCT */
+
+// TODO: MTK Nuke after fixing dependency - used in "mediatek/platform/mt6582/kernel/drivers/videocodec/videocodec_kernel_driver.c"
 unsigned long long mt_get_thread_cputime(pid_t pid)
 {
     struct task_struct *p;
