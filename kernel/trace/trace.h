@@ -12,9 +12,6 @@
 #include <linux/hw_breakpoint.h>
 #include <linux/trace_seq.h>
 #include <linux/ftrace_event.h>
-#ifdef CONFIG_MT65XX_TRACER
-#include <mach/mt_mon.h>
-#endif
 
 enum trace_type {
 	__TRACE_FIRST_TYPE = 0,

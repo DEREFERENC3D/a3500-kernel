@@ -85,9 +85,6 @@
 #include "../workqueue_sched.h"
 #include "linux/aee.h"
 #include "linux/mtk_ram_console.h"
-#ifdef CONFIG_MT65XX_TRACER
-#include "mach/mt_mon.h"
-#endif
 #include <linux/mt_sched_mon.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/sched.h>
@@ -2072,10 +2069,6 @@ context_switch(struct rq *rq, struct task_struct *prev,
 #endif
 	prepare_task_switch(rq, prev, next);
 
-#ifdef CONFIG_MT65XX_TRACER
-    if(get_mt65xx_mon_mode() == MODE_SCHED_SWITCH)
-	    trace_mt65xx_mon_sched_switch(prev, next);
-#endif
 	mm = next->mm;
 	oldmm = prev->active_mm;
 	/*

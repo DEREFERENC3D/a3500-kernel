@@ -8,10 +8,6 @@
 #include <linux/tracepoint.h>
 #include <linux/binfmts.h>
 
-#ifdef CONFIG_MT65XX_TRACER
-#include <trace/events/mt65xx_mon_trace.h>
-#endif
-
 #define _MT_TASK_STATE_MASK		( (TASK_STATE_MAX-1) & ~TASK_WAKEKILL )
 
 /*
