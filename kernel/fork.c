@@ -81,8 +81,6 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/task.h>
 
-#include "mtlbprof/mtlbprof.h"
-
 /*
  * Protected counters by write_lock_irq(&tasklist_lock)
  */
@@ -282,22 +280,19 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
 	prepare_to_copy(orig);
 
 	tsk = alloc_task_struct_node(node);
-	if (!tsk){
-		printk("[%d:%s] fork fail at alloc_tsk_node, please check kmem_cache_alloc_node()\n", current->pid, current->comm);
+	if (!tsk)
 		return NULL;
-	}
+
 	ti = alloc_thread_info_node(tsk, node);
 	if (!ti) {
-		printk("[%d:%s] fork fail at alloc_t_info_node, please check alloc_pages_node()\n", current->pid, current->comm);
 		free_task_struct(tsk);
 		return NULL;
 	}
 
 	err = arch_dup_task_struct(tsk, orig);
-	if (err){
-		printk("[%d:%s] fork fail at arch_dup_task_struct, err:%d \n", current->pid, current->comm, err);
+	if (err)
 		goto out;
-	}
+
 	tsk->stack = ti;
 
 	setup_thread_stack(tsk, orig);
@@ -1148,28 +1143,24 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	struct task_struct *p;
 	int cgroup_callbacks_done = 0;
 
-    if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS)){
-        printk("[%d:%s] fork fail at cpp 1, clone_flags:0x%x\n", current->pid, current->comm, (unsigned int)clone_flags);
+	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
 		return ERR_PTR(-EINVAL);
-    }
 
 	/*
 	 * Thread groups must share signals as well, and detached threads
 	 * can only be started up within the thread group.
 	 */
-    if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND)){
-        printk("[%d:%s] fork fail at cpp 2, clone_flags:0x%x\n", current->pid, current->comm, (unsigned int)clone_flags);
+	if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND))
 		return ERR_PTR(-EINVAL);
-    }
+
 	/*
 	 * Shared signal handlers imply shared VM. By way of the above,
 	 * thread groups also imply shared VM. Blocking this case allows
 	 * for various simplifications in other code.
 	 */
-    if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM)){
-        printk("[%d:%s] fork fail at cpp 3, clone_flags:0x%x\n", current->pid, current->comm, (unsigned int)clone_flags);
+	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
 		return ERR_PTR(-EINVAL);
-    }
+
 	/*
 	 * Siblings of global init remain as zombies on exit since they are
 	 * not reaped by their parent (swapper). To solve this and to avoid
@@ -1177,10 +1168,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	 * from creating siblings.
 	 */
 	if ((clone_flags & CLONE_PARENT) &&
-				current->signal->flags & SIGNAL_UNKILLABLE){
-        printk("[%d:%s] fork fail at cpp 4, clone_flags:0x%x\n", current->pid, current->comm, (unsigned int)clone_flags);
+				current->signal->flags & SIGNAL_UNKILLABLE)
 		return ERR_PTR(-EINVAL);
-    }
 
 	retval = security_task_create(clone_flags);
 	if (retval)
@@ -1188,10 +1177,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 
 	retval = -ENOMEM;
 	p = dup_task_struct(current);
-	if (!p){
-        printk("[%d:%s] fork fail at dup_task_struc, p=0x%x\n", current->pid, current->comm, (unsigned int)p);
+	if (!p)
 		goto fork_out;
-    }
 
 	ftrace_graph_init_task(p);
 
@@ -1412,8 +1399,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	 */
 	p->group_leader = p;
 	INIT_LIST_HEAD(&p->thread_group);
-    INIT_HLIST_HEAD(&p->task_works);
-	
+
 	/* Now that the task is set up, run cgroup callbacks if
 	 * necessary. We need to run them before the task is visible
 	 * on the tasklist. */
@@ -1533,7 +1519,6 @@ bad_fork_cleanup_count:
 bad_fork_free:
 	free_task(p);
 fork_out:
-    printk("[%d:%s] fork fail retval:0x%x\n", current->pid, current->comm, retval);
 	return ERR_PTR(retval);
 }
 
@@ -1574,10 +1559,6 @@ struct task_struct * __cpuinit fork_idle(int cpu)
  * It copies the process, and if successful kick-starts
  * it and waits for it to finish using the VM if required.
  */
-#ifdef CONFIG_SCHEDSTATS
-/* mt shceduler profiling*/
-extern void save_mtproc_info(struct task_struct *p, unsigned long long ts);
-#endif
 long do_fork(unsigned long clone_flags,
 	      unsigned long stack_start,
 	      struct pt_regs *regs,
@@ -1594,19 +1575,16 @@ long do_fork(unsigned long clone_flags,
 	 * actually start allocating stuff
 	 */
 	if (clone_flags & CLONE_NEWUSER) {
-		if (clone_flags & CLONE_THREAD){
-			printk("[%d:%s] fork fail at clone_thread, flags:0x%x\n", current->pid, current->comm, (unsigned int)clone_flags);
+		if (clone_flags & CLONE_THREAD)
 			return -EINVAL;
-		}
 		/* hopefully this check will go away when userns support is
 		 * complete
 		 */
 		if (!capable(CAP_SYS_ADMIN) || !capable(CAP_SETUID) ||
-			!capable(CAP_SETGID)){
-			printk("[%d:%s] fork fail at capable not match, flags:0x%x\n", current->pid, current->comm, (unsigned int)clone_flags);
+				!capable(CAP_SETGID))
 			return -EPERM;
-		}
 	}
+
 	/*
 	 * Determine whether and which event to report to ptracer.  When
 	 * called from kernel_thread or CLONE_UNTRACED is explicitly
@@ -1647,11 +1625,6 @@ long do_fork(unsigned long clone_flags,
 			get_task_struct(p);
 		}
 
-#ifdef CONFIG_SCHEDSTATS
-		/* mt shceduler profiling*/
-		save_mtproc_info(p, sched_clock());
-		printk(KERN_DEBUG "[%d:%d:%s] fork [%d:%d:%s] flag=0x%lx\n", current->tgid, current->pid, current->comm, p->tgid, p->pid, p->comm, clone_flags);
-#endif
 		wake_up_new_task(p);
 
 		/* forking complete and child started to run, tell ptracer */
@@ -1664,7 +1637,6 @@ long do_fork(unsigned long clone_flags,
 		}
 	} else {
 		nr = PTR_ERR(p);
-		printk("[%d:%s] fork fail:[0x%x, %d]\n", current->pid, current->comm, (unsigned int)p,(int) nr);
 	}
 	return nr;
 }
