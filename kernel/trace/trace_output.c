@@ -712,12 +712,6 @@ static int task_state_char(unsigned long state)
 {
 	int bit = state ? __ffs(state) + 1 : 0;
 
-        if(state == MTK_TASK_IO_WAIT)
-        {
-            //printk(KERN_ERR"task_state_char : MTK_TASK_IO_WAIT\n");
-            return 'd';
-        }
-
 	return bit < sizeof(state_to_char) - 1 ? state_to_char[bit] : '?';
 }
 

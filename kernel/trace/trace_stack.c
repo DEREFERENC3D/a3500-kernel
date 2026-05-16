@@ -13,7 +13,6 @@
 #include <linux/sysctl.h>
 #include <linux/init.h>
 #include <linux/fs.h>
-#include <linux/earlysuspend.h>
 
 #include <asm/setup.h>
 
@@ -389,49 +388,6 @@ static const struct file_operations stack_trace_filter_fops = {
 	.release = ftrace_regex_release,
 };
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
-/*add for stack_trace suspend-resume issue*/
-static int stack_tracer_enabled_backup;
-static int stack_trace_early_suspend_register = 0;
-static void stack_trace_early_suspend(struct early_suspend *h)
-{
-	stack_tracer_enabled_backup = stack_tracer_enabled;
-	printk("[STACK_TRACER]stack_trace_early_suspend:%d\n", stack_tracer_enabled_backup);
-	if(stack_tracer_enabled) {
-	    mutex_lock(&stack_sysctl_mutex);
-	    
-	    stack_trace_disabled = 1;
-	    stack_tracer_enabled = 0;
-	    last_stack_tracer_enabled = !!stack_tracer_enabled;
-		unregister_ftrace_function(&trace_ops);
-		
-	    mutex_unlock(&stack_sysctl_mutex);
-	}
-}
-
-static void stack_trace_late_resume(struct early_suspend *h)
-{
-	printk("[STACK_TRACER]stack_trace_late_resume:%d\n", stack_tracer_enabled_backup);
-	if(stack_tracer_enabled_backup) {
-	    mutex_lock(&stack_sysctl_mutex);
-	    
-	    stack_tracer_enabled = stack_tracer_enabled_backup;
-	    last_stack_tracer_enabled = !!stack_tracer_enabled;
-		register_ftrace_function(&trace_ops);
-		stack_trace_disabled = 0;
-		
-	    mutex_unlock(&stack_sysctl_mutex);	
-	}
-}
-
-static struct early_suspend stack_tracer_early_suspend_handler =
-{
-    .level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN,
-    .suspend = stack_trace_early_suspend,
-    .resume  = stack_trace_late_resume,
-};
-#endif
-
 int
 stack_trace_sysctl(struct ctl_table *table, int write,
 		   void __user *buffer, size_t *lenp,
@@ -449,24 +405,11 @@ stack_trace_sysctl(struct ctl_table *table, int write,
 
 	last_stack_tracer_enabled = !!stack_tracer_enabled;
 
-	if (stack_tracer_enabled) {
-    #ifdef CONFIG_HAS_EARLYSUSPEND
-        if (!stack_trace_early_suspend_register) {
-            register_early_suspend(&stack_tracer_early_suspend_handler);
-            stack_trace_early_suspend_register = 1;
-        }
-    #endif
+	if (stack_tracer_enabled)
 		register_ftrace_function(&trace_ops);
-    }
-	else {
+	else
 		unregister_ftrace_function(&trace_ops);
-    #ifdef CONFIG_HAS_EARLYSUSPEND
-        if (stack_trace_early_suspend_register) {
-            unregister_early_suspend(&stack_tracer_early_suspend_handler);
-            stack_trace_early_suspend_register = 0;
-        }
-    #endif
-    }
+
  out:
 	mutex_unlock(&stack_sysctl_mutex);
 	return ret;
@@ -478,10 +421,9 @@ static __init int enable_stacktrace(char *str)
 {
 	if (strncmp(str, "_filter=", 8) == 0)
 		strncpy(stack_trace_filter_buf, str+8, COMMAND_LINE_SIZE);
-		
+
 	stack_tracer_enabled = 1;
 	last_stack_tracer_enabled = 1;
-
 	return 1;
 }
 __setup("stacktrace", enable_stacktrace);
@@ -506,16 +448,8 @@ static __init int stack_trace_init(void)
 	if (stack_trace_filter_buf[0])
 		ftrace_set_early_filter(&trace_ops, stack_trace_filter_buf, 1);
 
-	if (stack_tracer_enabled) {
+	if (stack_tracer_enabled)
 		register_ftrace_function(&trace_ops);
-		
-    #ifdef CONFIG_HAS_EARLYSUSPEND
-        if (!stack_trace_early_suspend_register) {
-            register_early_suspend(&stack_tracer_early_suspend_handler);
-            stack_trace_early_suspend_register = 1;
-        }
-    #endif
-    }
 
 	return 0;
 }

@@ -22,8 +22,6 @@
 
 #include "trace_output.h"
 
-#include <linux/mtk_ftrace.h>
-
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM "TRACE_SYSTEM"
 
@@ -208,9 +206,6 @@ static int ftrace_event_enable_disable(struct ftrace_event_call *call,
 					int enable)
 {
 	int ret = 0;
-
-    if(call->name && ((call->flags & TRACE_EVENT_FL_ENABLED) ^ enable))
-        printk("[ftrace]event '%s' is %s\n", call->name, enable?"enabled":"disabled");
 
 	switch (enable) {
 	case 0:
@@ -1302,7 +1297,7 @@ void trace_remove_event_call(struct ftrace_event_call *call)
 	     (unsigned long)event < (unsigned long)end;		\
 	     event++)
 
-#if defined(CONFIG_MODULES) && defined(CONFIG_FTRACE_MODULE_SUPPORT)
+#ifdef CONFIG_MODULES
 
 static LIST_HEAD(ftrace_module_file_list);
 
