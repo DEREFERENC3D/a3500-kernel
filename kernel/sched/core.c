@@ -2063,10 +2063,6 @@ context_switch(struct rq *rq, struct task_struct *prev,
 {
 	struct mm_struct *mm, *oldmm;
 
-#ifdef CONFIG_MTK_RAM_CONSOLE
-	unsigned int cpu = smp_processor_id();
-	aee_rr_rec_last_sched_jiffies(cpu, sched_clock(), next->comm);
-#endif
 	prepare_task_switch(rq, prev, next);
 
 	mm = next->mm;
