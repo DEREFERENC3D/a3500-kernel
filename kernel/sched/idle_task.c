@@ -13,7 +13,6 @@ select_task_rq_idle(struct task_struct *p, int sd_flag, int flags)
 {
 	return task_cpu(p); /* IDLE tasks as never migrated */
 }
-
 #endif /* CONFIG_SMP */
 /*
  * Idle tasks are unconditionally rescheduled:
