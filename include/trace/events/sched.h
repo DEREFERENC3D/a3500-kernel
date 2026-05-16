@@ -432,30 +432,6 @@ TRACE_EVENT(sched_pi_setprio,
 			__entry->comm, __entry->pid,
 			__entry->oldprio, __entry->newprio)
 );
-#ifdef CONFIG_MT_RT_SCHED_CRIT 
-TRACE_EVENT(sched_rt_crit,
-
-	TP_PROTO(int cpu,
-		 int rt_throttled),
-
-	TP_ARGS(cpu, rt_throttled),
-
-	TP_STRUCT__entry(
-		__field(	int,	cpu				)
-		__field(	int,	rt_throttled			)
-	),
-
-	TP_fast_assign(
-		__entry->cpu		= cpu;
-		__entry->rt_throttled 	= rt_throttled; 
-	),
-
-	TP_printk(
-            "cpu=%d rt_throttled=%d",
-		__entry->cpu, __entry->rt_throttled)
-        
-);
-#endif
 
 #ifdef CONFIG_MT_SCHED_NOTICE
 TRACE_EVENT(sched_log,
