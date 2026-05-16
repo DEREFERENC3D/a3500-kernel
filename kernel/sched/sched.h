@@ -915,24 +915,13 @@ extern void cpuacct_charge(struct task_struct *tsk, u64 cputime);
 static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
 #endif
 
-#ifdef CONFIG_MTK_SCHED_RQAVG_KS
-extern void sched_update_nr_prod(int cpu, unsigned long nr, bool inc);
-extern void sched_get_nr_running_avg(int *avg, int *iowait_avg);
-#endif /* CONFIG_MTK_SCHED_RQAVG_KS */
-
 static inline void inc_nr_running(struct rq *rq)
 {
-#ifdef CONFIG_MTK_SCHED_RQAVG_KS
-    sched_update_nr_prod(cpu_of(rq), rq->nr_running, true);
-#endif /* CONFIG_MTK_SCHED_RQAVG_KS */
 	rq->nr_running++;
 }
 
 static inline void dec_nr_running(struct rq *rq)
 {
-#ifdef CONFIG_MTK_SCHED_RQAVG_KS
-    sched_update_nr_prod(cpu_of(rq), rq->nr_running, false);
-#endif /* CONFIG_MTK_SCHED_RQAVG_KS */
 	rq->nr_running--;
 }
 
