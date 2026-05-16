@@ -3239,12 +3239,6 @@ void __kprobes add_preempt_count(int val)
 #ifdef CONFIG_PREEMPT_TRACER
         trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
 #endif
-#ifdef CONFIG_PREEMPT_MONITOR
-        if(unlikely(__raw_get_cpu_var(mtsched_mon_enabled) & 0x1)){
-            //current->t_add_prmpt = sched_clock();
-            MT_trace_preempt_off();
-        }
-#endif
     }
 }
 EXPORT_SYMBOL(add_preempt_count);
@@ -3270,11 +3264,6 @@ void __kprobes sub_preempt_count(int val)
     if (preempt_count() == (val & ~PREEMPT_ACTIVE)){
 #ifdef CONFIG_PREEMPT_TRACER
         trace_preempt_on(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
-#endif
-#ifdef CONFIG_PREEMPT_MONITOR
-        if(unlikely(__raw_get_cpu_var(mtsched_mon_enabled) & 0x1)){
-            MT_trace_preempt_on();
-        }    
 #endif
     }
 	preempt_count() -= val;
