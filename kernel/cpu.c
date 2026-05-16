@@ -129,10 +129,6 @@ static void cpu_hotplug_begin(void)
 * CPU Hotplug and idle integration                                             *
 *******************************************************************************/
     atomic_inc(&is_in_hotplug);
-#ifdef SPM_MCDI_FUNC
-    //smp_call_function(empty_function, NULL, 1);
-    //spm_mcdi_wakeup_all_cores();    
-#endif
 /******************************************************************************/
 }
 
