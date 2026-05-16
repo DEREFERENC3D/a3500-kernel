@@ -16,9 +16,6 @@
 #include <linux/mutex.h>
 #include <linux/gfp.h>
 #include <linux/suspend.h>
-#ifdef MTK_CPU_HOTPLUG_DEBUG_0
-#include <linux/kallsyms.h>
-#endif //MTK_CPU_HOTPLUG_DEBUG_0
 
 /*******************************************************************************
 * 20121113 marc.huang                                                          *
@@ -45,11 +42,7 @@ void cpu_maps_update_done(void)
 	mutex_unlock(&cpu_add_remove_lock);
 }
 
-#if defined(MTK_CPU_HOTPLUG_DEBUG_1) || defined(MTK_CPU_HOTPLUG_DEBUG_2)
-RAW_NOTIFIER_HEAD(cpu_chain);
-#else
 static RAW_NOTIFIER_HEAD(cpu_chain);
-#endif
 
 /* If set, cpu_up and cpu_down will return -EBUSY and do nothing.
  * Should always be manipulated under cpu_add_remove_lock
@@ -186,22 +179,6 @@ static void cpu_hotplug_done(void) {}
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;
-
-#ifdef MTK_CPU_HOTPLUG_DEBUG_0
-	static int index = 0;
- #ifdef CONFIG_KALLSYMS
-	char namebuf[128] = {0};
-	const char *symname;
-	
-	symname = kallsyms_lookup((unsigned long)nb->notifier_call, NULL, NULL, NULL, namebuf);
-	if (symname) 
-		printk("[cpu_ntf] <%02d>%08lx (%s)\n", index++, (unsigned long)nb->notifier_call, symname);
-	else
-		printk("[cpu_ntf] <%02d>%08lx\n", index++, (unsigned long)nb->notifier_call);
- #else //#ifdef CONFIG_KALLSYMS
-	printk("[cpu_ntf] <%02d>%08lx\n", index++, (unsigned long)nb->notifier_call);
- #endif //#ifdef CONFIG_KALLSYMS
-#endif //#ifdef MTK_CPU_HOTPLUG_DEBUG_0
 
 	cpu_maps_update_begin();
 	ret = raw_notifier_chain_register(&cpu_chain, nb);
