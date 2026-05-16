@@ -71,9 +71,6 @@ struct mutex_waiter {
 	struct task_struct	*task;
 #ifdef CONFIG_DEBUG_MUTEXES
 	void			*magic;
-#ifdef CONFIG_MT_DEBUG_MUTEXES
-	struct task_struct	*task_wait_on;
-#endif
 #endif
 };
 

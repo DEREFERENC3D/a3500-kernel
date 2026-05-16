@@ -61,9 +61,6 @@ void debug_mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 
 	/* Mark the current thread as blocked on the lock: */
 	ti->task->blocked_on = waiter;
-#ifdef CONFIG_MT_DEBUG_MUTEXES
-    waiter->task_wait_on = lock->owner;
-#endif
 }
 void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 			 struct thread_info *ti)
@@ -81,9 +78,6 @@ void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 
 	list_del_init(&waiter->list);
 	waiter->task = NULL;
-#ifdef CONFIG_MT_DEBUG_MUTEXES
-    waiter->task_wait_on = NULL;
-#endif
 }
 
 void debug_mutex_unlock(struct mutex *lock)

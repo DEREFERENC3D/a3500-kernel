@@ -5070,25 +5070,6 @@ out_unlock:
 }
 
 static const char stat_nam[] = TASK_STATE_TO_CHAR_STR;
-#ifdef CONFIG_MT_DEBUG_MUTEXES
-void mt_mutex_state(struct task_struct *p)
-{
-    struct task_struct *locker;
-    if(p->blocked_on){
-        locker =  p->blocked_on->task_wait_on;
-        if(find_task_by_vpid(locker->pid) !=  NULL){
-            printk("Hint: wait on mutex, holder is [%d:%s:%ld]\n", locker->pid, locker->comm, locker->state);
-            if(locker->state != TASK_RUNNING){
-                printk("Mutex holder process[%d:%s] is not running now:\n", locker->pid, locker->comm);
-                show_stack(locker, NULL);
-                printk("----\n");
-            }
-        }else{
-            printk("Hint: wait on mutex, but holder already released lock\n");
-        }
-    }
-}
-#endif
 void sched_show_task(struct task_struct *p)
 {
 	unsigned long free = 0;
@@ -5116,10 +5097,6 @@ void sched_show_task(struct task_struct *p)
 		(unsigned long)task_thread_info(p)->flags);
 
 	show_stack(p, NULL);
-
-#ifdef CONFIG_MT_DEBUG_MUTEXES
-    mt_mutex_state(p);
-#endif
 }
 
 void show_state_filter(unsigned long state_filter)
