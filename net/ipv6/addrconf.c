@@ -527,9 +527,8 @@ static int addrconf_fixup_forwarding(struct ctl_table *table, int *p, int newf)
 	} else if ((!newf) ^ (!old))
 		dev_forward_change((struct inet6_dev *)table->extra1);
 	rtnl_unlock();
-	
 #ifdef MTK_TETHERINGIPV6_SUPPORT
-    printk(KERN_INFO "skip purge default route for tethering over IPv6\n");
+	/* skip purge default route for tethering over IPv6 */
 #else
 	if (newf)
 		rt6_purge_dflt_routers(net);
@@ -1580,10 +1579,9 @@ static int addrconf_ifid_gre(u8 *eui, struct net_device *dev)
 
 static int ipv6_generate_eui64(u8 *eui, struct net_device *dev)
 {
-  
-    if (strncmp(dev->name, "ccmni", 2) == 0)
-        return -1;
- 		
+	if (strncmp(dev->name, "ccmni", 2) == 0)
+		return -1;
+
 	switch (dev->type) {
 	case ARPHRD_ETHER:
 	case ARPHRD_FDDI:
@@ -3969,7 +3967,6 @@ static inline void ipv6_store_devconf(struct ipv6_devconf *cnf,
 	array[DEVCONF_DISABLE_IPV6] = cnf->disable_ipv6;
 	array[DEVCONF_ACCEPT_DAD] = cnf->accept_dad;
 	array[DEVCONF_FORCE_TLLAO] = cnf->force_tllao;
-
 }
 
 static inline size_t inet6_ifla6_size(void)
