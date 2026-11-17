@@ -2246,6 +2246,7 @@ void tcp_clear_retrans(struct tcp_sock *tp)
 void tcp_enter_loss(struct sock *sk, int how)
 {
 	const struct inet_connection_sock *icsk = inet_csk(sk);
+	struct inet_connection_sock *icsk1 = inet_csk(sk);
 	struct tcp_sock *tp = tcp_sk(sk);
 	struct sk_buff *skb;
 
@@ -2258,7 +2259,7 @@ void tcp_enter_loss(struct sock *sk, int how)
 	}
 	if (icsk->icsk_MMSRB == 1)
 	{
-            icsk->icsk_MMSRB = 0;
+            icsk1->icsk_MMSRB = 0;
 	}
 	tp->snd_cwnd	   = 1;
 	tp->snd_cwnd_cnt   = 0;
@@ -2696,7 +2697,6 @@ static void DBGUNDO(struct sock *sk, const char *msg)
 		       tp->snd_cwnd, tcp_left_out(tp),
 		       tp->snd_ssthresh, tp->prior_ssthresh,
 		       tp->packets_out);
-		#endif
 	}
 #if IS_ENABLED(CONFIG_IPV6)
 	else if (sk->sk_family == AF_INET6) {
@@ -2707,7 +2707,6 @@ static void DBGUNDO(struct sock *sk, const char *msg)
 		       tp->snd_cwnd, tcp_left_out(tp),
 		       tp->snd_ssthresh, tp->prior_ssthresh,
 		       tp->packets_out);
-		#endif
 	}
 #endif
 }
@@ -3456,19 +3455,16 @@ static int tcp_clean_rtx_queue(struct sock *sk, int prior_fackets,
 		if (tp->lost_out) {
 			printk(KERN_DEBUG "Leak l=%u %d\n",
 			       tp->lost_out, icsk->icsk_ca_state);
-			#endif
 			tp->lost_out = 0;
 		}
 		if (tp->sacked_out) {
 			printk(KERN_DEBUG "Leak s=%u %d\n",
 			       tp->sacked_out, icsk->icsk_ca_state);
-			#endif
 			tp->sacked_out = 0;
 		}
 		if (tp->retrans_out) {
 			printk(KERN_DEBUG "Leak r=%u %d\n",
 			       tp->retrans_out, icsk->icsk_ca_state);
-			#endif
 			tp->retrans_out = 0;
 		}
 	}
