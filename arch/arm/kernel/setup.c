@@ -726,7 +726,6 @@ static int __init parse_tag_revision(const struct tag *tag)
 	system_rev = tag->u.revision.rev;
 #if defined(SLT_DRV_P3550_CONFIG)
 	UbVbat = tag->u.revision.Vbat;
-	printk("~~parse_tag_revision:UbVbat=%d \n",UbVbat);
 #endif
 	return 0;
 }
