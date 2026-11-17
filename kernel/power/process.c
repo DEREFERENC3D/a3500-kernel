@@ -18,8 +18,6 @@
 #include <linux/workqueue.h>
 #include <linux/kmod.h>
 
-#include "power.h"
-
 /* 
  * Timeout for stopping processes
  */
@@ -28,7 +26,6 @@
 static int try_to_freeze_tasks(bool user_only)
 {
 	struct task_struct *g, *p;
-	struct task_struct *t = NULL;
 	unsigned long end_time;
 	unsigned int todo;
 	bool wq_busy = false;
@@ -63,10 +60,8 @@ static int try_to_freeze_tasks(bool user_only)
 			 * transition can't race with task state testing here.
 			 */
 			if (!task_is_stopped_or_traced(p) &&
-			    !freezer_should_skip(p)) {
+			    !freezer_should_skip(p))
 				todo++;
-				t = p;
-			}
 		} while_each_thread(g, p);
 		read_unlock(&tasklist_lock);
 
@@ -75,7 +70,7 @@ static int try_to_freeze_tasks(bool user_only)
 			todo += wq_busy;
 		}
 
-        if (!todo || time_after(jiffies, end_time))
+		if (!todo || time_after(jiffies, end_time))
 			break;
 
 		if (pm_wakeup_pending()) {
@@ -105,7 +100,7 @@ static int try_to_freeze_tasks(bool user_only)
 		       wakeup ? "aborted" : "failed",
 		       elapsed_msecs / 1000, elapsed_msecs % 1000,
 		       todo - wq_busy, wq_busy);
-		
+
 		if (!wakeup) {
 			read_lock(&tasklist_lock);
 			do_each_thread(g, p) {
