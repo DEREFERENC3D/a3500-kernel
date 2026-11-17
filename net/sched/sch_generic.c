@@ -124,22 +124,8 @@ int sch_direct_xmit(struct sk_buff *skb, struct Qdisc *q,
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 	if (!netif_xmit_frozen_or_stopped(txq))
 		ret = dev_hard_start_xmit(skb, dev, txq);
-	
+
 	HARD_TX_UNLOCK(dev, txq);
-	
-#ifdef CONFIG_MTK_NET_LOGGING 		
-    if(ret != NETDEV_TX_OK ){
-    	if(qdisc_qlen(q) < 16){
-    		if(4 == (qdisc_qlen(q)) % 16)
-    			printk(KERN_INFO "[mtk_net][sched]dev_hard_start_xmit ret = %d(%s), txq state = %lu\n", 
-    				ret, dev->name, txq->state);
-    	} else {
-    		if(64 == (qdisc_qlen(q)) % 128)
-    			printk(KERN_INFO "[mtk_net][sched]warning: dev_hard_start_xmit ret = %d(%s), txq state = %lu\n", 
-    				ret, dev->name, txq->state);    		
-    	}
-    }
-#endif
 
 	spin_lock(root_lock);
 
@@ -479,11 +465,7 @@ static int pfifo_fast_enqueue(struct sk_buff *skb, struct Qdisc *qdisc)
 		qdisc->q.qlen++;
 		return __qdisc_enqueue_tail(skb, qdisc, list);
 	}
-#ifdef CONFIG_MTK_NET_LOGGING 
-	if((qdisc->qstats.drops%128) == 4)
-		printk(KERN_INFO "[mtk_net][sched] pfifo_fast_enqueue drop, dev:%s, skb_qlen = %d, qdisc_drop = %u!\n", 
-			qdisc_dev(qdisc)->name, skb_queue_len(&qdisc->q), qdisc->qstats.drops);
-#endif
+
 	return qdisc_drop(skb, qdisc);
 }
 
@@ -773,8 +755,6 @@ void dev_activate(struct net_device *dev)
 	   which need queueing and noqueue_qdisc for
 	   virtual interfaces
 	 */
-	 
-	printk(KERN_INFO "[mtk_net][sched]dev_activate dev = %s \n", dev->name);
 
 	if (dev->qdisc == &noop_qdisc)
 		attach_default_qdiscs(dev);
@@ -828,12 +808,6 @@ static bool some_qdisc_is_busy(struct net_device *dev)
 
 		dev_queue = netdev_get_tx_queue(dev, i);
 		q = dev_queue->qdisc_sleeping;
-		/*MTK_NET_CHANGES*/
-		if(q == NULL){
-            printk(KERN_WARNING "some_qdisc_is_busy dev=0x%x, i=%d, dev_q=0x%x",
-				(u32)dev, i, (u32)dev_queue);
-			BUG_ON(q == NULL);
-		}
 		root_lock = qdisc_lock(q);
 
 		spin_lock_bh(root_lock);
@@ -890,7 +864,6 @@ void dev_deactivate(struct net_device *dev)
 	LIST_HEAD(single);
 
 	list_add(&dev->unreg_list, &single);
-	printk(KERN_INFO "[mtk_net][sched]dev_deactivate dev = %s \n", dev->name);
 	dev_deactivate_many(&single);
 	list_del(&single);
 }
