@@ -472,7 +472,7 @@ int tcp_ioctl(struct sock *sk, int cmd, unsigned long arg)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
 	int answ;
-	
+
 	switch (cmd) {
 	case SIOCINQ:
 		if (sk->sk_state == TCP_LISTEN)
@@ -521,8 +521,6 @@ int tcp_ioctl(struct sock *sk, int cmd, unsigned long arg)
              struct uid_err uid_e;
              if (copy_from_user(&uid_e, (char __user *)arg, sizeof(uid_e)))
                  return -EFAULT;
-             printk(KERN_WARNING "SIOCKILLSOCK uid = %d , err = %d",
-			 	         uid_e.appuid, uid_e.errNum);
              if (uid_e.errNum == 0)
              {
                  // handle BR release problem
@@ -531,7 +529,7 @@ int tcp_ioctl(struct sock *sk, int cmd, unsigned long arg)
              else
              {
                  tcp_v4_reset_connections_by_uid(uid_e);
-             }			 	         
+             }
 
 	         return 0;
          }
@@ -2304,19 +2302,13 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 		}
 		tp->rx_opt.user_mss = val;
 		break;
-		
-    case TCP_MAXRTO:
-		
+	case TCP_MAXRTO:
 		if (val < 1 || val > TCP_RTO_MAX) {
 			err = -EINVAL;
 			break;
 		}
 		icsk->icsk_MaxRto= val * HZ;
-
-		printk(KERN_INFO "TCP:MaxRto %d\n",val);
-	       
 		break;
-		
 	case TCP_NODELAY:
 		if (val) {
 			/* TCP_NODELAY is weaker than TCP_CORK, so that
@@ -2587,7 +2579,7 @@ static int do_tcp_getsockopt(struct sock *sk, int level,
 		break;
 	case TCP_MAXRTO:
 		val = icsk->icsk_MaxRto / HZ;
-		break;	
+		break;
 	case TCP_NODELAY:
 		val = !!(tp->nonagle&TCP_NAGLE_OFF);
 		break;

@@ -983,7 +983,7 @@ static void tcp_update_reordering(struct sock *sk, const int metric,
 
 		NET_INC_STATS_BH(sock_net(sk), mib_idx);
 #if FASTRETRANS_DEBUG > 1
-		printk(KERN_DEBUG "[mtk_net][tcp_input]Disorder%d %d %u f%u s%u rr%d\n",
+		printk(KERN_DEBUG "Disorder%d %d %u f%u s%u rr%d\n",
 		       tp->rx_opt.sack_ok, inet_csk(sk)->icsk_ca_state,
 		       tp->reordering,
 		       tp->fackets_out,
@@ -2041,12 +2041,9 @@ int tcp_use_frto(struct sock *sk)
 
     if (icsk->icsk_MMSRB == 1)
     {
-    	#ifdef CONFIG_MTK_NET_LOGGING 
-        printk("[mtk_net][mmspb] tcp_use_frto sysctl_tcp_frto=%u\n", sysctl_tcp_frto);
-        #endif
-		    return 0;
+	    return 0;
     }
-    
+
 	if (!sysctl_tcp_frto)
 		return 0;
 
@@ -2249,7 +2246,6 @@ void tcp_clear_retrans(struct tcp_sock *tp)
 void tcp_enter_loss(struct sock *sk, int how)
 {
 	const struct inet_connection_sock *icsk = inet_csk(sk);
-	struct inet_connection_sock *icsk1 = inet_csk(sk);
 	struct tcp_sock *tp = tcp_sk(sk);
 	struct sk_buff *skb;
 
@@ -2262,37 +2258,8 @@ void tcp_enter_loss(struct sock *sk, int how)
 	}
 	if (icsk->icsk_MMSRB == 1)
 	{
-		#ifdef CONFIG_MTK_NET_LOGGING 
-	    printk("[mtk_net][mmspb] tcp_enter_loss snd_cwnd=%u, snd_cwnd_cnt=%u\n", tp->snd_cwnd, tp->snd_cwnd_cnt);
-        #endif
-            if (tp->mss_cache != 0)
-                tp->snd_cwnd = (tp->rcv_wnd / tp->mss_cache);
-            else
-            {
-                tp->snd_cwnd = (tp->rcv_wnd / tp->advmss);
-            }
-		
-            if (tp->snd_ssthresh > 16)
-            {
-                tp->snd_cwnd = tp->snd_ssthresh / 2;//set snd_cwnd is half of default snd_ssthresh
-            }
-            else
-            {
-                tp->snd_cwnd = tp->snd_ssthresh / 2 + 4;
-            }
-            #ifdef CONFIG_MTK_NET_LOGGING 
-            printk("[mtk_net][mmspb] tcp_enter_loss update snd_cwnd=%u\n", tp->snd_cwnd);
-            #endif
-            icsk1->icsk_MMSRB = 0;
-            #ifdef CONFIG_MTK_NET_LOGGING 
-            printk("[mtk_net][mmspb] tcp_enter_loss set icsk_MMSRB=0\n");
-            #endif
+            icsk->icsk_MMSRB = 0;
 	}
-        else
-        {
-	    tp->snd_cwnd	   = 1;
-        }	
-  
 	tp->snd_cwnd	   = 1;
 	tp->snd_cwnd_cnt   = 0;
 	tp->snd_cwnd_stamp = tcp_time_stamp;
@@ -2723,8 +2690,7 @@ static void DBGUNDO(struct sock *sk, const char *msg)
 	struct inet_sock *inet = inet_sk(sk);
 
 	if (sk->sk_family == AF_INET) {
-		#ifdef CONFIG_MTK_NET_LOGGING 
-		printk(KERN_DEBUG "[mtk_net][tcp_input]Undo %s %pI4/%u c%u l%u ss%u/%u p%u\n",
+		printk(KERN_DEBUG "Undo %s %pI4/%u c%u l%u ss%u/%u p%u\n",
 		       msg,
 		       &inet->inet_daddr, ntohs(inet->inet_dport),
 		       tp->snd_cwnd, tcp_left_out(tp),
@@ -2735,8 +2701,7 @@ static void DBGUNDO(struct sock *sk, const char *msg)
 #if IS_ENABLED(CONFIG_IPV6)
 	else if (sk->sk_family == AF_INET6) {
 		struct ipv6_pinfo *np = inet6_sk(sk);
-		#ifdef CONFIG_MTK_NET_LOGGING 
-		printk(KERN_DEBUG "[mtk_net][tcp_input]Undo %s %pI6/%u c%u l%u ss%u/%u p%u\n",
+		printk(KERN_DEBUG "Undo %s %pI6/%u c%u l%u ss%u/%u p%u\n",
 		       msg,
 		       &np->daddr, ntohs(inet->inet_dport),
 		       tp->snd_cwnd, tcp_left_out(tp),
@@ -3489,22 +3454,19 @@ static int tcp_clean_rtx_queue(struct sock *sk, int prior_fackets,
 	if (!tp->packets_out && tcp_is_sack(tp)) {
 		icsk = inet_csk(sk);
 		if (tp->lost_out) {
-			#ifdef CONFIG_MTK_NET_LOGGING 
-			printk(KERN_DEBUG "[mtk_net][tcp_input]Leak l=%u %d\n",
+			printk(KERN_DEBUG "Leak l=%u %d\n",
 			       tp->lost_out, icsk->icsk_ca_state);
 			#endif
 			tp->lost_out = 0;
 		}
 		if (tp->sacked_out) {
-			#ifdef CONFIG_MTK_NET_LOGGING 
-			printk(KERN_DEBUG "[mtk_net][tcp_input]Leak s=%u %d\n",
+			printk(KERN_DEBUG "Leak s=%u %d\n",
 			       tp->sacked_out, icsk->icsk_ca_state);
 			#endif
 			tp->sacked_out = 0;
 		}
 		if (tp->retrans_out) {
-			#ifdef CONFIG_MTK_NET_LOGGING 
-			printk(KERN_DEBUG "[mtk_net][tcp_input]Leak r=%u %d\n",
+			printk(KERN_DEBUG "Leak r=%u %d\n",
 			       tp->retrans_out, icsk->icsk_ca_state);
 			#endif
 			tp->retrans_out = 0;
