@@ -135,13 +135,6 @@ struct ion_client {
 	struct dentry *debug_root;
 };
 
-struct ion_handle_debug {
-    pid_t pid;
-    pid_t tgid;
-    unsigned int backtrace[BACKTRACE_SIZE];
-    unsigned int backtrace_num;
-};
-
 /**
  * ion_handle - a client local reference to a buffer
  * @ref:		reference count
