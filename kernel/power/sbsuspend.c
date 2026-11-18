@@ -14,21 +14,7 @@
 #include <linux/sbsuspend.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
-#include <linux/rtc.h>
 #include <linux/leds-mt65xx.h>
-
-
-enum {
-    DEBUG_USER_STATE = 1U << 0,
-    DEBUG_SUSPEND = 1U << 2,
-    DEBUG_VERBOSE = 1U << 3,
-};
-int sbsuspend_debug_mask = DEBUG_USER_STATE | DEBUG_SUSPEND | DEBUG_VERBOSE;;
-module_param_named(sbsuspend_debug_mask, sbsuspend_debug_mask, int, S_IRUGO | S_IWUSR | S_IWGRP);
-
-#define _TAG_PM_M "SB_PM"
-#define pm_warn(fmt, ...)    \
-    if (sbsuspend_debug_mask) pr_warn("[%s][%s]" fmt, _TAG_PM_M, __func__, ##__VA_ARGS__);
 
 #define sb_attr(_name)                         \
 static struct kobj_attribute _name##_attr = {   \
@@ -246,21 +232,7 @@ EXPORT_SYMBOL(sb_plug_out);
 void sb_event(sb_event_t event)
 {
     mutex_lock(&sb_mutex);
-    
-    if (sbsuspend_debug_mask & DEBUG_USER_STATE) {
-        struct timespec ts;
-        struct rtc_time tm;
-        getnstimeofday(&ts);
-        rtc_time_to_tm(ts.tv_sec, &tm);
-        pm_warn("%s (%d->%d) at %lld "
-            "(%d-%02d-%02d %02d:%02d:%02d.%09lu UTC)\n",
-            event != PM_SUSPEND_ON ? "sleep" : "wakeup",
-            sb_state, event,
-            ktime_to_ns(ktime_get()),
-            tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-            tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
-    }
-    
+
     switch (sb_state)
     {
         case SB_STATE_DISABLE:

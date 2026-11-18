@@ -16,30 +16,14 @@
 #include <linux/earlysuspend.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
-#include <linux/rtc.h>
 #include <linux/syscalls.h> /* sys_sync */
 #include <linux/wakelock.h>
 #include <linux/workqueue.h>
 
 #include "power.h"
 
-enum {
-    DEBUG_USER_STATE = 1U << 0,
-    DEBUG_SUSPEND = 1U << 2,
-    DEBUG_VERBOSE = 1U << 3,
-};
-static int debug_mask = DEBUG_USER_STATE|DEBUG_SUSPEND|DEBUG_VERBOSE;
-//static int debug_mask = DEBUG_USER_STATE;
-module_param_named(debug_mask, debug_mask, int, S_IRUGO | S_IWUSR | S_IWGRP);
-
-//int earlysuspend_debug_mask = 0;
-int earlysuspend_debug_mask = DEBUG_USER_STATE;
 int early_suspend_count = 0;
 int forbid_id = 0x0;
-
-#define _TAG_PM_M "Ker_PM"
-#define pm_warn(fmt, ...)	\
-	if (earlysuspend_debug_mask) pr_warn("[%s][%s]" fmt, _TAG_PM_M, __func__, ##__VA_ARGS__);
 
 static DEFINE_MUTEX(early_suspend_lock);
 static LIST_HEAD(early_suspend_handlers);
@@ -189,19 +173,6 @@ void request_suspend_state(suspend_state_t new_state)
 
     spin_lock_irqsave(&state_lock, irqflags);
     old_sleep = state & SUSPEND_REQUESTED;
-    if (earlysuspend_debug_mask & DEBUG_USER_STATE) {
-        struct timespec ts;
-        struct rtc_time tm;
-        getnstimeofday(&ts);
-        rtc_time_to_tm(ts.tv_sec, &tm);
-        pm_warn("%s (%d->%d) at %lld "
-            "(%d-%02d-%02d %02d:%02d:%02d.%09lu UTC)\n",
-            new_state != PM_SUSPEND_ON ? "sleep" : "wakeup",
-            requested_suspend_state, new_state,
-            ktime_to_ns(ktime_get()),
-            tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-            tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
-    }
     if (!old_sleep && new_state != PM_SUSPEND_ON) {
         state |= SUSPEND_REQUESTED;
         queue_work(sys_sync_work_queue, &early_sys_sync_work);

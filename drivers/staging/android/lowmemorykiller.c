@@ -291,21 +291,14 @@ int get_min_free_pages(pid_t pid)
             task_unlock(p);
             /* get min_free value of the pid */
             for (i = array_size - 1; i >= 0; i--) {
-                if (target_oom_adj >= lowmem_adj[i]) {
-                    lowmem_print(3, KERN_INFO"pid: %d, target_oom_adj = %d, "
-                            "lowmem_adj[%d] = %d, lowmem_minfree[%d] = %d\n",
-                            pid, target_oom_adj, i, lowmem_adj[i], i,
-                            lowmem_minfree[i]);
+                if (target_oom_adj >= lowmem_adj[i])
                     return lowmem_minfree[i];
-                }
             }
-            goto out; 
+            goto out;
         }
     }
 
 out:
-    lowmem_print(3, KERN_ALERT"[%s]pid: %d, adj: %d, lowmem_minfree = 0\n", 
-            __FUNCTION__, pid, p->signal->oom_adj);
     return 0;
 }
 EXPORT_SYMBOL(get_min_free_pages);
