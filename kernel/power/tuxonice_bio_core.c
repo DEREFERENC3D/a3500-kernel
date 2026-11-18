@@ -314,7 +314,6 @@ static void toi_end_bio(struct bio *bio, int err)
 {
 	struct page *page = bio->bi_io_vec[0].bv_page;
 
-    //hib_log("err %d flags 0x%08x\n", err, bio->bi_flags);
     if (!err)
         BUG_ON(!test_bit(BIO_UPTODATE, &bio->bi_flags));
 
