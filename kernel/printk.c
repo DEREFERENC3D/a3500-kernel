@@ -76,35 +76,35 @@ bool printk_disable_uart = 0;
 
 static bool log_in_resume = 0;
 
-#ifdef CONFIG_MT_PRINTK_UART_CONSOLE                                                    
+#ifdef CONFIG_MT_PRINTK_UART_CONSOLE
 extern int mt_need_uart_console;
-inline void mt_disable_uart() 
-{   
-    if(mt_need_uart_console == 0){                                                      
-        printk("<< printk console disable >>\n");                                       
+inline void mt_disable_uart(void)
+{
+    if (mt_need_uart_console == 0) {
+        printk("<< printk console disable >>\n");
         printk_disable_uart = 1;
-    }else{                                                                              
-        printk("<< printk console can't be disabled >>\n");                             
-    }   
-}           
-inline void mt_enable_uart()                                                            
-{   
-    if(mt_need_uart_console == 1){
-        if(printk_disable_uart == 0)
+    } else {
+        printk("<< printk console can't be disabled >>\n");
+    }
+}
+inline void mt_enable_uart(void)
+{
+    if (mt_need_uart_console == 1) {
+        if (printk_disable_uart == 0)
             return;
         printk_disable_uart = 0;
         printk("<< printk console enable >>\n");
-    }else{
+    } else {
         printk("<< printk console can't be enabled >>\n");
     }
-}                                                                                       
-#endif 
+}
+#endif
 /* printk's without a loglevel use this.. */
 #define DEFAULT_MESSAGE_LOGLEVEL CONFIG_DEFAULT_MESSAGE_LOGLEVEL
 
 /* We show everything that is MORE important than this.. */
 #define MINIMUM_CONSOLE_LOGLEVEL 1 /* Minimum loglevel we let people use */
-#define DEFAULT_CONSOLE_LOGLEVEL 6 /* anything MORE serious than KERN_INFO */
+#define DEFAULT_CONSOLE_LOGLEVEL 7 /* anything MORE serious than KERN_DEBUG */
 
 DECLARE_WAIT_QUEUE_HEAD(log_wait);
 
@@ -156,7 +156,7 @@ static DEFINE_RAW_SPINLOCK(logbuf_lock);
  * The indices into log_buf are not constrained to log_buf_len - they
  * must be masked before subscripting
  */
-unsigned log_start;	/* Index into log_buf: next char to be read by syslog() */
+static unsigned log_start;	/* Index into log_buf: next char to be read by syslog() */
 static unsigned con_start;	/* Index into log_buf: next char to be sent to consoles */
 unsigned log_end;	/* Index into log_buf: most-recently-written-char + 1 */
 
@@ -383,7 +383,6 @@ int log_buf_copy(char *dest, int idx, int len)
 
 	return ret;
 }
-
 
 int log_buf_copy2(char *dest, int dest_len, int log_copy_start, int log_copy_end)
 {
@@ -618,7 +617,6 @@ void kdb_syslog_data(char *syslog_data[4])
 	syslog_data[3] = log_buf + log_end;
 }
 #endif	/* CONFIG_KGDB_KDB */
-
 
 /*
  * Call the console drivers on a range of log_buf
@@ -964,10 +962,8 @@ static inline void printk_delay(void)
 	}
 }
 
-int mt_printk_sched(const char *fmt, ...);
 asmlinkage int vprintk(const char *fmt, va_list args)
 {
-	vscnprintf(printk_buf, sizeof(printk_buf), fmt, args);
 	int printed_len = 0;
 	int current_log_level = default_message_loglevel;
 	unsigned long flags;
@@ -1064,64 +1060,55 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 
 			if (printk_time) {
 				/* Add the current time stamp */
-				char tbuf[50], *tp, state;
+				char tbuf[50], *tp;
 				unsigned tlen;
 				unsigned long long t;
 				unsigned long nanosec_rem;
 
-				state = ' ';
 				t = cpu_clock(printk_cpu);
 				nanosec_rem = do_div(t, 1000000000);
-#ifdef CONFIG_MT_PRINTK_UART_CONSOLE                                                    
-                if(printk_disable_uart == 0 && state == ' '){
-                    state = '.';
-                }
-#endif
-                tlen = sprintf(tbuf, "[%5lu.%06lu]%c",
-                        (unsigned long) t,
-                        nanosec_rem / 1000, state);
+				tlen = sprintf(tbuf, "[%5lu.%06lu] ",
+						(unsigned long) t,
+						nanosec_rem / 1000);
+
 				for (tp = tbuf; tp < tbuf + tlen; tp++)
 					emit_log_char(*tp);
 				printed_len += tlen;
 			}
-            switch (printk_prefix) {
-                case 1: {
-                            emit_log_char('(');
-                            /* We don't expect to support CPU# > 16 */
-                            if (this_cpu < 16) {
-                                char cbuf = hex_asc_lo(this_cpu);
-                                emit_log_char(cbuf);
-                            }
-                            else {
-                                emit_log_char('X');
-                            }
-                            emit_log_char(')');
 
-                            printed_len += 4;
-                            break;
-                        }
+			switch (printk_prefix) {
+			case 1:
+				emit_log_char('(');
+				/* We don't expect to support CPU# > 16 */
+				if (this_cpu < 16) {
+					char cbuf = hex_asc_lo(this_cpu);
+					emit_log_char(cbuf);
+				} else {
+					emit_log_char('X');
+				}
+				emit_log_char(')');
 
-                case 2: {
-                            char tbuf[50], *tp;
-                            unsigned tlen;
-                            if(console_suspended == 0){
-                            tlen = snprintf(tbuf, sizeof(tbuf), "(%x)[%d:%s]",
-                                    this_cpu, current->pid, current->comm);
-                            }else{
-                                tlen = snprintf(tbuf, sizeof(tbuf), "%x)",this_cpu);
-                            }
-                            for (tp = tbuf; tp < tbuf + tlen; tp++)
-                                emit_log_char(*tp);
-                            printed_len += tlen;
-                            break;
+				printed_len += 4;
+				break;
 
-                        }
+			case 2: {
+				char tbuf[50], *tp;
+				unsigned tlen;
+				if (console_suspended == 0) {
+					tlen = snprintf(tbuf, sizeof(tbuf), "(%x)[%d:%s]",
+						this_cpu, current->pid, current->comm);
+				} else {
+					tlen = snprintf(tbuf, sizeof(tbuf), "%x)", this_cpu);
+				}
+				for (tp = tbuf; tp < tbuf + tlen; tp++)
+					emit_log_char(*tp);
+				printed_len += tlen;
+				break;
+			}
+			}
 
-            }
-
-
-            if (!*p)
-                break;
+			if (!*p)
+				break;
 		}
 
 		emit_log_char(*p);
@@ -1145,6 +1132,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 	lockdep_on();
 out_restore_irqs:
 	local_irq_restore(flags);
+
 	return printed_len;
 }
 EXPORT_SYMBOL(printk);
@@ -1323,8 +1311,6 @@ void resume_console(void)
     console_unlock();
     log_in_resume = 0;
     __raw_get_cpu_var(MT_trace_in_resume_console) = 0;
-
-    //in_resume_console = 0;
 }
 EXPORT_SYMBOL_GPL(resume_console);
 
@@ -1417,20 +1403,14 @@ void printk_tick(void)
 		int pending = __this_cpu_xchg(printk_pending, 0);
 		if (pending & PRINTK_PENDING_SCHED) {
 			char *buf = __get_cpu_var(printk_sched_buf);
-			printk(KERN_WARNING "[printk_delayed:start]\n");
-			printk(KERN_WARNING "%s", buf);
-			printk(KERN_WARNING "[printk_delayed:done]\n");
-            __get_cpu_var(printk_sched_length) = 0;
+			printk(KERN_WARNING "[sched_delayed] %s", buf);
+			__get_cpu_var(printk_sched_length) = 0;
 		}
 		if (pending & PRINTK_PENDING_WAKEUP)
 			wake_up_interruptible(&log_wait);
 	}
 }
 
-// TODO: remove
-void mt_printk_tick(void)
-{
-}
 int printk_needs_cpu(int cpu)
 {
 	if (cpu_is_offline(cpu))
@@ -1891,11 +1871,10 @@ int printk_sched(const char *fmt, ...)
     buf_length = __get_cpu_var(printk_sched_length);
 
 	va_start(args, fmt);
-    if(PRINTK_BUF_SIZE >= buf_length){
-	    r = vsnprintf((buf_length + buf), PRINTK_BUF_SIZE-buf_length, fmt, args);
+    if (PRINTK_BUF_SIZE >= buf_length) {
+        r = vsnprintf(buf + buf_length, PRINTK_BUF_SIZE - buf_length, fmt, args);
         __get_cpu_var(printk_sched_length) += r;
-    }else{
-        printk("delayed log buf overflow,  size:%d\n", buf_length);
+    } else {
         r = 0;
     }
 	va_end(args);
@@ -1904,12 +1883,6 @@ int printk_sched(const char *fmt, ...)
 	local_irq_restore(flags);
 
 	return r;
-}
-
-// TODO: remove
-int mt_printk_sched(const char *fmt, ...)
-{
-    return 0;
 }
 
 /*
