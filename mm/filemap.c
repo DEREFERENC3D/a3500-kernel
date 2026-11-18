@@ -1641,6 +1641,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 	struct page *page;
 	pgoff_t size;
 	int ret = 0;
+
 	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
 	if (offset >= size)
 		return VM_FAULT_SIGBUS;
@@ -1658,7 +1659,6 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 	} else {
 		/* No page in the page cache at all */
 		do_sync_mmap_readahead(vma, ra, file, offset);
-		count_vm_event(PGFMFAULT);
 		count_vm_event(PGMAJFAULT);
 		mem_cgroup_count_vm_event(vma->vm_mm, PGMAJFAULT);
 		ret = VM_FAULT_MAJOR;
