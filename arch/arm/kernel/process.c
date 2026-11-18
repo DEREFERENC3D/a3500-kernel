@@ -141,49 +141,24 @@ static u64 soft_restart_stack[16];
 
 void arm_machine_restart(char mode, const char *cmd)
 {
-        /* Flush the console to make sure all the relevant messages make it
-         * out to the console drivers */
-        arm_machine_flush_console();
+	/* machine_restart() has already flushed the console and will report
+	 * a failed reboot if this returns. Only the platform-specific part
+	 * is needed here. */
+	local_irq_disable();
+	local_fiq_disable();
+	setup_mm_for_reboot();
 
-        /* Disable interrupts first */
-        local_irq_disable();
-        local_fiq_disable();
+	/* With L1 off and L2 on the spinlock cannot be acquired, so disable
+	 * the L2 as well. */
+	outer_flush_all();
+	outer_disable();
+	outer_flush_all();
 
-        /*
-         * Tell the mm system that we are going to reboot -
-         * we may need it to insert some 1:1 mappings so that
-         * soft boot works.
-         */
-        setup_mm_for_reboot();
+	flush_cache_all();
+	cpu_proc_fin();
+	flush_cache_all();
 
-        /* When l1 is disabled and l2 is enabled, the spinlock cannot get the lock,
-         * so we need to disable the l2 as well. by Chia-Hao Hsu
-         */
-        outer_flush_all();
-        outer_disable();
-        outer_flush_all();
-
-        /* Clean and invalidate caches */
-        flush_cache_all();
-
-        /* Turn off caching */
-        cpu_proc_fin();
-
-        /* Push out any further dirty data, and ensure cache is empty */
-        flush_cache_all();
-
-        /*
-         * Now call the architecture specific reboot code.
-         */
-        arch_reset(mode, cmd);
-
-        /*
-         * Whoops - the architecture was unable to reboot.
-         * Tell the user!
-         */
-        mdelay(1000);
-        printk("Reboot failed -- System halted\n");
-        while (1);
+	arch_reset(mode, cmd);
 }
 
 static void __soft_restart(void *addr)
