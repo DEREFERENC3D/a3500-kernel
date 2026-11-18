@@ -43,7 +43,6 @@
 #include <linux/notifier.h>
 #include <linux/rculist.h>
 
-#include <linux/mt_sched_mon.h>
 #include <linux/preempt.h>
 #include <linux/aee.h>
 #include <asm/uaccess.h>
@@ -80,23 +79,13 @@ static bool log_in_resume = 0;
 extern int mt_need_uart_console;
 inline void mt_disable_uart(void)
 {
-    if (mt_need_uart_console == 0) {
-        printk("<< printk console disable >>\n");
+    if (mt_need_uart_console == 0)
         printk_disable_uart = 1;
-    } else {
-        printk("<< printk console can't be disabled >>\n");
-    }
 }
 inline void mt_enable_uart(void)
 {
-    if (mt_need_uart_console == 1) {
-        if (printk_disable_uart == 0)
-            return;
+    if (mt_need_uart_console == 1 && printk_disable_uart)
         printk_disable_uart = 0;
-        printk("<< printk console enable >>\n");
-    } else {
-        printk("<< printk console can't be enabled >>\n");
-    }
 }
 #endif
 /* printk's without a loglevel use this.. */
