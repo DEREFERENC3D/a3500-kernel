@@ -420,7 +420,6 @@ static int sb_finish_set_opts(struct super_block *sb)
 	/* Special handling for sysfs. Is genfs but also has setxattr handler*/
 	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
 		sbsec->flags |= SE_SBLABELSUPP;
-		
 
 	/*
 	 * Special handling for rootfs. Is genfs but supports
@@ -428,8 +427,6 @@ static int sb_finish_set_opts(struct super_block *sb)
 	 */
 	if (strncmp(sb->s_type->name, "rootfs", sizeof("rootfs")) == 0)
 		sbsec->flags |= SE_SBLABELSUPP;
-		
-		
 
 	/* Initialize the root inode. */
 	rc = inode_doinit_with_dentry(root_inode, root);
@@ -1507,7 +1504,7 @@ static int inode_has_perm(const struct cred *cred,
 
 	if (unlikely(IS_PRIVATE(inode)))
 		return 0;
-	
+
 	/*Patch for seldom issue when isecurity is NULL*/
 	if(inode->i_security == NULL)
 		return -EACCES;

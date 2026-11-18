@@ -27,7 +27,6 @@
 #include <linux/freezer.h>
 #include <mach/mtk_rtc.h>
 
-
 /**
  * struct alarm_base - Alarm timer bases
  * @lock:		Lock for syncrhonized access to the base
@@ -48,6 +47,7 @@ static ktime_t freezer_delta;
 static DEFINE_SPINLOCK(freezer_delta_lock);
 
 static struct wakeup_source *ws;
+
 #ifdef CONFIG_RTC_CLASS
 /* rtc timer and device for setting alarm wakeups at suspend */
 static struct rtc_timer		rtctimer;
@@ -72,6 +72,7 @@ struct rtc_device *alarmtimer_get_rtcdev(void)
 
 	return ret;
 }
+
 
 static int alarmtimer_rtc_add_device(struct device *dev,
 				struct class_interface *class_intf)

@@ -1583,6 +1583,7 @@ static long sock_wait_for_wmem(struct sock *sk, long timeo)
 	return timeo;
 }
 
+
 /*
  *	Generic send/receive buffer handlers
  */
@@ -1658,7 +1659,6 @@ struct sk_buff *sock_alloc_send_pskb(struct sock *sk, unsigned long header_len,
 			goto failure;
 		if (signal_pending(current))
 			goto interrupted;
-
 		timeo = sock_wait_for_wmem(sk, timeo);
 	}
 
