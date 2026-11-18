@@ -212,7 +212,7 @@ int suspend_devices_and_enter(suspend_state_t state)
 
 #ifdef CONFIG_TOI
 	drop_pagecache();
-#endif 
+#endif
 
 	trace_machine_suspend(state);
 	if (suspend_ops->begin) {

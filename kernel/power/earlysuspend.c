@@ -205,7 +205,7 @@ suspend_state_t get_suspend_state(void)
 static int __init org_wakelocks_init(void)
 {
     int ret;
-   
+
     wake_lock_init(&sys_sync_wake_lock, WAKE_LOCK_SUSPEND, "sys_sync");
 
     sys_sync_work_queue = create_singlethread_workqueue("fs_sync");

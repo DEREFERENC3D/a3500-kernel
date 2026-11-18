@@ -10,7 +10,7 @@
  * GNU General Public License for more details.
  *
  */
- 
+
 #ifndef _LINUX_SBSUSPEND_H
 #define _LINUX_SBSUSPEND_H
 
@@ -84,4 +84,3 @@ extern void sb_plug_out(void);
 #endif
 
 #endif //#ifndef _LINUX_SBSUSPEND_H
-

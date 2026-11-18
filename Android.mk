@@ -1,8 +1,8 @@
 ## Android Makefile for kernel module
 ## by Kirby.Wu, 20090729, mediatek.inc
 ##
-## this android makefile is (currently) used to build all kernel modules 
-## and put them into android platform output directory. 
+## this android makefile is (currently) used to build all kernel modules
+## and put them into android platform output directory.
 ##
 ## to build kernel modules into system.img,
 ##   config build/target/board/<target>/BoardConfig.mk:
@@ -73,4 +73,3 @@ endif
 endif #ifeq ($(TARGET_KMODULES),true)
 endif
 endif # TARGET_DEVICE
-

@@ -90,13 +90,13 @@ void sb_enable(void)
 
     mt65xx_leds_brightness_set(MT65XX_LED_TYPE_BUTTON, 0);
     mt65xx_leds_brightness_set(MT65XX_LED_TYPE_LCD, 0);
-    
+
     list_for_each_entry(pos, &sb_handlers, link) {
         if (pos->enable != NULL) {
             if (!(sb_handler_forbid_id & (0x1 << count))) {
                 pos->enable(pos);
             }
-            count++; 
+            count++;
         }
     }
 
@@ -119,7 +119,7 @@ void sb_disable(void)
             if (!(sb_handler_forbid_id & (0x1 << (sb_handler_count - 1 - count)))) {
                 pos->disable(pos);
             }
-            count++; 
+            count++;
         }
     }
 
@@ -145,7 +145,7 @@ void sb_suspend(void)
             if (!(sb_handler_forbid_id & (0x1 << count))) {
                 pos->suspend(pos);
             }
-            count++; 
+            count++;
         }
     }
 
@@ -168,7 +168,7 @@ void sb_resume(void)
             if (!(sb_handler_forbid_id & (0x1 << (sb_handler_count - 1 - count)))) {
                 pos->resume(pos);
             }
-            count++; 
+            count++;
         }
     }
 
@@ -193,7 +193,7 @@ void sb_plug_in(void)
             if (!(sb_handler_forbid_id & (0x1 << count))) {
                 pos->plug_in(pos);
             }
-            count++; 
+            count++;
         }
     }
 
@@ -219,7 +219,7 @@ void sb_plug_out(void)
             if (!(sb_handler_forbid_id & (0x1 << (sb_handler_count - 1 - count)))) {
                 pos->plug_out(pos);
             }
-            count++; 
+            count++;
         }
     }
 
@@ -236,9 +236,9 @@ void sb_event(sb_event_t event)
     switch (sb_state)
     {
         case SB_STATE_DISABLE:
-            
+
         case SB_STATE_ENABLE:
-            
+
     if (!old_sleep && new_state != PM_SUSPEND_ON) {
         state |= SUSPEND_REQUESTED;
         sb_enable();
@@ -249,7 +249,7 @@ void sb_event(sb_event_t event)
     sb_state = new_state;
 
     mutex_unlock(&sb_mutex);
-    
+
 }
 */
 
@@ -315,7 +315,7 @@ static ssize_t sb_state_store(struct kobject *kobj, struct kobj_attribute *attr,
         if (!sb_bypass)
         {
             state = decode_sb_state(buf, n);
-            
+
             switch (state)
             {
                 case SB_STATE_DISABLE:
@@ -348,7 +348,7 @@ sb_attr(sb_state);
 static int __init sbsuspend_init(void)
 {
     int err = 0;
-    
+
     err |= sysfs_create_file(power_kobj, &sb_state_attr.attr);
     if (err) {
         printk("[%s]: fail to create sysfs\n", __func__);

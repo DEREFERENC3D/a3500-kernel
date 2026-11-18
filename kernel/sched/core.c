@@ -2165,10 +2165,10 @@ unsigned long this_cpu_load(void)
 }
 
 // TODO: MTK Nuke after removing dependency
-unsigned long get_cpu_load(int cpu)                                                                     
-{   
-    struct rq *this = cpu_rq(cpu);                                                                      
-    return this->cpu_load[0];                                                                           
+unsigned long get_cpu_load(int cpu)
+{
+    struct rq *this = cpu_rq(cpu);
+    return this->cpu_load[0];
 }
 EXPORT_SYMBOL(get_cpu_load);
 

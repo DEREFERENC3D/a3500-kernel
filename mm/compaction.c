@@ -807,7 +807,7 @@ static void kick_compaction_early_suspend(struct early_suspend *h)
 	struct zone *z = &NODE_DATA(0)->node_zones[ZONE_NORMAL];
 	int status;
 	int retry = 3;
-	int safe_order = THREAD_SIZE_ORDER + 1;	
+	int safe_order = THREAD_SIZE_ORDER + 1;
 	gfp_t gfp_mask = GFP_KERNEL;
 
 	/* Check whether gfp is restricted. */

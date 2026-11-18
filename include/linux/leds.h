@@ -212,8 +212,8 @@ struct platform_device *gpio_led_register_device(
 
 #endif		/* __LINUX_LEDS_H_INCLUDED */
 /*****************************************************************
- * [MTK]The patch increases LED brightness level adjustment by adding 
- * 
+ * [MTK]The patch increases LED brightness level adjustment by adding
+ *
  *
  *
  */

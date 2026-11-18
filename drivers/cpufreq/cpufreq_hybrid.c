@@ -910,7 +910,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		load_freq = load * freq_avg;
 		if (load_freq > max_load_freq)
 			max_load_freq = load_freq;
-			
+
 		sum_load_freq += load_freq;
 
 		#ifdef DEBUG_LOG
@@ -995,7 +995,7 @@ hp_check:
 				g_cpu_down_sum_load_freq += ((sum_load_freq) / 100);
 				if (g_cpu_down_count == dbs_tuners_ins.cpu_down_avg_times) {
 					g_cpu_down_sum_load_freq /= dbs_tuners_ins.cpu_down_avg_times;
-					if (g_cpu_down_sum_load_freq < 
+					if (g_cpu_down_sum_load_freq <
 						((dbs_tuners_ins.cpu_down_threshold * policy->max) / 100)) {
 						#ifdef DEBUG_LOG
 						printk("dbs_check_cpu: g_cpu_down_sum_load_freq = %d, turn off CPU1\n", g_cpu_down_sum_load_freq);
@@ -1158,7 +1158,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 				max(min_sampling_rate,
 				    latency * LATENCY_MULTIPLIER);
 			dbs_tuners_ins.io_is_busy = should_io_be_busy();
-			
+
 			#ifdef DEBUG_LOG
 			printk("cpufreq_governor_dbs: min_sampling_rate = %d\n", min_sampling_rate);
 			printk("cpufreq_governor_dbs: dbs_tuners_ins.sampling_rate = %d\n", dbs_tuners_ins.sampling_rate);
@@ -1254,7 +1254,7 @@ static int __init cpufreq_gov_dbs_init(void)
 	printk("cpufreq_gov_dbs_init: dbs_tuners_ins.load_light = %d\n", dbs_tuners_ins.load_light);
 	printk("cpufreq_gov_dbs_init: dbs_tuners_ins.cpu_up_bound = %d\n", dbs_tuners_ins.cpu_up_bound);
 	printk("cpufreq_gov_dbs_init: dbs_tuners_ins.cpu_down_avg_times = %d\n", dbs_tuners_ins.cpu_down_avg_times);
-	#endif 
+	#endif
 
 	return cpufreq_register_governor(&cpufreq_gov_hybrid);
 }

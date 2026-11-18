@@ -314,7 +314,7 @@ size_t query_lmk_minfree(int index)
 	if (index < 0) {
 		return lowmem_minfree[2];
 	}
-	
+
 	/* Find a corresponding output */
 	which = 5;
 	do {

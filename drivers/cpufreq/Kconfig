@@ -123,7 +123,7 @@ config CPU_FREQ_DEFAULT_GOV_BALANCE
 	  Be aware that not all cpufreq drivers support the balance
 	  governor. If unsure have a look at the help section of the
 	  driver. Fallback governor will be the performance governor.
-	  
+
 config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
 	bool "conservative"
 	select CPU_FREQ_GOV_CONSERVATIVE
@@ -207,11 +207,11 @@ config CPU_FREQ_GOV_HYBRID
 	select CPU_FREQ_TABLE
 	help
 	  'hybrid' - This driver adds a dynamic cpufreq policy governor.
-	  The governor does a periodic polling and 
+	  The governor does a periodic polling and
 	  changes frequency based on the CPU utilization.
 	  The support for this governor depends on CPU capability to
 	  do fast frequency switching (i.e, very low latency frequency
-	  transitions). 
+	  transitions).
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_hybrid.
@@ -225,11 +225,11 @@ config CPU_FREQ_GOV_HOTPLUG
 	select CPU_FREQ_TABLE
 	help
 	  'hotplug' - This driver adds a dynamic cpufreq policy governor.
-	  The governor does a periodic polling and 
+	  The governor does a periodic polling and
 	  changes frequency based on the CPU utilization.
 	  The support for this governor depends on CPU capability to
 	  do fast frequency switching (i.e, very low latency frequency
-	  transitions). 
+	  transitions).
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_hotplug.
@@ -243,11 +243,11 @@ config CPU_FREQ_GOV_BALANCE
 	select CPU_FREQ_TABLE
 	help
 	  'balance' - This driver adds a dynamic cpufreq policy governor.
-	  The governor does a periodic polling and 
+	  The governor does a periodic polling and
 	  changes frequency based on the CPU utilization.
 	  The support for this governor depends on CPU capability to
 	  do fast frequency switching (i.e, very low latency frequency
-	  transitions). 
+	  transitions).
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_hotplug.

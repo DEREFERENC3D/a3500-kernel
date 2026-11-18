@@ -1443,7 +1443,7 @@ void console_unlock(void)
     preempt_disable();
 	this_cpu = smp_processor_id();
     preempt_enable();
-    
+
 	if (console_suspended) {
 		up(&console_sem);
 		return;
@@ -1457,9 +1457,9 @@ again:
 		raw_spin_lock_irqsave(&logbuf_lock, flags);
         if (log_in_resume) {
             t1 = sched_clock();
-        }  
+        }
 		wake_klogd |= log_start - log_end;
-		if (should_break || con_start == log_end) 
+		if (should_break || con_start == log_end)
 			break;			/* Nothing to print */
 		_con_start = con_start;
 		_log_end = log_end;
@@ -1496,8 +1496,8 @@ again:
             }
         }
 		local_irq_restore(flags);
-        
-        if (this_cpu == 0) 
+
+        if (this_cpu == 0)
             should_break = true;
 	}
 	console_locked = 0;

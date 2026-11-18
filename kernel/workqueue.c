@@ -262,7 +262,7 @@ EXPORT_SYMBOL_GPL(system_unbound_wq);
 EXPORT_SYMBOL_GPL(system_freezable_wq);
 EXPORT_SYMBOL_GPL(system_nrt_freezable_wq);
 
-/* When this boolean is true, it means something wrong in cpu on/off callbacks. 
+/* When this boolean is true, it means something wrong in cpu on/off callbacks.
  * From this moment, we don't handle any cpu on/off events.
  */
 static bool wq_cpuonoff_chaos = false;
@@ -3649,7 +3649,7 @@ static int __devinit workqueue_cpu_up_callback(struct notifier_block *nfb,
 					       void *hcpu)
 {
 	if (wq_cpuonoff_chaos) {
-		/* suppose here only runs once when CPU_DOWN_PREPARE failed in DOWN callback, and 
+		/* suppose here only runs once when CPU_DOWN_PREPARE failed in DOWN callback, and
 		 * then reverse notifier to UP callback with CPU_DOWN_FAILED action. */
 		switch (action & ~CPU_TASKS_FROZEN) {
 			case CPU_DOWN_FAILED:

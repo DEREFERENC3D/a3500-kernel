@@ -535,7 +535,7 @@ ifeq ($(KBUILD_EXTMOD),)
 ifneq ($(SRCARCH),arm)
 $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
 else
-#TODO { 
+#TODO {
 #modify by MTK, we have the .config rule, don't set the empty command rule for .config
 include/config/auto.conf.cmd: ;
 # }
@@ -1169,7 +1169,7 @@ AMODSYMLIB = $(INSTALL_MOD_PATH)/../symbols/system/lib/modules
 export AMODSYMLIB
 
 PHONY += android_modules_install
-android_modules_install: _android_modinst_ 
+android_modules_install: _android_modinst_
 
 PHONY += _android_modinst_
 _android_modinst_:

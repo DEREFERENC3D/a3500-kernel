@@ -7,7 +7,7 @@ void ion_profile_init(void)
 {
     MMP_Event ION_Event;
     ION_Event = MMProfileRegisterEvent(MMP_RootEvent, "ION");
-    
+
     ION_MMP_Events[PROFILE_ALLOC] = MMProfileRegisterEvent(ION_Event, "alloc");
     ION_MMP_Events[PROFILE_FREE] = MMProfileRegisterEvent(ION_Event, "free");
     ION_MMP_Events[PROFILE_SHARE] = MMProfileRegisterEvent(ION_Event, "share");
@@ -24,6 +24,5 @@ void ion_profile_init(void)
     ION_MMP_Events[PROFILE_DMA_CLEAN_ALL] = MMProfileRegisterEvent(ION_Event, "clean_all");
     ION_MMP_Events[PROFILE_DMA_FLUSH_ALL] = MMProfileRegisterEvent(ION_Event, "flush_all");
     ION_MMP_Events[PROFILE_DMA_INVALID_ALL] = MMProfileRegisterEvent(ION_Event, "inv_all");
-    
-}
 
+}

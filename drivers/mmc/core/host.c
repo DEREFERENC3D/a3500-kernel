@@ -296,12 +296,12 @@ static inline void mmc_host_clk_sysfs_init(struct mmc_host *host)
 #endif
 
 static void mmc_card_init_wait(struct mmc_host *mmc)
-{	 
+{
     wait_for_completion_timeout(&mmc->card_init_done, CARD_INIT_TIMEOUT);
 }
 
 static void mmc_card_init_complete(struct mmc_host* mmc)
-{  
+{
     complete(&mmc->card_init_done);
 }
 
