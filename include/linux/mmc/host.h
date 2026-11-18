@@ -349,7 +349,6 @@ struct mmc_host {
 	} embedded_sdio_data;
 #endif
 	struct completion           card_init_done;
-	void (*card_init_complete)(struct mmc_host*);
 	void (*card_init_wait)(struct mmc_host*);
 	unsigned long		private[0] ____cacheline_aligned;
 };

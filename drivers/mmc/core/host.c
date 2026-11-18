@@ -297,12 +297,7 @@ static inline void mmc_host_clk_sysfs_init(struct mmc_host *host)
 
 static void mmc_card_init_wait(struct mmc_host *mmc)
 {
-    wait_for_completion_timeout(&mmc->card_init_done, CARD_INIT_TIMEOUT);
-}
-
-static void mmc_card_init_complete(struct mmc_host* mmc)
-{
-    complete(&mmc->card_init_done);
+	wait_for_completion_timeout(&mmc->card_init_done, CARD_INIT_TIMEOUT);
 }
 
 /**
@@ -340,7 +335,6 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *dev)
 	mmc_host_clk_init(host);
 	init_completion(&host->card_init_done);
 	host->card_init_wait = mmc_card_init_wait;
-	host->card_init_complete = mmc_card_init_complete;
 
 	spin_lock_init(&host->lock);
 	init_waitqueue_head(&host->wq);
