@@ -42,192 +42,192 @@ struct workqueue_struct *sys_sync_work_queue;
 suspend_state_t requested_suspend_state = PM_SUSPEND_MEM;
 
 enum {
-    SUSPEND_REQUESTED = 0x1,
-    SUSPENDED = 0x2,
-    SUSPEND_REQUESTED_AND_SUSPENDED = SUSPEND_REQUESTED | SUSPENDED,
+	SUSPEND_REQUESTED = 0x1,
+	SUSPENDED = 0x2,
+	SUSPEND_REQUESTED_AND_SUSPENDED = SUSPEND_REQUESTED | SUSPENDED,
 };
 static int state;
 static DECLARE_COMPLETION(fb_drv_ready);
 
 void register_early_suspend(struct early_suspend *handler)
 {
-    struct list_head *pos;
+	struct list_head *pos;
 
-    mutex_lock(&early_suspend_lock);
-    list_for_each(pos, &early_suspend_handlers) {
-        struct early_suspend *e;
-        e = list_entry(pos, struct early_suspend, link);
-        if (e->level > handler->level)
-            break;
-    }
-    list_add_tail(&handler->link, pos);
-    early_suspend_count++;
-    if ((state & SUSPENDED) && handler->suspend)
-        handler->suspend(handler);
-    mutex_unlock(&early_suspend_lock);
+	mutex_lock(&early_suspend_lock);
+	list_for_each(pos, &early_suspend_handlers) {
+		struct early_suspend *e;
+		e = list_entry(pos, struct early_suspend, link);
+		if (e->level > handler->level)
+			break;
+	}
+	list_add_tail(&handler->link, pos);
+	early_suspend_count++;
+	if ((state & SUSPENDED) && handler->suspend)
+		handler->suspend(handler);
+	mutex_unlock(&early_suspend_lock);
 }
 EXPORT_SYMBOL(register_early_suspend);
 
 void unregister_early_suspend(struct early_suspend *handler)
 {
-    mutex_lock(&early_suspend_lock);
-    list_del(&handler->link);
-    early_suspend_count--;
-    mutex_unlock(&early_suspend_lock);
+	mutex_lock(&early_suspend_lock);
+	list_del(&handler->link);
+	early_suspend_count--;
+	mutex_unlock(&early_suspend_lock);
 }
 EXPORT_SYMBOL(unregister_early_suspend);
 
 static void early_sys_sync(struct work_struct *work)
 {
-    wake_lock(&sys_sync_wake_lock);
-    sys_sync();
-    wake_unlock(&sys_sync_wake_lock);
+	wake_lock(&sys_sync_wake_lock);
+	sys_sync();
+	wake_unlock(&sys_sync_wake_lock);
 }
 
 static void early_suspend(struct work_struct *work)
 {
-    struct early_suspend *pos;
-    unsigned long irqflags;
-    int abort = 0, count = 0;
+	struct early_suspend *pos;
+	unsigned long irqflags;
+	int abort = 0, count = 0;
 
-    mutex_lock(&early_suspend_lock);
-    spin_lock_irqsave(&state_lock, irqflags);
-    if (state == SUSPEND_REQUESTED)
-        state |= SUSPENDED;
-    else
-        abort = 1;
-    spin_unlock_irqrestore(&state_lock, irqflags);
+	mutex_lock(&early_suspend_lock);
+	spin_lock_irqsave(&state_lock, irqflags);
+	if (state == SUSPEND_REQUESTED)
+		state |= SUSPENDED;
+	else
+		abort = 1;
+	spin_unlock_irqrestore(&state_lock, irqflags);
 
-    if (abort) {
-        mutex_unlock(&early_suspend_lock);
-        goto abort;
-    }
+	if (abort) {
+		mutex_unlock(&early_suspend_lock);
+		goto abort;
+	}
 
-    list_for_each_entry(pos, &early_suspend_handlers, link) {
-        if (pos->suspend != NULL) {
-            if (!(forbid_id & (0x1 << count))) {
-                pos->suspend(pos);
-            }
-            count++;
-        }
-    }
-    mutex_unlock(&early_suspend_lock);
+	list_for_each_entry(pos, &early_suspend_handlers, link) {
+		if (pos->suspend != NULL) {
+			if (!(forbid_id & (0x1 << count))) {
+			pos->suspend(pos);
+			}
+			count++;
+		}
+	}
+	mutex_unlock(&early_suspend_lock);
 
-    /* Remove sys_sync from early_suspend, and use work queue to complete sys_sync */
+	/* Remove sys_sync from early_suspend, and use work queue to complete sys_sync */
 
 abort:
 	if (state == SUSPEND_REQUESTED_AND_SUSPENDED) {
 		//wake_unlock(&main_wake_lock);
 #ifdef CONFIG_MTK_HIBERNATION
-        suspend_state_t susp_state = get_suspend_state();
-        pm_autosleep_set_state(susp_state);
+		suspend_state_t susp_state = get_suspend_state();
+		pm_autosleep_set_state(susp_state);
 #else
 		pm_autosleep_set_state(PM_SUSPEND_MEM);
 #endif
-    }
+	}
 }
 
 static void late_resume(struct work_struct *work)
 {
-    struct early_suspend *pos;
-    unsigned long irqflags;
-    int abort = 0;
-    int completed = 0, count=0;
+	struct early_suspend *pos;
+	unsigned long irqflags;
+	int abort = 0;
+	int completed = 0, count=0;
 
 	pm_autosleep_set_state(PM_SUSPEND_ON);
 
-    mutex_lock(&early_suspend_lock);
-    spin_lock_irqsave(&state_lock, irqflags);
-    if (state == SUSPENDED)
-        state &= ~SUSPENDED;
-    else
-        abort = 1;
-    spin_unlock_irqrestore(&state_lock, irqflags);
+	mutex_lock(&early_suspend_lock);
+	spin_lock_irqsave(&state_lock, irqflags);
+	if (state == SUSPENDED)
+		state &= ~SUSPENDED;
+	else
+		abort = 1;
+	spin_unlock_irqrestore(&state_lock, irqflags);
 
-    if (abort) {
-        goto abort;
-    }
-    list_for_each_entry_reverse(pos, &early_suspend_handlers, link) {
-        if (!completed && pos->level < EARLY_SUSPEND_LEVEL_STOP_DRAWING) {
-            complete(&fb_drv_ready);
-            completed = 1;
-        }
-        if (pos->resume != NULL) {
-            if (!(forbid_id & (0x1 << (early_suspend_count-count-1)))) {
-                pos->resume(pos);
-            }
-            count++;
-        }
-    }
+	if (abort) {
+		goto abort;
+	}
+	list_for_each_entry_reverse(pos, &early_suspend_handlers, link) {
+		if (!completed && pos->level < EARLY_SUSPEND_LEVEL_STOP_DRAWING) {
+			complete(&fb_drv_ready);
+			completed = 1;
+		}
+		if (pos->resume != NULL) {
+			if (!(forbid_id & (0x1 << (early_suspend_count-count-1)))) {
+			pos->resume(pos);
+			}
+			count++;
+		}
+	}
 abort:
-    if (!completed)
-        complete(&fb_drv_ready);
-    mutex_unlock(&early_suspend_lock);
+	if (!completed)
+		complete(&fb_drv_ready);
+	mutex_unlock(&early_suspend_lock);
 }
 
 void request_suspend_state(suspend_state_t new_state)
 {
-    unsigned long irqflags;
-    int old_sleep;
-    int wait_flag = 0;
+	unsigned long irqflags;
+	int old_sleep;
+	int wait_flag = 0;
 
-    spin_lock_irqsave(&state_lock, irqflags);
-    old_sleep = state & SUSPEND_REQUESTED;
-    if (!old_sleep && new_state != PM_SUSPEND_ON) {
-        state |= SUSPEND_REQUESTED;
-        queue_work(sys_sync_work_queue, &early_sys_sync_work);
-        queue_work(suspend_work_queue, &early_suspend_work);
-    } else if (old_sleep && new_state == PM_SUSPEND_ON) {
-        state &= ~SUSPEND_REQUESTED;
-        //wake_lock(&main_wake_lock);
+	spin_lock_irqsave(&state_lock, irqflags);
+	old_sleep = state & SUSPEND_REQUESTED;
+	if (!old_sleep && new_state != PM_SUSPEND_ON) {
+		state |= SUSPEND_REQUESTED;
+		queue_work(sys_sync_work_queue, &early_sys_sync_work);
+		queue_work(suspend_work_queue, &early_suspend_work);
+	} else if (old_sleep && new_state == PM_SUSPEND_ON) {
+		state &= ~SUSPEND_REQUESTED;
+		//wake_lock(&main_wake_lock);
 		///cun
 		if (queue_work(suspend_work_queue, &late_resume_work)) {
-            /*
-             * In order to synchronize the backlight turn on timing,
-             * block the thread and wait for fb driver late_resume()
-             * callback function is completed
-             */
-            wait_flag = 1;
-        }
-    }
-    requested_suspend_state = new_state;
-    spin_unlock_irqrestore(&state_lock, irqflags);
-    if (wait_flag == 1) {
-        wait_for_completion(&fb_drv_ready);
-    }
+			/*
+			 * In order to synchronize the backlight turn on timing,
+			 * block the thread and wait for fb driver late_resume()
+			 * callback function is completed
+			 */
+			wait_flag = 1;
+		}
+	}
+	requested_suspend_state = new_state;
+	spin_unlock_irqrestore(&state_lock, irqflags);
+	if (wait_flag == 1) {
+		wait_for_completion(&fb_drv_ready);
+	}
 }
 
 suspend_state_t get_suspend_state(void)
 {
-    return requested_suspend_state;
+	return requested_suspend_state;
 }
 //cun
 static int __init org_wakelocks_init(void)
 {
-    int ret;
+	int ret;
 
-    wake_lock_init(&sys_sync_wake_lock, WAKE_LOCK_SUSPEND, "sys_sync");
+	wake_lock_init(&sys_sync_wake_lock, WAKE_LOCK_SUSPEND, "sys_sync");
 
-    sys_sync_work_queue = create_singlethread_workqueue("fs_sync");
-    if (sys_sync_work_queue == NULL) {
-        pr_err("[wakelocks_init] fs_sync workqueue create failed\n");
-    }
+	sys_sync_work_queue = create_singlethread_workqueue("fs_sync");
+	if (sys_sync_work_queue == NULL) {
+		pr_err("[wakelocks_init] fs_sync workqueue create failed\n");
+	}
 
-    suspend_work_queue = create_singlethread_workqueue("suspend");
-    if (suspend_work_queue == NULL) {
-        ret = -ENOMEM;
-        goto err_suspend_work_queue;
-    }
-    return 0;
+	suspend_work_queue = create_singlethread_workqueue("suspend");
+	if (suspend_work_queue == NULL) {
+		ret = -ENOMEM;
+		goto err_suspend_work_queue;
+	}
+	return 0;
 
 err_suspend_work_queue:
 
-    return ret;
+	return ret;
 }
 
 static void  __exit org_wakelocks_exit(void)
 {
-    destroy_workqueue(suspend_work_queue);
+	destroy_workqueue(suspend_work_queue);
 }
 
 core_initcall(org_wakelocks_init);
