@@ -2050,6 +2050,9 @@ int mmc_detect_card_removed(struct mmc_host *host)
 }
 EXPORT_SYMBOL(mmc_detect_card_removed);
 
+#ifdef CONFIG_MTK_HIBERNATION
+extern void mmc_rescan_wait_finish(void);
+#endif
 void mmc_rescan(struct work_struct *work)
 {
 	static const unsigned freqs[] = { 400000, 300000, 200000, 100000 };
@@ -2113,6 +2116,11 @@ void mmc_rescan(struct work_struct *work)
 	mmc_release_host(host);
 
  out:
+#ifdef CONFIG_MTK_HIBERNATION
+	if (unlikely(host->index == 1)) {
+		mmc_rescan_wait_finish();
+	}
+#endif
 	if (extend_wakelock)
 		wake_lock_timeout(&host->detect_wake_lock, HZ / 2);
 	else
