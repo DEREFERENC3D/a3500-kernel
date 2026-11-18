@@ -609,7 +609,6 @@ static void power_down(void)
 	while(1);
 }
 
-
 /**
  * hibernate - Carry out system hibernation, including saving the image.
  */
@@ -617,12 +616,8 @@ int hibernate(void)
 {
 	int error;
 
-    hib_log("entering hibernate()\n");
-
-	if (test_action_state(TOI_REPLACE_SWSUSP)) {
-        error = try_tuxonice_hibernate();
-        return error;
-    }
+	if (test_action_state(TOI_REPLACE_SWSUSP))
+		return try_tuxonice_hibernate();
 
 	lock_system_sleep();
 	/* The snapshot device should not be opened while we're running */

@@ -765,8 +765,6 @@ int toi_start_other_threads(void)
 		atomic_inc(&toi_num_other_threads);
 	}
 
-    hib_warn("Started %ld threads.", num_started);
-
 	toi_message(TOI_IO, TOI_LOW, 0, "Started %d threads.", num_started);
 	return num_started;
 }
@@ -933,7 +931,6 @@ int write_pageset(struct pagedir *pagedir)
 		else
 			pageflags = pageset1_copy_map;
 	} else {
-        hib_log("start to writing caches...\n");
 		toi_prepare_status(DONT_CLEAR_BAR, "Writing caches...");
 		pageflags = pageset2_map;
 	}
@@ -963,7 +960,6 @@ int write_pageset(struct pagedir *pagedir)
 		toi_bkd.toi_io_time[0][1] += (end_time - start_time);
 	}
 
-    hib_log("@line:%d return value(%ld)\n", __LINE__, error);
 	return error;
 }
 
@@ -1543,7 +1539,6 @@ void mmc_rescan_wait_finish(void)
         return;
     mmc_rescan_done = true;
     wake_up(&mmc_rescan_wait);
-    pr_warn("[%s] done\n", __func__);
 }
 EXPORT_SYMBOL_GPL(mmc_rescan_wait_finish);
 
@@ -1555,7 +1550,6 @@ static int mmc_rescan_ready(void)
     // or mmc rescan may call submit_bio()after trap_non_toi_io sets to 1, which will induce BUG_ON() in submit_bio() !!
     wait_event_timeout(mmc_rescan_wait, mmc_rescan_done == true, 5*HZ);
     if (mmc_rescan_done == false) {
-        pr_warn("[%s] wait mmc rescan partition timeout !!\n", __func__);
 		abort_hibernate(TOI_FAILED_IO, "Failed to wait mmc rescan ready.");
 		return -EIO;
     }

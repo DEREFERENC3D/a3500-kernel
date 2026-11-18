@@ -56,8 +56,6 @@ static void enable_swapfile(void)
 {
 	int activateswapresult = -EINVAL;
 
-    hib_log("swapfilename = '%s'\n", swapfilename);
-
 	if (swapfilename[0]) {
 		/* Attempt to swap on with maximum priority */
 		activateswapresult = sys_swapon(swapfilename, 0xFFFF);
@@ -83,7 +81,6 @@ static void disable_swapfile(void)
 	if (!toi_swapon_status)
 		return;
 
-    hib_log("swapfilename = '%s'\n", swapfilename);
 	sys_swapoff(swapfilename);
 	toi_swapon_status = 0;
 }
@@ -345,8 +342,8 @@ static int toi_swap_print_debug_stats(char *buffer, int size)
 	si_swapinfo_no_compcache();
 
 	len += scnprintf(buffer+len, size-len,
-			"  Swap available for image: %lu+%lu pages.\n",
-                     swapinfo.freeswap, swap_allocated);
+			"  Swap available for image: %lu pages.\n",
+			swapinfo.freeswap + swap_allocated);
 
 	return len;
 }

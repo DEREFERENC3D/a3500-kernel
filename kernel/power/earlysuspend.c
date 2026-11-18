@@ -96,9 +96,7 @@ EXPORT_SYMBOL(unregister_early_suspend);
 static void early_sys_sync(struct work_struct *work)
 {
     wake_lock(&sys_sync_wake_lock);
-    pm_warn("++\n");
     sys_sync();
-    pm_warn("--\n");
     wake_unlock(&sys_sync_wake_lock);
 }
 
@@ -107,8 +105,6 @@ static void early_suspend(struct work_struct *work)
     struct early_suspend *pos;
     unsigned long irqflags;
     int abort = 0, count = 0;
-
-    pr_warn("@@@@@@@@@@@@@@@@@@@@@@@\n@@@__early_suspend__@@@\n@@@@@@@@@@@@@@@@@@@@@@@\n");
 
     mutex_lock(&early_suspend_lock);
     spin_lock_irqsave(&state_lock, irqflags);
@@ -119,23 +115,16 @@ static void early_suspend(struct work_struct *work)
     spin_unlock_irqrestore(&state_lock, irqflags);
 
     if (abort) {
-        if (earlysuspend_debug_mask & DEBUG_SUSPEND)
-            pm_warn("abort, state %d\n", state);
         mutex_unlock(&early_suspend_lock);
         goto abort;
     }
 
-    pr_warn("early_suspend_count = %d, forbid_id = 0x%x\n", early_suspend_count, forbid_id);
-    if (earlysuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("call handlers\n");
     list_for_each_entry(pos, &early_suspend_handlers, link) {
         if (pos->suspend != NULL) {
             if (!(forbid_id & (0x1 << count))) {
-                //if (earlysuspend_debug_mask & DEBUG_VERBOSE)
-                    pr_warn("ES handlers %d: [%pf], level: %d\n", count, pos->suspend, pos->level);
                 pos->suspend(pos);
             }
-            count++; 
+            count++;
         }
     }
     mutex_unlock(&early_suspend_lock);
@@ -147,7 +136,6 @@ abort:
 		//wake_unlock(&main_wake_lock);
 #ifdef CONFIG_MTK_HIBERNATION
         suspend_state_t susp_state = get_suspend_state();
-        pm_warn("calling pm_autosleep_set_state() with parameter: %d\n", susp_state);
         pm_autosleep_set_state(susp_state);
 #else
 		pm_autosleep_set_state(PM_SUSPEND_MEM);
@@ -161,8 +149,6 @@ static void late_resume(struct work_struct *work)
     unsigned long irqflags;
     int abort = 0;
     int completed = 0, count=0;
-    
-    pr_warn("@@@@@@@@@@@@@@@@@@@@@@@\n@@@__late_resume__@@@\n@@@@@@@@@@@@@@@@@@@@@@@\n");
 
 	pm_autosleep_set_state(PM_SUSPEND_ON);
 
@@ -175,13 +161,8 @@ static void late_resume(struct work_struct *work)
     spin_unlock_irqrestore(&state_lock, irqflags);
 
     if (abort) {
-        if (earlysuspend_debug_mask & DEBUG_SUSPEND)
-            pm_warn("abort, state %d\n", state);
         goto abort;
     }
-    pr_warn("early_suspend_count = %d, forbid_id = 0x%x\n", early_suspend_count, forbid_id);
-    if (earlysuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("call handlers\n");
     list_for_each_entry_reverse(pos, &early_suspend_handlers, link) {
         if (!completed && pos->level < EARLY_SUSPEND_LEVEL_STOP_DRAWING) {
             complete(&fb_drv_ready);
@@ -189,15 +170,11 @@ static void late_resume(struct work_struct *work)
         }
         if (pos->resume != NULL) {
             if (!(forbid_id & (0x1 << (early_suspend_count-count-1)))) {
-                //if (earlysuspend_debug_mask & DEBUG_VERBOSE)
-                    pr_warn("LR handlers %d: [%pf], level: %d\n", count, pos->resume, pos->level);
                 pos->resume(pos);
             }
-            count++; 
+            count++;
         }
     }
-    if (earlysuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("done\n");
 abort:
     if (!completed)
         complete(&fb_drv_ready);
@@ -227,9 +204,7 @@ void request_suspend_state(suspend_state_t new_state)
     }
     if (!old_sleep && new_state != PM_SUSPEND_ON) {
         state |= SUSPEND_REQUESTED;
-        pm_warn("sys_sync_work_queue early_sys_sync_work\n");
         queue_work(sys_sync_work_queue, &early_sys_sync_work);
-        pm_warn("suspend_work_queue early_suspend_work\n");
         queue_work(suspend_work_queue, &early_suspend_work);
     } else if (old_sleep && new_state == PM_SUSPEND_ON) {
         state &= ~SUSPEND_REQUESTED;
@@ -248,7 +223,6 @@ void request_suspend_state(suspend_state_t new_state)
     spin_unlock_irqrestore(&state_lock, irqflags);
     if (wait_flag == 1) {
         wait_for_completion(&fb_drv_ready);
-        pr_warn("wait done\n");
     }
 }
 

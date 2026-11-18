@@ -99,28 +99,21 @@ void sb_enable(void)
     struct sb_handler *pos;
     int count = 0;
 
-    pr_warn("@@@@@@@@@@@@@@@@@@@\n@@@__sb_enable__@@@\n@@@@@@@@@@@@@@@@@@@\n");
 
     mutex_lock(&sb_mutex);
 
-    pm_warn("turn backlight off\n");
     mt65xx_leds_brightness_set(MT65XX_LED_TYPE_BUTTON, 0);
     mt65xx_leds_brightness_set(MT65XX_LED_TYPE_LCD, 0);
     
-    pm_warn("sb_handler_count = %d, sb_handler_forbid_id = 0x%x\n", sb_handler_count, sb_handler_forbid_id);
     list_for_each_entry(pos, &sb_handlers, link) {
         if (pos->enable != NULL) {
             if (!(sb_handler_forbid_id & (0x1 << count))) {
-                if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-                    pm_warn("sb enable handler %d: [%pf], level: %d\n", count, pos->enable, pos->level);
                 pos->enable(pos);
             }
             count++; 
         }
     }
 
-    if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("sb enable handler done\n");
 
     mutex_unlock(&sb_mutex);
 
@@ -132,26 +125,19 @@ void sb_disable(void)
     struct sb_handler *pos;
     int count = 0;
 
-    pr_warn("@@@@@@@@@@@@@@@@@@@@\n@@@__sb_disable__@@@\n@@@@@@@@@@@@@@@@@@@@\n");
 
     mutex_lock(&sb_mutex);
 
-    pm_warn("sb_handler_count = %d, sb_handler_forbid_id = 0x%x\n", sb_handler_count, sb_handler_forbid_id);
     list_for_each_entry_reverse(pos, &sb_handlers, link) {
         if (pos->disable != NULL) {
             if (!(sb_handler_forbid_id & (0x1 << (sb_handler_count - 1 - count)))) {
-                if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-                    pm_warn("sb disable handler %d: [%pf], level: %d\n", count, pos->disable, pos->level);
                 pos->disable(pos);
             }
             count++; 
         }
     }
 
-    if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("sb disable handler done\n");
 
-    pm_warn("turn backlight on\n");
     mt65xx_leds_brightness_set(MT65XX_LED_TYPE_LCD, 255);
     //we don't need to turn keypad light on when SmartBook plug-out
     //mt65xx_leds_brightness_set(MT65XX_LED_TYPE_BUTTON, 255);
@@ -165,24 +151,18 @@ void sb_suspend(void)
     struct sb_handler *pos;
     int count = 0;
 
-    pr_warn("@@@@@@@@@@@@@@@@@@@\n@@@__sb_suspend__@@@\n@@@@@@@@@@@@@@@@@@@\n");
 
     mutex_lock(&sb_mutex);
 
-    pm_warn("sb_handler_count = %d, sb_handler_forbid_id = 0x%x\n", sb_handler_count, sb_handler_forbid_id);
     list_for_each_entry(pos, &sb_handlers, link) {
         if (pos->suspend != NULL) {
             if (!(sb_handler_forbid_id & (0x1 << count))) {
-                if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-                    pm_warn("sb enable handler %d: [%pf], level: %d\n", count, pos->suspend, pos->level);
                 pos->suspend(pos);
             }
             count++; 
         }
     }
 
-    if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("sb enable handler done\n");
 
     mutex_unlock(&sb_mutex);
 
@@ -194,24 +174,18 @@ void sb_resume(void)
     struct sb_handler *pos;
     int count = 0;
 
-    pr_warn("@@@@@@@@@@@@@@@@@@@@\n@@@__sb_resume__@@@\n@@@@@@@@@@@@@@@@@@@@\n");
 
     mutex_lock(&sb_mutex);
 
-    pm_warn("sb_handler_count = %d, sb_handler_forbid_id = 0x%x\n", sb_handler_count, sb_handler_forbid_id);
     list_for_each_entry_reverse(pos, &sb_handlers, link) {
         if (pos->resume != NULL) {
             if (!(sb_handler_forbid_id & (0x1 << (sb_handler_count - 1 - count)))) {
-                if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-                    pm_warn("sb disable handler %d: [%pf], level: %d\n", count, pos->resume, pos->level);
                 pos->resume(pos);
             }
             count++; 
         }
     }
 
-    if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("sb disable handler done\n");
 
     mutex_unlock(&sb_mutex);
 }
@@ -225,24 +199,18 @@ void sb_plug_in(void)
     if (sb_bypass)
         return;
 
-    pr_warn("@@@@@@@@@@@@@@@@@@@\n@@@__sb_plug_in__@@@\n@@@@@@@@@@@@@@@@@@@\n");
 
     mutex_lock(&sb_mutex);
 
-    pm_warn("sb_handler_count = %d, sb_handler_forbid_id = 0x%x\n", sb_handler_count, sb_handler_forbid_id);
     list_for_each_entry(pos, &sb_handlers, link) {
         if (pos->plug_in != NULL) {
             if (!(sb_handler_forbid_id & (0x1 << count))) {
-                if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-                    pm_warn("sb plug_in handler %d: [%pf], level: %d\n", count, pos->plug_in, pos->level);
                 pos->plug_in(pos);
             }
             count++; 
         }
     }
 
-    if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("sb plug_in handler done\n");
 
     mutex_unlock(&sb_mutex);
 
@@ -257,24 +225,18 @@ void sb_plug_out(void)
     if (sb_bypass)
         return;
 
-    pr_warn("@@@@@@@@@@@@@@@@@@@@\n@@@__sb_plug_out__@@@\n@@@@@@@@@@@@@@@@@@@@\n");
 
     mutex_lock(&sb_mutex);
 
-    pm_warn("sb_handler_count = %d, sb_handler_forbid_id = 0x%x\n", sb_handler_count, sb_handler_forbid_id);
     list_for_each_entry_reverse(pos, &sb_handlers, link) {
         if (pos->plug_out != NULL) {
             if (!(sb_handler_forbid_id & (0x1 << (sb_handler_count - 1 - count)))) {
-                if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-                    pm_warn("sb plug_out handler %d: [%pf], level: %d\n", count, pos->plug_out, pos->level);
                 pos->plug_out(pos);
             }
             count++; 
         }
     }
 
-    if (sbsuspend_debug_mask & DEBUG_SUSPEND)
-        pm_warn("sb plug_out handler done\n");
 
     mutex_unlock(&sb_mutex);
 }
