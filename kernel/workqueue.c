@@ -1907,7 +1907,6 @@ __acquires(&gcwq->lock)
 	 * While we must be careful to not use "work" after this, the trace
 	 * point will only record its address.
 	 */
-
 	trace_workqueue_execute_end(work);
 	lock_map_release(&lockdep_map);
 	lock_map_release(&cwq->wq->lockdep_map);
@@ -2696,16 +2695,6 @@ static bool __cancel_work_timer(struct work_struct *work,
 
 	clear_work_data(work);
 	return ret;
-}
-
-void grab_pending_work(struct work_struct *work)
-{
-	int ret;
-
-	do {
-		ret = try_to_grab_pending(work);
-		wait_on_work(work);
-	} while (unlikely(ret < 0));
 }
 
 /**
@@ -3563,9 +3552,6 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
 
 	action &= ~CPU_TASKS_FROZEN;
 
-	if (unlikely(wq_cpuonoff_chaos))
-		printk(KERN_INFO "workqueue_cpu_callback - in chaos dump\n");
-	
 	switch (action) {
 	case CPU_DOWN_PREPARE:
 		new_trustee = kthread_create(trustee_thread, gcwq,
@@ -3588,10 +3574,8 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
 		wq_cpuonoff_chaos = false;
 	}
 
-	if (wq_cpuonoff_chaos) {
-		printk(KERN_INFO "workqueue_cpu_callback - in chaos\n");  //suppose not to go here.
+	if (wq_cpuonoff_chaos)
 		return NOTIFY_BAD;
-	}
 
 	/* some are called w/ irq disabled, don't disturb irq status */
 	spin_lock_irqsave(&gcwq->lock, flags);
@@ -3669,7 +3653,6 @@ static int __devinit workqueue_cpu_up_callback(struct notifier_block *nfb,
 		 * then reverse notifier to UP callback with CPU_DOWN_FAILED action. */
 		switch (action & ~CPU_TASKS_FROZEN) {
 			case CPU_DOWN_FAILED:
-				printk(KERN_INFO "workqueue_cpu_up_callback: reverse in chaos\n");
 				return NOTIFY_OK;
 		}
 	}

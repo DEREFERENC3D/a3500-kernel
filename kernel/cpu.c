@@ -17,13 +17,7 @@
 #include <linux/gfp.h>
 #include <linux/suspend.h>
 
-/*******************************************************************************
-* 20121113 marc.huang                                                          *
-* CPU Hotplug and idle integration                                             *
-*******************************************************************************/
 atomic_t is_in_hotplug = ATOMIC_INIT(0);
-/******************************************************************************/
- 
 #ifdef CONFIG_SMP
 /* Serializes the updates to cpu_online_mask, cpu_present_mask */
 static DEFINE_MUTEX(cpu_add_remove_lock);
@@ -70,10 +64,10 @@ void get_online_cpus(void)
 	might_sleep();
 	if (cpu_hotplug.active_writer == current)
 		return;
-
 	mutex_lock(&cpu_hotplug.lock);
 	cpu_hotplug.refcount++;
 	mutex_unlock(&cpu_hotplug.lock);
+
 }
 EXPORT_SYMBOL_GPL(get_online_cpus);
 
@@ -81,11 +75,11 @@ void put_online_cpus(void)
 {
 	if (cpu_hotplug.active_writer == current)
 		return;
-
 	mutex_lock(&cpu_hotplug.lock);
 	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
 		wake_up_process(cpu_hotplug.active_writer);
 	mutex_unlock(&cpu_hotplug.lock);
+
 }
 EXPORT_SYMBOL_GPL(put_online_cpus);
 
@@ -123,24 +117,12 @@ static void cpu_hotplug_begin(void)
 		mutex_unlock(&cpu_hotplug.lock);
 		schedule();
 	}
-	
-/*******************************************************************************
-* 20121113 marc.huang                                                          *
-* CPU Hotplug and idle integration                                             *
-*******************************************************************************/
-    atomic_inc(&is_in_hotplug);
-/******************************************************************************/
+	atomic_inc(&is_in_hotplug);
 }
 
 static void cpu_hotplug_done(void)
 {
-/*******************************************************************************
-* 20121113 marc.huang                                                          *
-* CPU Hotplug and MCDI integration                                             *
-*******************************************************************************/
-    atomic_dec(&is_in_hotplug);
-/******************************************************************************/
-
+	atomic_dec(&is_in_hotplug);
 	cpu_hotplug.active_writer = NULL;
 	mutex_unlock(&cpu_hotplug.lock);
 }
@@ -175,7 +157,6 @@ static void cpu_hotplug_done(void) {}
 int __ref register_cpu_notifier(struct notifier_block *nb)
 {
 	int ret;
-
 	cpu_maps_update_begin();
 	ret = raw_notifier_chain_register(&cpu_chain, nb);
 	cpu_maps_update_done();
