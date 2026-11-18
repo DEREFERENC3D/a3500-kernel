@@ -1915,7 +1915,6 @@ static snd_pcm_sframes_t snd_pcm_lib_write1(struct snd_pcm_substream *substream,
 		err = -EBADFD;
 		goto _end_unlock;
 	}
-    //printk("+snd_pcm_lib_write1\n");
 	runtime->twake = runtime->control->avail_min ? : 1;
 	while (size > 0) {
 		snd_pcm_uframes_t frames, appl_ptr, appl_ofs;
