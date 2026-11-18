@@ -769,8 +769,7 @@ static phys_addr_t __init memblock_alloc_base_nid(phys_addr_t size,
 	phys_addr_t found;
 
 	/* align @size to avoid excessive fragmentation on reserved array */
-	/* do not align size, we need every available memory */
-	//size = round_up(size, align);
+	size = round_up(size, align);
 
 	found = memblock_find_in_range_node(0, max_addr, size, align, nid);
 	if (found && !memblock_reserve(found, size))
