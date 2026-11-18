@@ -142,6 +142,8 @@ extern unsigned long nr_uninterruptible(void);
 extern unsigned long nr_iowait(void);
 extern unsigned long nr_iowait_cpu(int cpu);
 extern unsigned long this_cpu_load(void);
+
+
 extern unsigned long get_cpu_load(int cpu);
 extern unsigned long long mt_get_thread_cputime(pid_t pid);
 extern unsigned long long mt_get_cpu_idle(int cpu);
@@ -187,7 +189,6 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 #define TASK_UNINTERRUPTIBLE	2
 #define __TASK_STOPPED		4
 #define __TASK_TRACED		8
-#define MTK_TASK_IO_WAIT    12
 /* in tsk->exit_state */
 #define EXIT_ZOMBIE		16
 #define EXIT_DEAD		32
@@ -1279,28 +1280,6 @@ enum perf_event_task_context {
 	perf_nr_task_contexts,
 };
 
-#ifdef CONFIG_MT_SCHED_NOTICE
-  #ifdef CONFIG_MT_SCHED_DEBUG
-#define mt_sched_printf(x...) \
- do{                    \
-        char strings[128]="";  \
-        snprintf(strings, 128, x); \
-        printk(KERN_NOTICE x);          \
-        trace_sched_log(strings); \
- }while (0)
-  #else
-#define mt_sched_printf(x...) \
- do{                    \
-        char strings[128]="";  \
-        snprintf(strings, 128, x); \
-        trace_sched_log(strings); \
- }while (0)
-  #endif
-  
-#else
-#define mt_sched_printf(x...) do {} while (0)
-#endif
-
 struct task_struct {
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
 	void *stack;
@@ -1492,8 +1471,6 @@ struct task_struct {
 	int (*notifier)(void *priv);
 	void *notifier_data;
 	sigset_t *notifier_mask;
-    struct hlist_head task_works;
-
 	struct audit_context *audit_context;
 #ifdef CONFIG_AUDITSYSCALL
 	uid_t loginuid;
@@ -2179,7 +2156,6 @@ extern int sched_setscheduler(struct task_struct *, int,
 extern int sched_setscheduler_nocheck(struct task_struct *, int,
 				      const struct sched_param *);
 extern struct task_struct *idle_task(int cpu);
-
 /**
  * is_idle_task - is the specified task an idle task?
  * @p: the task in question.

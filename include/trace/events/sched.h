@@ -8,8 +8,6 @@
 #include <linux/tracepoint.h>
 #include <linux/binfmts.h>
 
-#define _MT_TASK_STATE_MASK		( (TASK_STATE_MAX-1) & ~TASK_WAKEKILL )
-
 /*
  * Tracepoint for calling kthread_stop, performed to end a kthread:
  */
@@ -52,23 +50,6 @@ TRACE_EVENT(sched_kthread_stop_ret,
 	TP_printk("ret=%d", __entry->ret)
 );
 
-#ifdef CREATE_TRACE_POINTS
-static inline long __trace_sched_switch_state(struct task_struct *p)
-{
-	long state = p->state;
-
-#ifdef CONFIG_PREEMPT
-	/*
-	 * For all intents and purposes a preempted task is a running task.
-	 */
-	if (task_thread_info(p)->preempt_count & PREEMPT_ACTIVE)
-		state = TASK_RUNNING | TASK_STATE_MAX;
-#endif
-
-	return state;
-}
-#endif
-
 /*
  * Tracepoint for waking up a task:
  */
@@ -94,11 +75,9 @@ DECLARE_EVENT_CLASS(sched_wakeup_template,
 		__entry->target_cpu	= task_cpu(p);
 	),
 
-	TP_printk(
-            "comm=%s pid=%d prio=%d success=%d target_cpu=%03d",
+	TP_printk("comm=%s pid=%d prio=%d success=%d target_cpu=%03d",
 		  __entry->comm, __entry->pid, __entry->prio,
-		  __entry->success, __entry->target_cpu
-          )
+		  __entry->success, __entry->target_cpu)
 );
 
 DEFINE_EVENT(sched_wakeup_template, sched_wakeup,
@@ -111,6 +90,23 @@ DEFINE_EVENT(sched_wakeup_template, sched_wakeup,
 DEFINE_EVENT(sched_wakeup_template, sched_wakeup_new,
 	     TP_PROTO(struct task_struct *p, int success),
 	     TP_ARGS(p, success));
+
+#ifdef CREATE_TRACE_POINTS
+static inline long __trace_sched_switch_state(struct task_struct *p)
+{
+	long state = p->state;
+
+#ifdef CONFIG_PREEMPT
+	/*
+	 * For all intents and purposes a preempted task is a running task.
+	 */
+	if (task_thread_info(p)->preempt_count & PREEMPT_ACTIVE)
+		state = TASK_RUNNING | TASK_STATE_MAX;
+#endif
+
+	return state;
+}
+#endif
 
 /*
  * Tracepoint for task switches, performed by the scheduler:
@@ -142,17 +138,15 @@ TRACE_EVENT(sched_switch,
 		__entry->next_prio	= next->prio;
 	),
 
-	TP_printk(
-            "prev_comm=%s prev_pid=%d prev_prio=%d prev_state=%s%s ==> next_comm=%s next_pid=%d next_prio=%d",
+	TP_printk("prev_comm=%s prev_pid=%d prev_prio=%d prev_state=%s%s ==> next_comm=%s next_pid=%d next_prio=%d",
 		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
-		__entry->prev_state & (_MT_TASK_STATE_MASK) ?
-	  __print_flags(__entry->prev_state & (_MT_TASK_STATE_MASK), "|",
+		__entry->prev_state & (TASK_STATE_MAX-1) ?
+		  __print_flags(__entry->prev_state & (TASK_STATE_MAX-1), "|",
 				{ 1, "S"} , { 2, "D" }, { 4, "T" }, { 8, "t" },
 				{ 16, "Z" }, { 32, "X" }, { 64, "x" },
-                {128, "K"}, { 256, "W"}) : "R",
+				{ 128, "W" }) : "R",
 		__entry->prev_state & TASK_STATE_MAX ? "+" : "",
-		__entry->next_comm, __entry->next_pid, __entry->next_prio
-        )
+		__entry->next_comm, __entry->next_pid, __entry->next_prio)
 );
 
 /*
@@ -182,8 +176,7 @@ TRACE_EVENT(sched_migrate_task,
 
 	TP_printk("comm=%s pid=%d prio=%d orig_cpu=%d dest_cpu=%d",
 		  __entry->comm, __entry->pid, __entry->prio,
-		  __entry->orig_cpu, __entry->dest_cpu
-          )
+		  __entry->orig_cpu, __entry->dest_cpu)
 );
 
 DECLARE_EVENT_CLASS(sched_process_template,
@@ -432,25 +425,6 @@ TRACE_EVENT(sched_pi_setprio,
 			__entry->comm, __entry->pid,
 			__entry->oldprio, __entry->newprio)
 );
-
-#ifdef CONFIG_MT_SCHED_NOTICE
-TRACE_EVENT(sched_log,
-
-    TP_PROTO(char *strings),
-
-    TP_ARGS(strings),
-
-    TP_STRUCT__entry(
-        __array(    char,  strings, 128)
-    ),
-
-    TP_fast_assign(
-        memcpy(__entry->strings, strings, 128);
-    ),
-
-    TP_printk("%s",__entry->strings)
-);
-#endif
 
 #endif /* _TRACE_SCHED_H */
 

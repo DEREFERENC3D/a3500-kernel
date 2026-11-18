@@ -237,10 +237,7 @@ extern int rtc_set_alarm(struct rtc_device *rtc,
 
 extern int rtc_set_alarm_poweron(struct rtc_device *rtc,
 				struct rtc_wkalrm *alrm);
-//extern void Set_IPO_flag(void);
-//extern void Clr_IPO_flag(void);
 
-				
 extern int rtc_initialize_alarm(struct rtc_device *rtc,
 				struct rtc_wkalrm *alrm);
 extern void rtc_update_irq(struct rtc_device *rtc,

@@ -18,20 +18,12 @@
 #include <linux/compiler.h>
 #include <linux/cpumask.h>
 
-/*******************************************************************************
-* 20121113 marc.huang                                                          *
-* CPU Hotplug and MCDI integration                                             *
-*******************************************************************************/
+/* MTK_MCDI: CPU hotplug and idle integration */
 #define MTK_MCDI
-
 #ifdef MTK_MCDI
-
 #include <mach/mt_spm_idle.h>
-
 extern atomic_t is_in_hotplug;
-
-#endif //#ifdef MTK_MCDI
-/******************************************************************************/
+#endif
 
 struct device;
 

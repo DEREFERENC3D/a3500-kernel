@@ -191,6 +191,7 @@ __alloc_zeroed_user_highpage(gfp_t movableflags,
 {
 	struct page *page = alloc_page_vma(GFP_HIGHUSER | movableflags,
 			vma, vaddr);
+
 	if (page)
 		clear_user_highpage(page, vaddr);
 
