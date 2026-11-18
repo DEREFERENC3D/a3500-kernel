@@ -32,7 +32,6 @@
 #include <linux/memcontrol.h>
 #include <linux/poll.h>
 #include <linux/oom.h>
-#include <linux/export.h>
 
 #include <asm/pgtable.h>
 #include <asm/tlbflush.h>
@@ -523,7 +522,7 @@ void get_swap_range_of_type(int type, swp_entry_t *start, swp_entry_t *end,
 }
 EXPORT_SYMBOL_GPL(get_swap_range_of_type);
 
-struct swap_info_struct *swap_info_get(swp_entry_t entry)
+static struct swap_info_struct *swap_info_get(swp_entry_t entry)
 {
 	struct swap_info_struct *p;
 	unsigned long offset, type;
@@ -557,11 +556,6 @@ bad_nofile:
 	printk(KERN_ERR "swap_free: %s%08lx\n", Bad_file, entry.val);
 out:
 	return NULL;
-}
-
-void swap_info_unlock(void)
-{
-        spin_unlock(&swap_lock);
 }
 
 static unsigned char swap_entry_free(struct swap_info_struct *p,
@@ -1620,10 +1614,9 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 		return -EPERM;
 
 #ifdef CONFIG_TOI
-    // FIXME: Turn it off due to current->mm may be NULL in kernel space
-    //        by calling sys_swapoff(swapfilename) in disable_swapfile() @ tuxonice_swap.c
-    pr_warn("[HIB/SWAP] [%s] file(%s) current(%p/%d/%s) current->mm(%p)\n", __func__, specialfile, current, current->pid, current->comm, current->mm);
-    WARN_ON(!current->mm);
+	/* current->mm may be NULL in kernel space when sys_swapoff() is
+	 * called from disable_swapfile() in tuxonice_swap.c */
+	WARN_ON(!current->mm);
 #else
 	BUG_ON(!current->mm);
 #endif
@@ -2244,7 +2237,7 @@ void si_swapinfo(struct sysinfo *val)
 	val->totalswap = total_swap_pages + nr_to_be_unused;
 	spin_unlock(&swap_lock);
 }
-EXPORT_SYMBOL(si_swapinfo);
+EXPORT_SYMBOL_GPL(si_swapinfo);
 
 /*
  * Verify that a swap entry is valid and increment its swap map count.

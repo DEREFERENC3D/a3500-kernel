@@ -475,15 +475,15 @@ static void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	do {
 		list_for_each_entry(child, &t->children, sibling) {
 			unsigned int child_points;
-			
-			 /*LCH add for race condition*/
-            if (p->flags & PF_EXITING) {
-                task_lock(p);
-                pr_err("%s: process %d (%s) is exiting\n", message, task_pid_nr(p), p->comm);
-                task_unlock(p);
-                set_tsk_thread_flag(p, TIF_MEMDIE);
-		        return;
-            }
+
+			/* fix race with task exiting */
+			if (p->flags & PF_EXITING) {
+				task_lock(p);
+				pr_err("%s: process %d (%s) is exiting\n", message, task_pid_nr(p), p->comm);
+				task_unlock(p);
+				set_tsk_thread_flag(p, TIF_MEMDIE);
+				return;
+			}
 
 			if (child->mm == p->mm)
 				continue;

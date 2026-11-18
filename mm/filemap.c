@@ -36,8 +36,6 @@
 #include <linux/cleancache.h>
 #include "internal.h"
 
-#include <linux/mmc/mmc.h>
-
 /*
  * FIXME: remove all knowledge of the buffer layer from the core VM
  */
@@ -133,19 +131,6 @@ void __delete_from_page_cache(struct page *page)
 	__dec_zone_page_state(page, NR_FILE_PAGES);
 	if (PageSwapBacked(page))
 		__dec_zone_page_state(page, NR_SHMEM);
-	if (page_mapped(page)) {
-		printk(KERN_ALERT"page 0x%08lx is mapped, pfn: %lu, %s page\n", 
-			(unsigned long)page, (unsigned long)page_to_pfn(page),
-			PageHighMem(page)? "high": "low");
-		printk(KERN_ALERT"mapping: 0x%08lx, m->flags: 0x%08lx\n",
-			(unsigned long)mapping, (unsigned long)mapping->flags);
-		if (PageTail(page)) {
-			printk(KERN_ALERT"tail page\n");
-		} else if (PageHead(page)) {
-			printk(KERN_ALERT"head page\n");
-		}
-		dump_page(page);
-	}
 	BUG_ON(page_mapped(page));
 
 	/*
@@ -1126,7 +1111,6 @@ find_page:
 			page_cache_sync_readahead(mapping,
 					ra, filp,
 					index, last_index - index);
-
 			page = find_get_page(mapping, index);
 			if (unlikely(page == NULL))
 				goto no_cached_page;
@@ -1212,7 +1196,6 @@ page_ok:
 		page_cache_release(page);
 		if (ret == nr && desc->count)
 			continue;
-
 		goto out;
 
 page_not_up_to_date:
@@ -1659,11 +1642,8 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 	pgoff_t size;
 	int ret = 0;
 	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-	if (offset >= size) {
-                printk(KERN_ALERT"SIGBUS debug: %s, %d, offset: %lu, size: %lu\n", 
-                        __FUNCTION__, __LINE__, (unsigned long)offset, (unsigned long)size);
+	if (offset >= size)
 		return VM_FAULT_SIGBUS;
-        }
 
 	/*
 	 * Do we have something in the page cache already?
@@ -1716,7 +1696,6 @@ retry_find:
 	if (unlikely(offset >= size)) {
 		unlock_page(page);
 		page_cache_release(page);
-                printk(KERN_ALERT"SIGBUS debug: %s, %d\n", __FUNCTION__, __LINE__);
 		return VM_FAULT_SIGBUS;
 	}
 
@@ -1745,7 +1724,6 @@ no_cached_page:
 	 */
 	if (error == -ENOMEM)
 		return VM_FAULT_OOM;
-        printk(KERN_ALERT"SIGBUS debug: %s, %d\n", __FUNCTION__, __LINE__);
 	return VM_FAULT_SIGBUS;
 
 page_not_uptodate:
@@ -1769,7 +1747,6 @@ page_not_uptodate:
 
 	/* Things didn't work out. Return zero to tell the mm layer so. */
 	shrink_readahead_size_eio(file, ra);
-        printk(KERN_ALERT"SIGBUS debug: %s, %d\n", __FUNCTION__, __LINE__);
 	return VM_FAULT_SIGBUS;
 }
 EXPORT_SYMBOL(filemap_fault);
@@ -2560,7 +2537,6 @@ ssize_t __generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
 
 		written = generic_file_direct_write(iocb, iov, &nr_segs, pos,
 							ppos, count, ocount);
-
 		if (written < 0 || written == count)
 			goto out;
 		/*
@@ -2572,7 +2548,6 @@ ssize_t __generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
 		written_buffered = generic_file_buffered_write(iocb, iov,
 						nr_segs, pos, ppos, count,
 						written);
-
 		/*
 		 * If generic_file_buffered_write() retuned a synchronous error
 		 * then we want to return the number of bytes which were
@@ -2592,7 +2567,6 @@ ssize_t __generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
 		 */
 		endbyte = pos + written_buffered - written - 1;
 		err = filemap_write_and_wait_range(file->f_mapping, pos, endbyte);
-
 		if (err == 0) {
 			written = written_buffered;
 			invalidate_mapping_pages(mapping,
@@ -2644,7 +2618,6 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
 		ssize_t err;
 
 		err = generic_write_sync(file, pos, ret);
-
 		if (err < 0 && ret > 0)
 			ret = err;
 	}

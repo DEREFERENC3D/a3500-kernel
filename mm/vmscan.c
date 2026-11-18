@@ -43,8 +43,6 @@
 #include <linux/sysctl.h>
 #include <linux/oom.h>
 #include <linux/prefetch.h>
-//Google Patch
-//https://android.googlesource.com/kernel/common/+/29b8a347fcba8a7df5478f746f1d2a422e294190%5E%21/#F0
 #include <linux/debugfs.h>
 
 #include <asm/tlbflush.h>
@@ -158,7 +156,6 @@ struct mem_cgroup_zone {
  * From 0 .. 100.  Higher means more swappy.
  */
 int vm_swappiness = 60;
-EXPORT_SYMBOL(vm_swappiness);
 long vm_total_pages;	/* The total number of pages which the VM controls */
 
 static LIST_HEAD(shrinker_list);
@@ -205,8 +202,6 @@ static unsigned long zone_nr_lru_pages(struct mem_cgroup_zone *mz,
 
 	return zone_page_state(mz->zone, NR_LRU_BASE + lru);
 }
-//Google Patch
-//https://android.googlesource.com/kernel/common/+/29b8a347fcba8a7df5478f746f1d2a422e294190%5E%21/#F0
 
 struct dentry *debug_file;
 
@@ -220,6 +215,7 @@ static int debug_shrinker_show(struct seq_file *s, void *unused)
 
 	down_read(&shrinker_rwsem);
 	list_for_each_entry(shrinker, &shrinker_list, list) {
+		char name[64];
 		int num_objs;
 
 		num_objs = shrinker->shrink(shrinker, &sc);
@@ -241,8 +237,6 @@ static const struct file_operations debug_shrinker_fops = {
         .release = single_release,
 };
 
-
-
 /*
  * Add a shrinker callback to be called from the vm
  */
@@ -255,9 +249,6 @@ void register_shrinker(struct shrinker *shrinker)
 }
 EXPORT_SYMBOL(register_shrinker);
 
-//Google Patch
-//https://android.googlesource.com/kernel/common/+/29b8a347fcba8a7df5478f746f1d2a422e294190%5E%21/#F0
-
 static int __init add_shrinker_debug(void)
 {
 	debugfs_create_file("shrinker", 0644, NULL, NULL,
@@ -266,7 +257,6 @@ static int __init add_shrinker_debug(void)
 }
 
 late_initcall(add_shrinker_debug);
-
 
 /*
  * Remove one
@@ -3370,11 +3360,6 @@ int kswapd_run(int nid)
 	return ret;
 }
 
-        /*
-         * kernel patch
-         * commit: 0e343dbe08acb440f7914d989bcc32c1d1576735
-         * https://android.googlesource.com/kernel/common/+/0e343dbe08acb440f7914d989bcc32c1d1576735%5E!/#F0
-         */
 /*
  * Called by memory hotplug when all memory in a node is offlined.  Caller must
  * hold lock_memory_hotplug().
@@ -3383,8 +3368,6 @@ void kswapd_stop(int nid)
 {
 	struct task_struct *kswapd = NODE_DATA(nid)->kswapd;
 
-	//if (kswapd)
-	//	kthread_stop(kswapd);
 	if (kswapd) {
 		kthread_stop(kswapd);
 		NODE_DATA(nid)->kswapd = NULL;
@@ -3634,6 +3617,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
  */
 int page_evictable(struct page *page, struct vm_area_struct *vma)
 {
+
 	if (mapping_unevictable(page_mapping(page)))
 		return 0;
 

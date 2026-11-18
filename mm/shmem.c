@@ -1134,8 +1134,6 @@ static struct inode *shmem_get_inode(struct super_block *sb, const struct inode 
 
 	inode = new_inode(sb);
 	if (inode) {
-		/* We don't let shmem use __GFP_SLOWHIGHMEM */
-		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER_MOVABLE);
 		inode->i_ino = get_next_ino();
 		inode_init_owner(inode, dir, mode);
 		inode->i_blocks = 0;

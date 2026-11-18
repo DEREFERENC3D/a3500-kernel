@@ -598,11 +598,6 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 		if (err) {
 			putback_lru_pages(&cc->migratepages);
 			cc->nr_migratepages = 0;
-                        /*
-                         * kernel patch
-                         * commit: 7a08b440fa93e036968102597c8a2ab809a9bdc4 
-                         * https://android.googlesource.com/kernel/common/+/7a08b440fa93e036968102597c8a2ab809a9bdc4%5E!/#F0
-                         */
 			if (err == -ENOMEM) {
 				ret = COMPACT_PARTIAL;
 				goto out;
@@ -807,8 +802,6 @@ void compaction_unregister_node(struct node *node)
 #endif /* CONFIG_SYSFS && CONFIG_NUMA */
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
-extern void drop_pagecache(void);
-//extern void kick_lmk_from_compaction(gfp_t);
 static void kick_compaction_early_suspend(struct early_suspend *h)
 {
 	struct zone *z = &NODE_DATA(0)->node_zones[ZONE_NORMAL];
@@ -818,10 +811,8 @@ static void kick_compaction_early_suspend(struct early_suspend *h)
 	gfp_t gfp_mask = GFP_KERNEL;
 
 	/* Check whether gfp is restricted. */
-	if (gfp_mask != (gfp_mask & gfp_allowed_mask)) {
-		printk("XXXXXX GFP is restricted! XXXXXX\n");
+	if (gfp_mask != (gfp_mask & gfp_allowed_mask))
 		return;
-	}
 
 	/* We try retry times at most. */
 	while (retry > 0) {
@@ -845,13 +836,11 @@ static struct early_suspend kick_compaction_early_suspend_desc = {
 
 static int __init compaction_init(void)
 {
-	printk("@@@@@@ [%s] Register early suspend callback @@@@@@\n",__FUNCTION__);
 	register_early_suspend(&kick_compaction_early_suspend_desc);
 	return 0;
 }
 static void __exit compaction_exit(void)
 {
-	printk("@@@@@@ [%s] Unregister early suspend callback @@@@@@\n",__FUNCTION__);
 	unregister_early_suspend(&kick_compaction_early_suspend_desc);
 }
 
