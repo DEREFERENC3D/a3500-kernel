@@ -258,7 +258,7 @@ static struct lock_class_key af_callback_keys[AF_MAX];
 
 /* Run time adjustable parameters. */
 __u32 sysctl_wmem_max __read_mostly = SK_WMEM_MAX;
-__u32 sysctl_rmem_max __read_mostly = (SK_RMEM_MAX*5);
+__u32 sysctl_rmem_max __read_mostly = SK_RMEM_MAX;
 __u32 sysctl_wmem_default __read_mostly = SK_WMEM_MAX;
 __u32 sysctl_rmem_default __read_mostly = SK_RMEM_MAX;
 
@@ -1420,8 +1420,8 @@ void __init sk_init(void)
 		sysctl_wmem_default = 32767;
 		sysctl_rmem_default = 32767;
 	} else if (totalram_pages >= 131072) {
-		sysctl_wmem_max = 1048568;
-		sysctl_rmem_max = 1048568;
+		sysctl_wmem_max = 131071;
+		sysctl_rmem_max = 131071;
 	}
 }
 

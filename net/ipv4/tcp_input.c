@@ -2039,11 +2039,6 @@ int tcp_use_frto(struct sock *sk)
 	const struct inet_connection_sock *icsk = inet_csk(sk);
 	struct sk_buff *skb;
 
-    if (icsk->icsk_MMSRB == 1)
-    {
-	    return 0;
-    }
-
 	if (!sysctl_tcp_frto)
 		return 0;
 
@@ -2246,7 +2241,6 @@ void tcp_clear_retrans(struct tcp_sock *tp)
 void tcp_enter_loss(struct sock *sk, int how)
 {
 	const struct inet_connection_sock *icsk = inet_csk(sk);
-	struct inet_connection_sock *icsk1 = inet_csk(sk);
 	struct tcp_sock *tp = tcp_sk(sk);
 	struct sk_buff *skb;
 
@@ -2256,10 +2250,6 @@ void tcp_enter_loss(struct sock *sk, int how)
 		tp->prior_ssthresh = tcp_current_ssthresh(sk);
 		tp->snd_ssthresh = icsk->icsk_ca_ops->ssthresh(sk);
 		tcp_ca_event(sk, CA_EVENT_LOSS);
-	}
-	if (icsk->icsk_MMSRB == 1)
-	{
-            icsk1->icsk_MMSRB = 0;
 	}
 	tp->snd_cwnd	   = 1;
 	tp->snd_cwnd_cnt   = 0;

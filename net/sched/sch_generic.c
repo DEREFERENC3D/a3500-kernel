@@ -27,7 +27,6 @@
 #include <linux/slab.h>
 #include <net/pkt_sched.h>
 #include <net/dst.h>
-#include <net/ip.h>
 
 /* Main transmission queue. */
 
@@ -450,16 +449,9 @@ static inline struct sk_buff_head *band2list(struct pfifo_fast_priv *priv,
 static int pfifo_fast_enqueue(struct sk_buff *skb, struct Qdisc *qdisc)
 {
 	if (skb_queue_len(&qdisc->q) < qdisc_dev(qdisc)->tx_queue_len) {
-		struct pfifo_fast_priv *priv;
-		struct sk_buff_head *list;
 		int band = prio2band[skb->priority & TC_PRIO_MAX];
-		if(skb->protocol == htons(ETH_P_IP)){
-			if(skb->len <= 52 && (ip_hdr(skb)->protocol) == IPPROTO_TCP){
-				band = 0;
-			}
-		}
-		priv = qdisc_priv(qdisc);
-		list = band2list(priv, band);
+		struct pfifo_fast_priv *priv = qdisc_priv(qdisc);
+		struct sk_buff_head *list = band2list(priv, band);
 
 		priv->bitmap |= (1 << band);
 		qdisc->q.qlen++;
