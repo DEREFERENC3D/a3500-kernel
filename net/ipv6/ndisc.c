@@ -1206,9 +1206,6 @@ static void ndisc_router_discovery(struct sk_buff *skb)
 				(ra_msg->icmph.icmp6_addrconf_other ?
 					IF_RA_OTHERCONF : 0);
 
-	if (0 == strncmp(in6_dev->dev->name, "ccmni", 2))
-		in6_dev->cnf.accept_ra_defrtr = 0;
-
 	if (!in6_dev->cnf.accept_ra_defrtr)
 		goto skip_defrtr;
 

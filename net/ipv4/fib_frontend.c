@@ -710,11 +710,10 @@ void fib_add_ifaddr(struct in_ifaddr *ifa)
 
 	if (!ipv4_is_zeronet(prefix) && !(ifa->ifa_flags & IFA_F_SECONDARY) &&
 	    (prefix != addr || ifa->ifa_prefixlen < 32)) {
-	    if(0 != strncmp(dev->name, "ccmni", 2)){
 		fib_magic(RTM_NEWROUTE,
 			  dev->flags & IFF_LOOPBACK ? RTN_LOCAL : RTN_UNICAST,
 			  prefix, ifa->ifa_prefixlen, prim);
-		}
+
 		/* Add network specific broadcasts, when it takes a sense */
 		if (ifa->ifa_prefixlen < 31) {
 			fib_magic(RTM_NEWROUTE, RTN_BROADCAST, prefix, 32, prim);
