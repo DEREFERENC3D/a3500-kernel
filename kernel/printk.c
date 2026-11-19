@@ -43,6 +43,7 @@
 #include <linux/notifier.h>
 #include <linux/rculist.h>
 
+#include <linux/mt_sched_mon.h>
 #include <linux/preempt.h>
 #include <linux/aee.h>
 #include <asm/uaccess.h>

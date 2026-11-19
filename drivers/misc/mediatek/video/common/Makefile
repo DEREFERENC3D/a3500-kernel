@@ -14,17 +14,17 @@ obj-$(CONFIG_MTK_FB) += disp_drv.o                  \
 obj-$(CONFIG_MTK_FB) += fbconfig_kdebug.o
 #endif
 
-ccflags-y += -I$(MTK_PATH_SOURCE)/drivers/video/  		\
-			 -I$(MTK_PATH_PLATFORM)/drivers/video/  	\
-			 -I$(MTK_PATH_PLATFORM)/drivers/dispsys/ 	\
-			 -I$(MTK_PATH_PLATFORM)/core/include/mach/ 	\
-			 -I$(MTK_PATH_SOURCE)/drivers/sync/
+ccflags-y += -I$(MTK_CUSTOM_PATH)/video/  		\
+			 -I$(MTK_CUSTOM_PATH)/video/  	\
+			 -I$(MTK_CUSTOM_PATH)/dispsys/ 	\
+			 -I$(MTK_PLATFORM_PATH_ROOT)/include/mach/ 	\
+			 -I$(MTK_CUSTOM_PATH)/sync/
 
 ifeq ($(MTK_INTERNAL_HDMI_SUPPORT), yes)
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/hdmi/
+ccflags-y += -I$(MTK_CUSTOM_PATH)/hdmi/
 endif  
 ifeq ($(MTK_INTERNAL_MHL_SUPPORT), yes)
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/mhltx/
+ccflags-y += -I$(MTK_CUSTOM_PATH)/mhltx/
 endif   
 ifeq ($(MTK_DITHERING_SUPPORT), yes)
 ccflags-y += -DDITHERING_SUPPORT

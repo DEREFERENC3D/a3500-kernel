@@ -35,8 +35,8 @@
 #include <mach/sync_write.h>    // For mt65xx_reg_sync_writel().
 #include <mach/mt_spm_idle.h>   // For spm_enable_sodi()/spm_disable_sodi().
 
-#include "../smi/smi_common.h"
-#include "../dispsys/ddp_cmdq.h"
+#include <smi_common.h>
+#include <ddp_cmdq.h>
 #include <mach/m4u_port.h>
 
 /*******************************************************************************

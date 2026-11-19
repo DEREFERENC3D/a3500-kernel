@@ -3,7 +3,7 @@
 # kernel build system and can use its language.
 ifneq ($(KERNELRELEASE),)
 
-    ccflags-y += -I$(MTK_ROOT)/kernel/drivers/eemcs/
+    ccflags-y += -I$(MTK_CUSTOM_PATH)/eemcs/
     ccflags-y += -I$(src)/include/
     
     obj-y	+= conn_md_bridge.o

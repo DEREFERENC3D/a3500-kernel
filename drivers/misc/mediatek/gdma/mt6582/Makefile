@@ -2,7 +2,7 @@
 
 EXTRA_CFLAGS = -DSDEBUG_T
 
-#ccflags-y += -I$(MTK_PATH_SOURCE)/drivers/gdma/
+#ccflags-y += -I$(MTK_CUSTOM_PATH)/gdma/
 
 #obj-$(CONFIG_MTK_GDMA) += gdma_driver.o
 obj-y += gdma_driver.o

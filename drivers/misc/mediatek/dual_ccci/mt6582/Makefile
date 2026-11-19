@@ -3,7 +3,7 @@ ifeq ($(CONFIG_MTK_CCCI_EXT), y)
 include $(srctree)/drivers/misc/mediatek/helpers/Makefile
 #CCCI_CORE_DRIVER_DIR :=  $(wildcard $(obj)/$(call to-root,$(obj))mediatek/source/kernel/drivers/ccci)
 CCCI_CORE_DRIVER_DIR := $(MTK_CUSTOM_PATH)/dual_ccci
-MASP_CORE_DRIVER_DIR := $(MTK_PATH_PLATFORM)/drivers/masp
+MASP_CORE_DRIVER_DIR := $(MTK_CUSTOM_PATH)/masp
 
 ifeq ($(CCCI_CORE_DRIVER_DIR),)
 $(error Invalid ccci source path, please check)
@@ -18,12 +18,12 @@ ifeq ($(MTK_SECURITY_SW_SUPPORT), yes)
 include $(MASP_CORE_DRIVER_DIR)/asf/Makefile.core
 
 ifeq ($(strip $(TRUSTONIC_TEE_SUPPORT)),yes)
-ccflags-y += -I$(MTK_PATH_SOURCE)/../platform/${ARCH_MTK_PLATFORM}/trustzone/kernel/include/trustzone/sec/Tlsec/inc/
+ccflags-y += -I$(MTK_PLATFORM_PATH_ROOT)/trustzone/kernel/include/trustzone/sec/Tlsec/inc/
 endif
 
 ifeq ($(strip $(TRUSTONIC_TEE_SUPPORT)),yes)
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/gud/MobiCoreKernelApi/include \
-             -I$(MTK_PATH_PLATFORM)/drivers/gud/MobiCoreKernelApi/public 
+ccflags-y += -I$(MTK_CUSTOM_PATH)/gud/MobiCoreKernelApi/include \
+             -I$(MTK_CUSTOM_PATH)/gud/MobiCoreKernelApi/public 
 
 mach_obj += mach/hacc_tee_req.o
 mach_obj += mach/hacc_tee.o

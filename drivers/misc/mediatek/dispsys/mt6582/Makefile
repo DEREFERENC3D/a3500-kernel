@@ -1,13 +1,13 @@
 # drivers/dispsys
 
-ccflags-y += -I$(MTK_PATH_SOURCE)/drivers/video/ 							\
-             -I$(MTK_PATH_PLATFORM)/../../common/kernel/drivers/video/ 		\
-             -I$(MTK_PATH_PLATFORM)/drivers/video/
+ccflags-y += -I$(MTK_CUSTOM_PATH)/video/ 							\
+             -I$(MTK_CUSTOM_PATH)/video/ 		\
+             -I$(MTK_CUSTOM_PATH)/video/
 
 ifeq ($(strip $(MTK_SEC_VIDEO_PATH_SUPPORT)),yes)
 ifeq ($(strip $(TRUSTONIC_TEE_SUPPORT)),yes)
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/gud/MobiCoreKernelApi/include \
-             -I$(MTK_PATH_PLATFORM)/drivers/gud/MobiCoreKernelApi/public \
+ccflags-y += -I$(MTK_CUSTOM_PATH)/gud/MobiCoreKernelApi/include \
+             -I$(MTK_CUSTOM_PATH)/gud/MobiCoreKernelApi/public \
              -I$(MTK_PATH_SOURCE)/../trustzone/vendor/trustonic/t-base/trustlets/cmdq/cmdq_sec_dr/public \
              -I$(MTK_PATH_SOURCE)/../trustzone/vendor/trustonic/t-base/trustlets/cmdq/cmdq_sec_tl/public \
              -I$(MTK_PATH_SOURCE)/../trustzone/vendor/trustonic/t-base/trustlets/svp/TlSvp/Locals/Code/public \

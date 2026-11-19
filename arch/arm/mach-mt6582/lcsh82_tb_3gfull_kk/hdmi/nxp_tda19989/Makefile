@@ -4,10 +4,10 @@
 #
 ifeq ($(MTK_HDMI_SUPPORT),yes)
 ifeq ($(CUSTOM_KERNEL_HDMI),nxp_tda19989)
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/hdmitx/  \
-             -I$(MTK_PATH_SOURCE)/drivers/hdmitx/	\
-			 -I$(MTK_PATH_PLATFORM)/drivers/video/  \
-             -I$(MTK_PATH_SOURCE)/drivers/video/	\
+ccflags-y += -I$(MTK_CUSTOM_PATH)/hdmitx/  \
+             -I$(MTK_CUSTOM_PATH)/hdmitx/	\
+			 -I$(MTK_CUSTOM_PATH)/video/  \
+             -I$(MTK_CUSTOM_PATH)/video/	\
 			-DTMFL_TDA19989 -DTMFL_NO_RTOS -DTMFL_LINUX_OS_KERNEL_DRIVER
 
 obj-y += 						\

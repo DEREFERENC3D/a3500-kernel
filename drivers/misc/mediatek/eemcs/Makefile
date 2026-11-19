@@ -19,7 +19,7 @@ eemcs-y += eemcs_statistics.o
 clean-files += $(patsubst $(obj)/%,%,$(wildcard $(obj)/*~))
 
 ccflags-y += -I$(srctree)/../bionic/libc/kernel/common/linux  -I$(srctree)/$(obj)/include  -I$(EEMCS_PLATFORM_DRIVER_DIR)/include
-ccflags-y += -I$(MTK_ROOT)/kernel/drivers/conn_md/include/
+ccflags-y += -I$(MTK_CUSTOM_PATH)/conn_md/include/
 
 ccflags-y += -DTEST_DRV=1
 # move to lte_df_main.h to solve compile error

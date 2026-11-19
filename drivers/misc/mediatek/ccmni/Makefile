@@ -8,7 +8,7 @@ endif
 ifeq (y,$(CONFIG_MTK_NET_CCMNI))
 obj-m	+= ccmni.o
 ccmni-$(CONFIG_MTK_NET_CCMNI) := ccmni_pfp.o ccmni_net.o
-ccflags-y += -I$(MTK_PATH_SOURCE)/drivers/ccci/include -I$(CCCI_PLATFORM_DRIVER_DIR)\
+ccflags-y += -I$(MTK_CUSTOM_PATH)/ccci/include -I$(CCCI_PLATFORM_DRIVER_DIR)\
 		 -I$(CCCI_PLATFORM_DRIVER_DIR)/include
 else
 obj-n += dummy.o

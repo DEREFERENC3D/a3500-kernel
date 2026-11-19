@@ -26,7 +26,7 @@ ccflags-y += -I$(src)/../driver/mhl_tx_drv
 ccflags-y += -I$(src)/../driver/sii8338_drv
 ccflags-y += -I$(src)/linux_kernel/kernel_module
 
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/hdmitx/
+ccflags-y += -I$(MTK_CUSTOM_PATH)/hdmitx/
 
 ccflags-y += -DMAKE_8338_DRIVER
 

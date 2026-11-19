@@ -8,9 +8,9 @@ obj-$(CONFIG_MTK_VIDEOCODEC_DRIVER) += vcodec_kernel_driver.o
 
 
 ccflags-y += \
-    -I$(MTK_PATH_PLATFORM)/drivers/videocodec/common/val/inc		\
-    -I$(MTK_PATH_PLATFORM)/drivers/videocodec/common/hal/inc		\
-    -I$(MTK_PATH_PLATFORM)/drivers/videocodec/common/drv/inc		\
-    -I$(MTK_PATH_PLATFORM)/../../../kernel/include/linux/vcodec			\
-    -I$(MTK_PATH_PLATFORM)/../../../kernel/include/linux/vcodec/kernel			\
-    -I$(MTK_PATH_PLATFORM)/drivers/smi		\
+    -I$(MTK_CUSTOM_PATH)/videocodec/mt6582/common/val/inc		\
+    -I$(MTK_CUSTOM_PATH)/videocodec/mt6582/common/hal/inc		\
+    -I$(MTK_CUSTOM_PATH)/videocodec/mt6582/common/drv/inc		\
+    -I$(MTK_PLATFORM_PATH_ROOT)/include/linux/vcodec			\
+    -I$(MTK_PLATFORM_PATH_ROOT)/include/linux/vcodec			\
+    -I$(MTK_CUSTOM_PATH)/smi		\

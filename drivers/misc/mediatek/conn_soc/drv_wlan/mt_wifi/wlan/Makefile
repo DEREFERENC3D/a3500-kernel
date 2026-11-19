@@ -41,6 +41,7 @@ MODULE_NAME := wlan_mt
 ccflags-y += -D_HIF_SDIO=1
 
 ccflags-y += -DDBG=0
+ccflags-y += -include $(srctree)/drivers/misc/mediatek/conn_soc/drv_wlan/mt_wifi/wlan/include/debug.h
 ccflags-y += -I$(src)/os -I$(src)/os/linux/include -I$(src)/os/linux/hif/ahb/include
 ccflags-y += -I$(src)/include -I$(src)/include/nic -I$(src)/include/mgmt
 
@@ -55,7 +56,7 @@ OS_DIR      := os/linux/
 HIF_DIR	    := os/linux/hif/ahb/
 NIC_DIR     := nic/
 MGMT_DIR    := mgmt/
-DMA_DIR     := ../../../../../../platform/$(call lc,$(MTK_PLATFORM))/kernel/drivers/wifi/
+DMA_DIR     := ../../../../wifi/$(call lc,$(MTK_PLATFORM))/
 #$(call lc,$(MTK_PLATFORM))
 
 

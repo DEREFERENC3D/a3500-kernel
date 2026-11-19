@@ -22,6 +22,7 @@ obj-y	+= gpu/
 obj-y	+= gpio/
 obj-y	+= aee/
 obj-y	+= wdk/
+obj-y	+= wdt/
 obj-y	+= ion_drv/
 obj-y	+= sync/
 obj-y	+= pmic_wrap/
@@ -70,8 +71,7 @@ obj-$(CONFIG_MTK_IN_HOUSE_TEE_SUPPORT) += trustzone/
 obj-y	+= wmt_ccci/
 endif
 
-# Common (chip-agnostic) MediaTek display driver
-obj-y	+= video/common/
+# MediaTek display driver (common core + MT6582 panel HAL)
 obj-y	+= video/
 
 obj-y	+= dispsys/

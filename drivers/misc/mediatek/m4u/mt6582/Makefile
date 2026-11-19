@@ -1,7 +1,7 @@
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/dispsys/
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/smi/
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/gud/MobiCoreKernelApi/public
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/gud/MobiCoreKernelApi/include
+ccflags-y += -I$(MTK_CUSTOM_PATH)/dispsys/
+ccflags-y += -I$(MTK_CUSTOM_PATH)/smi/
+ccflags-y += -I$(MTK_CUSTOM_PATH)/gud/MobiCoreKernelApi/public
+ccflags-y += -I$(MTK_CUSTOM_PATH)/gud/MobiCoreKernelApi/include
 ccflags-y += -I$(MTK_PATH_SOURCE)/../trustzone/vendor/trustonic/t-base/trustlets
 
 

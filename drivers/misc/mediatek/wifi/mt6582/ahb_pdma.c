@@ -79,7 +79,7 @@
 
 #include <linux/module.h>
 
-#include "../../../../../../platform/mt6582/kernel/core/include/mach/mt_clkmgr.h"
+#include <mach/mt_clkmgr.h>
 
 #include "hif.h"
 #include "hif_pdma.h"

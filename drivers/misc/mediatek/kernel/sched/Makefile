@@ -1,4 +1,3 @@
-LINUXINCLUDE += -include $(TO_ROOT)/kernel/kernel/sched/sched.h
 
 obj-$(CONFIG_MT_PRIO_TRACER) += prio_tracer.o
 

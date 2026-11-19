@@ -3,12 +3,12 @@
 # Makefile for MT6516 video driver.
 #
 
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/hdmitx/  \
-             -I$(MTK_PATH_SOURCE)/drivers/hdmitx/	\
-			 -I$(MTK_PATH_PLATFORM)/drivers/video/  \
-             -I$(MTK_PATH_SOURCE)/drivers/video/	\
-               -I$(MTK_PATH_PLATFORM)/drivers/hdmitx/  \
-             	-I$(MTK_PATH_SOURCE)/drivers/hdmitx/	\
+ccflags-y += -I$(MTK_CUSTOM_PATH)/hdmitx/  \
+             -I$(MTK_CUSTOM_PATH)/hdmitx/	\
+			 -I$(MTK_CUSTOM_PATH)/video/  \
+             -I$(MTK_CUSTOM_PATH)/video/	\
+               -I$(MTK_CUSTOM_PATH)/hdmitx/  \
+             	-I$(MTK_CUSTOM_PATH)/hdmitx/	\
 		-DTMFL_LINUX_OS_KERNEL_DRIVER -DTMFL_TDA19989 -DTMFL_NO_RTOS
 
 

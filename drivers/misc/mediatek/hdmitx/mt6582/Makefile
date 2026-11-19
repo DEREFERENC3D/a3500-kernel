@@ -3,14 +3,14 @@
 # Makefile for MT6516 video driver.
 #
 
-ccflags-y += -I$(MTK_PATH_PLATFORM)/drivers/hdmitx/  \
-             -I$(MTK_PATH_PLATFORM)/drivers/video/   \
-             -I$(MTK_PATH_PLATFORM)/drivers/videox/  \
-             -I$(MTK_PATH_PLATFORM)/drivers/dispsys/ \
-             -I$(MTK_PATH_PLATFORM)/../../common/kernel/drivers/video/ \
-             -I$(MTK_PATH_SOURCE)/drivers/video/     \
-             -I$(MTK_PATH_SOURCE)/drivers/sync/ \
-             -I$(MTK_PATH_SOURCE)/drivers/mhl/driver/mhl_tx_drv/ \
+ccflags-y += -I$(MTK_CUSTOM_PATH)/hdmitx/  \
+             -I$(MTK_CUSTOM_PATH)/video/   \
+             -I$(MTK_CUSTOM_PATH)/videox/  \
+             -I$(MTK_CUSTOM_PATH)/dispsys/ \
+             -I$(MTK_CUSTOM_PATH)/video/ \
+             -I$(MTK_CUSTOM_PATH)/video/     \
+             -I$(MTK_CUSTOM_PATH)/sync/ \
+             -I$(MTK_CUSTOM_PATH)/mhl/driver/mhl_tx_drv/ \
              -I$(MTK_ROOT_CUSTOM_OUT)/kernel/hdmi/inc/ 
 
 ifeq ($(CUSTOM_KERNEL_HDMI),nxp_tda19989)
