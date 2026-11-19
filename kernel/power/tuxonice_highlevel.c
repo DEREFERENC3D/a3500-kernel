@@ -398,21 +398,21 @@ static int get_toi_debug_info(const char *buffer, int count)
 
 	for (i = 0; i < TOI_NUM_RESULT_STATES; i++)
 		if (test_result_state(i)) {
-            #if 0
+#if 0
 			SNPRINTF("%s: %s.\n", first_result ?
 					"- Result         " :
 					"                 ",
 					result_strings[i]);
-            #endif
+#endif
 			first_result = 0;
 		}
 	if (first_result) {
-        #if 0
+#if 0
 		SNPRINTF("- Result         : %s.\n", nr_hibernates ?
 			"Succeeded" :
 			"No hibernation attempts so far");
-        #endif
-    }
+#endif
+	}
 	return len;
 }
 
@@ -538,10 +538,8 @@ static int toi_init(int restarting)
 {
 	int result, i, j;
 
-    // - MTK jonathan.jmchen
-    if (test_result_state(TOI_ABORTED))
-        return 1;
-    //
+	if (test_result_state(TOI_ABORTED))
+		return 1;
 
 	toi_result = 0;
 
@@ -1015,16 +1013,16 @@ void toi_try_resume(void)
 
 	current->flags |= PF_MEMALLOC;
 
-    get_online_cpus(); // to protect against hotplug interference
+	get_online_cpus(); /* protect against CPU hotplug */
 	toi_start_other_threads();
 
 	if (do_toi_step(STEP_RESUME_CAN_RESUME) &&
-        !do_toi_step(STEP_RESUME_LOAD_PS1)) {
-        put_online_cpus(); // to protect against hotplug interference
+	    !do_toi_step(STEP_RESUME_LOAD_PS1)) {
+		put_online_cpus();
 		do_toi_step(STEP_RESUME_DO_RESTORE);
-    } else {
-        put_online_cpus();  // to protect against hotplug interference
-    }
+	} else {
+		put_online_cpus();
+	}
 
 	toi_stop_other_threads();
 	do_cleanup(0, 0);

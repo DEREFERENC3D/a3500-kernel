@@ -26,7 +26,6 @@
 #define MY_BOOT_KERNEL_DATA_VERSION 3
 
 #define HIB_TOI_DEBUG 0
-extern bool console_suspend_enabled; // from printk.c
 #define _TAG_HIB_M "HIB/TOI"
 #if (HIB_TOI_DEBUG)
 #undef hib_log
@@ -127,8 +126,6 @@ enum {
 	TOI_WAKEUP_EVENT,
 	TOI_SYSCORE_REFUSED,
 	TOI_DPM_PREPARE_FAILED,
-    // FIXME: jonathan.jmchen: BUG here, TOI_DPM_SUSPEND_FAILED is the last 31-th bit here
-    // TOI_DPM_PREPARE_FAILED will exceed the # of bit when set_abort_result(TOI_DPM_SUSPEND_FAILED) is called!!!
 	TOI_DPM_SUSPEND_FAILED = TOI_DPM_PREPARE_FAILED,
 	TOI_NUM_RESULT_STATES	/* Used in printing debug info only */
 };

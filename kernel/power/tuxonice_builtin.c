@@ -67,8 +67,8 @@ static void copyback_high(void)
 	while (this_pbe) {
 		int loop = (PAGE_SIZE / sizeof(unsigned long)) - 1;
 
-        origpage = kmap_atomic(pfn_to_page((unsigned long) this_pbe->orig_address));
-        copypage = kmap_atomic((struct page *) this_pbe->address);
+		origpage = kmap_atomic(pfn_to_page((unsigned long) this_pbe->orig_address));
+		copypage = kmap_atomic((struct page *) this_pbe->address);
 
 		while (loop >= 0) {
 			*(origpage + loop) = *(copypage + loop);
@@ -171,9 +171,7 @@ struct toi_boot_kernel_data toi_bkd __nosavedata
 	(1 << TOI_REPLACE_SWSUSP) |
 #endif
 	(1 << TOI_NO_FLUSHER_THREAD) |
-//    (1 << TOI_NO_MULTITHREADED_IO) |
-    (1 << TOI_LATE_CPU_HOTPLUG) |
-	(1 << TOI_PAGESET2_FULL),
+	(1 << TOI_PAGESET2_FULL) | (1 << TOI_LATE_CPU_HOTPLUG),
 };
 EXPORT_SYMBOL_GPL(toi_bkd);
 
@@ -265,9 +263,8 @@ int toi_lowlevel_builtin(void)
 		printk(KERN_ERR "Error %d hibernating\n", error);
 
 #ifdef CONFIG_MTK_HIBERNATION
-    if(test_result_state(TOI_ARCH_PREPARE_FAILED)) {
-        hib_err("CAUTION: error(%d/0x%08x) \n", error, (unsigned int)toi_result);
-    }
+	if (test_result_state(TOI_ARCH_PREPARE_FAILED))
+		hib_err("CAUTION: error(%d/0x%08x) \n", error, (unsigned int)toi_result);
 #endif
 
 	/* Restore control flow appears here */
