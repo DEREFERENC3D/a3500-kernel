@@ -55,6 +55,7 @@ obj-y	+= gps/
 obj-y	+= hwmon/
 obj-y	+= mhl/
 obj-y	+= almk/
+obj-y	+= btcvsd/
 obj-y	+= bthid/
 ifeq ($(MTK_WFD_SUPPORT),yes)
 obj-y	+= uibc/

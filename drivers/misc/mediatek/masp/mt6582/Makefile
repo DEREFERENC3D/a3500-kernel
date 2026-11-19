@@ -2,7 +2,7 @@
 # Sepcify source files
 #######################################
 include $(srctree)/drivers/misc/mediatek/helpers/Makefile
-MASP_CORE_DRIVER_DIR := $(MTK_CUSTOM_PATH)/masp
+MASP_CORE_DRIVER_DIR := $(MTK_CUSTOM_PATH)/masp/mt6582
 
 asf_link := asf
 lib_obj := module/sec_mod.o
