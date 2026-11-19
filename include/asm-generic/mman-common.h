@@ -11,7 +11,6 @@
 #define PROT_EXEC	0x4		/* page can be executed */
 #define PROT_SEM	0x8		/* page may be used for atomic ops */
 #define PROT_NOCACHE	0x10		/* page can be non-cache. */
-#define PROT_MALLOCFROMBIONIC 0x20	/*Use to mark the dlmalloc memory allocation path. by loda*/
 #define PROT_NONE	0x0		/* page can not be accessed */
 #define PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
 #define PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
