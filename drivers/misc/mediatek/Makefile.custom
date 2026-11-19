@@ -1,0 +1,84 @@
+# Shared include paths for the in-tree MediaTek drivers and the MT6582
+# machine directory.  Adapted from the MediaTek sprout tree.
+
+MTK_PLATFORM := $(subst ",,$(CONFIG_MTK_PLATFORM))
+ARCH_MTK_PROJECT := $(subst ",,$(CONFIG_ARCH_MTK_PROJECT))
+
+MTK_CUSTOM_PATH := $(srctree)/drivers/misc/mediatek/
+
+# Legacy MediaTek path variables used by the relocated leaf Makefiles.
+MTK_ROOT := $(srctree)/mediatek
+MTK_ROOT_BUILD := $(srctree)/drivers/misc/mediatek/helpers
+MTK_PATH_BUILD := $(srctree)/drivers/misc/mediatek/helpers
+MTK_ROOT_OUT := $(objtree)
+MTK_ROOT_CUSTOM_OUT := $(MTK_PROJECT_PATH_ROOT)
+MTK_PATH_PLATFORM := $(MTK_PLATFORM_PATH_ROOT)
+MTK_PATH_SOURCE := $(MTK_CUSTOM_PATH)
+MTK_PATH_CUSTOM := $(MTK_PROJECT_PATH_ROOT)
+lc = $(shell echo $(1) | tr A-Z a-z)
+uc = $(shell echo $(1) | tr a-z A-Z)
+
+MTK_PROJECT_PATH_ROOT := $(srctree)/arch/arm/mach-$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)
+MTK_PLATFORM_PATH_ROOT := $(srctree)/arch/arm/mach-$(MTK_PLATFORM)
+
+# Project (merged custom/common + custom/<chip> + custom/<project>) headers
+ccflags-y += -I$(MTK_PROJECT_PATH_ROOT)/core \
+             -I$(MTK_PROJECT_PATH_ROOT)/camera/camera \
+             -I$(MTK_PROJECT_PATH_ROOT)/dct/dct \
+             -I$(MTK_PROJECT_PATH_ROOT)/hdmi/inc \
+             -I$(MTK_PROJECT_PATH_ROOT)/lcm/inc \
+             -I$(MTK_PROJECT_PATH_ROOT)/sound/inc \
+             -I$(MTK_PROJECT_PATH_ROOT)/common \
+             -I$(MTK_PROJECT_PATH_ROOT)/keypad \
+             -I$(MTK_PROJECT_PATH_ROOT)/vibrator \
+             -I$(MTK_PROJECT_PATH_ROOT)/accdet \
+             -I$(MTK_PROJECT_PATH_ROOT)/rtc \
+             -I$(MTK_PROJECT_PATH_ROOT)/power \
+             -I$(MTK_PROJECT_PATH_ROOT)/imgsensor/inc \
+             -I$(MTK_PROJECT_PATH_ROOT)/leds/mt65xx \
+             -I$(MTK_PROJECT_PATH_ROOT)/common \
+             -I$(MTK_PROJECT_PATH_ROOT)/core
+
+# SoC headers
+ccflags-y += -I$(MTK_PLATFORM_PATH_ROOT)/include/mach \
+             -I$(MTK_PLATFORM_PATH_ROOT)/include
+
+# Chip-specific driver headers (nested <driver>/mt6582 layout)
+ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/auxadc/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/devinfo/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/dispsys/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/dual_ccci/$(MTK_PLATFORM)/include \
+             -I$(MTK_CUSTOM_PATH)/gpu/$(MTK_PLATFORM)/mali/mali/platform \
+             -I$(MTK_CUSTOM_PATH)/leds/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/vibrator/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/smi/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/uart/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/video/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/video/common \
+             -I$(MTK_CUSTOM_PATH)/wdk
+
+# Generic MediaTek include trees
+ccflags-y += -I$(MTK_CUSTOM_PATH)/dual_ccci/include \
+             -I$(MTK_CUSTOM_PATH)/sync \
+             -I$(MTK_CUSTOM_PATH)/video \
+             -I$(MTK_CUSTOM_PATH)/ssw/inc \
+             -I$(MTK_CUSTOM_PATH)/lens/inc \
+             -I$(MTK_CUSTOM_PATH)/imgsensor/inc \
+             -I$(MTK_CUSTOM_PATH)/flashlight/inc \
+             -I$(MTK_CUSTOM_PATH)/cam_cal/inc \
+             -I$(MTK_CUSTOM_PATH)/alsps/inc \
+             -I$(MTK_CUSTOM_PATH)/accelerometer/inc \
+             -I$(MTK_CUSTOM_PATH)/gyroscope/inc \
+             -I$(MTK_CUSTOM_PATH)/magnetometer/inc \
+             -I$(MTK_CUSTOM_PATH)/met
+
+# Generated headers (dfo_boot*.h, PTGEN/NANDGEN output) live in the build out tree.
+ccflags-y += -I$(objtree)/include
+
+# Driver selection flags used by the customizable drivers
+CUSTOM_KERNEL_FLAGS := $(addprefix -D, $(shell echo \
+             $(CONFIG_CUSTOM_KERNEL_FLASHLIGHT) \
+             $(CONFIG_CUSTOM_KERNEL_LCM) \
+             $(CONFIG_CUSTOM_KERNEL_IMGSENSOR) | tr a-z A-Z))
+ccflags-y += $(CUSTOM_KERNEL_FLAGS)

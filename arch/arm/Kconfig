@@ -2352,4 +2352,3 @@ source "crypto/Kconfig"
 
 source "lib/Kconfig"
 
-source "../mediatek/kernel/Kconfig"

@@ -2495,3 +2495,8 @@ CONFIG_MTK_STAGING=y
 # CONFIG_MTK_THERMAL_STATUS_COLLECTION is not set
 # CONFIG_MD32_SUPPORT is not set
 # CONFIG_MTK_MEMCFG is not set
+
+# MediaTek in-tree build identifiers (previously supplied by the MTK build env)
+CONFIG_MTK_PLATFORM="mt6582"
+CONFIG_ARCH_MTK_PROJECT="lcsh82_tb_3gfull_kk"
+CONFIG_ARCH_MTK_PLATFORM="mt6582"
