@@ -16,10 +16,6 @@
 #include <linux/sysfs.h>
 #include "internal.h"
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
-#include <linux/earlysuspend.h>
-#endif
-
 #define CREATE_TRACE_POINTS
 #include <trace/events/compaction.h>
 
@@ -800,50 +796,3 @@ void compaction_unregister_node(struct node *node)
 	return device_remove_file(&node->dev, &dev_attr_compact);
 }
 #endif /* CONFIG_SYSFS && CONFIG_NUMA */
-
-#ifdef CONFIG_HAS_EARLYSUSPEND
-static void kick_compaction_early_suspend(struct early_suspend *h)
-{
-	struct zone *z = &NODE_DATA(0)->node_zones[ZONE_NORMAL];
-	int status;
-	int retry = 3;
-	int safe_order = THREAD_SIZE_ORDER + 1;
-	gfp_t gfp_mask = GFP_KERNEL;
-
-	/* Check whether gfp is restricted. */
-	if (gfp_mask != (gfp_mask & gfp_allowed_mask))
-		return;
-
-	/* We try retry times at most. */
-	while (retry > 0) {
-		/* If it is safe under low watermark, then break. */
-		if (zone_watermark_ok(z, safe_order, low_wmark_pages(z), 0, 0))
-			break;
-		status = compact_zone_order(z, safe_order, gfp_mask, true);
-		--retry;
-	}
-}
-
-static void kick_compaction_late_resume(struct early_suspend *h)
-{
-}
-
-static struct early_suspend kick_compaction_early_suspend_desc = {
-	.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
-	.suspend = kick_compaction_early_suspend,
-	.resume = kick_compaction_late_resume,
-};
-
-static int __init compaction_init(void)
-{
-	register_early_suspend(&kick_compaction_early_suspend_desc);
-	return 0;
-}
-static void __exit compaction_exit(void)
-{
-	unregister_early_suspend(&kick_compaction_early_suspend_desc);
-}
-
-module_init(compaction_init);
-module_exit(compaction_exit);
-#endif
