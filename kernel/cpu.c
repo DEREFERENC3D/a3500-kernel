@@ -17,6 +17,7 @@
 #include <linux/gfp.h>
 #include <linux/suspend.h>
 
+atomic_t is_in_hotplug = ATOMIC_INIT(0);
 #ifdef CONFIG_SMP
 /* Serializes the updates to cpu_online_mask, cpu_present_mask */
 static DEFINE_MUTEX(cpu_add_remove_lock);
@@ -116,10 +117,12 @@ static void cpu_hotplug_begin(void)
 		mutex_unlock(&cpu_hotplug.lock);
 		schedule();
 	}
+	atomic_inc(&is_in_hotplug);
 }
 
 static void cpu_hotplug_done(void)
 {
+	atomic_dec(&is_in_hotplug);
 	cpu_hotplug.active_writer = NULL;
 	mutex_unlock(&cpu_hotplug.lock);
 }

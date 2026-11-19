@@ -847,7 +847,10 @@ close_finish:
 	goto Finish;
 }
 
+#if !defined(CONFIG_MTK_HIBERNATION)
+// move to kernel_init() @ kernel/init/main.c
 late_initcall(software_resume);
+#endif
 
 
 static const char * const hibernation_modes[] = {

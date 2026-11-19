@@ -264,6 +264,72 @@ static const struct kparam_array __param_arr_adj = {
 };
 #endif
 
+// TODO: MTK Nuke after removing "ALMK"
+/*
+ * get_min_free_pages
+ * returns the low memory killer watermark of the given pid,
+ * When the system free memory is lower than the watermark, the LMK (low memory
+ * killer) may try to kill processes.
+ */
+int get_min_free_pages(pid_t pid)
+{
+    struct task_struct *p = 0;
+    int target_oom_adj = 0;
+    int i = 0;
+    int array_size = ARRAY_SIZE(lowmem_adj);
+
+    if (lowmem_adj_size < array_size)
+            array_size = lowmem_adj_size;
+    if (lowmem_minfree_size < array_size)
+            array_size = lowmem_minfree_size;
+
+    for_each_process(p) {
+        /* search pid */
+        if (p->pid == pid) {
+            task_lock(p);
+            target_oom_adj = p->signal->oom_adj;
+            task_unlock(p);
+            /* get min_free value of the pid */
+            for (i = array_size - 1; i >= 0; i--) {
+                if (target_oom_adj >= lowmem_adj[i])
+                    return lowmem_minfree[i];
+            }
+            goto out;
+        }
+    }
+
+out:
+    return 0;
+}
+EXPORT_SYMBOL(get_min_free_pages);
+
+// TODO: MTK Nuke after removing "ALMK"
+/* Query LMK minfree settings */
+/* To query default value, you can input index with value -1. */
+size_t query_lmk_minfree(int index)
+{
+	int which;
+
+	/* Invalid input index, return default value */
+	if (index < 0) {
+		return lowmem_minfree[2];
+	}
+
+	/* Find a corresponding output */
+	which = 5;
+	do {
+		if (lowmem_adj[which] <= index) {
+			break;
+		}
+	} while (--which >= 0);
+
+	/* Fix underflow bug */
+	which = (which < 0)? 0 : which;
+
+	return lowmem_minfree[which];
+}
+EXPORT_SYMBOL(query_lmk_minfree);
+
 module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
 #ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES
 __module_param_call(MODULE_PARAM_PREFIX, adj,

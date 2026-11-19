@@ -238,6 +238,7 @@ static int mmc_get_ext_csd(struct mmc_card *card, u8 **new_ext_csd)
 /*
  * Decode extended CSD.
  */
+#define VENDOR_SAMSUNG  (0x15)
 static int mmc_read_ext_csd(struct mmc_card *card, u8 *ext_csd)
 {
 	int err = 0, idx;
@@ -262,7 +263,7 @@ static int mmc_read_ext_csd(struct mmc_card *card, u8 *ext_csd)
 	}
 
 	card->ext_csd.rev = ext_csd[EXT_CSD_REV];
-	if (card->ext_csd.rev > 6) {
+	if (card->ext_csd.rev > 7) {
 		pr_err("%s: unrecognised EXT_CSD revision %d\n",
 			mmc_hostname(card->host), card->ext_csd.rev);
 		err = -EINVAL;
@@ -504,6 +505,13 @@ static int mmc_read_ext_csd(struct mmc_card *card, u8 *ext_csd)
 		card->erased_byte = 0xFF;
 	else
 		card->erased_byte = 0x0;
+
+        /* for samsung emmc4.41 plus spec */
+        if ((card->cid.manfid == VENDOR_SAMSUNG) &&
+            (card->ext_csd.rev == 5)             &&
+            (1 == (0x1 & ext_csd[EXT_CSD_SAMSUNG_FEATURE]))) {
+            card->ext_csd.feature_support |= MMC_DISCARD_FEATURE;
+        }
 
 	/* eMMC v4.5 or later */
 	if (card->ext_csd.rev >= 6) {

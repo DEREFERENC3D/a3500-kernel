@@ -223,6 +223,10 @@ static const char *proc_arch[] = {
 	"?(17)",
 };
 
+#if defined(SLT_DRV_P3550_CONFIG)
+unsigned int UbVbat=0;
+#endif
+
 static int __get_cpu_architecture(void)
 {
 	int cpu_arch;
@@ -720,6 +724,9 @@ __tagtable(ATAG_SERIAL, parse_tag_serialnr);
 static int __init parse_tag_revision(const struct tag *tag)
 {
 	system_rev = tag->u.revision.rev;
+#if defined(SLT_DRV_P3550_CONFIG)
+	UbVbat = tag->u.revision.Vbat;
+#endif
 	return 0;
 }
 

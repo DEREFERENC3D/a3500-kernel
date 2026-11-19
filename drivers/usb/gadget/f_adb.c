@@ -57,6 +57,13 @@ struct adb_dev {
 	int rx_done;
 };
 
+// TODO: Remove MTK
+struct usb_ep *ep_in = NULL;
+struct usb_ep *ep_out = NULL;
+int bitdebug_enabled = 0;
+unsigned bitdebug_writeCnt = 1;
+unsigned bitdebug_readCnt = 0;
+
 static struct usb_interface_descriptor adb_interface_desc = {
 	.bLength                = USB_DT_INTERFACE_SIZE,
 	.bDescriptorType        = USB_DT_INTERFACE,

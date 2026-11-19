@@ -55,6 +55,12 @@ module_param_named(stats_perms, proc_stats_perms, uint, S_IRUGO | S_IWUSR);
 
 static struct proc_dir_entry *xt_qtaguid_ctrl_file;
 
+#ifdef CONFIG_ANDROID_PARANOID_NETWORK
+#include <linux/android_aid.h>
+static gid_t proc_stats_readall_gid = AID_NET_BW_STATS;
+static gid_t proc_ctrl_write_gid = AID_NET_BW_ACCT;
+#endif
+
 /* Everybody can write. But proc_ctrl_write_limited is true by default which
  * limits what can be controlled. See the can_*() functions.
  */
@@ -241,6 +247,9 @@ static bool can_manipulate_uids(void)
 {
 	/* root pwnd */
 	return in_egroup_p(xt_qtaguid_ctrl_file->gid)
+#ifdef CONFIG_ANDROID_PARANOID_NETWORK
+		|| in_egroup_p(proc_ctrl_write_gid)
+#endif
 		|| unlikely(!current_fsuid()) || unlikely(!proc_ctrl_write_limited)
 		|| unlikely(current_fsuid() == xt_qtaguid_ctrl_file->uid);
 }
@@ -254,6 +263,9 @@ static bool can_read_other_uid_stats(uid_t uid)
 {
 	/* root pwnd */
 	return in_egroup_p(xt_qtaguid_stats_file->gid)
+#ifdef CONFIG_ANDROID_PARANOID_NETWORK
+		|| in_egroup_p(proc_stats_readall_gid)
+#endif
 		|| unlikely(!current_fsuid()) || uid == current_fsuid()
 		|| unlikely(!proc_stats_readall_limited)
 		|| unlikely(current_fsuid() == xt_qtaguid_ctrl_file->uid);

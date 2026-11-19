@@ -26,6 +26,8 @@
 #include <linux/wakelock.h>
 #include "android_alarm.h"
 
+#include <mach/mtk_rtc.h>
+
 #define ANDROID_ALARM_PRINT_INFO (1U << 0)
 #define ANDROID_ALARM_PRINT_IO (1U << 1)
 #define ANDROID_ALARM_PRINT_INT (1U << 2)
@@ -113,11 +115,15 @@ static long alarm_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct timespec tmp_time;
 	struct rtc_time new_rtc_tm;
 	struct rtc_device *rtc_dev;
+	struct rtc_wkalrm pwron_alm;
 	enum android_alarm_type alarm_type = ANDROID_ALARM_IOCTL_TO_TYPE(cmd);
 	uint32_t alarm_type_mask = 1U << alarm_type;
 
-	if (alarm_type >= ANDROID_ALARM_TYPE_COUNT)
+	if (alarm_type >= ANDROID_ALARM_TYPE_COUNT &&
+		alarm_type != ANDROID_ALARM_POWER_ON &&
+		alarm_type != ANDROID_ALARM_POWER_ON_LOGO) {
 		return -EINVAL;
+	}
 
 	if (ANDROID_ALARM_BASE_CMD(cmd) != ANDROID_ALARM_GET_TIME(0)) {
 		if ((file->f_flags & O_ACCMODE) == O_RDONLY)
@@ -137,6 +143,12 @@ static long alarm_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 	switch (ANDROID_ALARM_BASE_CMD(cmd)) {
 	case ANDROID_ALARM_CLEAR(0):
+		if (alarm_type == ANDROID_ALARM_POWER_ON ||
+			alarm_type == ANDROID_ALARM_POWER_ON_LOGO) {
+			new_alarm_time.tv_sec = 0;
+			alarm_set_power_on(new_alarm_time, false);
+			break;
+		}
 		spin_lock_irqsave(&alarm_slock, flags);
 		pr_alarm(IO, "alarm %d clear\n", alarm_type);
 		devalarm_try_to_cancel(&alarms[alarm_type]);
@@ -166,9 +178,19 @@ static long alarm_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			goto err1;
 		}
 from_old_alarm_set:
-		spin_lock_irqsave(&alarm_slock, flags);
 		pr_alarm(IO, "alarm %d set %ld.%09ld\n", alarm_type,
 			new_alarm_time.tv_sec, new_alarm_time.tv_nsec);
+
+		if (alarm_type == ANDROID_ALARM_POWER_ON) {
+			alarm_set_power_on(new_alarm_time, false);
+			break;
+		}
+		if (alarm_type == ANDROID_ALARM_POWER_ON_LOGO) {
+			alarm_set_power_on(new_alarm_time, true);
+			break;
+		}
+		spin_lock_irqsave(&alarm_slock, flags);
+
 		alarm_enabled |= alarm_type_mask;
 		devalarm_start(&alarms[alarm_type],
 			timespec_to_ktime(new_alarm_time));
@@ -201,6 +223,14 @@ from_old_alarm_set:
 			goto err1;
 		}
 		rtc_time_to_tm(new_rtc_time.tv_sec, &new_rtc_tm);
+
+		pr_alarm(IO, "set rtc %ld %ld - rtc %02d:%02d:%02d %02d/%02d/%04d\n",
+		new_rtc_time.tv_sec, new_rtc_time.tv_nsec,
+		new_rtc_tm.tm_hour, new_rtc_tm.tm_min,
+		new_rtc_tm.tm_sec, new_rtc_tm.tm_mon + 1,
+		new_rtc_tm.tm_mday,
+		new_rtc_tm.tm_year + 1900);
+
 		rtc_dev = alarmtimer_get_rtcdev();
 		rv = do_settimeofday(&new_rtc_time);
 		if (rv < 0)
@@ -228,9 +258,20 @@ from_old_alarm_set:
 		case ANDROID_ALARM_SYSTEMTIME:
 			ktime_get_ts(&tmp_time);
 			break;
+		case ANDROID_ALARM_POWER_ON:
+		case ANDROID_ALARM_POWER_ON_LOGO:
+			break;
 		}
 		if (copy_to_user((void __user *)arg, &tmp_time,
 		    sizeof(tmp_time))) {
+			rv = -EFAULT;
+			goto err1;
+		}
+		break;
+	case ANDROID_ALARM_GET_POWER_ON:
+		alarm_get_power_on(&pwron_alm);
+		if (copy_to_user((void __user *)arg, &pwron_alm,
+		    sizeof(struct rtc_wkalrm))) {
 			rv = -EFAULT;
 			goto err1;
 		}

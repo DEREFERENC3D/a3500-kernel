@@ -1122,6 +1122,10 @@ static unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
 	if (error)
 		return error;
 
+	/* Add user-space MMAP no-cache support. */
+	if (reqprot & PROT_NOCACHE)
+		vm_flags |= VM_SAO;
+
 	return mmap_region(file, addr, len, flags, vm_flags, pgoff);
 }
 
@@ -1336,9 +1340,14 @@ munmap_back:
 	 */
 	vma = vma_merge(mm, prev, addr, addr + len, vm_flags, NULL, file, pgoff,
 			NULL, NULL);
-	if (vma)
+	if (vma) {
+		/* Add user-space MMAP no-cache support */
+		if (vm_flags & VM_SAO) {
+			vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+			vm_flags &= ~VM_SAO;
+		}
 		goto out;
-
+	}
 	/*
 	 * Determine the object being mapped and call the appropriate
 	 * specific mapper. the address has already been validated, but
@@ -1354,7 +1363,14 @@ munmap_back:
 	vma->vm_start = addr;
 	vma->vm_end = addr + len;
 	vma->vm_flags = vm_flags;
-	vma->vm_page_prot = vm_get_page_prot(vm_flags);
+	/* Add user-space MMAP no-cache support */
+	if (vm_flags & VM_SAO) {
+		vm_flags &= ~VM_SAO;
+		vma->vm_page_prot = vm_get_page_prot(vm_flags);
+		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+	} else {
+		vma->vm_page_prot = vm_get_page_prot(vm_flags);
+	}
 	vma->vm_pgoff = pgoff;
 	INIT_LIST_HEAD(&vma->anon_vma_chain);
 

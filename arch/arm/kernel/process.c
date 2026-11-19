@@ -38,6 +38,7 @@
 #include <asm/thread_notify.h>
 #include <asm/stacktrace.h>
 #include <asm/mach/time.h>
+#include <mach/system.h>
 
 #ifdef CONFIG_CC_STACKPROTECTOR
 #include <linux/stackprotector.h>
@@ -137,6 +138,28 @@ void arm_machine_flush_console(void)
  * code.
  */
 static u64 soft_restart_stack[16];
+
+void arm_machine_restart(char mode, const char *cmd)
+{
+	/* machine_restart() has already flushed the console and will report
+	 * a failed reboot if this returns. Only the platform-specific part
+	 * is needed here. */
+	local_irq_disable();
+	local_fiq_disable();
+	setup_mm_for_reboot();
+
+	/* With L1 off and L2 on the spinlock cannot be acquired, so disable
+	 * the L2 as well. */
+	outer_flush_all();
+	outer_disable();
+	outer_flush_all();
+
+	flush_cache_all();
+	cpu_proc_fin();
+	flush_cache_all();
+
+	arch_reset(mode, cmd);
+}
 
 static void __soft_restart(void *addr)
 {

@@ -33,6 +33,15 @@ static int post_wake_state = -1;
 
 static int did_suspend_to_both;
 
+int hybrid_sleep_mode(void)
+{
+    int retval = 0;
+    if (toi_poweroff_method == 3 && did_suspend_to_both == 1)
+        retval = 1;
+    return retval;
+}
+EXPORT_SYMBOL_GPL(hybrid_sleep_mode);
+
 /*
  * __toi_power_down
  * Functionality   : Powers down or reboots the computer once the image
@@ -82,7 +91,13 @@ static void __toi_power_down(int method)
 
 		/* Success - we're now post-resume-from-ram */
 		if (did_suspend_to_both)
+        {
+#ifdef CONFIG_MTK_HIBERNATION
+            // for lk
+            set_env("hibboot", "1");
+#endif
 			return;
+        }
 
 		/* Failed to suspend to ram - do normal power off */
 		break;
@@ -104,6 +119,11 @@ static void __toi_power_down(int method)
 
 	if (test_result_state(TOI_ABORTED))
 		goto out;
+
+#ifdef CONFIG_MTK_HIBERNATION
+    // for lk
+    set_env("hibboot", "1");
+#endif
 
 	kernel_power_off();
 	kernel_halt();
@@ -258,10 +278,10 @@ static struct toi_sysfs_data sysfs_params[] = {
 	SYSFS_STRING("wake_alarm_dir", SYSFS_RW, wake_alarm_dir, 256, 0, NULL),
 	SYSFS_INT("post_wake_state", SYSFS_RW, &post_wake_state, -1, 5, 0,
 			NULL),
+#endif
 	SYSFS_UL("powerdown_method", SYSFS_RW, &toi_poweroff_method, 0, 5, 0),
 	SYSFS_INT("did_suspend_to_both", SYSFS_READONLY, &did_suspend_to_both,
 		0, 0, 0, NULL)
-#endif
 };
 
 static struct toi_module_ops powerdown_ops = {
