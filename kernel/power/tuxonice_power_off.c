@@ -89,9 +89,6 @@ static void __toi_power_down(int method)
 		pm_notifier_call_chain(PM_POST_SUSPEND);
 		pm_restore_console();
 
-        // jonathan.jmchen: FIXME, Create API to add another wakeup source to power down,
-        // if system is idle after xxx (e.g., 5 min) without user interaction!!
-
 		/* Success - we're now post-resume-from-ram */
 		if (did_suspend_to_both)
         {
