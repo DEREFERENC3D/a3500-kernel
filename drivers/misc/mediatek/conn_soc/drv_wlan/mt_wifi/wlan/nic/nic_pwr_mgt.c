@@ -219,7 +219,6 @@ nicpmSetAcpiPowerD0 (
         prAdapter->rAcpiState = ACPI_STATE_D0;
         prAdapter->fgIsEnterD3ReqIssued = FALSE;
 
-#if defined(MT6620) || defined(MT6628)
         /* 1. Request Ownership to enter F/W download state */
         ACQUIRE_POWER_CONTROL_FROM_PM(prAdapter);
     #if !CFG_ENABLE_FULL_PM
@@ -232,7 +231,6 @@ nicpmSetAcpiPowerD0 (
             u4Status = WLAN_STATUS_FAILURE;
             break;
         }
-#endif
 
     #if CFG_ENABLE_FW_DOWNLOAD
         prFwMappingHandle = kalFirmwareImageMapping(prAdapter->prGlueInfo, &pvFwImageMapFile, &u4FwImgLength);
@@ -241,7 +239,6 @@ nicpmSetAcpiPowerD0 (
             pvFwImageMapFile = NULL;
         }
 
-        #if defined(MT6620) || defined(MT6628)
         if (pvFwImageMapFile) {
             /* 3.1 disable interrupt, download is done by polling mode only */
             nicDisableInterrupt(prAdapter);
@@ -299,7 +296,6 @@ nicpmSetAcpiPowerD0 (
                 }
             }
             else
-            #endif
             #if CFG_ENABLE_FW_DOWNLOAD_AGGREGATION
             if(wlanImageSectionDownloadAggregated(prAdapter,
                         u4FwLoadAddr,
