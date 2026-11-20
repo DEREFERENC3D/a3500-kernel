@@ -1267,7 +1267,7 @@ wlanAdapterStart (
 
         prAdapter->u4OsPacketFilter = PARAM_PACKET_FILTER_SUPPORTED;
 
-#if defined(MT6620) || defined(MT6628)
+#if defined(MT6628)
         DBGLOG(INIT, TRACE, ("wlanAdapterStart(): Acquiring LP-OWN %d\n", fgIsResetting));
         ACQUIRE_POWER_CONTROL_FROM_PM(prAdapter);
 
@@ -1303,7 +1303,7 @@ wlanAdapterStart (
         nicRxInitialize(prAdapter);
 
 #if CFG_ENABLE_FW_DOWNLOAD
-    #if defined(MT6620) || defined(MT6628)
+    #if defined(MT6628)
         if (pvFwImageMapFile) {
             /* 1. disable interrupt, download is done by polling mode only */
             nicDisableInterrupt(prAdapter);
@@ -2969,7 +2969,7 @@ wlanImageSectionDownloadAggregated (
     IN PUINT_8      pucImgSecBuf
     )
 {
-        #if defined(MT6620) || defined(MT6628)
+        #if defined(MT6628)
     P_CMD_INFO_T prCmdInfo;
     P_INIT_HIF_TX_HEADER_T prInitHifTxHeader;
     P_INIT_CMD_DOWNLOAD_BUF prInitCmdDownloadBuf;
@@ -3119,7 +3119,7 @@ wlanImageSectionDownload (
     IN PUINT_8      pucImgSecBuf
     )
 {
-    #if defined(MT6620) || defined(MT6628)
+    #if defined(MT6628)
 
     P_CMD_INFO_T prCmdInfo;
     P_INIT_HIF_TX_HEADER_T prInitHifTxHeader;
