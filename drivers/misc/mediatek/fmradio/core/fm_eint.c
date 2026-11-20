@@ -20,7 +20,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
 #include "stp_exp.h"
 #include "wmt_exp.h"
 
@@ -52,4 +51,3 @@ fm_s32 fm_eint_pin_cfg(fm_s32 mode)
 {	
 	return 0;
 }
-#endif
