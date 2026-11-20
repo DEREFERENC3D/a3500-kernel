@@ -23,10 +23,6 @@
 ********************************************************************************
 */
 
-#ifdef MT6620
-#undef MT6620
-#endif
-
 #ifndef MT6628
 #define MT6628
 #endif
@@ -173,25 +169,7 @@
  * Flags and Parameters for Integration
  *------------------------------------------------------------------------------
  */
-#if defined(MT6620)
-    #define MT6620_FPGA_BWCS    0
-    #define MT6620_FPGA_V5      0
-
-    #if (MT6620_FPGA_BWCS == 1) && (MT6620_FPGA_V5 == 1)
-        #error
-    #endif
-
-    #if (MTK_WCN_HIF_SDIO == 1)
-        #define CFG_MULTI_ECOVER_SUPPORT    1
-    #elif !defined(LINUX)
-        #define CFG_MULTI_ECOVER_SUPPORT    1
-    #else
-        #define CFG_MULTI_ECOVER_SUPPORT    0
-    #endif
-
-    #define CFG_ENABLE_CAL_LOG      0
-    #define CFG_REPORT_RFBB_VERSION       0
-#elif defined(MT6628)
+#if defined(MT6628)
 
 #define CFG_MULTI_ECOVER_SUPPORT    0
 
@@ -421,7 +399,7 @@
 #define CFG_ENABLE_FW_DOWNLOAD_ACK              1
 #define CFG_ENABLE_FW_ENCRYPTION                1
 
-#if defined(MT6620) || defined(MT6628)
+#if defined(MT6628)
     #define CFG_ENABLE_FW_DOWNLOAD_AGGREGATION  0
     #define CFG_ENABLE_FW_DIVIDED_DOWNLOAD      1
 #else
@@ -431,21 +409,7 @@
 
 
 
-#if defined(MT6620)
-    #if MT6620_FPGA_BWCS
-        #define CFG_FW_LOAD_ADDRESS                     0x10014000
-        #define CFG_OVERRIDE_FW_START_ADDRESS           0
-        #define CFG_FW_START_ADDRESS                    0x10014001
-    #elif MT6620_FPGA_V5
-        #define CFG_FW_LOAD_ADDRESS                     0x10008000
-        #define CFG_OVERRIDE_FW_START_ADDRESS           0
-        #define CFG_FW_START_ADDRESS                    0x10008001
-    #else
-        #define CFG_FW_LOAD_ADDRESS                     0x10008000
-        #define CFG_OVERRIDE_FW_START_ADDRESS           0
-        #define CFG_FW_START_ADDRESS                    0x10008001
-    #endif
-#elif defined(MT6628)
+#if defined(MT6628)
     #define CFG_FW_LOAD_ADDRESS                     0x00060000
     #define CFG_OVERRIDE_FW_START_ADDRESS           0
     #define CFG_FW_START_ADDRESS                    0x00060000
