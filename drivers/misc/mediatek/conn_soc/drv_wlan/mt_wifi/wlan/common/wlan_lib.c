@@ -1167,10 +1167,6 @@ wlanAdapterStart (
     const UINT_32 u4CRCOffset = offsetof(FIRMWARE_DIVIDED_DOWNLOAD_T, u4NumOfEntries);
     #endif
 #endif
-#if (defined(MT5931) && (!CFG_SUPPORT_BCM_BWCS))
-    PARAM_PTA_IPC_T rBwcsPta;
-    UINT_32 u4SetInfoLen;
-#endif
 
     ASSERT(prAdapter);
 
@@ -1351,163 +1347,6 @@ wlanAdapterStart (
                 FALSE,
                 0);
         #endif
-    #elif defined(MT5931)
-        if (pvFwImageMapFile) {
-            DBGLOG(INIT, TRACE, ("Download Address: 0x%08X\n", prRegInfo->u4LoadAddress));
-            DBGLOG(INIT, TRACE, ("Firmware Length:  0x%08X\n", u4FwImageFileLength));
-
-            do {
-#if CFG_SUPPORT_WHOLE_CHIP_RESET
-#define RESET_RDY_INTERVAL (120)
-
-                /* 1.0 whole-chip reset except HIFSYS */
-                HAL_MCR_WR(prAdapter, MCR_WMCSR, WMCSR_CHIP_RST);
-                HAL_MCR_WR(prAdapter, MCR_WMCSR, 0);
-
-                /* 1.0.1 delay for EEIF ready */
-                kalMsleep(RESET_RDY_INTERVAL);
-#endif
-
-                /* 1.1 wait for INIT_RDY */
-                i = 0;
-                while(1) {
-                    HAL_MCR_RD(prAdapter, MCR_WMCSR, &u4Value);
-
-                    if (u4Value & WMCSR_INI_RDY) {
-                        DBGLOG(INIT, TRACE, ("INIT-RDY detected\n"));
-                        break;
-                    }
-                    else if(kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
-                            || fgIsBusAccessFailed == TRUE) {
-                        u4Status = WLAN_STATUS_FAILURE;
-                        break;
-                    }
-                    else if(i >= CFG_RESPONSE_POLLING_TIMEOUT) {
-                        DBGLOG(INIT, ERROR, ("Waiting for Init Ready bit: Timeout\n"));
-                        u4Status = WLAN_STATUS_FAILURE;
-                        break;
-                    }
-                    else {
-                        i++;
-                        kalMsleep(10);
-                    }
-                }
-
-                if(u4Status != WLAN_STATUS_SUCCESS) {
-                    break;
-                }
-
-                /* 1.2 set KSEL/FLEN */
-                HAL_MCR_WR(prAdapter, MCR_FWCFG, u4FwImageFileLength >> 6);
-
-                /* 1.3 enable FWDL_EN */
-                HAL_MCR_WR(prAdapter, MCR_WMCSR, WMCSR_FWDLEN);
-
-                /* 1.4 wait for PLL_RDY */
-                i = 0;
-                while(1) {
-                    HAL_MCR_RD(prAdapter, MCR_WMCSR, &u4Value);
-
-                    if (u4Value & WMCSR_PLLRDY) {
-                        DBGLOG(INIT, TRACE, ("PLL-RDY detected\n"));
-                        break;
-                    }
-                    else if(kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
-                            || fgIsBusAccessFailed == TRUE) {
-                        u4Status = WLAN_STATUS_FAILURE;
-                        break;
-                    }
-                    else if(i >= CFG_RESPONSE_POLLING_TIMEOUT) {
-                        DBGLOG(INIT, ERROR, ("Waiting for PLL Ready bit: Timeout\n"));
-                        u4Status = WLAN_STATUS_FAILURE;
-                        break;
-                    }
-                    else {
-                        i++;
-                        kalMsleep(10);
-                    }
-                }
-
-                if(u4Status != WLAN_STATUS_SUCCESS) {
-                    break;
-                }
-
-                /* 2.1 turn on HIFSYS firmware download mode */
-                HAL_MCR_WR(prAdapter, MCR_FWDLSR, FWDLSR_FWDL_MODE);
-
-                /* 2.2 set starting address */
-                u4FwLoadAddr = prRegInfo->u4LoadAddress;
-                HAL_MCR_WR(prAdapter, MCR_FWDLDSAR, u4FwLoadAddr);
-
-                /* 3. upload firmware */
-                for (i = 0; i < u4FwImageFileLength ; i += CMD_PKT_SIZE_FOR_IMAGE) {
-                    if(i + CMD_PKT_SIZE_FOR_IMAGE < u4FwImageFileLength)
-                        u4ImgSecSize = CMD_PKT_SIZE_FOR_IMAGE;
-                    else
-                        u4ImgSecSize = u4FwImageFileLength - i;
-
-                    if(wlanImageSectionDownload(prAdapter,
-                                u4FwLoadAddr + i,
-                                u4ImgSecSize,
-                                (PUINT_8)pvFwImageMapFile + i) != WLAN_STATUS_SUCCESS) {
-                        DBGLOG(INIT, ERROR, ("Firmware scatter download failed!\n"));
-                        u4Status = WLAN_STATUS_FAILURE;
-                        break;
-                    }
-                }
-
-                if(u4Status != WLAN_STATUS_SUCCESS) {
-                    break;
-                }
-
-                /* 4.1 poll FWDL_OK & FWDL_FAIL bits */
-                i = 0;
-                while(1) {
-                    HAL_MCR_RD(prAdapter, MCR_WMCSR, &u4Value);
-
-                    if (u4Value & WMCSR_DL_OK) {
-                         DBGLOG(INIT, TRACE, ("DL_OK detected\n"));
-                        break;
-                    }
-                    else if(kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
-                            || fgIsBusAccessFailed == TRUE
-                            || (u4Value & WMCSR_DL_FAIL)) {
-                        DBGLOG(INIT, ERROR, ("DL_FAIL detected: 0x%08X\n", u4Value));
-                        u4Status = WLAN_STATUS_FAILURE;
-                        break;
-                    }
-                    else if(i >= CFG_RESPONSE_POLLING_TIMEOUT) {
-                        DBGLOG(INIT, ERROR, ("Waiting for DL_OK/DL_FAIL bit: Timeout\n"));
-                        u4Status = WLAN_STATUS_FAILURE;
-                        break;
-                    }
-                    else {
-                        i++;
-                        kalMsleep(10);
-                    }
-                }
-
-                if(u4Status != WLAN_STATUS_SUCCESS) {
-                    break;
-                }
-
-                /* 4.2 turn off HIFSYS download mode */
-                HAL_MCR_WR(prAdapter, MCR_FWDLSR, 0);
-
-            } while (FALSE);
-
-            if(u4Status != WLAN_STATUS_SUCCESS) {
-                break;
-            }
-
-            /* 5. disable interrupt */
-            nicDisableInterrupt(prAdapter);
-        }
-        else {
-            DBGLOG(INIT, ERROR, ("No Firmware found!\n"));
-            u4Status = WLAN_STATUS_FAILURE;
-            break;
-        }
     #endif
 #endif
 
@@ -1541,31 +1380,6 @@ wlanAdapterStart (
             }
         }
 
-#if defined(MT5931)
-        // Acquire LP-OWN
-        DBGLOG(INIT, TRACE, ("wlanAdapterStart(): Acquiring LP-OWN\n"));
-        ACQUIRE_POWER_CONTROL_FROM_PM(prAdapter);
-    #if !CFG_ENABLE_FULL_PM
-        nicpmSetDriverOwn(prAdapter);
-    #endif
-
-        if(prAdapter->fgIsFwOwn == TRUE) {
-            DBGLOG(INIT, ERROR, ("nicpmSetDriverOwn() failed!\n"));
-            u4Status = WLAN_STATUS_FAILURE;
-            break;
-        }
-
-        //4 <1> Initialize the Adapter
-        if ( (u4Status = nicInitializeAdapter(prAdapter)) != WLAN_STATUS_SUCCESS ) {
-            DBGLOG(INIT, ERROR, ("nicInitializeAdapter failed!\n"));
-            u4Status = WLAN_STATUS_FAILURE;
-            break;
-        }
-
-        /* post initialization for MT5931 due to some CR is only accessible after driver own */
-        nicRxPostInitialize(prAdapter);
-#endif
-
         if(u4Status == WLAN_STATUS_SUCCESS) {
             // 1. reset interrupt status
             HAL_READ_INTR_STATUS(prAdapter, 4, (PUINT_8)&u4WHISR);
@@ -1575,10 +1389,6 @@ wlanAdapterStart (
 
             /* 2. reset TX Resource for normal operation */
             nicTxResetResource(prAdapter);
-
-#if CFG_SUPPORT_OSC_SETTING && defined(MT5931)
-            wlanSetMcuOscStableTime(prAdapter, 0);
-#endif
 
             /* 3. query for permanent address by polling */
             wlanQueryPermanentAddress(prAdapter);
@@ -1717,19 +1527,6 @@ wlanAdapterStart (
 #if CFG_SUPPORT_NVRAM
         /* load manufacture data */
         wlanLoadManufactureData(prAdapter, prRegInfo);
-#endif
-
-#if (defined(MT5931) && (!CFG_SUPPORT_BCM_BWCS))
-        //Enable DPD calibration.
-        rBwcsPta.u.aucBTPParams[0] = 0x00;
-        rBwcsPta.u.aucBTPParams[1] = 0x01;
-        rBwcsPta.u.aucBTPParams[2] = 0x00;
-        rBwcsPta.u.aucBTPParams[3] = 0x80;
-
-        wlanoidSetBT(prAdapter,
-            (PVOID)&rBwcsPta,
-            sizeof(PARAM_PTA_IPC_T),
-            &u4SetInfoLen);
 #endif
 
     } while(FALSE);
@@ -3085,72 +2882,6 @@ wlanImageSectionDownload (
 
     return u4Status;
 
-#elif defined(MT5931)
-
-    UINT_32 i, u4Value;
-    P_HIF_HW_TX_HEADER_T prHifTxHeader;
-
-    WLAN_STATUS u4Status = WLAN_STATUS_SUCCESS;
-
-    ASSERT(prAdapter);
-    ASSERT(pucImgSecBuf);
-    ASSERT(u4ImgSecSize <= CMD_PKT_SIZE_FOR_IMAGE);
-
-    DEBUGFUNC("wlanImageSectionDownload");
-    DBGLOG(INIT, TRACE, ("Destination: 0x%08X / Length: 0x%08X\n", u4DestAddr, u4ImgSecSize));
-
-    if (u4ImgSecSize == 0) {
-        return WLAN_STATUS_SUCCESS;
-    }
-
-    // 1. Use TX coalescing buffer
-    prHifTxHeader = (P_HIF_HW_TX_HEADER_T) prAdapter->pucCoalescingBufCached;
-
-    // 2. Setup HIF_TX_HEADER
-    prHifTxHeader->u2TxByteCount = (UINT_16)(ALIGN_4(sizeof(HIF_HW_TX_HEADER_T) + u4ImgSecSize));
-    prHifTxHeader->ucEtherTypeOffset = 0;
-    prHifTxHeader->ucCSflags = 0;
-
-    // 3. Copy payload
-    kalMemCopy(prHifTxHeader->aucBuffer, pucImgSecBuf, u4ImgSecSize);
-
-    // 3.1 add 4-bytes zero tail
-    kalMemZero(&(prHifTxHeader->aucBuffer[ALIGN_4(u4ImgSecSize)]), sizeof(HIF_HW_TX_HEADER_T));
-
-    // 4. Poll til FWDL_RDY = 1
-    i = 0;
-    while(1) {
-        HAL_MCR_RD(prAdapter, MCR_FWDLSR, &u4Value);
-
-        if (u4Value & FWDLSR_FWDL_RDY) {
-            DBGLOG(INIT, TRACE, ("FWDL_RDY detected\n"));
-            break;
-        }
-        else if(kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
-                || fgIsBusAccessFailed == TRUE) {
-            u4Status = WLAN_STATUS_FAILURE;
-            break;
-        }
-        else if(i >= CFG_RESPONSE_POLLING_TIMEOUT) {
-            DBGLOG(INIT, ERROR, ("Waiting for FWDL_RDY: Timeout (0x%08X)\n", u4Value));
-            u4Status = WLAN_STATUS_FAILURE;
-            break;
-        }
-        else {
-            i++;
-            kalMsleep(10);
-        }
-    }
-
-    // 5. Send firmware
-    HAL_PORT_WR(prAdapter,
-            MCR_FWDLDR,
-            prHifTxHeader->u2TxByteCount,
-            (PUINT_8)prHifTxHeader,
-            prAdapter->u4CoalescingBufCachedSize);
-
-    return u4Status;
-
     #endif
 }
 
@@ -3670,73 +3401,6 @@ wlanoidClearTimeoutCheck (
     cnmTimerStopTimer(prAdapter, &(prAdapter->rOidTimeoutTimer));
 }
 
-
-/*----------------------------------------------------------------------------*/
-/*!
-* @brief This function is called to set up the MCUSYS's OSC stable time
-*
-* @param prAdapter          Pointer to the Adapter structure.
-*
-* @return none
-*/
-/*----------------------------------------------------------------------------*/
-
-#if CFG_SUPPORT_OSC_SETTING && defined(MT5931)
-WLAN_STATUS
-wlanSetMcuOscStableTime (
-    IN P_ADAPTER_T      prAdapter,
-    IN UINT_16          u2OscStableTime
-    )
-{
-    UINT_8                  ucCmdSeqNum = 0;
-    P_CMD_INFO_T            prCmdInfo = NULL;
-    P_WIFI_CMD_T            prWifiCmd = NULL;
-    P_CMD_MCU_LP_PARAM_T    prMcuSetOscCmd = NULL;
-    WLAN_STATUS             status = WLAN_STATUS_SUCCESS;
-
-    ASSERT(prAdapter);
-
-    prCmdInfo = cmdBufAllocateCmdInfo(prAdapter,
-            CMD_HDR_SIZE + sizeof(CMD_MCU_LP_PARAM_T));
-
-    if (!prCmdInfo) {
-        DBGLOG(INIT, ERROR, ("Allocate CMD_INFO_T ==> FAILED.\n"));
-        return WLAN_STATUS_FAILURE;
-    }
-
-    // increase command sequence number
-    ucCmdSeqNum = nicIncreaseCmdSeqNum(prAdapter);
-
-    // compose CMD_MCU_LP_PARAM_T cmd pkt
-    prCmdInfo->eCmdType = COMMAND_TYPE_GENERAL_IOCTL;
-    prCmdInfo->u2InfoBufLen = CMD_HDR_SIZE + sizeof(CMD_MCU_LP_PARAM_T);
-    prCmdInfo->pfCmdDoneHandler = NULL;
-    prCmdInfo->pfCmdTimeoutHandler = NULL;
-    prCmdInfo->fgIsOid = FALSE;
-    prCmdInfo->ucCID = CMD_ID_SET_OSC;
-    prCmdInfo->fgSetQuery = TRUE;
-    prCmdInfo->fgNeedResp = FALSE;
-    prCmdInfo->fgDriverDomainMCR = FALSE;
-    prCmdInfo->ucCmdSeqNum = ucCmdSeqNum;
-    prCmdInfo->u4SetInfoLen = sizeof(CMD_MCU_LP_PARAM_T);
-
-    // Setup WIFI_CMD_T
-    prWifiCmd = (P_WIFI_CMD_T)(prCmdInfo->pucInfoBuffer);
-    prWifiCmd->u2TxByteCount_UserPriority = prCmdInfo->u2InfoBufLen;
-    prWifiCmd->ucCID = prCmdInfo->ucCID;
-    prWifiCmd->ucSetQuery = prCmdInfo->fgSetQuery;
-    prWifiCmd->ucSeqNum = prCmdInfo->ucCmdSeqNum;
-
-    // configure CMD_MCU_LP_PARAM_T
-    prMcuSetOscCmd = (P_CMD_MCU_LP_PARAM_T)(prWifiCmd->aucBuffer);
-    prMcuSetOscCmd->u2OscStableTime = u2OscStableTime;
-
-    status = wlanSendCommand(prAdapter, prCmdInfo);
-    cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
-
-    return status;
-}
-#endif
 
 /*----------------------------------------------------------------------------*/
 /*!
