@@ -22,7 +22,6 @@
 
 /* Host platform defination */
 #define MT6582LTE
-//#define MT6592LTE
 //#define MT6595WIFI
 
 #define AUTOK_CMD_TIMES     (20)
@@ -2121,9 +2120,6 @@ typedef enum
 #if defined(MT6582LTE)
 static int autok_trans_bound_rising = 3;   /* 6/2 */
 static int autok_trans_bound_falling = 3;  /* 6/2 */
-#elif defined(MT6592LTE)
-static int autok_trans_bound_rising = 1;   /* 3/2 */
-static int autok_trans_bound_falling = 1;  /* 3/2 */
 #endif
 
 #define autok_calc_cycle(cyc, char_s, char_e, s_num, e_num, isTotalT, isSRising)     \
@@ -5603,23 +5599,6 @@ static void autok_setup_envir(struct msdc_host *host)
         else
             gfCoreTT = 0;
     }
-    #elif defined(MT6592LTE)
-        if (freq_mhz >= 200) {
-            autok_vcore_scan_num = AUTOK_VCORE_SCAN_NUM;
-            autok_rdat_fbound_th = 2;
-        }
-        else if (freq_mhz >= 150) {
-            autok_vcore_scan_num = AUTOK_VCORE_SCAN_NUM;
-            autok_rdat_fbound_th = 1;
-        }
-        else if (freq_mhz >= 100) {
-            autok_vcore_scan_num = 1;
-            autok_rdat_fbound_th = 1;
-        }
-        else if (freq_mhz >= 50) {
-            autok_vcore_scan_num = 1;
-            autok_rdat_fbound_th = 1;
-        }
     #endif
 
     AUTOK_PRINT("freq:%d, vcore_num:%d, rdat_th:%d\r\n", freq_mhz, 
