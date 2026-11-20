@@ -98,10 +98,6 @@ static struct mtk_uart_vfifo mtk_uart_vfifo_port[] = {
     VFIFO_INIT_RX(P_DMA_UART2_RX, 3, C_UART2_VFF_RX_SIZE, UART2_VFF_RX_IRQ_ID),
     VFIFO_INIT_TX(P_DMA_UART3_TX, 4, C_UART3_VFF_TX_SIZE, UART3_VFF_TX_IRQ_ID),
     VFIFO_INIT_RX(P_DMA_UART3_RX, 5, C_UART3_VFF_RX_SIZE, UART3_VFF_RX_IRQ_ID),
-#if 0 /* MT6589 only 6 DMA channel for UART */
-    VFIFO_INIT_TX(P_DMA_UART4_TX, 6, C_UART4_VFF_TX_SIZE),
-    VFIFO_INIT_RX(P_DMA_UART4_RX, 7, C_UART4_VFF_RX_SIZE),
-#endif
 };
 /*---------------------------------------------------------------------------*/
 #endif /*ENABLE_VFIFO*/
@@ -1170,17 +1166,7 @@ static void mtk_uart_rx_chars(struct mtk_uart *uart)
         /* check status */
         if (!mtk_uart_data_ready(uart))
             break;
-#if 0
-        if (tty->flip.count >= TTY_FLIPBUF_SIZE) {
-            if (tty->low_latency) {
-                /*
-                 * If this failed then we will throw away the
-                 * bytes but must do so to clear interrupts
-                 */
-                tty_flip_buffer_push(tty);
-            }
-        }
-#endif
+
         /* read the byte */
         data_byte = uart->read_byte(uart);
         port->icount.rx++;
@@ -1844,13 +1830,8 @@ static int mtk_uart_get_poll_char(struct uart_port *port)
     
     /* [ALPS00033048] For Linux 2.6.35 kgdb chagne, using while loop may block kgdb,
      * return NO_POLL_CHAR directly if no data to read */
-    #if 0
-    while (!(uart->read_status(uart) & UART_LSR_DR))
-        cpu_relax();
-    #else
     if (!mtk_uart_data_ready(uart))
         return NO_POLL_CHAR;
-    #endif
     /* End of [ALPS00033048] */
 
     return mtk_uart_read_byte(uart);
