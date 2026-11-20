@@ -59,15 +59,6 @@
 #define QM_GUARANTEED_TC4_RESOURCE      2   /* Resource for TC4 is not adjustable */
 #define QM_GUARANTEED_TC5_RESOURCE      4
 
-#elif defined(MT5931) 
-
-#define QM_GUARANTEED_TC0_RESOURCE      4
-#define QM_GUARANTEED_TC1_RESOURCE      4
-#define QM_GUARANTEED_TC2_RESOURCE      4 
-#define QM_GUARANTEED_TC3_RESOURCE      4
-#define QM_GUARANTEED_TC4_RESOURCE      2   /* Resource for TC4 is not adjustable */
-#define QM_GUARANTEED_TC5_RESOURCE      2
-
 #elif defined(MT6628)
 
 #define QM_GUARANTEED_TC0_RESOURCE      4
