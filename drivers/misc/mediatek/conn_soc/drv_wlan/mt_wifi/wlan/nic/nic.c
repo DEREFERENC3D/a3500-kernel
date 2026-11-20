@@ -636,15 +636,6 @@ const UINT_8 aucPhyCfg2PhyTypeSet[PHY_CONFIG_NUM] =
     PHY_TYPE_SET_802_11GN           /* PHY_CONFIG_802_11GN */
 };
 
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    #define REQ_GATING_ENABLE_H2D_INT   BIT(31)
-    #define REQ_GATING_DISABLE_H2D_INT  BIT(30)
-    #define ACK_GATING_ENABLE_D2H_INT   BIT(31)
-    #define ACK_GATING_DISABLE_D2H_INT  BIT(30)
-
-    #define GATING_CONTROL_POLL_LIMIT   64
-#endif
-
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -1124,12 +1115,6 @@ nicProcessIST (
         return WLAN_STATUS_ADAPTER_NOT_READY;
     }
 
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    if(prAdapter->fgIsClockGatingEnabled == TRUE) {
-        nicDisableClockGating(prAdapter);
-    }
-#endif
-
     for (i = 0; i < CFG_IST_LOOP_COUNT; i++) { /* CFG_IST_LOOP_COUNT = 1 */
 
 #if CFG_SDIO_INTR_ENHANCE
@@ -1155,12 +1140,6 @@ nicProcessIST (
             break;
         }
     }
-
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    if(prAdapter->fgIsClockGatingEnabled == FALSE) {
-        nicEnableClockGating(prAdapter);
-    }
-#endif
 
     return u4Status;
 } /* end of nicProcessIST() */
@@ -1415,25 +1394,6 @@ nicProcessSoftwareInterrupt(
         glSendResetRequest();
 #endif
     }
-
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    ASSERT((u4IntrBits & (ACK_GATING_ENABLE_D2H_INT | ACK_GATING_DISABLE_D2H_INT))
-            != (ACK_GATING_ENABLE_D2H_INT | ACK_GATING_DISABLE_D2H_INT));
-
-    if(u4IntrBits & ACK_GATING_ENABLE_D2H_INT) {
-        prAdapter->fgIsClockGatingEnabled = TRUE;
-    }
-
-    if(u4IntrBits & ACK_GATING_DISABLE_D2H_INT) {
-        prAdapter->fgIsClockGatingEnabled = FALSE;
-
-        // Indicate Service Thread for TX
-        if(kalGetTxPendingCmdCount(prAdapter->prGlueInfo) > 0
-                || wlanGetTxPendingFrameCount(prAdapter) > 0) {
-            kalSetEvent(prAdapter->prGlueInfo);
-        }
-    }
-#endif
 
     DBGLOG(REQ, WARN, ("u4IntrBits: 0x%x \n", u4IntrBits));
 
@@ -3209,98 +3169,6 @@ nicUninitMGMT (
 
     return;
 }
-
-
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-/*----------------------------------------------------------------------------*/
-/*!
-* @brief This utility function is to inform firmware to enable MCU clock gating
-*
-* @param prAdapter          Pointer of ADAPTER_T
-*
-* @retval none
-*/
-/*----------------------------------------------------------------------------*/
-WLAN_STATUS
-nicEnableClockGating (
-    IN P_ADAPTER_T prAdapter
-    )
-{
-    UINT_32 i, u4WHISR = 0;
-
-    ASSERT(prAdapter);
-
-    if(prAdapter->fgIsClockGatingEnabled == TRUE) {
-        return WLAN_STATUS_SUCCESS;
-    }
-    else {
-        nicSetSwIntr(prAdapter, REQ_GATING_ENABLE_H2D_INT);
-
-        i = 0;
-        while(i < GATING_CONTROL_POLL_LIMIT) {
-            if(kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
-                    || fgIsBusAccessFailed == TRUE) {
-                return WLAN_STATUS_FAILURE;
-            }
-
-            HAL_READ_INTR_STATUS(prAdapter, sizeof(UINT_32), (PUINT_8)&u4WHISR);
-
-            if(u4WHISR & ACK_GATING_ENABLE_D2H_INT) {
-                prAdapter->fgIsClockGatingEnabled = TRUE;
-                return WLAN_STATUS_SUCCESS;
-            }
-        }
-
-        ASSERT(0);
-        return WLAN_STATUS_PENDING;
-    }
-}
-
-
-/*----------------------------------------------------------------------------*/
-/*!
-* @brief This utility function is to inform firmware to disable MCU clock gating
-*
-* @param prAdapter          Pointer of ADAPTER_T
-*
-* @retval none
-*/
-/*----------------------------------------------------------------------------*/
-WLAN_STATUS
-nicDisableClockGating (
-    IN P_ADAPTER_T prAdapter
-    )
-{
-    UINT_32 i, u4WHISR = 0;
-
-    ASSERT(prAdapter);
-
-    if(prAdapter->fgIsClockGatingEnabled == FALSE) {
-        return WLAN_STATUS_SUCCESS;
-    }
-    else {
-        nicSetSwIntr(prAdapter, REQ_GATING_DISABLE_H2D_INT);
-
-        i = 0;
-        while(i < GATING_CONTROL_POLL_LIMIT) {
-            if(kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
-                    || fgIsBusAccessFailed == TRUE) {
-                return WLAN_STATUS_FAILURE;
-            }
-
-            HAL_READ_INTR_STATUS(prAdapter, sizeof(UINT_32), (PUINT_8)&u4WHISR);
-
-            if(u4WHISR & ACK_GATING_DISABLE_D2H_INT) {
-                prAdapter->fgIsClockGatingEnabled = FALSE;
-                return WLAN_STATUS_SUCCESS;
-            }
-        }
-
-        ASSERT(0);
-        return WLAN_STATUS_PENDING;
-    }
-}
-#endif
 
 
 /*----------------------------------------------------------------------------*/
