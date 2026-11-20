@@ -50,18 +50,12 @@
 #define QM_MIN_RESERVED_TC4_RESOURCE    2   /* Resource for TC4 is not adjustable */
 #define QM_MIN_RESERVED_TC5_RESOURCE    1
 
-#if defined(MT6628)
-
 #define QM_GUARANTEED_TC0_RESOURCE      4
 #define QM_GUARANTEED_TC1_RESOURCE      4
 #define QM_GUARANTEED_TC2_RESOURCE      6
 #define QM_GUARANTEED_TC3_RESOURCE      6
 #define QM_GUARANTEED_TC4_RESOURCE      2   /* Resource for TC4 is not adjustable */
 #define QM_GUARANTEED_TC5_RESOURCE      4
-
-#else
-#error
-#endif
 
 
 
