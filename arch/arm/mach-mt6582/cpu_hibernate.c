@@ -28,10 +28,6 @@ extern asmlinkage void restore_cp15(void *pointer);
 extern asmlinkage void restore_mmu(void *pointer);
 extern asmlinkage void restore_fault_status(void *pointer);
 extern asmlinkage void restore_generic_timer(void *pointer, int is_hyp);
-#ifdef CONFIG_MTK_ETM
-extern void trace_stop_dormant(void);
-extern void trace_start_dormant(void);
-#endif
 
 typedef struct fault_regs {
     unsigned dfar;
@@ -98,11 +94,6 @@ static void __restore_processor_state(struct ns_banked_cp15_context *ctxt)
     // The 32-bit Generic timer context
     restore_generic_timer(&saved_cp15_timer_ctx, 0x0);
 
-    // restore ETM module
-#ifdef CONFIG_MTK_ETM
-    trace_stop_dormant();
-    trace_start_dormant();
-#endif
 	/* restore preempt state */
 	preempt_enable();
 }
