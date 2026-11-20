@@ -104,9 +104,7 @@
 
 #include "hal.h"
 
-#if defined(MT6620)
-    #include "mt6620_reg.h"
-#elif defined(MT6628)
+#if defined(MT6628)
 //    #include "mt6628_reg.h"
     #include "mt6582_reg.h"
 #endif
