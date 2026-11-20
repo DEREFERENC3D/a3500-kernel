@@ -33,9 +33,7 @@
 static struct fm *g_fm_struct = NULL;
 //we must get low level interface first, when add a new chip, the main effort is this interface
 static struct fm_lowlevel_ops fm_low_ops;
-#ifdef MT6627_FM
 static struct fm_lowlevel_ops MT6627fm_low_ops;
-#endif
 //mutex for char device ops
 static struct fm_lock *fm_ops_lock;
 //mutex for RDS parsing and read result
@@ -205,11 +203,9 @@ fm_s32 fm_open(struct fm *fmp)
 		}
 		else if ((chipid == 0x6572)||(chipid == 0x6582)||(chipid == 0x6592))
 		{
-#ifdef MT6627_FM
             fm_low_ops = MT6627fm_low_ops;
             fmp->chip_id = 0x6627;
             WCN_DBG(FM_NTC | MAIN, "get 6627 low ops\n");
-#endif
 		}
 		else if(chipid == 0x6630)
 		{
@@ -2271,21 +2267,11 @@ static fm_s32 fm_para_init(struct fm *fmp)
 fm_s32 fm_cust_config_setup(fm_s8 * filename)
 {
 	fm_s32 ret;
-#if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
-#ifdef MT6627_FM
 	ret = MT6627fm_cust_config_setup(filename);
 	if(ret < 0)
 	{
         WCN_DBG(FM_ERR | MAIN, "MT6627fm_cust_config_setup failed\n");
 	}
-#endif
-#else
-	fm_cust_config(filename);
-	if(ret < 0)
-	{
-        WCN_DBG(FM_ERR | MAIN, "fm_cust_config failed\n");
-	}
-#endif
 	return ret;
 }
 
@@ -2559,8 +2545,6 @@ fm_s32 fm_env_setup(void)
     fm_s32 ret = 0;
 
     WCN_DBG(FM_NTC | MAIN, "%s\n", __func__);
-#if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
-#ifdef MT6627_FM	
     //register call back functions
     ret = fm_callback_register(&MT6627fm_low_ops);
     if (ret) {
@@ -2579,30 +2563,6 @@ fm_s32 fm_env_setup(void)
         return ret;
     }
     WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
-#endif	
-#else 
-    //register call back functions
-    ret = fm_callback_register(&fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
-    //get low level functions
-    ret = fm_low_ops_register(&fm_low_ops);
-
-    if (ret) {
-        return ret;
-    }
-
-    WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
-    //get rds level functions
-    ret = fm_rds_ops_register(&fm_low_ops);
-
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
-#endif
 
     fm_ops_lock = fm_lock_create("ops_lock");
 
@@ -2670,49 +2630,26 @@ fm_s32 fm_env_destroy(void)
 
     fm_link_release();
 
-#if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
-#if defined(MT6627_FM)
-		//register call back functions
-		ret = fm_callback_unregister(&MT6627fm_low_ops);
-
-		if (ret) {
-			return -1;
-		}
-		//put low level functions
-		ret = MT6627fm_low_ops_unregister(&MT6627fm_low_ops);
-
-		if (ret) {
-			return -1;
-		}
-	
-		//put rds func
-		ret = MT6627fm_rds_ops_unregister(&MT6627fm_low_ops);
-	
-		if (ret) {
-			return -1;
-		}
-#endif
-#else
     //register call back functions
-    ret = fm_callback_unregister(&fm_low_ops);
+    ret = fm_callback_unregister(&MT6627fm_low_ops);
 
     if (ret) {
         return -1;
     }
     //put low level functions
-    ret = fm_low_ops_unregister(&fm_low_ops);
+    ret = MT6627fm_low_ops_unregister(&MT6627fm_low_ops);
 
     if (ret) {
         return -1;
     }
 
     //put rds func
-    ret = fm_rds_ops_unregister(&fm_low_ops);
+    ret = MT6627fm_rds_ops_unregister(&MT6627fm_low_ops);
 
     if (ret) {
         return -1;
     }
-#endif
+
     ret = fm_lock_put(fm_ops_lock);
 
     if (!ret)
