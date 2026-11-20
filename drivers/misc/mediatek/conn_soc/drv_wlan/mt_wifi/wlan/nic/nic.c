@@ -4277,9 +4277,7 @@ nicPrintFirmwareAssertInfo(
 
     aucAssertFile[6] = '\0';
 
-#if defined(MT6628)
     u4ChipId = 6582;
-#endif
 
     kalPrint("\n[MT%ld][wifi][Firmware] Assert at \"%s\" #%ld\n\n",
         u4ChipId,
