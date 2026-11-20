@@ -2079,18 +2079,6 @@ wlanSendCommand (
     //DbgPrint("wlanSendCommand()\n");
     //
     //
-#if DBG && 0
-    LOG_FUNC("wlanSendCommand()\n");
-    LOG_FUNC("CmdType %u NetworkType %u StaRecIndex %u Oid %u CID 0x%x SetQuery %u NeedResp %u CmdSeqNum %u\n",
-            prCmdInfo->eCmdType,
-            prCmdInfo->eNetworkType,
-            prCmdInfo->ucStaRecIndex,
-            prCmdInfo->fgIsOid,
-            prCmdInfo->ucCID,
-            prCmdInfo->fgSetQuery,
-            prCmdInfo->fgNeedResp,
-            prCmdInfo->ucCmdSeqNum);
-#endif
 
     do {
         // <0> card removal check
