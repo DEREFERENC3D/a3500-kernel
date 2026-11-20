@@ -554,79 +554,8 @@ DPI_STATUS DPI_Init_PLL(unsigned int mipi_pll_clk_ref,unsigned int mipi_pll_clk_
 {
     unsigned int reg_value = 0;
 
+    DPI_MIPI_clk_setting( mipi_pll_clk_ref,  mipi_pll_clk_div1, mipi_pll_clk_div2);
 
-DPI_MIPI_clk_setting( mipi_pll_clk_ref,  mipi_pll_clk_div1, mipi_pll_clk_div2);
-	
-//#ifndef BUILD_UBOOT
-#if 0
-	OUTREG32(DISPSYS_BASE + 0x34, 0x02);//set RDMA0 to DPI
-#if 0
-	//CG
-	OUTREG32(DISPSYS_BASE + 0x104, 0xffffffff);//set CG
-	OUTREG32(DISPSYS_BASE + 0x108, 0xffffffff);
-	OUTREG32(DISPSYS_BASE + 0x114, 0xffffffff);
-	OUTREG32(DISPSYS_BASE + 0x118, 0xffffffff);
-#endif
-	OUTREG32(DISP_MUTEX_BASE + 0x28, 0x01);//reset mutex
-	OUTREG32(DISP_MUTEX_BASE + 0x28, 0);
-	
-	OUTREG32(DISP_MUTEX_BASE + 0x2c, 0x80); //rdma0 is in the mutex
-	OUTREG32(DISP_MUTEX_BASE + 0x30, 0x2);  //dpi0 is the dst
-
-	OUTREG32(DISP_MUTEX_BASE + 0x24, 0x1);  //lock mutex0
-	
-	OUTREG32(DISP_MUTEX_BASE + 0, 0x1);  //lock mutex0
-	// OUTREG32(MUTEX_BASE + 0x4, 0x1);  //lock mutex0
-
-	while((INREG32(DISP_MUTEX_BASE + 0x24)&0x02)!=0x02){} // polling until mutex lock complete
-	
-	OUTREG32(DISPSYS_BASE + 0xC08, 0x01);//select DPI pin
-	OUTREG32(DISPSYS_BASE + 0x60, 0x8);// DPI src clock
-	
-	//RDMA0 setting
-	OUTREG32(RDMA0_BASE + 0x10, 0); //stop rdma0
-	
-	// width, height and format
-	OUTREG32(RDMA0_BASE + 0x14, lcm_params->width);
-	OUTREG32(RDMA0_BASE + 0x18, lcm_params->height);
-	
-	OUTREG32(RDMA0_BASE + 0x24, 0x40);//input format ARGB888
-#ifndef BUILD_UBOOT
-	OUTREG32(RDMA0_BASE + 0x28, FB_Addr);//input addr
-#else
-	OUTREG32(RDMA0_BASE + 0x28, mt65xx_get_fb_addr());//input addr
-#endif
-	OUTREG32(RDMA0_BASE + 0x2C, lcm_params->width*2);//input pitch
-	
-	OUTREG32(RDMA0_BASE + 0x30, 0x10101010);
-	OUTREG32(RDMA0_BASE + 0x40, 0x80f00008);
-	
-	OUTREG32(RDMA0_BASE + 0x50, 0);
-	OUTREG32(RDMA0_BASE + 0x54, 0);
-	OUTREG32(RDMA0_BASE + 0x58, 0);
-	OUTREG32(RDMA0_BASE + 0x5C, 0);
-	OUTREG32(RDMA0_BASE + 0x60, 0);
-	OUTREG32(RDMA0_BASE + 0x64, 0);
-	OUTREG32(RDMA0_BASE + 0x68, 0);
-	OUTREG32(RDMA0_BASE + 0x6C, 0);
-	OUTREG32(RDMA0_BASE + 0x70, 0);
-	OUTREG32(RDMA0_BASE + 0x74, 0);
-	OUTREG32(RDMA0_BASE + 0x78, 0);
-	OUTREG32(RDMA0_BASE + 0x7C, 0);
-	OUTREG32(RDMA0_BASE + 0x80, 0);
-	OUTREG32(RDMA0_BASE + 0x84, 0);
-	OUTREG32(RDMA0_BASE + 0x88, 0);
-	OUTREG32(RDMA0_BASE + 0x8C, 0);
-	
-	//start rdma
-	OUTREG32(RDMA0_BASE + 0x10, 0x03); //start + memory mode
-    
-    // dump register
-    
-    //release mutex0
-    // OUTREG32(MUTEX_BASE + 0x24, 0);
-    // while((INREG32(MUTEX_BASE + 0x24)&&0x02)!=0){} // polling until mutex lock complete
-#endif
 	return DPI_STATUS_OK;
 }
 
