@@ -18,20 +18,6 @@ config MTK_KERNEL_MARKER
             Mark the user-defined points, such as systrace events in
             user space, to visualize via systrace html files
 
-config FUNCTION_DURATION_TRACER
-        bool "Kernel Function Duration Tracer"
-        depends on FUNCTION_GRAPH_TRACER
-        help
-          Enable the kernel to record function durations, with
-          filtering.  Can also be used in early startup.
-          See Documentation/trace/func-duration.txt
-
-config MT65XX_TRACER
-        bool "MT65XX Tracer"
-        select CONTEXT_SWITCH_TRACER
-        select GENERIC_TRACER
-        default n
-
 config GENERIC_TRACER
         bool "Scheduler Switch Tracer"
 
@@ -42,13 +28,6 @@ config MTK_MET
     default n
     help
       The core module of MTK MET profiling tool
-
-config MTK_MET_PLF
-    tristate "MET platform-related driver"
-    depends on MTK_MET
-    default n
-    help
-      The platform module of MTK MET profiling tool
 
 endmenu
 
@@ -65,9 +44,6 @@ config MTPROF_CPUTIME
     depends on SCHEDSTATS
 
 endmenu
-
-config MTPROF_IRQ_DURATION
-    bool "mt IRQ/ISR profiling"
 
 config MTK_AEE_FEATURE
         tristate "Enable Android Exception Enhancement"
@@ -92,16 +68,6 @@ config MTK_AEE_DRAM_CONSOLE
        default n
        depends on MTK_AEE_FEATURE
 
-config MTK_AEE_DRAM_CONSOLE_ADDR
-       hex "MTK RAM console dram address"
-       default 0
-       depends on MTK_AEE_DRAM_CONSOLE
-
-config MTK_AEE_DRAM_CONSOLE_SIZE
-       hex "MTK RAM console dram size"
-       default 65536
-       depends on MTK_AEE_DRAM_CONSOLE
-
 config ANDROID_VMEM
 	tristate "Virutally continuous memory allocator"
 	default y
@@ -110,11 +76,6 @@ config CPUTIME_SUPPORT
 	bool "cputime profiling support for functions"
 	default n
 
-config CPUTIME_STATS
-	tristate "cputime profiling module for functions"
-	select CPUTIME_SUPPORT
-	default n
-	
 config MTK_RAM_CONSOLE
 	bool "mt ram console"     
         
@@ -146,29 +107,8 @@ config MTK_RAM_CONSOLE_DRAM_ADDR
 	default 0
 	depends on MTK_RAM_CONSOLE           
 
-config PREEMPT_MONITOR
-	bool "mt preempt monitor"
-	default n
-
-config ISR_MONITOR
-	bool "mt ISR monitor"
-	default n
-
 config MT_SCHED_MONITOR
 	bool "mt scheduler monitor"
-	default n
-
-config MT_CHRDEV_REG
-	bool "mt char driver number table"
-	default n
-
-config MT_LOCK_DEBUG
-	bool "Record lock table and detect some possible deadlock"
-	default n
-
-config MT_DEBUG_MUTEXES
-	bool "show mutex owner info"
-    depends on DEBUG_MUTEXES 
 	default n
 
 config PRINTK_PROCESS_INFO 
@@ -194,29 +134,14 @@ config EARLY_LINUX_PORTING
        default n
        help
 
-config MTK_MCI
-       bool "Support For Memory coherence"
-       default n
-       help
-
 config MTK_ETM
        bool "Support For Embedded Trace Macrocell"
-       default y
-       help
-
-config MTK_PAGERECORDER
-       bool "Support page allocation tracer"
        default y
        help
 
 config MTK_ION_DEBUG
        bool "Support ion debugger"
        default y
-       help
-
-config MTK_NET_LOGGING
-       bool "support mtk_net logging"
-       default n
        help
 
 menu "MT load balance and schedule enhancement"
@@ -232,8 +157,6 @@ config MT_LOAD_BALANCE_PROFILER
 	bool "mt load balance profiler"
 	depends on SCHEDSTATS && SMP
 	
-config MT_SCHED_DEBUG_ONLY
-        bool "mt scheduler debug only"
 endmenu
 
 config MTK_CIRQ
@@ -247,22 +170,9 @@ config MTK_HIBERNATION
         default y
         help
 
-config MT_PRIO_TRACER
-       bool "Record priority changes"
-       default n
-       help
-         Export device node under debugfs/prio_tracer
-
 config MTK_WQ_DEBUG
        bool "mtk workqueue debug"
        default n
-
-config MTK_SCHED_RQAVG_US
-       bool "Enable runqueue staticsic calculation used in user space operation"
-       depends on SMP
-       default n
-       help
-        TLP estimation for user space CPUfreq governors
 
 config MTK_SCHED_RQAVG_KS
        bool "Enable runqueue staticsic calculation used in kernel space operation"
@@ -270,10 +180,6 @@ config MTK_SCHED_RQAVG_KS
        default n
        help
         TLP estimation for kernel space CPUfreq governors, e.g., hotplug
-
-config MTK_STORAGE_PID_LOGGER
-    bool "support MTK storage pid logger"
-    default y
 
 config L1C_OPT
     bool "L1C OPT"
@@ -284,9 +190,3 @@ config VFP_OPT
     default y
 endmenu
 
-config GATOR_DRIVER
-    tristate "DS-5 profiling tool kernel driver"
-    depends on GENERIC_TRACER && TRACING && PROFILING && HIGH_RES_TIMERS
-    default n
-    help
-     kernel driver of DS-5 profiling tool

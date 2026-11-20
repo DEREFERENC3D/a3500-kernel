@@ -65,23 +65,6 @@ config MOBICORE_DEBUG
       Enable Debug mode in the MobiCore Driver.
       It enables printing information about mobicore operations
 
-config MOBICORE_VERBOSE
-    bool "MobiCore Module verbose debug mode"
-    depends on MOBICORE_DEBUG
-    default n
-    ---help---
-      Enable Verbose Debug mode in the MobiCore Driver.
-      It enables printing extra information about mobicore operations
-      Beware: this is only useful for debuging deep in the driver because
-      it prints too much logs
-
-config MOBICORE_API
-    tristate "Linux MobiCore API"
-    depends on MOBICORE_DRIVER
-    default n
-    ---help---
-      Enable Linux Kernel MobiCore API	  
-
 config MTK_SEC_VIDEO_PATH_SUPPORT
 	bool "Enable MTK Secure Video Path Support"
 	depends on (MTK_IN_HOUSE_TEE_SUPPORT) || (TRUSTONIC_TEE_SUPPORT)
@@ -94,11 +77,6 @@ source "arch/arm/mach-mt6582/Kconfig"
 source "drivers/misc/mediatek/Kconfig.drivers"
 
 endif
-
-config MTK_THERMAL_STATUS_COLLECTION
-        bool "MTK Thermal Status Information Collection"
-        default n
-
 
 config MD32_SUPPORT
 	bool "Specifiy If Platform Support MD32"

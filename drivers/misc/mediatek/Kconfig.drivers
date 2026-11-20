@@ -8,71 +8,6 @@ menuconfig MTK_LDVT
 
 if MTK_LDVT
 
-config MTK_LDVT_ADC
-        bool "MediaTek ADC driver for LDVT"
-        default y
-        ---help---
-          MediaTek ADC driver for LDVT
-
-config MTK_LDVT_ADC_TS
-        bool "MediaTek ADC_TS driver for LDVT"
-        default y
-        ---help---
-
-config MTK_LDVT_GPT
-        bool "MediaTek GPT driver for LDVT"
-        default y
-        ---help---
-          MediaTek GPT driver for LDVT
-
-config MTK_LDVT_KP
-        bool "MediaTek KP driver for LDVT"
-        default y
-        ---help---
-          MediaTek KP driver for LDVT
-
-config MTK_LDVT_I2C
-        bool "MediaTek I2C driver for LDVT"
-        default y
-        ---help---
-          MediaTek I2C driver for LDVT
-
-config MTK_LDVT_IRDA
-        bool "MediaTek IrDA driver for LDVT"
-        default y
-        ---help---
-          MediaTek IrDA driver for LDVT
-
-config MTK_LDVT_MSDC
-        bool "MediaTek MSDC driver for LDVT"
-        default y
-        ---help---
-          MediaTek MSDC driver for LDVT
-
-config MTK_LDVT_UART
-        bool "MediaTek UART driver for LDVT"
-        default y
-        ---help---
-          MediaTek UART driver for LDVT
-
-config MTK_LDVT_PWM
-        bool "MediaTek PWM driver for LDVT"
-        default y
-        ---help---
-          MediaTek PWM driver for LDVT
-
-config MTK_LDVT_SPI
-        bool "MediaTek SPI driver for LDVT"
-        default y
-        ---help---
-          MediaTek SPI driver for LDVT
-
-config MTK_LDVT_PMIC
-        bool "MediaTek PMIC driver for LDVT"
-        default y
-        ---help---
-          MediaTek PMIC driver for LDVT          
-
 config MTK_LDVT_PMIC_WRAP
         bool "MediaTek PMIC_WRAP driver for LDVT"
         default y
@@ -177,10 +112,6 @@ config NFC_MT6605
         tristate "MediaTek NFC driver"
         default n
 
-config NFC_MSR3110
-	tristate "MSR3110 NFC driver"
-	default n
-	
 endif # NFC
 
 config MTK_BTIF
@@ -303,11 +234,6 @@ config MOUSE_PANASONIC_EVQWJN
           Say Y here if you have Panasonic EVQWJN Jogball
           If unsure, say N.
 
-config MOUSE_AVAGOTECH_A320
-        bool "Avagotech ADBS-A320 driver"
-        ---help---
-          Say Y here if you have ADBS-A320 device, which is a Optical Finger Navigation device
-          If unsure, say N.
 endmenu
 # endif
 
@@ -437,8 +363,6 @@ config USB_MTK_DEBUG_FS
         tristate "MediaTek MUSB Debug FS support"
 	depends on DEBUG_FS
         
-config USB_MTK_DEBUG
-         tristate "MediaTek MUSB Debug support"      
 config USB_MTK_HDRC_HCD
          tristate "MediaTek MUSB Debug support"         
 
@@ -460,9 +384,6 @@ config AMPC_CDEV_NUM
 endmenu
 config ION_MTK
         bool "Mediatek ION Memory Manager"
-config MMPROFILE
-        bool "MMProfile Support"
-
 config MTK_STAGING
 	bool "Select which staging drivers you want"
 	depends on SWAP
@@ -482,13 +403,5 @@ menuconfig PWR_LOSS_MTK_TEST
          If unsure, say N.
 
 if PWR_LOSS_MTK_TEST
-config PWR_LOSS_MTK_DEBUG
-        bool "Debugging"
-        help
-         Say Y here if you want turns on low-level debugging
-         If unsure, say N.
 endif 
 
-config MISC_VIA
-        bool "VIATEL MISC and SDIO driver"
-        default n   

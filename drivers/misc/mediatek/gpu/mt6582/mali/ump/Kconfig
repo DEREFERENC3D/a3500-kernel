@@ -7,10 +7,3 @@ config UMP
 	  To compile this driver as a module, choose M here: the module will be
 	  called ump.
 
-config UMP_DEBUG
-	bool "Enable extra debug in UMP"
-	depends on UMP
-	default y
-	---help---
-	  This enabled extra debug checks and messages in UMP.
-
