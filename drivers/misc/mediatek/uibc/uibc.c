@@ -439,8 +439,8 @@ static int uibc_kbd_dev_open(struct inode *inode, struct file *file) {
 
     xlog_printk(ANDROID_LOG_INFO, UIBC_TAG, "*** uibckeyboard uibc_kbd_dev_open ***\n");
 
-    TPD_RES_X = simple_strtoul(LCM_WIDTH, NULL, 0);
-    TPD_RES_Y = simple_strtoul(LCM_HEIGHT, NULL, 0);
+    TPD_RES_X = simple_strtoul(CONFIG_LCM_WIDTH, NULL, 0);
+    TPD_RES_Y = simple_strtoul(CONFIG_LCM_HEIGHT, NULL, 0);
 
     uibckbd = kzalloc(sizeof(struct uibckeyboard), GFP_KERNEL);
     uibc_input_dev = input_allocate_device();

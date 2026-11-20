@@ -10,7 +10,7 @@
 
 #define DATA_FREE_SIZE_TH_NAME "data_free_size_th"
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 extern int eMMC_rw_x(loff_t addr,u32  *buffer, int host_num, int iswrite,u32 totalsize, int transtype, Region part);
 #endif
 
@@ -497,7 +497,7 @@ write_env:
 EXPORT_SYMBOL(set_env);
 static int write_env_area(char *env_buf)
 {
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 	int reval;
 #endif
 	int i,checksum = 0;
@@ -512,7 +512,7 @@ static int write_env_area(char *env_buf)
 
 	*((int *)env_buf+CFG_ENV_CHECKSUM_OFFSET/4) = checksum;
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 #ifdef MTK_NEW_COMBO_EMMC_SUPPORT 
     reval = eMMC_rw_x((loff_t)env_addr,(u32*)env_buf,0,1,CFG_ENV_SIZE,1,EMMC_PART_USER);
 #else
@@ -528,7 +528,7 @@ static int write_env_area(char *env_buf)
 
 static int read_env_area(char *env_buf)
 {
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 	int reval;
 #ifdef MTK_NEW_COMBO_EMMC_SUPPORT 
 	reval = eMMC_rw_x((loff_t)env_addr,(u32*)env_buf,0,0,CFG_ENV_SIZE,1,EMMC_PART_USER);

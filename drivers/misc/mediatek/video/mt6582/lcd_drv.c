@@ -88,7 +88,7 @@ static unsigned int vsync_timer = 0;
 		{\
 		MASKREG32(addr, mask, data);}
 
-#if defined(MTK_M4U_SUPPORT)
+#if defined(CONFIG_MTK_M4U_SUPPORT)
 #ifdef MTK_LCDC_ENABLE_M4U
 #undef MTK_LCDC_ENABLE_M4U
 #endif
@@ -1478,7 +1478,7 @@ void LCD_DumpLayer()
 }
 
 
-#if !defined(MTK_M4U_SUPPORT)
+#if !defined(CONFIG_MTK_M4U_SUPPORT)
 #ifdef BUILD_UBOOT
 static unsigned long v2p(unsigned long va)
 {
@@ -1688,7 +1688,7 @@ LCD_STATUS LCD_Change_WriteCycle(LCD_IF_ID id, unsigned int write_cycle)
     return LCD_STATUS_OK;  
 }
 
-#if defined(MTK_M4U_SUPPORT)
+#if defined(CONFIG_MTK_M4U_SUPPORT)
 LCD_STATUS LCD_InitM4U()
 {
 #ifdef MTK_LCDC_ENABLE_M4U

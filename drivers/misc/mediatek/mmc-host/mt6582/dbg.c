@@ -585,7 +585,7 @@ static int sd_multi_rw_compare_slave(int host_num, int read, uint address)
 
 	mmc_claim_host(host_ctl->mmc);
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
     if (host_ctl->hw->host_function == MSDC_EMMC) {
         mmc_send_ext_csd(host_ctl->mmc->card, l_buf);
 
@@ -780,7 +780,7 @@ static int emmc_multi_rw_compare_slave(int host_num, int read, uint address)
 
 	mmc_claim_host(host_ctl->mmc);
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
     if (host_ctl->hw->host_function == MSDC_EMMC) {
         mmc_send_ext_csd(host_ctl->mmc->card, l_buf);
 
@@ -1698,7 +1698,7 @@ static int msdc_debug_proc_write(struct file *file, const char *buf, unsigned lo
                
 		if(id == 0) //for msdc0
 		{
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 		   sd_multi_rw_compare(0, COMPARE_ADDRESS_MMC, compare_count);//test the address 0 of eMMC card, since there a little memory.
 #else
 		   sd_multi_rw_compare(0, COMPARE_ADDRESS_SD, compare_count); //test a larger address of SD card

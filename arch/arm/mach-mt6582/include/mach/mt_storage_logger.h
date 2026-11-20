@@ -196,7 +196,7 @@ enum logger_type
 	LOGGER_TYPE_END
 };
 
-#ifndef USER_BUILD_KERNEL//engineering mode
+#ifndef CONFIG_USER_BUILD_KERNEL//engineering mode
 
 #define CREATE_PROC_ENTRY(proc,x,y,z,o) proc = proc_create(x,y,z,o)
 

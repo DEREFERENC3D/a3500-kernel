@@ -156,7 +156,7 @@ extern int IMM_GetOneChannelValue_Cali(int Channel, int*voltage);
 kal_uint32 g_fg_battery_id = 0;
 
 #ifdef MTK_GET_BATTERY_ID_BY_AUXADC
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 void fgauge_get_profile_id(void)
 {
 	int id_volt = 0;
@@ -243,7 +243,7 @@ void fgauge_get_profile_id(void)
 // ============================================================ //
 // extern variable
 // ============================================================ //
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 extern unsigned int UbVbat;
 #endif
 
@@ -261,7 +261,7 @@ int get_r_fg_value(void)
     return (R_FG_VALUE+CUST_R_FG_OFFSET);
 }
 #ifdef MTK_MULTI_BAT_PROFILE_SUPPORT
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 int BattThermistorConverTemp(int Res)
 {
     int i=0;
@@ -889,7 +889,7 @@ int force_get_tbat(void)
 EXPORT_SYMBOL(force_get_tbat);
 
 #ifdef MTK_MULTI_BAT_PROFILE_SUPPORT
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 int fgauge_get_saddles(void)
 {
     return sizeof(battery_profile_temperature) / sizeof(BATTERY_PROFILE_STRUC);
@@ -1766,7 +1766,7 @@ void oam_init(void)
     ret = battery_meter_ctrl(BATTERY_METER_CMD_GET_ADC_V_BAT_SENSE, &vol_bat);
     ret = battery_meter_ctrl(BATTERY_METER_CMD_GET_HW_OCV, &gFG_voltage);
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	if(abs(UbVbat-gFG_voltage) > 100)
 	{
 		bm_print(BM_LOG_CRTI,"~~Set hw_ocv(%d) to UbVbat(%d) \n ",gFG_voltage,UbVbat);
@@ -1859,7 +1859,7 @@ void oam_run(void)
 	
 	last_oam_run_time = now_time;
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	bm_print(BM_LOG_CRTI,"~~UbVbat: %d \n ",UbVbat);
 #endif
 

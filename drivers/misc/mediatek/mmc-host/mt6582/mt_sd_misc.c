@@ -38,7 +38,7 @@
 #include <linux/fs.h>
 #include <asm/uaccess.h>
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 #include "partition_define.h"
 
 //extern struct excel_info PartInfoEmmc[PART_NUM];
@@ -774,7 +774,7 @@ static int simple_sd_ioctl_sd30_mode_switch(struct msdc_ioctl* msdc_ctl)
 
 	}
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
                               // just for emmc slot 
                               if (msdc_ctl->host_num == 0){
                                   g_emmc_mode_switch = 1;
@@ -880,7 +880,7 @@ int msdc_get_info(STORAGE_TPYE storage_type,GET_STORAGE_INFO info_type,struct st
 			info->emmc_capacity = msdc_get_capacity(1);
 			break;
 		case EMMC_RESERVE:
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 			info->emmc_reserve = msdc_get_reserve();
 #endif
 			break;
@@ -891,7 +891,7 @@ int msdc_get_info(STORAGE_TPYE storage_type,GET_STORAGE_INFO info_type,struct st
 	return 1;
 }
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static int simple_mmc_get_disk_info(struct mbr_part_info* mpi, unsigned char* name)
 {
     int i = 0;
@@ -992,7 +992,7 @@ end:
 
 static int simple_mmc_erase_partition(unsigned char* name)
 {
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
     struct mbr_part_info mbr_part;
     int l_ret = -1;
 

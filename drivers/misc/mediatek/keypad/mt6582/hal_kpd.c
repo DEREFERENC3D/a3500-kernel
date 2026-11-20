@@ -415,7 +415,7 @@ void long_press_reboot_function_setting(void)
 #ifdef KPD_PMIC_LPRST_TD
 		kpd_print("Enable normal mode LPRST\n");
 	#ifdef ONEKEY_REBOOT_NORMAL_MODE
-	#if defined(SLT_DRV_P3550_CONFIG)
+	#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 		upmu_set_rg_pwrkey_rst_en(0x00);
 		upmu_set_rg_fchr_pu_en(0x01);
 		upmu_set_rg_homekey_rst_en(0x01);

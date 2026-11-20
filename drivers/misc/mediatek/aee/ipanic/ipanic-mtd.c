@@ -14,7 +14,7 @@
  *
  */
 
-#ifndef MTK_EMMC_SUPPORT
+#ifndef CONFIG_MTK_EMMC_SUPPORT
 
 #include <generated/autoconf.h>
 #include <linux/module.h>

@@ -111,7 +111,7 @@ unsigned int Cust_SetBacklight(int level, int div)
  *By default, clock_source = 0 and div = 0 => PWM freq. = 26 KHz 
  *-------------------------------------------------------------------------------------------
  */
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	int captouch_test(unsigned int level)
 	{
 		printk("captouch_test");
@@ -141,7 +141,7 @@ static struct cust_mt65xx_led cust_led_list[MT65XX_LED_TYPE_TOTAL] = {
 	{"keyboard-backlight",MT65XX_LED_MODE_NONE, -1,{0}},
 	{"button-backlight",  MT65XX_LED_MODE_NONE, -1,{0}},
 	{"lcd-backlight",     MT65XX_LED_MODE_CUST_BLS_PWM, (int)disp_bls_set_backlight,{0,1,0,0,0}},
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	{"captouch",     MT65XX_LED_MODE_GPIO, (int)captouch_test,{0}},
 #endif
 };

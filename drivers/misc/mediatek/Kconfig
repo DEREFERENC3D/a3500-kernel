@@ -75,6 +75,7 @@ config MTK_SEC_VIDEO_PATH_SUPPORT
 source "drivers/misc/mediatek/Kconfig.kernel"
 source "arch/arm/mach-mt6582/Kconfig"
 source "drivers/misc/mediatek/Kconfig.drivers"
+source "drivers/misc/mediatek/Kconfig.buildflags"
 
 endif
 

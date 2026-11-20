@@ -40,7 +40,7 @@ static struct dumchar_dev *dumchar_devices; /* store all dum char info,  allocat
 static struct proc_dir_entry *dumchar_proc_entry=NULL;
 struct excel_info *PartInfo;
 EXPORT_SYMBOL(PartInfo);
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 
 extern int simple_sd_ioctl_rw(struct msdc_ioctl* msdc_ctl);
 //extern int read_pmt(void __user *arg);
@@ -61,7 +61,7 @@ extern struct mtd_info *__mtd_next_device(int i);
 
 
 int IsEmmc(void){
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 		return 1;
 #else
 		return 0;
@@ -69,7 +69,7 @@ int IsEmmc(void){
 }
 
 EXPORT_SYMBOL(IsEmmc);
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static int init_sd_cmd(struct msdc_ioctl * cmd,loff_t addr,
 						u32 __user *buffer, int host_num, int iswrite,
 						u32 totalsize, int transtype, Region part)
@@ -131,7 +131,7 @@ static int init_sd_cmd(struct msdc_ioctl * cmd,loff_t addr,
 
 }
 #endif
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 
 int eMMC_rw_x(loff_t addr,u32  *buffer, int host_num, int iswrite,u32 totalsize, int transtype, Region part)
 {
@@ -169,7 +169,7 @@ int eMMC_rw_x(loff_t addr,u32  *buffer, int host_num, int iswrite,u32 totalsize,
 }
 EXPORT_SYMBOL(eMMC_rw_x);
 
-#if defined(MTK_EMMC_SUPPORT)
+#if defined(CONFIG_MTK_EMMC_SUPPORT)
 #include <linux/syscalls.h>
 
 void emmc_create_sys_symlink (struct mmc_card *card)
@@ -209,14 +209,14 @@ void emmc_create_sys_symlink (struct mmc_card *card)
 
 }
 
-#endif /* MTK_EMMC_SUPPORT */
+#endif /* CONFIG_MTK_EMMC_SUPPORT */
 
 
 
 
 
 #endif
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static ssize_t sd_single_read(struct file *filp,char __user *buf,size_t count,loff_t addr,Region part)
 {
 	struct file_obj *fo = filp->private_data;
@@ -367,7 +367,7 @@ ssize_t dumchar_read (struct file *filp, char __user *buf, size_t count,loff_t *
 	struct file_obj *fo = filp->private_data;
 	struct dumchar_dev *dev =dumchar_devices+fo->index;
 	ssize_t result=0;
-	#ifdef MTK_EMMC_SUPPORT
+	#ifdef CONFIG_MTK_EMMC_SUPPORT
 	loff_t pos=0;	
 	#endif
 	if(fo->act_filp == (struct file *)0xffffffff){
@@ -383,7 +383,7 @@ ssize_t dumchar_read (struct file *filp, char __user *buf, size_t count,loff_t *
 	}
 		
 	if(dev->type == EMMC){
-	#ifdef MTK_EMMC_SUPPORT
+	#ifdef CONFIG_MTK_EMMC_SUPPORT
 		pos = *f_pos+dev->start_address;
 		switch(dev->region){
 			case EMMC_PART_USER:
@@ -405,7 +405,7 @@ ssize_t dumchar_read (struct file *filp, char __user *buf, size_t count,loff_t *
 	}
 	return result;	
 }
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static ssize_t sd_single_write(struct file *filp,const char __user *buf,size_t count,loff_t addr,Region part)
 {
 	struct file_obj *fo = filp->private_data;
@@ -471,7 +471,7 @@ ssize_t dumchar_write (struct file *filp, const char __user *buf, size_t count,l
 	struct file_obj *fo = filp->private_data;
 	struct dumchar_dev *dev =dumchar_devices + fo->index;
 	ssize_t result=0;
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 	loff_t pos=0;
 #endif
 #ifdef MTK_COMBO_NAND_SUPPORT
@@ -519,7 +519,7 @@ ssize_t dumchar_write (struct file *filp, const char __user *buf, size_t count,l
 	}
 		
 	if(dev->type == EMMC){
-	#ifdef MTK_EMMC_SUPPORT
+	#ifdef CONFIG_MTK_EMMC_SUPPORT
 		pos = *f_pos+dev->start_address;
 		switch(dev->region){
 			case EMMC_PART_USER:
@@ -547,7 +547,7 @@ static long dumchar_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 	struct file_obj *fo = filp->private_data;
 	struct dumchar_dev *dev =dumchar_devices + fo->index;
 	long result=0;
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 	long i;
 	struct mtd_info_user info;
 	struct erase_info_user erase_info;
@@ -578,7 +578,7 @@ static long dumchar_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 			result= fo->act_filp->f_op->compat_ioctl( fo->act_filp, cmd, arg);
 		}
 	}else{
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 		size = (cmd & IOCSIZE_MASK) >> IOCSIZE_SHIFT;
 		if (cmd & IOC_IN) {
 			if (!access_ok(VERIFY_READ, argp, size))
@@ -728,7 +728,7 @@ static int dumchar_proc_read(char *page, char **start, off_t off,int count, int 
 	len += sprintf(page+len, "Part_Name\tSize\tStartAddr\tType\tMapTo\tRegion\n");
                      
 	for(i=0;i<PART_NUM;i++){
-		#ifndef MTK_EMMC_SUPPORT
+		#ifndef CONFIG_MTK_EMMC_SUPPORT
 			switch(dumchar_devices[i].region){
 			case NAND_PART_USER:
 				region="USER";
@@ -910,7 +910,7 @@ kfree(fo);
 	return result;	
 }
 
-#ifndef MTK_EMMC_SUPPORT 
+#ifndef CONFIG_MTK_EMMC_SUPPORT 
 #include <linux/syscalls.h>
 
 int mtd_create_symlink(void)
@@ -966,7 +966,7 @@ int dumchar_probe(struct platform_device * dev)
 #ifdef CONFIG_MTK_MTD_NAND
 	struct mtd_info *mtd;
 #endif
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 	struct storage_info s_info = {0};
 	//struct msdc_host *host_ctl;
 	printk("[Dumchar_probe]*******************Introduction******************\n");
@@ -1017,7 +1017,7 @@ int dumchar_probe(struct platform_device * dev)
 		dumchar_devices[i].type = PartInfo[i].type;
 
 		if(dumchar_devices[i].type == EMMC){
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 			
 			dumchar_devices[i].region = PartInfo[i].region;
 			switch(dumchar_devices[i].region){
@@ -1043,7 +1043,7 @@ int dumchar_probe(struct platform_device * dev)
 			if(!strcmp(PartInfo[i].name,"fat")){
 				dumchar_devices[i].size = s_info.emmc_user_capacity * 512 - dumchar_devices[i].start_address - s_info.emmc_reserve * 512;
 			}
-	#ifdef MTK_SHARED_SDCARD
+	#ifdef CONFIG_MTK_SHARED_SDCARD
 			if(!strcmp(PartInfo[i].name,"usrdata")){
 				dumchar_devices[i].size = s_info.emmc_user_capacity * 512 - dumchar_devices[i].start_address - s_info.emmc_reserve * 512;
 			}

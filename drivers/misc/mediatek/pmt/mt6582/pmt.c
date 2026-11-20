@@ -39,7 +39,7 @@
 #define CONFIG_PMT_ENABLE
 
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 struct DM_PARTITION_INFO_x {
     char part_name[MAX_PARTITION_NAME_LEN];     /* the name of partition */
     unsigned long long start_addr;              /* the start address of partition */
@@ -663,7 +663,7 @@ static int update_msdos_partition(pt_resident *new_part, int *pt_change_tb)
     return err;
 }
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static int __update_disk_info(unsigned int px, unsigned int start, unsigned int size)
 {
     int found;

@@ -53,7 +53,7 @@
 //#include <mach/upmu_hw.h>
 #include <mach/mt_typedefs.h>
 #include <mach/mt_pmic_wrap.h>
-#if defined MTK_KERNEL_POWER_OFF_CHARGING
+#if defined CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
 #include <mach/system.h>
 #include <mach/mt_boot.h>
 #endif
@@ -322,7 +322,7 @@ void rtc_mark_recovery(void)
 	hal_rtc_mark_mode("recv");
 	spin_unlock_irqrestore(&rtc_lock, flags);
 }
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 void rtc_mark_kpoc(void)
 {
 	unsigned long flags;
@@ -412,7 +412,7 @@ static void rtc_handler(void)
 		time = mktime(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
 		if (now_time >= time - 1 && now_time <= time + 4) {	/* power on */
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 			if(g_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT || g_boot_mode == LOW_POWER_OFF_CHARGING_BOOT)
 			{
 				time += 1;

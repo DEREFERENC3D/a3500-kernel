@@ -13,13 +13,13 @@
 //#define CONFIG_DIS_CHECK_BATTERY
 //#define FIXED_TBAT_25
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 #define MTK_MULTI_BAT_PROFILE_SUPPORT
 #define MTK_GET_BATTERY_ID_BY_AUXADC
 #endif
 
 #if defined(MTK_NCP1851_SUPPORT) \
-    || defined(MTK_BQ24196_SUPPORT)\
+    || defined(CONFIG_MTK_BQ24196_SUPPORT)\
     || defined(MTK_NCP1854_SUPPORT) \
     || defined(MTK_BQ24296_SUPPORT)
 #define BAT_VOL_USE_ISENSE
@@ -93,7 +93,7 @@
 #define Q_MAX_NEG_10_H_CURRENT	3865
 #endif
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 /* Discharge Percentage */
 #define OAM_D5		 0		//  1 : D5,   0: D2
 #else

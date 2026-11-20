@@ -75,7 +75,7 @@
  // ============================================================ //
  //extern function
  // ============================================================ //
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 extern void bq24196_set_en_hiz(kal_uint32 val);
 #endif
 
@@ -395,7 +395,7 @@ void select_charging_curret(void)
         } 
         else if (BMT_status.charger_type == STANDARD_CHARGER) 
         {
-        #if defined(SLT_DRV_P3550_CONFIG)
+        #if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 		// (10, 45] 0.5C(1770mA); (0, 10] or (45, 50] 0.3C(1062mA); 1C=3540mAh
 		if ((BMT_status.temperature>10) && (BMT_status.temperature<=45))
 		{
@@ -665,7 +665,7 @@ PMU_STATUS BAT_BatteryStatusFailAction(void)
 	charging_enable = KAL_FALSE;
 	battery_charging_control(CHARGING_CMD_ENABLE,&charging_enable);
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	bq24196_set_en_hiz(0x1);
 #endif
 

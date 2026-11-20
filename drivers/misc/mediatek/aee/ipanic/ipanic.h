@@ -6,7 +6,7 @@
 #include <linux/xlog.h>
 #include <linux/kmsg_dump.h>
 //#include "partition_define.h"
-#include "../../../../../../kernel/drivers/staging/android/logger.h"
+#include "../../../../staging/android/logger.h"
 #include "ipanic_version.h"
 
 #define AEE_IPANIC_PLABEL "expdb"
@@ -55,7 +55,7 @@ struct ipanic_header {
 	u32 mini_rdump_length;
 };
 
-#ifndef MTK_EMMC_SUPPORT
+#ifndef CONFIG_MTK_EMMC_SUPPORT
 struct mtd_ipanic_data {
 	struct mtd_info	*mtd;
 	struct ipanic_header curr;

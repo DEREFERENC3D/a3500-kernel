@@ -81,7 +81,7 @@ void kpd_pmic_rstkey_handler(unsigned long pressed);
 //#define TWOKEY_REBOOT_NORMAL_MODE
 #define ONEKEY_REBOOT_OTHER_MODE
 //#define TWOKEY_REBOOT_OTHER_MODE
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 #define KPD_PMIC_RSTKEY_MAP KEY_RESET
 #define KPD_PMIC_LPRST_TD 3 /* timeout period. 0: 7sec; 1: 11sec; 2: 14sec; 3: 5sec */
 #else

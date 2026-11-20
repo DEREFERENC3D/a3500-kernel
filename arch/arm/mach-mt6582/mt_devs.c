@@ -690,7 +690,7 @@ static struct platform_device mt_hid_dev = {
 /* UIBC input device, add by Seraph                                      */
 /*=======================================================================*/
 
-#if defined(MTK_WFD_SUPPORT)
+#if defined(CONFIG_MTK_WFD_SUPPORT)
 static struct platform_device mt_uibc_dev = {
     .name = "uibc",
     .id   = -1,
@@ -1164,7 +1164,7 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
         }
     }
 
-#ifdef MTK_TABLET_PLATFORM
+#ifdef CONFIG_MTK_TABLET_PLATFORM
     struct machine_desc *mdesc = NULL;
     for_each_machine_desc(mdesc)
       if (6582 == mdesc->nr)
@@ -1462,7 +1462,7 @@ static struct platform_device mt_extmem = {
 /* MT6582 Board Device Initialization                                    */
 /* Sim switch driver                                                         */
 /*=======================================================================*/
-#if defined (CUSTOM_KERNEL_SSW)
+#if defined (CONFIG_CUSTOM_KERNEL_SSW)
 static struct platform_device ssw_device = {	
 	.name = "sim-switch",	
 	.id = -1};
@@ -1547,7 +1547,7 @@ __init int mt_board_init(void)
 	}
 #endif
 
-#if defined(MTK_WFD_SUPPORT)
+#if defined(CONFIG_MTK_WFD_SUPPORT)
 	retval = platform_device_register(&mt_uibc_dev);
 	if (retval != 0){
 		return retval;
@@ -1796,7 +1796,7 @@ if (retval != 0) {
 #endif
 
 
-#if defined(MTK_SENSOR_SUPPORT)
+#if defined(CONFIG_MTK_SENSOR_SUPPORT)
 
 	retval = platform_device_register(&hwmon_sensor);
 	printk("hwmon_sensor device!");
@@ -1813,7 +1813,7 @@ if (retval != 0) {
 	if (retval != 0)
 		return retval;
 
-#if defined(CUSTOM_KERNEL_ACCELEROMETER)
+#if defined(CONFIG_CUSTOM_KERNEL_ACCELEROMETER)
 	retval = platform_device_register(&sensor_gsensor);
 		printk("sensor_gsensor device!");
 	if (retval != 0)
@@ -1847,7 +1847,7 @@ if (retval != 0) {
 		return retval;
 #endif
 
-#if defined(CUSTOM_KERNEL_ALSPS)
+#if defined(CONFIG_CUSTOM_KERNEL_ALSPS)
 	retval = platform_device_register(&sensor_alsps);
 		printk("sensor_alsps device!");
 	if (retval != 0)
@@ -2039,7 +2039,7 @@ retval = platform_device_register(&dummychar_device);
 	}
 //#endif
 
-#if defined (CUSTOM_KERNEL_SSW)	
+#if defined (CONFIG_CUSTOM_KERNEL_SSW)	
 	retval = platform_device_register(&ssw_device);    
 	if (retval != 0) {        
 		return retval;    

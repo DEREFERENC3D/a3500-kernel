@@ -582,7 +582,7 @@ static fm_s32 mt6627_PowerUp(fm_u16 *chip_id, fm_u16 *device_id)
         return ret;
     }
 
-//#ifdef FM_DIGITAL_INPUT
+//#ifdef CONFIG_FM_DIGITAL_INPUT
     //mt6627_I2s_Setting(MT6627_I2S_ON, MT6627_I2S_MASTER, MT6627_I2S_44K);
    // mt_combo_audio_ctrl(COMBO_AUDIO_STATE_2);
     //mtk_wcn_cmb_stub_audio_ctrl((CMB_STUB_AIF_X)CMB_STUB_AIF_2);
@@ -717,7 +717,7 @@ static fm_s32 mt6627_PowerDown(void)
 
     mt6627_RampDown();
 
-//#ifdef FM_DIGITAL_INPUT
+//#ifdef CONFIG_FM_DIGITAL_INPUT
 //    mt6627_I2s_Setting(MT6627_I2S_OFF, MT6627_I2S_SLAVE, MT6627_I2S_44K);
 //#endif
 	//pwer up sequence 0425

@@ -38,7 +38,7 @@ MUINT32 mainStrobeInit_2ndPart_2(PFLASHLIGHT_FUNCTION_STRUCT *pfFunc);
 KD_FLASHLIGHT_INIT_FUNCTION_STRUCT kdFlashlightList[] =
 {
     {defaultFlashlightInit},
-#if defined(DUMMY_FLASHLIGHT)
+#if defined(CONFIG_DUMMY_FLASHLIGHT)
 	{dummyFlashlightInit},
 #endif
 #if defined(PEAK_FLASHLIGHT)
@@ -194,7 +194,7 @@ int kdSetFlashlightDrv(unsigned int *pSensorId)
 	if(*pSensorId==e_CAMERA_MAIN_SENSOR)
 	{
 
-#if defined(DUMMY_FLASHLIGHT)
+#if defined(CONFIG_DUMMY_FLASHLIGHT)
 		defaultFlashlightInit(&g_pFlashlightFunc);
 
 #else

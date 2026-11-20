@@ -237,9 +237,7 @@ machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
 # Generated MediaTek custom headers (previously supplied by the MTK build).
 LINUXINCLUDE += $(addprefix -I,$(sort $(dir $(shell find $(srctree)/arch/arm/mach-mt6582/lcsh82_tb_3gfull_kk -type f -name '*.h'))))
-LINUXINCLUDE += -I$(srctree)/../out/target/product/lcsh82_tb_3gfull_kk/obj/PTGEN/common \
-                -I$(srctree)/../out/target/product/lcsh82_tb_3gfull_kk/obj/PTGEN/kernel \
-                -I$(srctree)/../out/target/product/lcsh82_tb_3gfull_kk/obj/NANDGEN/common
+LINUXINCLUDE += -I$(srctree)/drivers/misc/mediatek/pmt/mt6582
 platdirs := $(patsubst %,arch/arm/plat-%/,$(plat-y))
 
 
@@ -328,50 +326,3 @@ define archhelp
   echo  '                  (distribution) /sbin/$(INSTALLKERNEL) or'
   echo  '                  install to $$(INSTALL_PATH) and run lilo'
 endef
-
-# Build flags previously injected by MediaTek ProjectConfig.mk / makeMtk
-KBUILD_CPPFLAGS += \
-    -DMTK_GPS_SUPPORT \
-    -DMTK_WFD_SUPPORT \
-    -DMTK_FM_SUPPORT \
-    -DMTK_SHARED_SDCARD \
-    -DMTK_PASSPOINT_R1_SUPPORT \
-    -DMTK_BT_SUPPORT \
-    -DCUSTOM_KERNEL_ACCELEROMETER \
-    -DMTK_WLAN_SUPPORT \
-    -DMTK_TETHERINGIPV6_SUPPORT \
-    -DMTK_UART_USB_SWITCH \
-    -DMTK_KERNEL_POWER_OFF_CHARGING \
-    -DMTK_BQ24196_SUPPORT \
-    -DCUSTOM_KERNEL_ALSPS \
-    -DMTK_SENSOR_SUPPORT \
-    -DMTK_M4U_SUPPORT \
-    -DMTK_EMMC_SUPPORT \
-    -DHAVE_XLOG_FEATURE \
-    -DMT6582 \
-    -DWXGA \
-    -DCPT_CLAA070WP0B_HIMAX \
-    -DAUO_B070EAN014_HIMAX \
-    -DA5142_MIPI_RAW \
-    -DGC2235_RAW \
-    -DDUMMY_FLASHLIGHT \
-    -DHI257_YUV \
-    -DA5142_MIPI_RAW \
-    -DHI257_YUV \
-    -DGC2235_RAW \
-    -DFM_DIGITAL_INPUT \
-    -DCONSYS_6582 \
-    -DFM_DIGITAL_OUTPUT \
-    -DSLT_DRV_P3550_CONFIG \
-    -DSLT_DRV_P3550_WIFI_ONLY_CONFIG \
-    -DLCM_WIDTH=\"800\" \
-    -DMTK_SIM2_SOCKET_TYPE=\"1\" \
-    -DMTK_SIM1_SOCKET_TYPE=\"1\" \
-    -DMTK_LCM_PHYSICAL_ROTATION=\"0\" \
-    -DLCM_HEIGHT=\"1280\" \
-    -DCUSTOM_KERNEL_SSW=\"ssw_single\" \
-    -DUSER_BUILD_KERNEL \
-    -DCC_HAVE_ASM_GOTO \
-    -DMTK_TB_WIFI_3G_MODE_WIFI_ONLY \
-    -D__USING_DUMMY_CCCI_API__ \
-    -DMTK_TABLET_PLATFORM=\"MT8382\"

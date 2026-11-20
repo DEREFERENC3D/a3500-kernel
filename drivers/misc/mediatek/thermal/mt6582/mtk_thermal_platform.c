@@ -634,7 +634,7 @@ int mtk_thermal_get_extra_info(
     return 0;
 }
 
-#if defined(MTK_FAN5405_SUPPORT) || defined(MTK_NCP1851_SUPPORT) || defined(MTK_BQ24196_SUPPORT) // supported charger IC
+#if defined(MTK_FAN5405_SUPPORT) || defined(MTK_NCP1851_SUPPORT) || defined(CONFIG_MTK_BQ24196_SUPPORT) // supported charger IC
 extern int force_get_tbat(void);
 #endif
 
@@ -643,7 +643,7 @@ int mtk_thermal_force_get_batt_temp(
 {
     int ret = 0;
 
-#if defined(MTK_FAN5405_SUPPORT) || defined(MTK_NCP1851_SUPPORT) || defined(MTK_BQ24196_SUPPORT) // supported charger IC
+#if defined(MTK_FAN5405_SUPPORT) || defined(MTK_NCP1851_SUPPORT) || defined(CONFIG_MTK_BQ24196_SUPPORT) // supported charger IC
     ret = force_get_tbat();
 #endif
 

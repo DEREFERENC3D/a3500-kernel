@@ -20,7 +20,7 @@
 
 static int mtk_cpu_num = 0;
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 #include <linux/mmc/sd_misc.h>
 
 extern int card_dump_func_write(unsigned char* buf, unsigned int len, unsigned long long offset, int dev);
@@ -75,7 +75,7 @@ static DEFINE_SPINLOCK(ram_console_lock);
 
 static atomic_t rc_in_fiq = ATOMIC_INIT(0);
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 
 #define EMMC_ADDR 0X700000
 static char *ram_console2_log;
@@ -650,7 +650,7 @@ static int __init ram_console_late_init(void)
 	int str_real_len = 0;
 	int i = 0;
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 	emmc_read_last_kmsg();
 #endif
 

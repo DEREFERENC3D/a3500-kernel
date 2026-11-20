@@ -1,7 +1,7 @@
 #include <linux/xlog.h>
 #include <mach/mt_typedefs.h>
 
-#ifdef MTK_BQ24196_SUPPORT
+#ifdef CONFIG_MTK_BQ24196_SUPPORT
 #include "bq24196.h"
 #endif
 
@@ -31,7 +31,7 @@ void tbl_charger_otg_vbus(int mode)
 
     if(mode&0xFF)
     {
-#ifdef MTK_BQ24196_SUPPORT
+#ifdef CONFIG_MTK_BQ24196_SUPPORT
         bq24196_set_chg_config(0x3); //OTG
         bq24196_set_boost_lim(0x1); //1.3A on VBUS
         bq24196_set_en_hiz(0x0);
@@ -63,7 +63,7 @@ void tbl_charger_otg_vbus(int mode)
     }
     else
     {
-#ifdef MTK_BQ24196_SUPPORT
+#ifdef CONFIG_MTK_BQ24196_SUPPORT
         bq24196_set_chg_config(0x0); //OTG & Charge disabled
 #endif
 

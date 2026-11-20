@@ -196,8 +196,8 @@ void __init mt_map_io(void)
     iotable_init(mt_io_desc, ARRAY_SIZE(mt_io_desc));
 }
 
-#ifdef MTK_TABLET_PLATFORM
-MACHINE_START(MT6582, MTK_TABLET_PLATFORM)
+#ifdef CONFIG_MTK_TABLET_PLATFORM
+MACHINE_START(MT6582, CONFIG_MTK_TABLET_PLATFORM)
 #else
 MACHINE_START(MT6582, "MT6582")
 #endif

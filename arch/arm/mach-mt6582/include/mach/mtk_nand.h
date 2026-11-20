@@ -1,6 +1,6 @@
 #ifndef __MTK_NAND_H
 #define __MTK_NAND_H
-#ifndef MTK_EMMC_SUPPORT
+#ifndef CONFIG_MTK_EMMC_SUPPORT
 #include "nand_device_list.h"
 #endif
 

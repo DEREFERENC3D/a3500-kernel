@@ -135,7 +135,7 @@ struct mt3326_gps_hardware mt3326_gps_hw = {
 /*=======================================================================*/
 /* Board Specific Devices Init                                           */
 /*=======================================================================*/
-#ifdef MTK_BT_SUPPORT
+#ifdef CONFIG_MTK_BT_SUPPORT
 void mt_bt_power_on(void)
 {
     printk(KERN_INFO "+mt_bt_power_on\n");

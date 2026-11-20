@@ -1,4 +1,4 @@
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 
 #include <linux/kmsg_dump.h>
 #include <linux/module.h>

@@ -27,7 +27,7 @@ struct mrdump_mini_header {
 };
 static char mrdump_mini_buf[MRDUMP_MINI_BUF_SIZE];
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static void __mrdump_mini_core(AEE_REBOOT_MODE reboot_mode, struct pt_regs *regs, const char *msg, va_list ap)
 {
 	int i;
@@ -102,11 +102,11 @@ ipanic_write:
 	}
 #endif
 }
-#else //MTK_EMMC_SUPPORT
+#else //CONFIG_MTK_EMMC_SUPPORT
 static void __mrdump_mini_core(AEE_REBOOT_MODE reboot_mode, struct pt_regs *regs, const char *msg, va_list ap)
 {
 }
-#endif //MTK_EMMC_SUPPORT
+#endif //CONFIG_MTK_EMMC_SUPPORT
 
 static void __mrdump_mini_create_oops_dump(AEE_REBOOT_MODE reboot_mode, struct pt_regs *regs, const char *msg, ...)
 {

@@ -396,7 +396,7 @@ wmt_plat_dump_pin_conf (VOID)
     #else
         WMT_PLAT_INFO_FUNC( "UART_RX(not defined)\n");
     #endif
-    #if defined(FM_DIGITAL_INPUT) || defined(FM_DIGITAL_OUTPUT)
+    #if defined(CONFIG_FM_DIGITAL_INPUT) || defined(CONFIG_FM_DIGITAL_OUTPUT)
         #ifdef GPIO_COMBO_I2S_CK_PIN
             WMT_PLAT_INFO_FUNC( "I2S_CK(GPIO%d)\n", GPIO_COMBO_I2S_CK_PIN);
         #else
@@ -687,7 +687,7 @@ INT32 wmt_plat_i2s_ctrl(ENUM_PIN_STATE state)
     // TODO: [NewFeature][GeorgeKuo]: GPIO_I2Sx is changed according to different project.
     // TODO: provide a translation table in board_custom.h for different ALPS project customization.
     
-#if defined(FM_DIGITAL_INPUT) || defined(FM_DIGITAL_OUTPUT)
+#if defined(CONFIG_FM_DIGITAL_INPUT) || defined(CONFIG_FM_DIGITAL_OUTPUT)
     #if defined (GPIO_COMBO_I2S_CK_PIN)
     switch(state)
     {

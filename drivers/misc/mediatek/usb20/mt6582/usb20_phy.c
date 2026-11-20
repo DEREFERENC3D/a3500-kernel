@@ -44,7 +44,7 @@ void usb_phy_context_restore(void)
 {
 }
 
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 bool usb_phy_check_in_uart_mode()
 {
 	UINT8 usb_port_mode;
@@ -117,7 +117,7 @@ void usb_phy_switch_to_usb(void)
 
 #else
 
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 static bool in_uart_mode = false;
 #endif
 
@@ -217,7 +217,7 @@ static void hs_slew_rate_cal(void){
   USBPHY_CLR8(0x15,0x80);
 }
 
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 bool usb_phy_check_in_uart_mode()
 {
 	UINT8 usb_port_mode;
@@ -288,7 +288,7 @@ void usb_phy_switch_to_usb(void)
 
 void usb_phy_poweron(void){
 
-	#ifdef MTK_UART_USB_SWITCH
+	#ifdef CONFIG_MTK_UART_USB_SWITCH
 	if (usb_phy_check_in_uart_mode())
 		return;
 	#endif
@@ -323,7 +323,7 @@ void usb_phy_poweron(void){
     printk("usb power on success\n");
 }
 
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 static bool skipDisableUartMode = true;
 #endif
 
@@ -331,7 +331,7 @@ static void usb_phy_savecurrent_internal(void){
 
     //4 1. swtich to USB function. (system register, force ip into usb mode.
 
-	#ifdef MTK_UART_USB_SWITCH
+	#ifdef CONFIG_MTK_UART_USB_SWITCH
 	if (!usb_phy_check_in_uart_mode()) {
 		//4 s1: enable USB MAC clock.
 		usb_enable_clock(true);
@@ -412,7 +412,7 @@ void usb_phy_recover(void){
     //4 2. wait 50 usec.
     udelay(50);
 
-	#ifdef MTK_UART_USB_SWITCH
+	#ifdef CONFIG_MTK_UART_USB_SWITCH
 	if (!usb_phy_check_in_uart_mode()) {
     // clean PUPD_BIST_EN
     // PUPD_BIST_EN = 1'b0
@@ -523,14 +523,14 @@ void Charger_Detect_Release(void)
 
 void usb_phy_context_save(void)
 {
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 	in_uart_mode = usb_phy_check_in_uart_mode();
 #endif
 }
 
 void usb_phy_context_restore(void)
 {
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 	if (in_uart_mode) {
 		usb_phy_switch_to_uart();
 	}

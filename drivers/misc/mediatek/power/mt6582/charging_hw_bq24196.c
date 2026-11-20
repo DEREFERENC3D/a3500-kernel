@@ -489,7 +489,7 @@ static void hw_bc11_dump_register(void)
     //battery_xlog_printk(BAT_LOG_FULL, "gpio_number=0x%x,gpio_on_mode=%d,gpio_off_mode=%d\n", gpio_number, gpio_on_mode, gpio_off_mode);	
 
     bq24196_set_en_hiz(0x0);
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     bq24196_set_vindpm(0x7); //VIN DPM check 4.44V
     bq24196_set_iinlim(0x5);	//IIN DPM check 1.5A
 #else
@@ -498,14 +498,14 @@ static void hw_bc11_dump_register(void)
     bq24196_set_reg_rst(0x0);
 	bq24196_set_wdt_rst(0x1); //Kick watchdog	
     bq24196_set_sys_min(0x5); //Minimum system voltage 3.5V	
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	bq24196_set_iprechg(0x0); //Precharge current 128mA
 #else
 	bq24196_set_iprechg(0x3); //Precharge current 512mA
 #endif	
 	bq24196_set_iterm(0x0); //Termination current 128mA
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     bq24196_set_vreg(0x32); //VREG 4.304V
 #else
     bq24196_set_vreg(0x2C); //VREG 4.208V

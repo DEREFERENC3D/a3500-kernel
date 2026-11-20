@@ -459,7 +459,7 @@ void HI257InitSetting(void)
 	HI257WriteCmosSensor(0x50, 0xa0); //D-YOffset AG
 
 	HI257WriteCmosSensor(0x60, 0x4f);
-#ifdef SLT_DRV_P3550_CONFIG
+#ifdef CONFIG_SLT_DRV_P3550_CONFIG
 	HI257WriteCmosSensor(0x61, 0xb0); //Sat B
 	HI257WriteCmosSensor(0x62, 0xa8); //Sat R
 #else
@@ -626,7 +626,7 @@ void HI257InitSetting(void)
 	HI257WriteCmosSensor(0x03, 0x14); //page 14
 	HI257WriteCmosSensor(0x10, 0x01);
 
-#ifdef SLT_DRV_P3550_CONFIG
+#ifdef CONFIG_SLT_DRV_P3550_CONFIG
 	HI257WriteCmosSensor(0x20, 0xa0); //X-Center
 	HI257WriteCmosSensor(0x21, 0x60); //Y-Center	//modify by fangchsh for lens shading > 85% //old 0x90 -> 0x30 -> 0x90 -> 0x60 y down	//lens xoy circle
 
@@ -1827,7 +1827,7 @@ switch (para)
 	HI257WriteCmosSensor(0x03, 0x10);
 	HI257WriteCmosSensor(0x41, 0x06);
 	HI257WriteCmosSensor(0x60, 0x01);
-#ifdef SLT_DRV_P3550_CONFIG
+#ifdef CONFIG_SLT_DRV_P3550_CONFIG
 	HI257WriteCmosSensor(0x61, 0x9c);
 	HI257WriteCmosSensor(0x62, 0x9c);
 #else
@@ -2247,7 +2247,7 @@ switch (para)
 	HI257WriteCmosSensor(0x41, 0x00);
 
 	HI257WriteCmosSensor(0x60, 0x4f);
-#ifdef SLT_DRV_P3550_CONFIG
+#ifdef CONFIG_SLT_DRV_P3550_CONFIG
 	HI257WriteCmosSensor(0x61, 0xb0); //Sat B
 	HI257WriteCmosSensor(0x62, 0xa8); //Sat R
 #else
@@ -2751,7 +2751,7 @@ void HI257set_saturation(UINT16 para)
         default:
 	//Med
 	HI257WriteCmosSensor(0x03, 0x10);
-	#ifdef SLT_DRV_P3550_CONFIG
+	#ifdef CONFIG_SLT_DRV_P3550_CONFIG
 	HI257WriteCmosSensor(0x61, 0xb0); //Sat B
 	HI257WriteCmosSensor(0x62, 0xa8); // SATR
 	#else

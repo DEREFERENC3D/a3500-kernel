@@ -88,7 +88,7 @@ EXPORT_SYMBOL(ipanic_kmsg_dump3);
 extern int log_buf_copy2(char *dest, int dest_len, int log_copy_start, int log_copy_end);
 #endif
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 extern u8 *emmc_bounce;
 extern int emmc_ipanic_write(void *buf, int off, int len);
 int ipanic_write_log_buf(unsigned int off, struct ipanic_log_index start, struct ipanic_log_index end)
@@ -201,4 +201,4 @@ int ipanic_write_log_buf(struct mtd_info *mtd, unsigned int off, struct ipanic_l
 	return copy_count;
 }
 
-#endif //MTK_EMMC_SUPPORT
+#endif //CONFIG_MTK_EMMC_SUPPORT

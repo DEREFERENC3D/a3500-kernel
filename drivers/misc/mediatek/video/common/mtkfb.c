@@ -1296,7 +1296,7 @@ static int mtkfb_set_overlay_layer(struct fb_info *info, struct fb_overlay_layer
  	}
 #endif
 
-    if(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3))
+    if(0 == strncmp(CONFIG_MTK_LCM_PHYSICAL_ROTATION, "180", 3))
     {
         layerInfo->layer_rotation = (layerInfo->layer_rotation + MTK_FB_ORIENTATION_180) % 4;
         layerInfo->tgt_offset_x = MTK_FB_XRES - (layerInfo->tgt_offset_x + layerInfo->tgt_width);
@@ -3102,7 +3102,7 @@ static void mtkfb_late_resume(struct early_suspend *h)
     up(&sem_early_suspend);
     mutex_unlock(&ScreenCaptureMutex);
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     if (!lcd_fps)
         msleep(90);
     else

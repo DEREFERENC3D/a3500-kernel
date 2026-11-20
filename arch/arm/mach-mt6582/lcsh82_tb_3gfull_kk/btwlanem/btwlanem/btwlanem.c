@@ -1,4 +1,4 @@
-#if defined(MTK_BT_SUPPORT) || defined(MTK_WLAN_SUPPORT)
+#if defined(CONFIG_MTK_BT_SUPPORT) || defined(CONFIG_MTK_WLAN_SUPPORT)
 
 #include <linux/kernel.h>
 #include <linux/module.h>

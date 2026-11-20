@@ -142,7 +142,7 @@ unsigned int gCaptureOvlDownY = 10;
 
 struct task_struct *capturefb_task = NULL;
 static int _DISP_CaptureFBKThread(void *data);
-#ifdef USER_BUILD_KERNEL
+#ifdef CONFIG_USER_BUILD_KERNEL
 unsigned int gCaptureFBEnable = 0;
 #else
 unsigned int gCaptureFBEnable = 0;

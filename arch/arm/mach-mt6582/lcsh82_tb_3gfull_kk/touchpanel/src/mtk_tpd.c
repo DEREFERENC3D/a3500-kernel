@@ -272,8 +272,8 @@ static int tpd_probe(struct platform_device *pdev) {
     /* allocate input device */
     if((tpd->dev=input_allocate_device())==NULL) { kfree(tpd); return -ENOMEM; }
   
-  //TPD_RES_X = simple_strtoul(LCM_WIDTH, NULL, 0);
-  //TPD_RES_Y = simple_strtoul(LCM_HEIGHT, NULL, 0);    
+  //TPD_RES_X = simple_strtoul(CONFIG_LCM_WIDTH, NULL, 0);
+  //TPD_RES_Y = simple_strtoul(CONFIG_LCM_HEIGHT, NULL, 0);    
   TPD_RES_X = DISP_GetScreenWidth();
     TPD_RES_Y = DISP_GetScreenHeight();
 

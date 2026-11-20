@@ -15,7 +15,7 @@
 /*******************************************************************************
 * Dependency
 *******************************************************************************/
-#ifdef MTK_GPS_SUPPORT
+#ifdef CONFIG_MTK_GPS_SUPPORT
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>

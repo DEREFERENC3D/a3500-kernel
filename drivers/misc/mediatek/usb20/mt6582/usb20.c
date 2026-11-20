@@ -42,7 +42,7 @@ static DEFINE_SEMAPHORE(power_clock_lock);
 static bool platform_init_first = true;
 extern bool mtk_usb_power;
 static u32 cable_mode = CABLE_MODE_NORMAL;
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 u32 port_mode = PORT_MODE_USB;
 u32 sw_tx = 0;
 u32 sw_rx = 0;
@@ -489,7 +489,7 @@ static ssize_t mt_usb_store_cmode(struct device* dev, struct device_attribute *a
 
 DEVICE_ATTR(cmode,  0664, mt_usb_show_cmode, mt_usb_store_cmode);
 
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 static void uart_usb_switch_dump_register(void)
 {
 usb_enable_clock(true);
@@ -902,7 +902,7 @@ static int mt_usb_probe(struct platform_device *pdev)
 	}
 
     ret = device_create_file(&pdev->dev, &dev_attr_cmode);
-#ifdef MTK_UART_USB_SWITCH
+#ifdef CONFIG_MTK_UART_USB_SWITCH
 	ret = device_create_file(&pdev->dev,&dev_attr_portmode);
 	ret = device_create_file(&pdev->dev,&dev_attr_tx);
 	ret = device_create_file(&pdev->dev,&dev_attr_rx);

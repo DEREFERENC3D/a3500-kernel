@@ -199,7 +199,7 @@ s32 init_wr_node(struct i2c_client *client)
     memset(gtp_tool_entry, 0, sizeof(gtp_tool_entry));
     i = sizeof(entry_prefix)/sizeof(s8);
     memcpy(gtp_tool_entry, entry_prefix, i-1);
-#if !defined(SLT_DRV_P3550_CONFIG)
+#if !defined(CONFIG_SLT_DRV_P3550_CONFIG)
     memcpy(&gtp_tool_entry[i-1], __DATE__, sizeof(__DATE__)/sizeof(s8));
 #endif
     goodix_proc_entry = create_proc_entry(gtp_tool_entry, 0777, NULL);

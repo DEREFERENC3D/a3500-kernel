@@ -8,7 +8,7 @@
 
 /* Battery Temperature Protection */
 #define MTK_TEMPERATURE_RECHARGE_SUPPORT
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 #define MAX_CHARGE_TEMPERATURE  50
 #define MAX_CHARGE_TEMPERATURE_MINUS_X_DEGREE	48
 #define MIN_CHARGE_TEMPERATURE  0
@@ -41,7 +41,7 @@
 #elif MTK_BQ24158_SUPPORT
 #define AC_CHARGER_CURRENT					125000 //1.25A
 
-#elif MTK_BQ24196_SUPPORT
+#elif CONFIG_MTK_BQ24196_SUPPORT
 #define AC_CHARGER_CURRENT					205600 //2A
 
 #elif MTK_BQ24296_SUPPORT
@@ -62,7 +62,7 @@
 #define BATTERY_AVERAGE_SIZE 	30
 
 /* charger error check */
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 #define BAT_LOW_TEMP_PROTECT_ENABLE         // stop charging if temp < MIN_CHARGE_TEMPERATURE
 #else
 //#define BAT_LOW_TEMP_PROTECT_ENABLE         // stop charging if temp < MIN_CHARGE_TEMPERATURE
@@ -108,7 +108,7 @@
 
 
 /* High battery support */
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 #define HIGH_BATTERY_VOLTAGE_SUPPORT
 #else
 //#define HIGH_BATTERY_VOLTAGE_SUPPORT
@@ -129,7 +129,7 @@
 
 //#define MTK_WIRELESS_CHARGER_SUPPORT 1
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 #define BAT_OVER_TEMP_POWER_OFF
 #define BAT_OVER_SOC_RECHARGE
 #endif

@@ -137,10 +137,10 @@ extern LCM_DRIVER nt35521_hd720_dsi_vdo_boe_lcm_drv;
 #if defined(NT35521_N070ICN_GB1_V1)	// modified by zhangtao 20130909
 extern LCM_DRIVER nt35521_n070icn_gb1_v1_lcm_drv;
 #endif
-#if defined(CPT_CLAA070WP0B_HIMAX)	// modified by zhangtao 20130926
+#if defined(CONFIG_CPT_CLAA070WP0B_HIMAX)	// modified by zhangtao 20130926
 extern LCM_DRIVER cpt_claa070wp0b_himax_lcm_drv;
 #endif
-#if defined(AUO_B070EAN014_HIMAX)	// modified by zhangtao 20131105
+#if defined(CONFIG_AUO_B070EAN014_HIMAX)	// modified by zhangtao 20131105
 extern LCM_DRIVER auo_b070ean014_himax_lcm_drv;
 #endif
 extern LCM_DRIVER nt35521_hd720_tm_lcm_drv;
@@ -150,11 +150,11 @@ extern LCM_DRIVER rm68210_hd720_dsi_ufoe_cmd_lcm_drv;
 extern LCM_DRIVER r63311_fhd_dsi_vedio_lcm_drv;
 LCM_DRIVER* lcm_driver_list[] = 
 { 
-#if defined(AUO_B070EAN014_HIMAX)	// modified by zhangtao 20131105
+#if defined(CONFIG_AUO_B070EAN014_HIMAX)	// modified by zhangtao 20131105
 	&auo_b070ean014_himax_lcm_drv,
 #endif
 
-#if defined(CPT_CLAA070WP0B_HIMAX)	// modified by zhangtao 20130926
+#if defined(CONFIG_CPT_CLAA070WP0B_HIMAX)	// modified by zhangtao 20130926
 	&cpt_claa070wp0b_himax_lcm_drv,
 #endif
 

@@ -836,7 +836,7 @@ static int BMA222_ReadSensorData(struct i2c_client *client, char *buf, int bufsi
 	{
 		//GSE_LOG("raw data x=%d, y=%d, z=%d \n",obj->data[BMA222_AXIS_X],obj->data[BMA222_AXIS_Y],obj->data[BMA222_AXIS_Z]);
 		obj->data[BMA222_AXIS_X] += obj->cali_sw[BMA222_AXIS_X];
-		#if defined(SLT_DRV_P3550_CONFIG)
+		#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 		obj->data[BMA222_AXIS_Y] += obj->cali_sw[BMA222_AXIS_Y] + 11;
 		#else
 		obj->data[BMA222_AXIS_Y] += obj->cali_sw[BMA222_AXIS_Y];

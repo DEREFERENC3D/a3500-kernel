@@ -31,7 +31,7 @@
 #include "lcm_drv.h"
 
 
-#undef MTK_M4U_SUPPORT
+#undef CONFIG_MTK_M4U_SUPPORT
 #undef MTK_HDMI_SUPPORT
 #define DEFINE_SEMAPHORE(x)  
 #define down_interruptible(x) 0

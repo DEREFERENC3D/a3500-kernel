@@ -18,7 +18,7 @@
 #include <mach/board.h> 
 #include <linux/mmc/sd_misc.h>
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 #include "partition_define.h"
 #endif
 
@@ -33,7 +33,7 @@ MODULE_LICENSE("GPL");
 /*--------------------------------------------------------------------------*/
 /* some marco will be reuse with mmc subsystem */
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 #include "partition_define.h"
 #endif
 char test_kdump[]={6,5,8,2,'k','d','u','m','p','t','e','s','t'};
@@ -822,7 +822,7 @@ static unsigned int simp_mmc_select_voltage(struct simp_mmc_host *host, unsigned
 #define EXT_CSD_PART_CFG                179 /* R/W/E & R/W/E_P */
 #define EXT_CSD_SEC_CNT					212
 #define CAPACITY_2G						(2 * 1024 * 1024 * 1024ULL)
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static u64 simp_msdc_get_user_capacity(struct simp_mmc_card *card)
 {
 	u64 device_capacity = 0;
@@ -842,7 +842,7 @@ static u64 simp_msdc_get_user_capacity(struct simp_mmc_card *card)
 
 static void simp_emmc_cal_offset(struct simp_mmc_card *card)
 {
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 	u64 device_capacity = 0;
 	simp_offset = MBR_START_ADDRESS_BYTE - (simp_ext_csd[EXT_CSD_BOOT_SIZE_MULT]* 128 * 1024
                 + simp_ext_csd[EXT_CSD_BOOT_SIZE_MULT] * 128 * 1024
@@ -867,7 +867,7 @@ static void simp_emmc_cal_offset(struct simp_mmc_card *card)
 			simp_offset /= 512;
 	printk(KERN_EMERG "emmc offset (0x%x)\n", simp_offset);
 
-#endif /* end of MTK_EMMC_SUPPORT */
+#endif /* end of CONFIG_MTK_EMMC_SUPPORT */
 }
 static int simp_msdc_pio_read(struct simp_msdc_host *host, unsigned int *ptr, unsigned int size);
 static void simp_msdc_set_blknum(struct simp_msdc_host *host, unsigned int blknum);
@@ -1620,7 +1620,7 @@ static const unsigned g_freqs[] = {400000, 300000, 200000, 100000};
 /*--------------------------------------------------------------------------*/
 /* porting for panic dump interface                                         */
 /*--------------------------------------------------------------------------*/
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static int simp_emmc_dump_write(unsigned char* buf, unsigned int len, unsigned int offset,unsigned int dev)
 {
 
@@ -1709,7 +1709,7 @@ static int simp_emmc_dump_write(unsigned char* buf, unsigned int len, unsigned i
 	else
 		return ret;
 }
-#endif /* end of MTK_EMMC_SUPPORT */
+#endif /* end of CONFIG_MTK_EMMC_SUPPORT */
 
 static int simp_sd_dump_write(unsigned char* buf, unsigned int len, unsigned int offset,unsigned int dev)
 {
@@ -1809,7 +1809,7 @@ int card_dump_func_write(unsigned char* buf, unsigned int len, unsigned long lon
 	sec_offset = offset/512;
     switch (dev){
         case DUMP_INTO_BOOT_CARD_IPANIC:
-            #ifdef MTK_EMMC_SUPPORT
+            #ifdef CONFIG_MTK_EMMC_SUPPORT
             ret = simp_emmc_dump_write(buf, len, (unsigned int)offset, dev);
 			#endif
             break;
@@ -1828,7 +1828,7 @@ int card_dump_func_write(unsigned char* buf, unsigned int len, unsigned long lon
 EXPORT_SYMBOL(card_dump_func_write);
 
 extern int simple_sd_ioctl_rw(struct msdc_ioctl* msdc_ctl);
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 
 #define SD_FALSE             -1
 #define SD_TRUE              0
@@ -1928,7 +1928,7 @@ int card_dump_func_read(unsigned char* buf, unsigned int len, unsigned long long
 	sec_offset = offset/512;
     switch (dev){
         case DUMP_INTO_BOOT_CARD_IPANIC:
-            #ifdef MTK_EMMC_SUPPORT
+            #ifdef CONFIG_MTK_EMMC_SUPPORT
             ret = emmc_dump_read(buf, len, (unsigned int)offset, dev);
 			#endif
             break;
@@ -1977,7 +1977,7 @@ static void simp_msdc_hw_init(void)
 static int __init emmc_dump_init(void)
 {
    	simp_msdc_hw_init();
-	#ifdef MTK_EMMC_SUPPORT
+	#ifdef CONFIG_MTK_EMMC_SUPPORT
 	simp_mmc_init(MSDC_EMMC,1);
 	#endif
     simp_mmc_init(MSDC_SD,0);

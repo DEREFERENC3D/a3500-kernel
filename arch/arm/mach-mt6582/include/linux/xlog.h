@@ -50,7 +50,7 @@ int __xlog_ale_printk(int prio, const struct ale_convert *convert, ...);
 asmlinkage int __xlog_printk(const struct xlog_record *rec, ...);
 
 int __xlog_ksystem_printk(const struct xlog_record *rec, ...);
-#ifdef HAVE_XLOG_FEATURE
+#ifdef CONFIG_HAVE_XLOG_FEATURE
 #define xlog_printk(prio, tag, fmt, ...)				\
 	({								\
 		static const struct xlog_record _xlog_rec =		\
@@ -63,10 +63,10 @@ int __xlog_ksystem_printk(const struct xlog_record *rec, ...);
 			{tag, fmt, prio};				\
 		__xlog_ksystem_printk(&_xlog_rec, ##__VA_ARGS__);	\
 	})
-#else   //HAVE_XLOG_FEATURE
+#else   //CONFIG_HAVE_XLOG_FEATURE
 #define xlog_printk(prio, tag, fmt, ...) ((void)0)
 #define xlog_ksystem_printk(prio, tag, fmt, ...)    ((void)0)
-#endif  //HAVE_XLOG_FEATURE
+#endif  //CONFIG_HAVE_XLOG_FEATURE
 #endif  //HAVE_ALE_FEATURE
 
 #endif

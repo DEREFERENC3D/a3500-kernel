@@ -164,7 +164,7 @@ static void internal_md_power_down(void)
 }
 
 
-#ifndef __USING_DUMMY_CCCI_API__
+#ifndef CONFIG_MTK_DUMMY_CCCI_API
 
 //-------------feature enable/disable configure----------------//
 //#define FEATURE_GET_TD_EINT_NUM
@@ -1360,7 +1360,7 @@ static int __init ccci_helper_init(void)
 {
 	int ret;
 
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 	if ((g_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT) || (g_boot_mode == LOW_POWER_OFF_CHARGING_BOOT))
 		internal_md_power_down();
 #endif
@@ -1502,7 +1502,7 @@ void ccci_md_mem_reserve(void)
 
 static int __init ccci_helper_init(void)
 {
-#ifndef MTK_TB_WIFI_3G_MODE_WIFI_ONLY	
+#ifndef CONFIG_MTK_TB_WIFI_3G_MODE_WIFI_ONLY	
 	internal_md_power_down();
 #endif
 	return 0;

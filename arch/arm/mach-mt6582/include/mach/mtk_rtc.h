@@ -34,7 +34,7 @@ extern void rtc_enable_writeif(void);
 extern void rtc_disable_writeif(void);
 
 extern void rtc_mark_recovery(void);
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 extern void rtc_mark_kpoc(void);
 #endif
 extern void rtc_mark_fast(void);
@@ -62,7 +62,7 @@ extern bool crystal_exist_status(void);
 #define rtc_enable_writeif()		do {} while (0)
 #define rtc_disable_writeif()		do {} while (0)
 #define rtc_mark_recovery()             do {} while (0)
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 #define rtc_mark_kpoc()                 do {} while (0)
 #endif
 #define rtc_mark_fast()		        do {} while (0)

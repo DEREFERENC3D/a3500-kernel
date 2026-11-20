@@ -121,7 +121,7 @@ kal_uint32 g_batt_soc_status = SOC_NORMAL;
 kal_bool g_battery_test_status = KAL_FALSE;
 kal_int32 g_battery_percent = 50;
 #endif
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 extern kal_uint32 g_fg_battery_id;
 #endif
 ////////////////////////////////////////////////////////////////////////////////
@@ -218,7 +218,7 @@ struct battery_data {
     int status_2nd;
     int capacity_2nd;
     int present_2nd;
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     int charge_full_design;
 #endif
 };
@@ -256,7 +256,7 @@ static enum power_supply_property battery_props[] = {
     POWER_SUPPLY_PROP_status_2nd,
     POWER_SUPPLY_PROP_capacity_2nd,
     POWER_SUPPLY_PROP_present_2nd,
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
 #endif
 };
@@ -509,7 +509,7 @@ static int battery_get_property(struct power_supply *psy,
     case POWER_SUPPLY_PROP_present_2nd :
         val->intval = data->present_2nd;
         break;
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 	val->intval = data->charge_full_design;
 	break;
@@ -1475,7 +1475,7 @@ static void mt_battery_Sync_UI_Percentage_to_Real(void)
 
 	if(BMT_status.UI_SOC <= 0 )
 	{
-	#if defined(SLT_DRV_P3550_CONFIG)
+	#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 		BMT_status.UI_SOC=0;
 	#else
 		BMT_status.UI_SOC=1;
@@ -1494,7 +1494,7 @@ static void battery_update(struct battery_data *bat_data)
     bat_data->BAT_batt_vol = BMT_status.bat_vol;
     bat_data->BAT_batt_temp= BMT_status.temperature * 10;
 	bat_data->BAT_PRESENT = BMT_status.bat_exist;
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	if(g_fg_battery_id == 0)
 	bat_data->charge_full_design = Q_MAX_POS_25_ATL*1000;
 	else
@@ -1935,7 +1935,7 @@ void mt_battery_GetBatteryData(void)
 	ZCV = battery_meter_get_battery_zcv();
 
 	BMT_status.ICharging = mt_battery_average_method(&batteryCurrentBuffer[0],ICharging, &icharging_sum, batteryIndex);	
-	#if defined(SLT_DRV_P3550_CONFIG)
+	#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	if ((BMT_status.temperature>10) && (BMT_status.temperature<=45))
 	{
 		BMT_status.ICharging = 960;
@@ -2527,7 +2527,7 @@ void do_chrdet_int_task(void)
        	    battery_xlog_printk(BAT_LOG_CRTI, "[do_chrdet_int_task] charger NOT exist!\n");
             BMT_status.charger_exist = KAL_FALSE;
     		
-#ifdef MTK_KERNEL_POWER_OFF_CHARGING
+#ifdef CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
             if(g_platform_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT || g_platform_boot_mode == LOW_POWER_OFF_CHARGING_BOOT)
             {
                 battery_xlog_printk(BAT_LOG_CRTI, "[pmic_thread_kthread] Unplug Charger/USB In Kernel Power Off Charging Mode!  Shutdown OS!\r\n");

@@ -1650,7 +1650,7 @@ static ssize_t show_TS3A225EConnectorType(struct device_driver *ddri, char *buf)
 static DRIVER_ATTR(TS3A225EConnectorType, 0664, show_TS3A225EConnectorType,  NULL);
 #endif
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 static ssize_t accdet_show_call_state(struct device_driver *ddri, char *buf)
 {
 	ACCDET_DEBUG("[Accdet] call_status=%d\n", call_status);
@@ -1703,7 +1703,7 @@ static ssize_t show_pin_recognition_state(struct device_driver *ddri, char *buf)
 }
 
 static DRIVER_ATTR(accdet_pin_recognition,      0664, show_pin_recognition_state,  NULL);
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 static DRIVER_ATTR(accdet_call_state,      0664, accdet_show_call_state,         accdet_store_call_state);
 #else
 static DRIVER_ATTR(accdet_call_state,      0664, NULL,         accdet_store_call_state);

@@ -1820,7 +1820,7 @@ static const struct mmc_fixup blk_fixups[] =
 };
 
 // TODO: Remove after fixing fstab
-#if defined(MTK_EMMC_SUPPORT)
+#if defined(CONFIG_MTK_EMMC_SUPPORT)
 	extern void emmc_create_sys_symlink (struct mmc_card *card);
 #endif
 static int mmc_blk_probe(struct mmc_card *card)
@@ -1861,7 +1861,7 @@ static int mmc_blk_probe(struct mmc_card *card)
 			goto out;
 	}
 // TODO: Remove after fixing fstab
-#if defined(MTK_EMMC_SUPPORT)
+#if defined(CONFIG_MTK_EMMC_SUPPORT)
 	emmc_create_sys_symlink(card);
 #endif
 	return 0;

@@ -97,7 +97,7 @@ struct tag_serialnr {
 
 struct tag_revision {
 	__u32 rev;
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	__u32 Vbat;
 #endif
 };

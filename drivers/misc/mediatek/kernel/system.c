@@ -23,7 +23,7 @@ void arch_reset(char mode, const char *cmd)
     } else if (cmd && !strcmp(cmd, "bootloader")){
     		rtc_mark_fast();	
     } 
-#ifdef MTK_KERNEL_POWER_OFF_CHARGING
+#ifdef CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
 	else if (cmd && !strcmp(cmd, "kpoc")){
 		rtc_mark_kpoc();
 	}

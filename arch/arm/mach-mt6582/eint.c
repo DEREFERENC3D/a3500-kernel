@@ -1106,16 +1106,16 @@ int get_type(char *name)
 
         int type1 = 0x0;
         int type2 = 0x0;
-#if defined(MTK_SIM1_SOCKET_TYPE) || defined(MTK_SIM2_SOCKET_TYPE)
+#if defined(CONFIG_MTK_SIM1_SOCKET_TYPE) || defined(CONFIG_MTK_SIM2_SOCKET_TYPE)
     char *p;
 #endif
 
-#ifdef MTK_SIM1_SOCKET_TYPE
-    p = (char *)MTK_SIM1_SOCKET_TYPE;
+#ifdef CONFIG_MTK_SIM1_SOCKET_TYPE
+    p = (char *)CONFIG_MTK_SIM1_SOCKET_TYPE;
     type1 = simple_strtoul(p, &p, 10);
 #endif
-#ifdef MTK_SIM2_SOCKET_TYPE
-    p = (char *)MTK_SIM2_SOCKET_TYPE;
+#ifdef CONFIG_MTK_SIM2_SOCKET_TYPE
+    p = (char *)CONFIG_MTK_SIM2_SOCKET_TYPE;
     type2 = simple_strtoul(p, &p, 10);
 #endif
     if (!strncmp(name, "MD1_SIM1_HOT_PLUG_EINT", strlen("MD1_SIM1_HOT_PLUG_EINT")))

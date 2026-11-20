@@ -6,7 +6,7 @@
 /*---------------------------------------------------------------------------*/
 static struct acc_hw cust_acc_hw = {
     .i2c_num = 2,
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     .direction = 6,
 #else
     .direction = 5,

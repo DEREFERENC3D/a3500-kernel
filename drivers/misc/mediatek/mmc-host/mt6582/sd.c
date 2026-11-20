@@ -81,7 +81,7 @@
 #define EXT_CSD_PART_CFG                 179 /* R/W/E & R/W/E_P */
 #define CAPACITY_2G                      (2 * 1024 * 1024 * 1024ULL)
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 u32 g_emmc_mode_switch = 0;
 #define MTK_EMMC_ETT_TO_DRIVER  /* for eMMC off-line apply to driver */
 #endif
@@ -2186,7 +2186,7 @@ static u32 msdc_power_tuning(struct msdc_host *host)
     }
 
     // eMMC first
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
     if (mmc_card_mmc(card) && (host->hw->host_function == MSDC_EMMC)) {
         /* Fixme: */
         return 1;
@@ -2344,7 +2344,7 @@ int msdc_reinit(struct msdc_host *host)
         ERR_MSG("Need block this bad SD card from re-initialization");
 
     // eMMC first
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
     if (host->hw->host_function == MSDC_EMMC) {
         /* Fixme: */
         return -1;
@@ -2831,11 +2831,11 @@ static void msdc_pm(pm_message_t state, void *data)
 
         printk(KERN_ERR "msdc%d -> %s Suspend",host->id, evt == PM_EVENT_SUSPEND ? "PM" : "USR");
         if(host->hw->flags & MSDC_SYS_SUSPEND){ /* set for card */
-//#ifdef MTK_EMMC_SUPPORT
+//#ifdef CONFIG_MTK_EMMC_SUPPORT
             //msdc_emmc_sleepawake(host, 0);
 //#endif
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
             if(host->hw->host_function == MSDC_EMMC && host->mmc->card && mmc_card_mmc(host->mmc->card)){
                 if (g_emmc_mode_switch == 0){
                     host->mmc->pm_flags |= MMC_PM_KEEP_POWER;
@@ -2850,7 +2850,7 @@ static void msdc_pm(pm_message_t state, void *data)
 
             (void)mmc_suspend_host(host->mmc);
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
             if((g_emmc_mode_switch == 0) && host->hw->host_function == MSDC_EMMC && host->mmc->card && mmc_card_mmc(host->mmc->card)){
                 msdc_save_emmc_setting(host);
                 host->power_control(host,0);
@@ -2887,11 +2887,11 @@ static void msdc_pm(pm_message_t state, void *data)
         printk(KERN_ERR "msdc%d -> %s Resume",host->id,evt == PM_EVENT_RESUME ? "PM" : "USR");
 
         if(host->hw->flags & MSDC_SYS_SUSPEND) { /* will not set for WIFI */
-//#ifdef MTK_EMMC_SUPPORT
+//#ifdef CONFIG_MTK_EMMC_SUPPORT
             //msdc_emmc_sleepawake(host, 1);
 //#endif
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
             if((g_emmc_mode_switch == 0) && host->hw->host_function == MSDC_EMMC && host->mmc->card && mmc_card_mmc(host->mmc->card)){
                 msdc_reset_hw(host->id);
                 msdc_pin_reset (host, MSDC_PIN_PULL_UP);
@@ -2955,7 +2955,7 @@ static u64 msdc_get_user_capacity(struct msdc_host *host)
     return device_capacity;
 }
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 u8 ext_csd[512];
 int offset = 0;
 char partition_access = 0;
@@ -3089,7 +3089,7 @@ u64 msdc_get_capacity(int get_emmc_total)
     for(index = 0;index < HOST_MAX_NUM;++index){
         if((mtk_msdc_host[index] != NULL) && (mtk_msdc_host[index]->hw->boot)){
             user_size = msdc_get_user_capacity(mtk_msdc_host[index]);
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
             if(get_emmc_total){
                 if(mmc_card_mmc(mtk_msdc_host[index]->mmc->card))
                     other_size = msdc_get_other_capacity();
@@ -3259,7 +3259,7 @@ static unsigned int msdc_command_start(struct msdc_host   *host,
         cmd->arg |= R4_18V_PRESENT;
     }
     rawarg = cmd->arg;
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
     if(host->hw->host_function == MSDC_EMMC              &&
                 host->hw->boot == MSDC_BOOT_EN           &&
                   (cmd->opcode == MMC_READ_SINGLE_BLOCK    ||
@@ -5081,7 +5081,7 @@ static int msdc_do_request(struct mmc_host*mmc, struct mmc_request*mrq)
             goto done;
         }
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
         if(host->hw->host_function == MSDC_EMMC &&
            host->hw->boot == MSDC_BOOT_EN &&
            cmd->opcode == MMC_SWITCH &&
@@ -5359,7 +5359,7 @@ done:
                 dma_unmap_sg(mmc_dev(mmc), data->sg, data->sg_len, dir);
             }
         }
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
         if(cmd->opcode == MMC_SEND_EXT_CSD){
             msdc_get_data(ext_csd,data);
         }
@@ -7124,7 +7124,7 @@ static void msdc_ops_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
     if(msdc_host_mode[host->id] != mmc->caps || (msdc_host_mode2[host->id] != mmc->caps2)) {
         mmc->caps = msdc_host_mode[host->id];
         mmc->caps2 = msdc_host_mode2[host->id];
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
         if (1 == g_emmc_mode_switch){
             if(!(mmc->caps2 & MMC_CAP2_HS200_1_8V_SDR)){
                 host->mmc->f_max = 50000000;
@@ -8217,7 +8217,7 @@ struct gendisk * mmc_get_disk(struct mmc_card *card)
     return md->disk;
 }
 
-#if defined(MTK_EMMC_SUPPORT) && defined(CONFIG_PROC_FS)
+#if defined(CONFIG_MTK_EMMC_SUPPORT) && defined(CONFIG_PROC_FS)
 static struct proc_dir_entry *proc_emmc;
 
 static inline int emmc_proc_info(char *buf, struct hd_struct *this)
@@ -8277,7 +8277,7 @@ done:
 }
 
 
-#endif /* MTK_EMMC_SUPPORT && CONFIG_PROC_FS */
+#endif /* CONFIG_MTK_EMMC_SUPPORT && CONFIG_PROC_FS */
 
 /* This is called by run_timer_softirq */
 static void msdc_timer_pm(unsigned long data)
@@ -9182,10 +9182,10 @@ static int __init mt_msdc_init(void)
         return ret;
     }
 
-#if defined(MTK_EMMC_SUPPORT) && defined(CONFIG_PROC_FS)
+#if defined(CONFIG_MTK_EMMC_SUPPORT) && defined(CONFIG_PROC_FS)
     if ((proc_emmc = create_proc_entry( "emmc", 0, NULL )))
         proc_emmc->read_proc = emmc_read_proc;
-#endif /* MTK_EMMC_SUPPORT && CONFIG_PROC_FS */
+#endif /* CONFIG_MTK_EMMC_SUPPORT && CONFIG_PROC_FS */
 
     printk(KERN_INFO DRV_NAME ": MediaTek MSDC Driver\n");
 
@@ -9212,7 +9212,7 @@ module_init(mt_msdc_init);
 module_exit(mt_msdc_exit);
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("MediaTek SD/MMC Card Driver");
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 EXPORT_SYMBOL(ext_csd);
 EXPORT_SYMBOL(g_emmc_mode_switch);
 #endif

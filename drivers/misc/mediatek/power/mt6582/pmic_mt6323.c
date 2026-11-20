@@ -58,7 +58,7 @@
 #include <mach/battery_common.h>
 #include <linux/time.h> 
 
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 #include <mach/mt_boot.h>
 #include <mach/system.h>
 #include "mach/mt_gpt.h"
@@ -126,7 +126,7 @@ extern void charger_hv_detect_sw_workaround_init(void);
 extern void pmu_drv_tool_customization_init(void);
 
 
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 extern void mt_power_off(void);
 static kal_bool long_pwrkey_press = false;
 static unsigned long timer_pre = 0; 
@@ -134,7 +134,7 @@ static unsigned long timer_pos = 0;
 #define LONG_PWRKEY_PRESS_TIME 		500*1000000    //500ms
 #endif
 
-#if defined(SLT_DRV_P3550_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 extern int disp_bls_set_backlight(unsigned int level);
 #endif
 //==============================================================================
@@ -651,7 +651,7 @@ void pwrkey_int_handler(void)
 		if(upmu_get_pwrkey_deb()==1)    	    	
     {
         xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "[pwrkey_int_handler] Release pwrkey\n");
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 		if(g_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT && timer_pre != 0)
 		{
 				timer_pos = sched_clock();
@@ -673,7 +673,7 @@ void pwrkey_int_handler(void)
     else
     {
         xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "[pwrkey_int_handler] Press pwrkey\n");
-#if defined (MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined (CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 		if(g_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT)
 		{
 			timer_pre = sched_clock();
@@ -727,7 +727,7 @@ void chrdet_int_handler(void)
     kal_uint32 ret=0;
 	
     xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "[chrdet_int_handler]....\n");
-#ifdef MTK_KERNEL_POWER_OFF_CHARGING
+#ifdef CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
     if (!upmu_get_rgs_chrdet())
     {
         int boot_mode = 0;
@@ -736,7 +736,7 @@ void chrdet_int_handler(void)
         if(boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT || boot_mode == LOW_POWER_OFF_CHARGING_BOOT)
         {
             xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "[chrdet_int_handler] Unplug Charger/USB In Kernel Power Off Charging Mode!  Shutdown OS!\r\n");
-        #if defined(SLT_DRV_P3550_CONFIG)
+        #if defined(CONFIG_SLT_DRV_P3550_CONFIG)
             disp_bls_set_backlight(0);
             mdelay(5);
         #endif
@@ -3546,7 +3546,7 @@ static int pmic_mt6323_probe(struct platform_device *dev)
     
     //No need due to VTCXO always on
     //pmic setting with RTC
-#if defined(SLT_DRV_P3550_WIFI_ONLY_CONFIG)
+#if defined(CONFIG_SLT_DRV_P3550_WIFI_ONLY_CONFIG)
     pmic_setting_depends_rtc();
 #endif
     
@@ -3558,7 +3558,7 @@ static int pmic_mt6323_probe(struct platform_device *dev)
     xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "[pmic_thread_kthread] Done\n");
 
     //Dump register
-    //#ifndef USER_BUILD_KERNEL
+    //#ifndef CONFIG_USER_BUILD_KERNEL
     //PMIC_DUMP_ALL_Register();
     //#endif
 

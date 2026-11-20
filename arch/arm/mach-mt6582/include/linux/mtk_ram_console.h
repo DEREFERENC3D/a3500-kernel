@@ -50,7 +50,7 @@ extern void aee_sram_fiq_log(const char *msg);
 extern void ram_console_write(struct console *console, const char *s, unsigned int count);
 extern void aee_sram_fiq_save_bin(const char *buffer, size_t len);
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 extern void last_kmsg_store_to_emmc(void);
 #endif
 
@@ -68,7 +68,7 @@ static inline void aee_sram_fiq_log(const char *msg) {}
 static inline void ram_console_write(struct console *console, const char *s, unsigned int count){}
 static inline void aee_sram_fiq_save_bin(unsigned char *buffer, size_t len) {}
 
-#ifdef MTK_EMMC_SUPPORT
+#ifdef CONFIG_MTK_EMMC_SUPPORT
 static inline void last_kmsg_store_to_emmc(void){}
 #endif
 
