@@ -36,23 +36,13 @@
 //************************************
 
 /* Number of CPU CORE */
-#if defined(CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)  
 #define NUMBER_OF_CORE (4)
-#else
-#if defined(CONFIG_ARCH_MT6577)
-#define NUMBER_OF_CORE (2)
-#else
-/* CONFIG_ARCH_MT6575 */
-#define NUMBER_OF_CORE (1)
-#endif 
-#endif 
 
 #if defined(CONFIG_MTK_SMART_BATTERY)
 // global variable from battery driver...
 extern kal_bool gFG_Is_Charging;
 #endif
 
-#if defined(CONFIG_ARCH_MT6582)  
 // get MT6582 GPU loading...
 
 //ALPS_SW/TRUNK/ALPS.JB2/alps/mediatek/platform/mt6582/kernel/drivers/gpu/mali/mali/platform/platform_pmm.h
@@ -62,7 +52,6 @@ extern kal_bool gFG_Is_Charging;
 unsigned long (*mtk_thermal_get_gpu_loading_fp)(void) = NULL;
 
 //extern unsigned int mt_gpufreq_cur_freq(void);
-#endif
 
 //************************************
 // Global Variable
@@ -203,15 +192,9 @@ struct gpu_index_st
 
 static struct cpu_index_st cpu_index_list[4];   ///< 4-Core is maximum 
 
-#if defined(CONFIG_ARCH_MT6577)
-#define NO_CPU_CORES (2)
-static int cpufreqs[NO_CPU_CORES];
-static int cpuloadings[NO_CPU_CORES];
-#elif defined(CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)
 #define NO_CPU_CORES (4)
 static int cpufreqs[NO_CPU_CORES];
 static int cpuloadings[NO_CPU_CORES];
-#endif
 
 
 #define SEEK_BUFF(x, c)  while(*x != c)x++; \
@@ -500,7 +483,6 @@ int mtk_thermal_get_cpu_info(
     int **cpufreq, 
     int **cpuloading)
 {
-#if defined(CONFIG_ARCH_MT6577) || defined(CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)
     //******************
     // CPU Usage
     //******************
@@ -523,16 +505,11 @@ int mtk_thermal_get_cpu_info(
         *cpuloading = cpuloadings;
 
     return 0;
-#else
-    return -1;
-#endif
 }
 
-#if defined(CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)
 #define NO_GPU_CORES (1)
 static int gpufreqs[NO_GPU_CORES];
 static int gpuloadings[NO_GPU_CORES];
-#endif
 
 int mtk_thermal_get_gpu_info(
     int *nocores,
@@ -542,7 +519,6 @@ int mtk_thermal_get_gpu_info(
     //******************
     // GPU Index
     //******************
-#if defined(CONFIG_ARCH_MT6582)
     if (nocores)
         *nocores = NO_GPU_CORES;
 
@@ -573,10 +549,6 @@ int mtk_thermal_get_gpu_info(
     
 
     return 0;
-
-#else
-    return -1;
-#endif
 }
 
 int mtk_thermal_get_batt_info(
@@ -589,25 +561,6 @@ int mtk_thermal_get_batt_info(
     //******************
 
     /* Read Battery Information */
-#if defined(CONFIG_ARCH_MT6575) || defined(CONFIG_ARCH_MT6577)
-    if (batt_current)
-    {
-        *batt_current = get_sys_battery_info("/sys/devices/platform/mt6329-battery/FG_Battery_CurrentConsumption");
-        // the return value is 0.1mA
-        if (*batt_current%10 <5)
-            *batt_current /= 10;
-        else
-            *batt_current = 1+(*batt_current/10);
-    
-#if defined(CONFIG_MTK_SMART_BATTERY)
-        if (KAL_TRUE == gFG_Is_Charging)
-        {
-            *batt_current *= -1;
-        }
-#endif
-    }
-
-#elif defined(CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)  
     if (batt_current)
     {
         // MT6589 PMIC is MT6320
@@ -626,11 +579,6 @@ int mtk_thermal_get_batt_info(
         }
 #endif
     }
-    
-#else
-    if (batt_current)
-        *batt_current = 0;
-#endif
 
     if (batt_voltage)
         *batt_voltage = get_sys_battery_info("/sys/class/power_supply/battery/batt_vol");
@@ -641,12 +589,10 @@ int mtk_thermal_get_batt_info(
     return 0;
 }
 
-#if defined (CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)  
 #define NO_EXTRA_THERMAL_ATTR (7)
 static char* extra_attr_names[NO_EXTRA_THERMAL_ATTR] = {0};
 static int extra_attr_values[NO_EXTRA_THERMAL_ATTR] = {0};
 static char* extra_attr_units[NO_EXTRA_THERMAL_ATTR] = {0};
-#endif
 
 int mtk_thermal_get_extra_info(
     int *no_extra_attr,
@@ -654,7 +600,6 @@ int mtk_thermal_get_extra_info(
     int **attr_values, 
     char ***attr_units)
 {
-#if defined(CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)  
     int size, i=0;
     
     if (no_extra_attr)
@@ -695,17 +640,10 @@ int mtk_thermal_get_extra_info(
         *attr_units = extra_attr_units;
 
     return 0;
-
-#else
-    return -1;
-#endif 
-    
 }
 
-#if defined(CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)  
 #if defined(MTK_FAN5405_SUPPORT) || defined(MTK_NCP1851_SUPPORT) || defined(MTK_BQ24196_SUPPORT) // supported charger IC
 extern int force_get_tbat(void);
-#endif
 #endif
 
 int mtk_thermal_force_get_batt_temp(
@@ -713,10 +651,8 @@ int mtk_thermal_force_get_batt_temp(
 {
     int ret = 0;
 
-#if defined(CONFIG_ARCH_MT6589) || defined(CONFIG_ARCH_MT6582)  
 #if defined(MTK_FAN5405_SUPPORT) || defined(MTK_NCP1851_SUPPORT) || defined(MTK_BQ24196_SUPPORT) // supported charger IC
     ret = force_get_tbat();
-#endif
 #endif
 
     return ret;
