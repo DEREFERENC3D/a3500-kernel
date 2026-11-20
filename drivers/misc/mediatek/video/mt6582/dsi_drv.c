@@ -164,47 +164,6 @@ static long int get_current_time_us(void)
     return (t.tv_sec & 0xFFF) * 1000000 + t.tv_usec;
 }
 #endif
-#if 0
-unsigned int custom_pll_clock_remap(int input_mipi_clock)
-{
-   int i;
-   unsigned int ret = 0;
-   int mipi_clock=10*input_mipi_clock;
-   printk("DSI: custom_pll_clock_remap,mipi clock should be %d!!!\n", mipi_clock);
-
-	if(mipi_clock == 0)return 0;
-
-   if((mipi_clock>0)&&(mipi_clock<LCM_DSI_6582_PLL_CLOCK_List[1]))
-//  	   lcm_params->dsi.PLL_CLOCK=1;
-	   return 1;
-
-   if(mipi_clock>LCM_DSI_6582_PLL_CLOCK_List[PLL_TABLE_NUM])
-//  	   lcm_params->dsi.PLL_CLOCK=50;
-	   return PLL_TABLE_NUM;
-
-	for(i=1;i<PLL_TABLE_NUM+1;i++)
-   	{
-		ASSERT(LCM_DSI_6582_PLL_CLOCK_List[i] < LCM_DSI_6582_PLL_CLOCK_List[i+1]);
-   		if((mipi_clock>=LCM_DSI_6582_PLL_CLOCK_List[i])&&(mipi_clock<=LCM_DSI_6582_PLL_CLOCK_List[i+1]))
-   	  	{
-   	  		if((mipi_clock-LCM_DSI_6582_PLL_CLOCK_List[i])<=(LCM_DSI_6582_PLL_CLOCK_List[i+1]-mipi_clock))
-   	  	  	{
-//   	  	  	  	    lcm_params->dsi.PLL_CLOCK=i+1;
-				ret = i;
-				break;
-			}
-			else
-			{
-//			  	    lcm_params->dsi.PLL_CLOCK=i+2;
-				ret = i+1;
-				break;
-			}
-		}
-	}
-	printk("custom_pll_clock_remap,remap clock is %d!!!\n", ret);
-	return ret;
-}
-#endif
 static void lcm_mdelay(UINT32 ms)
 {
     mdelay(1000 * ms);
@@ -1572,11 +1531,6 @@ DSI_STATUS DSI_Reset(void)
 
 DSI_STATUS DSI_LP_Reset(void)
 {
-#if 0
-	_WaitForEngineNotBusy();
-	OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,1);
-	OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,0);
-#endif
     return DSI_STATUS_OK;
 }
 
@@ -2288,16 +2242,6 @@ void DSI_handle_esd_recovery(void)
 // called by "esd_recovery_kthread"
 bool DSI_esd_check(void)
 {
-#ifndef MT65XX_NEW_DISP
-	bool result = false;
-
-	if(dsi_esd_recovery)
-		result = true;
-	else
-		result = false;
-
-	dsi_esd_recovery = false;
-#else
 	DSI_MODE_CTRL_REG mode_ctl, mode_ctl_backup;
 	bool result = false;
 	//backup video mode
@@ -2354,7 +2298,6 @@ bool DSI_esd_check(void)
 	//restore video mode
 	if(!result)
 		OUTREG32(&DSI_REG->DSI_MODE_CTRL, AS_UINT32(&mode_ctl_backup));
-#endif
 	wait_vm_done_irq = false;
 	return result;
 }
@@ -2362,99 +2305,13 @@ bool DSI_esd_check(void)
 
 void DSI_set_int_TE(bool enable, unsigned int period)
 {
-#ifndef MT65XX_NEW_DISP
-	dsi_int_te_enabled = enable;
-	if(period<1)
-		period = 1;
-	dsi_int_te_period = period;
-	dsi_dpi_isr_count = 0;
-#endif
 }
 
 
 // called by DPI ISR.
 bool DSI_handle_int_TE(void)
 {
-#ifndef CONFIG_ARCH_MT6582
-#ifndef MT65XX_NEW_DISP
-	DSI_T0_INS t0;
-	long int dsi_current_time;
-
-	if (!DSI_REG->DSI_MODE_CTRL.MODE)
-		return false;
-
-	dsi_current_time = get_current_time_us();
-
-	if(DSI_REG->DSI_STATE_DBG3.TCON_STATE == DSI_VDO_VFP_STATE)
-	{
-		udelay(_dsiContext.vfp_period_us / 2);
-
-		if ((DSI_REG->DSI_STATE_DBG3.TCON_STATE == DSI_VDO_VFP_STATE) && DSI_REG->DSI_STATE_DBG0.CTL_STATE_0 == 0x1)
-		{
-			// Can't do int. TE check while INUSE FB number is not 0 because later disable/enable DPI will set INUSE FB to number 0.
-			if(DPI_REG->STATUS.FB_INUSE != 0)
-				return false;
-
-			DSI_clk_HS_mode(0);
-
-			//DSI_REG->DSI_COM_CTRL.DSI_RESET = 1;
-			OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,1);
-			DPI_DisableClk();
-			DSI_SetMode(CMD_MODE);
-			//DSI_REG->DSI_COM_CTRL.DSI_RESET = 0;
-			OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,0);
-			//DSI_Reset();
-
-			t0.CONFG = 0x20;		///TE
-			t0.Data0 = 0;
-			t0.Data_ID = 0;
-			t0.Data1 = 0;
-
-			OUTREG32(&DSI_CMDQ_REG->data[0], AS_UINT32(&t0));
-			OUTREG32(&DSI_REG->DSI_CMDQ_SIZE, 1);
-
-			// Enable RD_RDY INT for polling it's status later
-			//DSI_REG->DSI_INTEN.RD_RDY =  1;
-			OUTREGBIT(DSI_INT_ENABLE_REG,DSI_REG->DSI_INTEN,RD_RDY,1);
-
-			DSI_Start();
-
-	        while(DSI_REG->DSI_INTSTA.RD_RDY == 0)  // polling RD_RDY
-	        {
-				if(get_current_time_us() - dsi_current_time > _dsiContext.vfp_period_us)
-				{
-					xlog_printk(ANDROID_LOG_WARN, "DSI", " Wait for internal TE time-out for %d (us)!!!\n", _dsiContext.vfp_period_us);
-
-					///do necessary reset here
-					//DSI_REG->DSI_RACK.DSI_RACK = 1;
-					OUTREGBIT(DSI_RACK_REG,DSI_REG->DSI_RACK,DSI_RACK,1);
-					DSI_Reset();
-
-					return true;
-				}
-	        }
-
-			// Write clear RD_RDY
-			//DSI_REG->DSI_INTSTA.RD_RDY = 1;
-			//DSI_REG->DSI_RACK.DSI_RACK = 1;
-			OUTREGBIT(DSI_INT_STATUS_REG,DSI_REG->DSI_INTSTA,RD_RDY,1);
-			OUTREGBIT(DSI_RACK_REG,DSI_REG->DSI_RACK,DSI_RACK,1);
-			// Write clear CMD_DONE
-			//DSI_REG->DSI_INTSTA.CMD_DONE = 1;
-			OUTREGBIT(DSI_INT_STATUS_REG,DSI_REG->DSI_INTSTA,CMD_DONE,1);
-
-			// Restart video mode. (with VSA ahead)
-			DSI_SetMode(SYNC_PULSE_VDO_MODE);
-			DSI_clk_HS_mode(1);
-			DPI_EnableClk();
-			DSI_Start();
-		}
-
-	}
-#endif
-#endif
 	return false;
-
 }
 
 
@@ -2471,90 +2328,7 @@ void DSI_Detect_glitch_enable(bool enable)
 // called by DPI ISR.
 void DSI_handle_noncont_clk(void)
 {
-#ifndef CONFIG_ARCH_MT6582
-#ifndef MT65XX_NEW_DISP
-	unsigned int state;
-	long int dsi_current_time;
 
-	if (!DSI_REG->DSI_MODE_CTRL.MODE)
-		return ;
-
-	state = DSI_REG->DSI_STATE_DBG3.TCON_STATE;
-
-	dsi_current_time = get_current_time_us();
-
-	switch(state)
-	{
-		case DSI_VDO_VSA_VS_STATE:
-			while(DSI_REG->DSI_STATE_DBG3.TCON_STATE != DSI_VDO_VSA_HS_STATE)
-			{
-				if(get_current_time_us() - dsi_current_time > _dsiContext.vsa_vs_period_us)
-				{
-					xlog_printk(ANDROID_LOG_WARN, "DSI", " Wait for %x state timeout %d (us)!!!\n", DSI_VDO_VSA_HS_STATE, _dsiContext.vsa_vs_period_us);
-					return ;
-				}
-			}
-			break;
-
-		case DSI_VDO_VSA_HS_STATE:
-			while(DSI_REG->DSI_STATE_DBG3.TCON_STATE != DSI_VDO_VSA_VE_STATE)
-			{
-				if(get_current_time_us() - dsi_current_time > _dsiContext.vsa_hs_period_us)
-				{
-					xlog_printk(ANDROID_LOG_WARN, "DSI", " Wait for %x state timeout %d (us)!!!\n", DSI_VDO_VSA_VE_STATE, _dsiContext.vsa_hs_period_us);
-					return ;
-				}
-			}
-			break;
-
-		case DSI_VDO_VSA_VE_STATE:
-			while(DSI_REG->DSI_STATE_DBG3.TCON_STATE != DSI_VDO_VBP_STATE)
-			{
-				if(get_current_time_us() - dsi_current_time > _dsiContext.vsa_ve_period_us)
-				{
-					xlog_printk(ANDROID_LOG_WARN, "DSI", " Wait for %x state timeout %d (us)!!!\n", DSI_VDO_VBP_STATE, _dsiContext.vsa_ve_period_us);
-					return ;
-				}
-			}
-			break;
-
-		case DSI_VDO_VBP_STATE:
-			xlog_printk(ANDROID_LOG_WARN, "DSI", "Can't do clock switch in DSI_VDO_VBP_STATE !!!\n");
-			break;
-
-		case DSI_VDO_VACT_STATE:
-			while(DSI_REG->DSI_STATE_DBG3.TCON_STATE != DSI_VDO_VFP_STATE)
-			{
-				if(get_current_time_us() - dsi_current_time > _dsiContext.vfp_period_us )
-				{
-					xlog_printk(ANDROID_LOG_WARN, "DSI", " Wait for %x state timeout %d (us)!!!\n", DSI_VDO_VFP_STATE, _dsiContext.vfp_period_us );
-					return ;
-				}
-			}
-			break;
-
-		case DSI_VDO_VFP_STATE:
-			while(DSI_REG->DSI_STATE_DBG3.TCON_STATE != DSI_VDO_VSA_VS_STATE)
-			{
-				if(get_current_time_us() - dsi_current_time > _dsiContext.vfp_period_us )
-				{
-					xlog_printk(ANDROID_LOG_WARN, "DSI", " Wait for %x state timeout %d (us)!!!\n", DSI_VDO_VSA_VS_STATE, _dsiContext.vfp_period_us );
-					return ;
-				}
-			}
-			break;
-
-		default :
-			xlog_printk(ANDROID_LOG_ERROR, "DSI", "invalid state = %x \n", state);
-			return ;
-	}
-
-	// Clock switch HS->LP->HS
-	DSI_clk_HS_mode(0);
-	udelay(1);
-	DSI_clk_HS_mode(1);
-#endif
-#endif
 }
 
 #ifdef ENABLE_DSI_ERROR_REPORT
@@ -3216,158 +2990,7 @@ UINT32 DSI_dcs_read_lcm_reg(UINT8 cmd)
     UINT32 recv_data_cnt;
     unsigned int read_timeout_ms;
     unsigned char packet_type;
-#if 0
-    DSI_T0_INS t0;
-#if ENABLE_DSI_INTERRUPT
-    static const long WAIT_TIMEOUT = 2 * HZ;    // 2 sec
-    long ret;
-#endif
 
-	if (DSI_REG->DSI_MODE_CTRL.MODE)
-		return 0;
-
-    do
-    {
-       if(max_try_count == 0)
-          return 0;
-
-       max_try_count--;
-       recv_data = 0;
-       recv_data_cnt = 0;
-       read_timeout_ms = 20;
-
-       _WaitForEngineNotBusy();
-
-       t0.CONFG = 0x04;        ///BTA
-       t0.Data0 = cmd;
-       t0.Data_ID = DSI_DCS_READ_PACKET_ID;
-       t0.Data1 = 0;
-
-       OUTREG32(&DSI_CMDQ_REG->data[0], AS_UINT32(&t0));
-       OUTREG32(&DSI_REG->DSI_CMDQ_SIZE, 1);
-
-       ///clear read ACK
-       DSI_REG->DSI_RACK.DSI_RACK = 1;
-       DSI_REG->DSI_INTSTA.RD_RDY = 1;
-       DSI_REG->DSI_INTSTA.CMD_DONE = 1;
-       DSI_REG->DSI_INTEN.RD_RDY =  1;
-       DSI_REG->DSI_INTEN.CMD_DONE=  1;
-
-       OUTREG32(&DSI_REG->DSI_START, 0);
-       OUTREG32(&DSI_REG->DSI_START, 1);
-
-       /// the following code is to
-       /// 1: wait read ready
-       /// 2: ack read ready
-       /// 3: wait for CMDQ_DONE
-       /// 3: read data
-#if ENABLE_DSI_INTERRUPT
-        ret = wait_event_interruptible_timeout(_dsi_dcs_read_wait_queue,
-                                                       !_IsEngineBusy(),
-                                                       WAIT_TIMEOUT);
-        if (0 == ret) {
-            DISP_LOG_PRINT(ANDROID_LOG_WARN, "DSI", " Wait for DSI engine read ready timeout!!!\n");
-
-				DSI_DumpRegisters();
-
-				///do necessary reset here
-				DSI_REG->DSI_RACK.DSI_RACK = 1;
-				DSI_Reset();
-
-                return 0;
-            }
-#else
-    #ifdef DSI_DRV_DEBUG_LOG_ENABLE
-        DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " Start polling DSI read ready!!!\n");
-    #endif
-        while(DSI_REG->DSI_INTSTA.RD_RDY == 0)  ///read clear
-        {
-            ///keep polling
-            msleep(1);
-            read_timeout_ms --;
-
-            if(read_timeout_ms == 0)
-            {
-                DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " Polling DSI read ready timeout!!!\n");
-                DSI_DumpRegisters();
-
-                ///do necessary reset here
-                DSI_REG->DSI_RACK.DSI_RACK = 1;
-                DSI_Reset();
-                return 0;
-            }
-        }
-    #ifdef DSI_DRV_DEBUG_LOG_ENABLE
-        DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " End polling DSI read ready!!!\n");
-    #endif
-
-        DSI_REG->DSI_RACK.DSI_RACK = 1;
-
-       while(DSI_REG->DSI_STA.BUF_UNDERRUN || DSI_REG->DSI_STA.ESC_ENTRY_ERR || DSI_REG->DSI_STA.LPDT_SYNC_ERR || DSI_REG->DSI_STA.CTRL_ERR || DSI_REG->DSI_STA.CONTENT_ERR)
-       {
-           ///DSI READ ACK HW bug workaround
-    #ifdef DSI_DRV_DEBUG_LOG_ENABLE
-           DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "DSI is busy: 0x%x !!!\n", DSI_REG->DSI_STA.BUSY);
-    #endif
-           DSI_REG->DSI_RACK.DSI_RACK = 1;
-       }
-
-
-       ///clear interrupt status
-       DSI_REG->DSI_INTSTA.RD_RDY = 1;
-       ///STOP DSI
-       OUTREG32(&DSI_REG->DSI_START, 0);
-
-#endif
-
-       DSI_REG->DSI_INTEN.RD_RDY =  0;
-
-    #ifdef DSI_DRV_DEBUG_LOG_ENABLE
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_STA : 0x%x \n", DSI_REG->DSI_RX_STA);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_CMDQ_SIZE : 0x%x \n", DSI_REG->DSI_CMDQ_SIZE.CMDQ_SIZE);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_CMDQ_DATA0 : 0x%x \n", DSI_CMDQ_REG->data[0].byte0);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_CMDQ_DATA1 : 0x%x \n", DSI_CMDQ_REG->data[0].byte1);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_CMDQ_DATA2 : 0x%x \n", DSI_CMDQ_REG->data[0].byte2);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_CMDQ_DATA3 : 0x%x \n", DSI_CMDQ_REG->data[0].byte3);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_DATA.BYTE0 : 0x%x \n", DSI_REG->DSI_RX_DATA.BYTE0);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_DATA.BYTE1 : 0x%x \n", DSI_REG->DSI_RX_DATA.BYTE1);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_DATA.BYTE2 : 0x%x \n", DSI_REG->DSI_RX_DATA.BYTE2);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_DATA.BYTE3 : 0x%x \n", DSI_REG->DSI_RX_DATA.BYTE3);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_DATA.BYTE4 : 0x%x \n", DSI_REG->DSI_RX_DATA.BYTE4);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_DATA.BYTE5 : 0x%x \n", DSI_REG->DSI_RX_DATA.BYTE5);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_DATA.BYTE6 : 0x%x \n", DSI_REG->DSI_RX_DATA.BYTE6);
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI_RX_DATA.BYTE7 : 0x%x \n", DSI_REG->DSI_RX_DATA.BYTE7);
-    #endif
-       packet_type = DSI_REG->DSI_RX_DATA.BYTE0;
-
-    #ifdef DSI_DRV_DEBUG_LOG_ENABLE
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI read packet_type is 0x%x \n",packet_type);
-    #endif
-       if(DSI_REG->DSI_RX_STA.LONG == 1)
-       {
-           recv_data_cnt = DSI_REG->DSI_RX_DATA.BYTE1 + DSI_REG->DSI_RX_DATA.BYTE2 * 16;
-           if(recv_data_cnt > 4)
-           {
-    #ifdef DSI_DRV_DEBUG_LOG_ENABLE
-              DISP_LOG_PRINT(ANDROID_LOG_WARN, "DSI", " DSI read long packet data  exceeds 4 bytes \n");
-    #endif
-              recv_data_cnt = 4;
-           }
-           memcpy((void*)&recv_data, (void*)&DSI_REG->DSI_RX_DATA.BYTE4, recv_data_cnt);
-       }
-       else
-       {
-           memcpy((void*)&recv_data, (void*)&DSI_REG->DSI_RX_DATA.BYTE1, 2);
-       }
-
-    #ifdef DSI_DRV_DEBUG_LOG_ENABLE
-       DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " DSI read 0x%x data is 0x%x \n",cmd,  recv_data);
-    #endif
-   }while(packet_type != 0x1C && packet_type != 0x21 && packet_type != 0x22);
-   /// here: we may receive a ACK packet which packet type is 0x02 (incdicates some error happened)
-   /// therefore we try re-read again until no ACK packet
-   /// But: if it is a good way to keep re-trying ???
-#endif
    return recv_data;
 }
 
@@ -3623,21 +3246,9 @@ DSI_STATUS DSI_read_lcm_fb(unsigned char *buffer)
    unsigned int array[2];
 
    _WaitForEngineNotBusy();
-#if 0
-   array[0] = 0x000A3700;// read size
-   DSI_set_cmdq(array, 1, 1);
-
-   DSI_dcs_read_lcm_reg_v2(0x2E,buffer,10);
-   DSI_dcs_read_lcm_reg_v2(0x2E,buffer+10,10);
-   DSI_dcs_read_lcm_reg_v2(0x2E,buffer+10*2,10);
-   DSI_dcs_read_lcm_reg_v2(0x2E,buffer+10*3,10);
-   DSI_dcs_read_lcm_reg_v2(0x2E,buffer+10*4,10);
-   DSI_dcs_read_lcm_reg_v2(0x2E,buffer+10*5,10);
-#else
 	// if read_fb not impl, should return info
 	if(lcm_drv->read_fb)
 		lcm_drv->read_fb(buffer);
-#endif
    return DSI_STATUS_OK;
 }
 
@@ -3684,115 +3295,24 @@ void DSI_BLS_Enable(bool enable)
 
 DSI_STATUS DSI_enable_MIPI_txio(bool en)
 {
-#if 0
-    if(en)
-    {
-        *(volatile unsigned int *) (INFRACFG_BASE+0x890) |= 0x00000100;    // enable MIPI TX IO
-    }
-    else
-    {
-        *(volatile unsigned int *) (INFRACFG_BASE+0x890) &= ~0x00000100;   // disable MIPI TX IO
-    }
-#endif
 	return DSI_STATUS_OK;
 }
 
 
 bool Need_Wait_ULPS(void)
 {
-#ifndef MT65XX_NEW_DISP
-	if(((INREG32(DSI_BASE + 0x14C)>> 24) & 0xFF) != 0x04) {
-
-#ifdef DDI_DRV_DEBUG_LOG_ENABLE
-	DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "[%s]:true \n", __func__);
-#endif
-		return TRUE;
-
-	} else {
-
-#ifdef DDI_DRV_DEBUG_LOG_ENABLE
-	DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "[%s]:false \n", __func__);
-#endif
-		return FALSE;
-
-	}
-#endif
 }
 
 
 DSI_STATUS Wait_ULPS_Mode(void)
 {
-#ifndef MT65XX_NEW_DISP
-	DSI_PHY_LCCON_REG lccon_reg=DSI_REG->DSI_PHY_LCCON;
-	DSI_PHY_LD0CON_REG ld0con=DSI_REG->DSI_PHY_LD0CON;
-
-	lccon_reg.LC_ULPM_EN =1;
-	ld0con.L0_ULPM_EN=1;
-	OUTREG32(&DSI_REG->DSI_PHY_LCCON, AS_UINT32(&lccon_reg));
-	OUTREG32(&DSI_REG->DSI_PHY_LD0CON, AS_UINT32(&ld0con));
-
-#ifdef DDI_DRV_DEBUG_LOG_ENABLE
-	DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "[%s]:enter \n", __func__);
-#endif
-
-	while(((INREG32(DSI_BASE + 0x14C)>> 24) & 0xFF) != 0x04)
-	{
-		lcm_mdelay(5);
-#ifdef DDI_DRV_DEBUG_LOG_ENABLE
-		DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "DSI+%04x : 0x%08x \n", DSI_BASE, INREG32(DSI_BASE + 0x14C));
-#endif
-	}
-
-#ifdef DDI_DRV_DEBUG_LOG_ENABLE
-	DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "[%s]:exit \n", __func__);
-#endif
-#endif
 	return DSI_STATUS_OK;
-
 }
 
 
 DSI_STATUS Wait_WakeUp(void)
 {
-#ifndef MT65XX_NEW_DISP
-	DSI_PHY_LCCON_REG lccon_reg=DSI_REG->DSI_PHY_LCCON;
-	DSI_PHY_LD0CON_REG ld0con=DSI_REG->DSI_PHY_LD0CON;
-
-#ifdef DDI_DRV_DEBUG_LOG_ENABLE
-		DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "[%s]:enter \n", __func__);
-#endif
-
-	lccon_reg.LC_ULPM_EN =0;
-	ld0con.L0_ULPM_EN=0;
-	OUTREG32(&DSI_REG->DSI_PHY_LCCON, AS_UINT32(&lccon_reg));
-	OUTREG32(&DSI_REG->DSI_PHY_LD0CON, AS_UINT32(&ld0con));
-
-	lcm_mdelay(1);//Wait 1ms for LCM Spec
-
-	lccon_reg.LC_WAKEUP_EN =1;
-	ld0con.L0_WAKEUP_EN=1;
-	OUTREG32(&DSI_REG->DSI_PHY_LCCON, AS_UINT32(&lccon_reg));
-	OUTREG32(&DSI_REG->DSI_PHY_LD0CON, AS_UINT32(&ld0con));
-
-	while(((INREG32(DSI_BASE + 0x148)>> 8) & 0xFF) != 0x01)
-	{
-		lcm_mdelay(5);
-#ifdef DDI_DRV_DEBUG_LOG_ENABLE
-		DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "[soso]DSI+%04x : 0x%08x \n", DSI_BASE, INREG32(DSI_BASE + 0x148));
-#endif
-	}
-
-#ifdef DDI_DRV_DEBUG_LOG_ENABLE
-	DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", "[%s]:exit \n", __func__);
-#endif
-
-	lccon_reg.LC_WAKEUP_EN =0;
-	ld0con.L0_WAKEUP_EN=0;
-	OUTREG32(&DSI_REG->DSI_PHY_LCCON, AS_UINT32(&lccon_reg));
-	OUTREG32(&DSI_REG->DSI_PHY_LD0CON, AS_UINT32(&ld0con));
-#endif
 	return DSI_STATUS_OK;
-
 }
 
 // -------------------- Retrieve Information --------------------
@@ -3905,12 +3425,6 @@ DSI_STATUS DSI_Get_Default_CLK(unsigned int *clk)
 
 DSI_STATUS DSI_Get_Current_CLK(unsigned int *clk)
 {
-#if 0
-    if(mipitx_con1.RG_PLL_DIV2 == 0)
-        *clk = 26 * (mipitx_con1.RG_PLL_DIV1 + 1);
-    else
-        *clk = 13 * (mipitx_con1.RG_PLL_DIV1 + 1) / mipitx_con1.RG_PLL_DIV2;
-#endif
     return DSI_STATUS_OK;
 }
 

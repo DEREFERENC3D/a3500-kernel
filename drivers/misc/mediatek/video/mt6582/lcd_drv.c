@@ -2123,41 +2123,6 @@ LCD_STATUS LCD_SetGMCThrottle()
 // called by "esd_recovery_kthread"
 BOOL LCD_esd_check(void)
 {
-#ifndef MT65XX_NEW_DISP
-	UINT32 x, y, width, height;
-
-	// Enable TE interrupt
-	//LCD_TE_SetMode(LCD_TE_MODE_VSYNC_ONLY);
-	//LCD_TE_SetEdgePolarity(LCM_POLARITY_RISING);
-	LCD_TE_Enable(TRUE);
-
-	// Backup ROI
-	LCD_CHECK_RET(LCD_GetRoiWindow(&x, &y, &width, &height));
-
-	// Set ROI = 0
-	LCD_CHECK_RET(LCD_SetRoiWindow(0, 0, 0, 0));
-
-	// Switch to unuse port
-	LCD_CHECK_RET(LCD_SelectWriteIF(LCD_IF_PARALLEL_2));
-
-	// Write to LCM
-	LCD_CHECK_RET(LCD_SetOutputMode(LCD_OUTPUT_TO_LCM));
-
-	// Blocking Trigger
-	// This is to cheat LCDC to wait TE interrupt 
-	LCD_CHECK_RET(LCD_StartTransfer(TRUE));
-
-	// Restore ROI
-	LCD_CHECK_RET(LCD_SetRoiWindow(x, y, width, height));
-
-	// Disable TE interrupt
-	LCD_TE_Enable(FALSE);
-
-	// Write to memory	
-	LCD_CHECK_RET(LCD_SetOutputMode(LCD_OUTPUT_TO_MEM));
-
-	return lcd_esd_check;
-#endif	
 	return TRUE;
 }
 

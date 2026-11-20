@@ -96,33 +96,6 @@ static BOOL disp_drv_dpi_init_context(void)
     return TRUE;
 }
 
-#ifndef MT65XX_NEW_DISP
-static void init_intermediate_buffers(UINT32 fbPhysAddr)
-{
-    UINT32 tmpFbStartPA = fbPhysAddr;
-
-    UINT32 tmpFbPitchInBytes = DISP_GetScreenWidth() * dpiTmpBufBpp;
-    UINT32 tmpFbSizeInBytes  = tmpFbPitchInBytes * DISP_GetScreenHeight();
-
-    UINT32 i;
-    
-    for (i = 0; i < lcm_params->dpi.intermediat_buffer_num; ++ i)
-    {
-        TempBuffer *b = &s_tmpBuffers[i];
-        
-#ifdef BUILD_UBOOT
-        // clean the intermediate buffers as black to prevent from noise display
-        memset(tmpFbStartPA, 0, tmpFbSizeInBytes);
-#endif
-        b->pitchInBytes = tmpFbPitchInBytes;
-        b->pa = tmpFbStartPA;
-        ASSERT((tmpFbStartPA & 0x7) == 0);  // check if 8-byte-aligned
-        tmpFbStartPA += tmpFbSizeInBytes;
-    }
-
-}
-#endif
-
 void init_mipi_pll(void)
 {
     DPI_CHECK_RET(DPI_Init_PLL(lcm_params->dpi.mipi_pll_clk_ref,
@@ -201,9 +174,7 @@ void init_dpi(BOOL isDpiPoweredOn)
                                   dpi->vsync_back_porch,
                                   dpi->vsync_front_porch));
 
-#ifdef MT65XX_NEW_DISP
 	DPI_CHECK_RET(DPI_ConfigLVDS(lcm_params));
-#endif
 
     DPI_CHECK_RET(DPI_FBSetSize(DISP_GetScreenWidth(), DISP_GetScreenHeight()));
     
@@ -244,9 +215,7 @@ void init_dpi_new(BOOL isDpiPoweredOn)
                                   dpi->vsync_pulse_width,
                                   dpi->vsync_back_porch,
                                   dpi->vsync_front_porch));
-#ifdef MT65XX_NEW_DISP
 	DPI_CHECK_RET(DPI_ConfigLVDS(lcm_params));
-#endif
     DPI_CHECK_RET(DPI_FBSetSize(DISP_GetScreenWidth(), DISP_GetScreenHeight()));
     for (i = 0; i < dpi->intermediat_buffer_num; ++ i)
     {
@@ -300,9 +269,6 @@ static DISP_STATUS dpi_init(UINT32 fbVA, UINT32 fbPA, BOOL isLcmInited)
 #endif
 
         
-#ifndef MT65XX_NEW_DISP
-    init_intermediate_buffers(fbPA);
-#else
 	{
 		struct disp_path_config_struct config = {0};
 
@@ -320,23 +286,7 @@ static DISP_STATUS dpi_init(UINT32 fbVA, UINT32 fbPA, BOOL isLcmInited)
 			config.srcROI.x = 0;config.srcROI.y = 0;
 			config.srcROI.height= DISP_GetScreenHeight();config.srcROI.width= DISP_GetScreenWidth();
 			config.ovl_config.source = OVL_LAYER_SOURCE_MEM;
-#if 0   
-		// Disable 0/1/2 layer.
-        // First disable FB_Layer.
-        disp_path_get_mutex();
-        config.ovl_config.layer = 0;
-        config.ovl_config.layer_en = 0;
-        disp_path_config_layer(&config.ovl_config);
-        config.ovl_config.layer = 1;
-        disp_path_config_layer(&config.ovl_config);
-        config.ovl_config.layer = 2;
-        disp_path_config_layer(&config.ovl_config);
-        //no need disable layer3 when mva=pa, flicker if open
-        //config.ovl_config.layer = 3;
-        //disp_path_config_layer(&config.ovl_config);
-        disp_path_release_mutex();
-        disp_path_wait_reg_update();
-#endif
+
         // Config FB_Layer port to be virtual.
         {
             M4U_PORT_STRUCT portStruct;
@@ -380,7 +330,6 @@ static DISP_STATUS dpi_init(UINT32 fbVA, UINT32 fbPA, BOOL isLcmInited)
         disp_path_release_mutex();
         disp_path_wait_reg_update();
 	}
-#endif
 #ifdef SPM_SODI_ENABLED
     spm_sodi_lcm_video_mode(TRUE);
 #endif
@@ -427,15 +376,11 @@ static DISP_STATUS dpi_enable_power(BOOL enable)
 
 static DISP_STATUS dpi_update_screen(BOOL isMuextLocked)
 {
-#ifndef MT65XX_NEW_DISP
-    LCD_CHECK_RET(LCD_StartTransfer(FALSE));
-#else
     if (!isMuextLocked) {
     	disp_path_get_mutex();
     	LCD_CHECK_RET(LCD_ConfigOVL());
     	disp_path_release_mutex();
     }
-#endif
     return DISP_STATUS_OK;
 }
 

@@ -60,7 +60,6 @@
 ///LCD HW feature options for MT6575
 #define MTK_LCD_HW_SIF_VERSION      2       ///for MT6575, we naming it is V2 because MT6516/73 is V1...
 #define MTKFB_NO_M4U
-#define MT65XX_NEW_DISP
 //#define MTK_LCD_HW_3D_SUPPORT
 #define ALIGN_TO(x, n)  \
 	(((x) + ((n) - 1)) & ~((n) - 1))

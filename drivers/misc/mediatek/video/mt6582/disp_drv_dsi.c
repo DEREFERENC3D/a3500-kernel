@@ -31,9 +31,6 @@ typedef struct
     UINT32 pitchInBytes;
 } TempBuffer;
 
-#ifndef MT65XX_NEW_DISP
-static TempBuffer s_tmpBuffers[3];
-#endif
 static bool needStartDSI = false;
 
 // ---------------------------------------------------------------------------
@@ -461,16 +458,9 @@ static DISP_STATUS dsi_update_screen(BOOL isMuextLocked)
 	//DSI_CHECK_RET(DSI_handle_TE());
 
 	DSI_SetMode(lcm_params->dsi.mode);
-#ifndef MT65XX_NEW_DISP
-	LCD_CHECK_RET(LCD_StartTransfer(FALSE));
-#endif
 	if (lcm_params->type==LCM_TYPE_DSI && lcm_params->dsi.mode == CMD_MODE && !DDMS_capturing) {
 //		DSI_clk_HS_mode(1);
-#ifdef MT65XX_NEW_DISP
         DSI_CHECK_RET(DSI_StartTransfer(isMuextLocked));
-#else
-				DSI_CHECK_RET(DSI_Start());
-#endif
 	}
 	else if (lcm_params->type==LCM_TYPE_DSI && lcm_params->dsi.mode != CMD_MODE && !DDMS_capturing)
 	{
@@ -478,13 +468,6 @@ static DISP_STATUS dsi_update_screen(BOOL isMuextLocked)
         DSI_CHECK_RET(DSI_StartTransfer(isMuextLocked));
 #ifndef BUILD_UBOOT
 		is_video_mode_running = true;
-#ifndef MT65XX_NEW_DISP
-		if(lcm_params->dsi.noncont_clock)
-			DSI_set_noncont_clk(true, lcm_params->dsi.noncont_clock_period);
-
-		if(lcm_params->dsi.lcm_int_te_monitor)
-			DSI_set_int_TE(true, lcm_params->dsi.lcm_int_te_period);
-#endif
 #endif
 	}
 
@@ -556,11 +539,7 @@ DISP_STATUS dsi_capture_framebuffer(UINT32 pvbuf, UINT32 bpp)
 	if(lcm_params->dsi.mode == CMD_MODE)
 	{
         LCD_CHECK_RET(LCD_EnableDCtoDsi(FALSE));
-#ifndef MT65XX_NEW_DISP
-	    LCD_CHECK_RET(LCD_Capture_Framebuffer(pvbuf, bpp));
-#else
 		DSI_CHECK_RET(DSI_Capture_Framebuffer(pvbuf, bpp, true));//cmd mode
-#endif
 	}
 	else
 	{
@@ -592,22 +571,11 @@ BOOL dsi_esd_check(void)
 	else
 	{
 #ifndef BUILD_UBOOT
-#ifndef MT65XX_NEW_DISP
-		if(lcm_params->dsi.lcm_int_te_monitor)
-			result = DSI_esd_check();
-
-		if(result)
-			return true;
-
-		if(lcm_params->dsi.lcm_ext_te_monitor)
-			result = LCD_esd_check();
-#else
 		result = DSI_esd_check();
 		DSI_LP_Reset();
 		needStartDSI = true;
 		if(!result)
 			dsi_update_screen(true);
-#endif
 		return result;
 #endif
 	}
