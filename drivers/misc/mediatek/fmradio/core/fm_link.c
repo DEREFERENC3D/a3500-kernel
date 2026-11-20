@@ -28,7 +28,6 @@
 #include "fm_err.h"
 #include "fm_stdlib.h"
 #include "fm_link.h"
-#if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
 #include "stp_exp.h"
 #include "wmt_exp.h"
 static struct fm_link_event *link_event;
@@ -490,7 +489,6 @@ extern fm_s32 fm_print_evt_fifo(void)
 
     return 0;
 }
-#endif
 
 fm_s32 fm_trace_in(struct fm_trace_fifo_t *thiz, struct fm_trace_t *new_tra)
 {
