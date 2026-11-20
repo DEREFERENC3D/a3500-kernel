@@ -1242,13 +1242,6 @@ nicVerifyChipID (
     DBGLOG(INIT, TRACE,("Chip ID: 0x%x\n", u4CIR & WCIR_CHIP_ID));
     DBGLOG(INIT, TRACE,("Revision ID: 0x%x\n", ((u4CIR & WCIR_REVISION_ID) >> 16)));
 
-#if 0
-    if (((u4CIR & WCIR_CHIP_ID) != MTK_CHIP_REV_72) &&
-        ((u4CIR & WCIR_CHIP_ID) != MTK_CHIP_REV_82)) {
-        return FALSE;
-    }
-#endif
-
     prAdapter->ucRevID = (UINT_8)(((u4CIR & WCIR_REVISION_ID) >> 16) & 0xF) ;
 
     return TRUE;
@@ -1282,12 +1275,6 @@ nicHifInit (
 {
 
     ASSERT(prAdapter);
-#if 0
-    /* reset event */
-    nicPutMailbox(prAdapter, 0, 0x52455345); // RESE
-    nicPutMailbox(prAdapter, 1, 0x545F5746); // T_WF
-    nicSetSwIntr(prAdapter, BIT(16));
-#endif
 }
 
 
@@ -4306,13 +4293,6 @@ nicRlmArUpdateParms(
     u2HtClrMask = (UINT_16) ((u4ArSysParam0 & BITS(8,15)) >> 8);
     u2LegacyClrMask = (UINT_16) ((u4ArSysParam0 & BITS(16,31)) >> 16);
 
-#if 0
-    ucArCheckWindow = (UINT_8) (u4ArSysParam1 & BITS(0,7));
-    ucArPerForceRateDownPer = (UINT_8) ((u4ArSysParam1 & BITS(8,15)>>8));
-    ucArPerH = (UINT_8) ((u4ArSysParam1 & BITS(16,23)) >>16);
-    ucArPerL = (UINT_8) ((u4ArSysParam1 & BITS(24,31)) >>24);
-#endif
-
     ucArCheckWindow = (UINT_8) (u4ArSysParam1 & BITS(0,7));
     ucArPerForceRateDownPer = (UINT_8) (((u4ArSysParam1>>8) & BITS(0,7)));
     ucArPerH = (UINT_8) (((u4ArSysParam1>>16) & BITS(0,7)));
@@ -4357,31 +4337,6 @@ nicRlmArUpdateParms(
     /* Candidate rate legacy mask */
     nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA1),u2LegacyClrMask);
     nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA0),SWCR_DATA_CMD(0,SWCR_WRITE,0x1d,0,0));
-
-#if 0
-    if(ucArCheckWindow!=0) {
-        /* TX DONE MCS INDEX CHECK STA RATE DOWN TH */
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA1),ucArCheckWindow);
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA0),SWCR_DATA_CMD(0,SWCR_WRITE,0x14,0,0));
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA1),ucArCheckWindow);
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA0),SWCR_DATA_CMD(0,SWCR_WRITE,0xc,0,0));
-    }
-
-    if(ucArPerForceRateDownPer !=0) {
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA1),ucArPerForceRateDownPer);
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA0),SWCR_DATA_CMD(0,SWCR_WRITE,0x18,0,0));
-    }
-    if(ucArPerH !=0) {
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA1),ucArPerH);
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA0),SWCR_DATA_CMD(0,SWCR_WRITE,0x1,0,0));
-    }
-    if(ucArPerL !=0) {
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA1),ucArPerL);
-        nicWriteMcr (prAdapter, SWCR_DATA_ADDR(1/*MOD*/,SWCR_DATA0),SWCR_DATA_CMD(0,SWCR_WRITE,0x2,0,0));
-    }
-#endif
-
-
 
     return WLAN_STATUS_SUCCESS;
 }
