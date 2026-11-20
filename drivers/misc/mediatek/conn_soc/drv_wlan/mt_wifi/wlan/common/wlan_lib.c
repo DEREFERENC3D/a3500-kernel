@@ -1811,12 +1811,6 @@ wlanAdapterStart (
         prRegInfo->u4ArSysParam3);
 #endif
 
-
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-        /* clock gating workaround */
-        prAdapter->fgIsClockGatingEnabled = FALSE;
-#endif
-
     } while(FALSE);
 
     if(u4Status == WLAN_STATUS_SUCCESS) {
@@ -1856,12 +1850,6 @@ wlanAdapterStop (
     WLAN_STATUS u4Status = WLAN_STATUS_SUCCESS;
 
     ASSERT(prAdapter);
-
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    if(prAdapter->fgIsClockGatingEnabled == TRUE) {
-        nicDisableClockGating(prAdapter);
-    }
-#endif
 
     /* MGMT - unitialization */
     nicUninitMGMT(prAdapter);
@@ -2213,13 +2201,6 @@ wlanSendCommand (
             prCmdInfo->ucCmdSeqNum);
 #endif
 
-
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    if(prAdapter->fgIsClockGatingEnabled == TRUE) {
-        nicDisableClockGating(prAdapter);
-    }
-#endif
-
     do {
         // <0> card removal check
         if(kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
@@ -2276,12 +2257,6 @@ wlanSendCommand (
 
     }
     while (FALSE);
-
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    if(prAdapter->fgIsClockGatingEnabled == FALSE) {
-        nicEnableClockGating(prAdapter);
-    }
-#endif
 
     return rStatus;
 } /* end of wlanSendCommand() */
@@ -5403,11 +5378,6 @@ wlanTxPendingPackets (
                 wlanAcquirePowerControl(prAdapter);
             }
 
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-            if(prAdapter->fgIsClockGatingEnabled == TRUE) {
-                nicDisableClockGating(prAdapter);
-            }
-#endif
             // <3> send packet"s" to HIF
             nicTxMsduInfoList(prAdapter, prMsduInfo);
 
@@ -5420,12 +5390,6 @@ wlanTxPendingPackets (
             wlanProcessQueuedMsduInfo(prAdapter, prMsduInfo);
         }
     }
-
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    if(prAdapter->fgIsClockGatingEnabled == FALSE) {
-        nicEnableClockGating(prAdapter);
-    }
-#endif
 
     return WLAN_STATUS_SUCCESS;
 }
