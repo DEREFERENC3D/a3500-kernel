@@ -38,17 +38,7 @@
 #include "stp_core.h"
 #include "psm_core.h"
 
-#if CFG_CORE_MT6620_SUPPORT
-extern WMT_IC_OPS wmt_ic_ops_mt6620;
-#endif
-
-#if CFG_CORE_MT6628_SUPPORT
-extern WMT_IC_OPS wmt_ic_ops_mt6628;
-#endif
-
-#if CFG_CORE_SOC_SUPPORT
 extern WMT_IC_OPS wmt_ic_ops_soc;
-#endif
 
 #if CFG_FUNC_BT_SUPPORT
 extern WMT_FUNC_OPS wmt_func_bt_ops;
@@ -807,23 +797,11 @@ wmt_core_hw_check (VOID)
 
     // TODO:[ChangeFeature][George]: use a better way to select a correct ops table based on chip id
     switch (chipid) {
-#if CFG_CORE_MT6620_SUPPORT
-    case 0x6620:
-        p_ops = &wmt_ic_ops_mt6620;
-        break;
-#endif
-#if CFG_CORE_MT6628_SUPPORT
-    case 0x6628:
-        p_ops = &wmt_ic_ops_mt6628;
-        break;
-#endif
-#if CFG_CORE_SOC_SUPPORT
 	case 0x6572:
 	case 0x6582:
 	case 0x6592:
 		p_ops = &wmt_ic_ops_soc;
 		break;
-#endif
     default:
         p_ops = (P_WMT_IC_OPS)NULL;
         break;

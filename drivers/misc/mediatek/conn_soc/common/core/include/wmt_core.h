@@ -21,14 +21,6 @@
 ********************************************************************************
 */
 
-#define CFG_CORE_MT6620_SUPPORT 0 /* whether MT6620 is supported or not */
-
-#define CFG_CORE_MT6628_SUPPORT 0 /* whether MT6628 is supported or not */
-
-
-#define CFG_CORE_SOC_SUPPORT 1
-
-
 // TODO:[ChangeFeature][George] move this definition outside so that wmt_dev can remove wmt_core.h inclusion.
 #define defaultPatchName "mt66xx_patch_hdr.bin"
 
