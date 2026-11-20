@@ -1193,7 +1193,6 @@ wlanAdapterStart (
 
         prAdapter->u4OsPacketFilter = PARAM_PACKET_FILTER_SUPPORTED;
 
-#if defined(MT6628)
         DBGLOG(INIT, TRACE, ("wlanAdapterStart(): Acquiring LP-OWN %d\n", fgIsResetting));
         ACQUIRE_POWER_CONTROL_FROM_PM(prAdapter);
 
@@ -1213,7 +1212,6 @@ wlanAdapterStart (
             u4Status = WLAN_STATUS_FAILURE;
             break;
         }
-#endif
 
         /* init wake lock before interrupt enable and tx thread */
         KAL_WAKE_LOCK_INIT(prAdapter, &prAdapter->rTxThreadWakeLock, "WLAN TX THREAD");
@@ -1229,7 +1227,6 @@ wlanAdapterStart (
         nicRxInitialize(prAdapter);
 
 #if CFG_ENABLE_FW_DOWNLOAD
-    #if defined(MT6628)
         if (pvFwImageMapFile) {
             /* 1. disable interrupt, download is done by polling mode only */
             nicDisableInterrupt(prAdapter);
@@ -1240,7 +1237,7 @@ wlanAdapterStart (
             /* 3. FW download here */
             u4FwLoadAddr = prRegInfo->u4LoadAddress;
 
-        #if CFG_ENABLE_FW_DIVIDED_DOWNLOAD
+    #if CFG_ENABLE_FW_DIVIDED_DOWNLOAD
             // 3a. parse file header for decision of divided firmware download or not
             prFwHead = (P_FIRMWARE_DIVIDED_DOWNLOAD_T)pvFwImageMapFile;
 
@@ -1257,7 +1254,7 @@ wlanAdapterStart (
 				DBGLOG(INIT, TRACE, ("wlanAdapterStart(): fgValidHead == TRUE\n"));
 
                 for(i = 0 ; i < prFwHead->u4NumOfEntries ; i++) {
-            #if CFG_ENABLE_FW_DOWNLOAD_AGGREGATION
+        #if CFG_ENABLE_FW_DOWNLOAD_AGGREGATION
                     if(wlanImageSectionDownloadAggregated(prAdapter,
                                 prFwHead->arSection[i].u4DestAddr,
                                 prFwHead->arSection[i].u4Length,
@@ -1265,7 +1262,7 @@ wlanAdapterStart (
                         DBGLOG(INIT, ERROR, ("Firmware scatter download failed!\n"));
                         u4Status = WLAN_STATUS_FAILURE;
                     }
-            #else
+        #else
                     for(j = 0 ; j < prFwHead->arSection[i].u4Length ; j += CMD_PKT_SIZE_FOR_IMAGE) {
                         if(j + CMD_PKT_SIZE_FOR_IMAGE < prFwHead->arSection[i].u4Length)
                             u4ImgSecSize = CMD_PKT_SIZE_FOR_IMAGE;
@@ -1281,7 +1278,7 @@ wlanAdapterStart (
                             break;
                         }
                     }
-            #endif
+        #endif
 
                     /* escape from loop if any pending error occurs */
                     if(u4Status == WLAN_STATUS_FAILURE) {
@@ -1290,8 +1287,8 @@ wlanAdapterStart (
                 }
             }
             else
-        #endif
-        #if CFG_ENABLE_FW_DOWNLOAD_AGGREGATION
+    #endif
+    #if CFG_ENABLE_FW_DOWNLOAD_AGGREGATION
             if(wlanImageSectionDownloadAggregated(prAdapter,
                         u4FwLoadAddr,
                         u4FwImageFileLength,
@@ -1299,7 +1296,7 @@ wlanAdapterStart (
                 DBGLOG(INIT, ERROR, ("Firmware scatter download failed!\n"));
                 u4Status = WLAN_STATUS_FAILURE;
             }
-        #else
+    #else
             for (i = 0; i < u4FwImageFileLength ; i += CMD_PKT_SIZE_FOR_IMAGE) {
                 if(i + CMD_PKT_SIZE_FOR_IMAGE < u4FwImageFileLength)
                     u4ImgSecSize = CMD_PKT_SIZE_FOR_IMAGE;
@@ -1315,20 +1312,20 @@ wlanAdapterStart (
                     break;
                 }
             }
-        #endif
+    #endif
 
             if(u4Status != WLAN_STATUS_SUCCESS) {
                 break;
             }
 
-        #if !CFG_ENABLE_FW_DOWNLOAD_ACK
+    #if !CFG_ENABLE_FW_DOWNLOAD_ACK
             // Send INIT_CMD_ID_QUERY_PENDING_ERROR command and wait for response
             if(wlanImageQueryStatus(prAdapter) != WLAN_STATUS_SUCCESS) {
                 DBGLOG(INIT, ERROR, ("Firmware download failed!\n"));
                 u4Status = WLAN_STATUS_FAILURE;
                 break;
             }
-        #endif
+    #endif
         }
         else {
             DBGLOG(INIT, ERROR, ("No Firmware found!\n"));
@@ -1338,15 +1335,14 @@ wlanAdapterStart (
 
         /* 4. send Wi-Fi Start command */
 		printk("<wifi> send Wi-Fi Start command\n");
-        #if CFG_OVERRIDE_FW_START_ADDRESS
+    #if CFG_OVERRIDE_FW_START_ADDRESS
         wlanConfigWifiFunc(prAdapter,
                 TRUE,
                 prRegInfo->u4StartAddress);
-        #else
+    #else
         wlanConfigWifiFunc(prAdapter,
                 FALSE,
                 0);
-        #endif
     #endif
 #endif
 
@@ -2641,7 +2637,6 @@ wlanImageSectionDownloadAggregated (
     IN PUINT_8      pucImgSecBuf
     )
 {
-        #if defined(MT6628)
     P_CMD_INFO_T prCmdInfo;
     P_INIT_HIF_TX_HEADER_T prInitHifTxHeader;
     P_INIT_CMD_DOWNLOAD_BUF prInitCmdDownloadBuf;
@@ -2764,13 +2759,6 @@ wlanImageSectionDownloadAggregated (
     cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
 
     return u4Status;
-
-        #else
-        #error "Only MT6620/MT6628/MT6582 supports firmware download in an aggregated way"
-
-    return WLAN_STATUS_FAILURE;
-
-        #endif
 }
 
     #endif
@@ -2791,8 +2779,6 @@ wlanImageSectionDownload (
     IN PUINT_8      pucImgSecBuf
     )
 {
-    #if defined(MT6628)
-
     P_CMD_INFO_T prCmdInfo;
     P_INIT_HIF_TX_HEADER_T prInitHifTxHeader;
     P_INIT_CMD_DOWNLOAD_BUF prInitCmdDownloadBuf;
@@ -2881,8 +2867,6 @@ wlanImageSectionDownload (
     cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
 
     return u4Status;
-
-    #endif
 }
 
 #if !CFG_ENABLE_FW_DOWNLOAD_ACK
@@ -4275,7 +4259,6 @@ wlanQueryCompileFlags(
     return WLAN_STATUS_SUCCESS;
 }
 
-#if defined(MT6628)
 static INT_32 wlanChangeCodeWord(INT_32 au4Input){
 
     UINT_16     i;
@@ -4333,7 +4316,6 @@ static INT_32 wlanChangeCodeWord(INT_32 au4Input){
 
     return 0;
 }
-#endif
 
 
 #if TXPWR_USE_PDSLOPE
@@ -4482,7 +4464,6 @@ static INT_32 wlanCal6628EfuseForm(IN P_ADAPTER_T prAdapter,INT_32 au4Input){
 #endif
 
 
-#if defined(MT6628)
 static VOID wlanChangeNvram6620to6628(PUINT_8 pucEFUSE){
 
 
@@ -4548,7 +4529,6 @@ static VOID wlanChangeNvram6620to6628(PUINT_8 pucEFUSE){
     }
 
 }
-#endif
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -4618,9 +4598,7 @@ wlanLoadManufactureData (
     }
 
     /* 4. Send EFUSE data */
-#if  defined(MT6628)
     wlanChangeNvram6620to6628(prRegInfo->aucEFUSE);
-#endif
 
     wlanSendSetQueryCmd(prAdapter,
             CMD_ID_SET_PHY_PARAM,
