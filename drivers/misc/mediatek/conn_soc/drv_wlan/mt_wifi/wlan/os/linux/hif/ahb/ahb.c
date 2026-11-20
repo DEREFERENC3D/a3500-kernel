@@ -34,9 +34,7 @@
 #include <mach/mt_pm_ldo.h>
 #include <mach/mt_gpt.h>
 
-#if defined(MT6628)
-    #include "mt6582_reg.h"
-#endif
+#include "mt6582_reg.h"
 
 //#define MTK_DMA_BUF_MEMCPY_SUP /* no virt_to_phys() use */
 //#define HIF_DEBUG_SUP
