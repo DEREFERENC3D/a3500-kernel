@@ -104,10 +104,7 @@
 
 #include "hal.h"
 
-#if defined(MT6628)
-//    #include "mt6628_reg.h"
-    #include "mt6582_reg.h"
-#endif
+#include "mt6582_reg.h"
 
 #include "rlm.h"
 #include "rlm_domain.h"
