@@ -94,139 +94,8 @@ extern int config_ovl_secure(void);
 extern int config_ovl_nonsecure(void);
 #endif
 
-#if 0
-static void dispsys_bypass_color(unsigned int width, unsigned int height)
-{
-    printk("dispsys_bypass_color, width=%d, height=%d \n", width, height);
-
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_COLOR + 0xf50) = width;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_COLOR + 0xf54) = height;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_COLOR + 0x400) = 0x2000323c;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_COLOR + 0xf00) = 0x00000001;
-
-    printk("dispsys_bypass_color, 0x%x, 0x%x, 0x%x, 0x%x \n",
-        *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_COLOR + 0x400),
-        *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_COLOR + 0xf00),
-        *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_COLOR + 0xf50),
-        *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_COLOR + 0xf54));
-}
-
-static void dispsys_bypass_bls(unsigned int width, unsigned int height)
-{
-    printk("dispsys_bypass_bls, width=%d, height=%d, reg=0x%x \n", 
-        width, height, ((height<<16) + width));
-    
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x000b0) = 0x00000001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x000a0) = 0x000003ff;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x000b0) = 0x00000000;                      
-
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00010) = 0x00010100;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00014) = 0x00000000;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00018) = ((height<<16) + width);
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00020) = 0x00010001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00030) = 0x00000001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00034) = 0x3fffffff;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00060) = 0x00002328;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00064) = 0x00006f54;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00068) = 0x00fa00b0;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0006c) = 0x00800020;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00070) = 0x00000010;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00074) = 0x00f00060;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00078) = 0x00000000;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00080) = 0x00001770;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00084) = 0x00000008;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00088) = 0x00020001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0008c) = 0x00040001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00090) = 0x01a201a2;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00094) = 0x00003cbc;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00098) = 0x01500150;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0009c) = 0x00003d60;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x000a0) = 0x000003ff;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x000a4) = 0x00080001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x000a8) = 0x00000001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00300) = 0x00000000;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00304) = 0x00000004;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00308) = 0x00000010;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0030C) = 0x00000024;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00310) = 0x00000040;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00314) = 0x00000064;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00318) = 0x00000090;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0031C) = 0x000000C4;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00320) = 0x00000100;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00324) = 0x00000144;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00328) = 0x00000190;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0032C) = 0x000001E4;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00330) = 0x00000240;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00334) = 0x000002A4;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00338) = 0x00000310;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0033C) = 0x00000384;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00340) = 0x00000400;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00344) = 0x00000484;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00348) = 0x00000510;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0034C) = 0x000005A4;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00350) = 0x00000640;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00354) = 0x000006E4;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00358) = 0x00000790;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0035C) = 0x00000843;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00360) = 0x000008FF;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00364) = 0x000009C3;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00368) = 0x00000A8F;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0036C) = 0x00000B63;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00370) = 0x00000C3F;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00374) = 0x00000D23;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00378) = 0x00000E0F;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x0037C) = 0x00000F03;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00380) = 0x00000FFF;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00384) = 0x00000FDF;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00e18) = 0x00003001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00e2c) = 0x00002101;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00e30) = 0x00000001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00e34) = 0x00000000;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00e3c) = 0x20200001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00e40) = 0x20202020;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00e00) = 0x00000000; 
-    
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00004) = 0x00000001;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00004) = 0x00000000;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x000a0) = 0x800003ff;  
-    
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00008) = 0x0000001f;
-    *(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x00000) = 0x00010001;
-
-    // test BLS pattern
-    //*(volatile kal_uint32 *)(DDP_REG_BASE_DISP_BLS + 0x000b4) = 0x00000001; 
-
-}
-#endif
 
 
-#if 0
-int disp_path_get_mutex_()
-{
-    unsigned int cnt=0;
-    
-    DISP_REG_SET(DISP_REG_CONFIG_MUTEX(gMutexID), 1);
-    DISP_REG_SET_FIELD(REG_FLD(1, gMutexID), DISP_REG_CONFIG_MUTEX_INTSTA, 0);
-
-    while(((DISP_REG_GET(DISP_REG_CONFIG_MUTEX(gMutexID))& DISP_INT_MUTEX_BIT_MASK) != DISP_INT_MUTEX_BIT_MASK))
-    {
-        cnt++;
-        if(cnt>10000)
-        {
-            printk("[DDP] disp_path_get_mutex() timeout! \n");
-            disp_dump_reg(DISP_MODULE_CONFIG);
-            break;
-        }
-    }
-
-    return 0;
-}
-
-int disp_path_release_mutex_()
-{
-    DISP_REG_SET(DISP_REG_CONFIG_MUTEX(gMutexID), 0);
-}
-#endif
 
 // Mutex register update timeout intr
 #define DDP_MUTEX_INTR_BIT 0x0100
@@ -573,47 +442,6 @@ int disp_path_release_mutex_(int mutexID)
     DISP_REG_SET(DISP_REG_CONFIG_MUTEX(mutexID), 0);
     
    
-#if 0
-    while(((DISP_REG_GET(DISP_REG_CONFIG_MUTEX_INTSTA) & (1<<mutexID)) != (1<<mutexID)))
-    {
-        if((DISP_REG_GET(DISP_REG_CONFIG_MUTEX_INTSTA) & (1<<(mutexID+6))) == (1<<(mutexID+6)))
-        {
-            DISP_ERR("disp_path_release_mutex() timeout! \n");
-            disp_dump_reg(DISP_MODULE_CONFIG);
-            //print error engine
-            reg = DISP_REG_GET(DISP_REG_CONFIG_REG_COMMIT);
-            if(reg!=0)
-            {
-                  if(reg&(1<<3))  { DISP_MSG(" OVL update reg timeout! \n"); disp_dump_reg(DISP_MODULE_OVL); }
-                  if(reg&(1<<10))  { DISP_MSG(" RDMA1 update reg timeout! \n"); disp_dump_reg(DISP_MODULE_RDMA); }
-                  if(reg&(1<<7))  { DISP_MSG(" COLOR update reg timeout! \n"); disp_dump_reg(DISP_MODULE_COLOR); }
-                  if(reg&(1<<9))  { DISP_MSG(" BLS update reg timeout! \n"); disp_dump_reg(DISP_MODULE_BLS); }
-                  if(reg&(1<<6))  { DISP_MSG(" WDMA0 update reg timeout! \n"); disp_dump_reg(DISP_MODULE_WDMA0); }
-            }  
-                     
-            //reset mutex
-            DISP_REG_SET(DISP_REG_CONFIG_MUTEX_RST(mutexID), 1);
-            DISP_REG_SET(DISP_REG_CONFIG_MUTEX_RST(mutexID), 0);
-            DISP_MSG("mutex reset done! \n");
-            MMProfileLogEx(DDP_MMP_Events.Mutex0, MMProfileFlagPulse, mutexID, 1);
-            break;
-        }
-
-        cnt++;
-        if(cnt>1000)
-        {
-            DISP_ERR("disp_path_release_mutex() timeout! \n");
-            MMProfileLogEx(DDP_MMP_Events.Mutex0, MMProfileFlagPulse, mutexID, 2);
-            break;
-        }
-    }
-
-    // clear status
-    reg = DISP_REG_GET(DISP_REG_CONFIG_MUTEX_INTSTA);
-    reg &= ~(1<<mutexID);
-    reg &= ~(1<<(mutexID+6));
-    DISP_REG_SET(DISP_REG_CONFIG_MUTEX_INTSTA, reg);
-#endif
     MMProfileLog(DDP_MMP_Events.Mutex[mutexID], MMProfileFlagEnd);
     //mutex_unlock(&DpEngineMutexLock);
     //DISP_MSG("disp_path_release_mutex %d \n", disp_mutex_unlock_cnt[mutexID]++);
@@ -1634,16 +1462,6 @@ int disp_path_config_(struct disp_path_config_struct* pConfig, int mutexId)
                 //dispsys_bypass_color(pConfig->srcROI.width, pConfig->srcROI.height);
         }
 
-#if 0
-        disp_dump_reg(DISP_MODULE_OVL);
-        disp_dump_reg(DISP_MODULE_WDMA0);
-        disp_dump_reg(DISP_MODULE_COLOR);
-        disp_dump_reg(DISP_MODULE_BLS);
-        disp_dump_reg(DISP_MODULE_DPI0);
-        disp_dump_reg(DISP_MODULE_RDMA);
-        disp_dump_reg(DISP_MODULE_CONFIG);
-        disp_dump_reg(DISP_MODULE_MUTEX);
-#endif
 
 /*************************************************/
 // Ultra config
@@ -1941,40 +1759,6 @@ static int disp_mutex_backup(void)
     return 0;
 }
 
-#if 0
-static int disp_bls_backup()
-{
-    int i;
-
-    reg_backup(DISP_REG_BLS_DEBUG);
-    reg_backup(DISP_REG_BLS_PWM_DUTY);
-
-    reg_backup(DISP_REG_BLS_BLS_SETTING);
-    reg_backup(DISP_REG_BLS_SRC_SIZE);
-    reg_backup(DISP_REG_BLS_GAMMA_SETTING);
-    reg_backup(DISP_REG_BLS_GAMMA_BOUNDARY);
-
-    /* BLS Luminance LUT */
-    for (i=0; i<=32; i++)
-    {
-    	reg_backup(DISP_REG_BLS_LUMINANCE(i));
-    }
-
-    /* BLS Luminance 255 */
-    reg_backup(DISP_REG_BLS_LUMINANCE_255);
-
-    /* Dither */
-    for (i=0; i<18; i++)
-    {
-    	reg_backup(DISP_REG_BLS_DITHER(i));
-    }
-
-    reg_backup(DISP_REG_BLS_INTEN);
-    reg_backup(DISP_REG_BLS_EN);
-
-    return 0;
-}
-#endif
 
 static int disp_mutex_restore(void)
 {
@@ -1993,40 +1777,6 @@ static int disp_mutex_restore(void)
     return 0;
 }
 
-#if 0
-static int disp_bls_restore()
-{
-    int i;
-
-    reg_restore(DISP_REG_BLS_DEBUG);
-    reg_restore(DISP_REG_BLS_PWM_DUTY);
-
-    reg_restore(DISP_REG_BLS_BLS_SETTING);
-    reg_restore(DISP_REG_BLS_SRC_SIZE);
-    reg_restore(DISP_REG_BLS_GAMMA_SETTING);
-    reg_restore(DISP_REG_BLS_GAMMA_BOUNDARY);
-
-    /* BLS Luminance LUT */
-    for (i=0; i<=32; i++)
-    {
-    	reg_restore(DISP_REG_BLS_LUMINANCE(i));
-    }
-
-    /* BLS Luminance 255 */
-    reg_restore(DISP_REG_BLS_LUMINANCE_255);
-
-    /* Dither */
-    for (i=0; i<18; i++)
-    {
-    	reg_restore(DISP_REG_BLS_DITHER(i));
-    }
-
-    reg_restore(DISP_REG_BLS_INTEN);
-    reg_restore(DISP_REG_BLS_EN);
-
-    return 0;
-}
-#endif
 
 static int disp_reg_backup(void)
 {

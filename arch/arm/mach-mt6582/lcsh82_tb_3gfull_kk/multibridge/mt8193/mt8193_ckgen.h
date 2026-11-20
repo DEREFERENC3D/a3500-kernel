@@ -230,27 +230,6 @@ typedef struct
 
 
 
-#if 0
-
-/* config gpio */
-int mt8193_ckgen_gpio_config(int i4GpioNum, int i4Output, int i4High);
-
-/* print gpio input value */
-int mt8193_ckgen_gpio_input(int i4GpioNum);
-
-
-/* test pad level shift */
-int mt8193_ckgen_config_pad_level_shift(int i4GroupNum, int i4TurnLow);
-
-/* read and print chip id */
-void mt8193_ckgen_chipid(void);
-
-
-/* measure clock with freq meter */
-u32 mt8193_ckgen_measure_clk(u32 u4Func);
-
-u32 mt8193_ckgen_reg_rw_test(u16 addr);
-#endif
 
 
 #endif

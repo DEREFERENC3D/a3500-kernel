@@ -529,11 +529,7 @@ static int EEPROM_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 static int EEPROM_i2c_remove(struct i2c_client *);
 
 static const struct i2c_device_id EEPROM_i2c_id[] = {{EEPROM_DRVNAME,0},{}};   
-#if 0 //test110314 Please use the same I2C Group ID as Sensor
-static unsigned short force[] = {EEPROM_I2C_GROUP_ID, S24CS64A_DEVICE_ID, I2C_CLIENT_END, I2C_CLIENT_END};   
-#else
 //static unsigned short force[] = {EEPROM_I2C_GROUP_ID, S24CS64A_DEVICE_ID, I2C_CLIENT_END, I2C_CLIENT_END};   
-#endif
 //static const unsigned short * const forces[] = { force, NULL };              
 //static struct i2c_client_address_data addr_data = { .forces = forces,}; 
 

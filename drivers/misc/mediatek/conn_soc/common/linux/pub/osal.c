@@ -1269,12 +1269,6 @@ osal_buffer_dump (
     printk("start of dump>[%s] len=%d, limit=%d,", title, len, limit);
 
     dump_len = ((0 != limit) && (len > limit)) ? limit : len;
-#if 0
-    if(limit != 0)
-    {
-        len = (len > limit)? (limit) : (len);
-    }
-#endif
 
     for (k = 0; k < dump_len ; k++) {
         if((k != 0) && ( k % 16 == 0))  printk("\n");

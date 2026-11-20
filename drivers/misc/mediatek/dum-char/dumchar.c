@@ -183,15 +183,6 @@ void emmc_create_sys_symlink (struct mmc_card *card)
 	struct storage_info s_info = {0};
 
     /* emmc always in slot0 */
-	#if 0
-	host = msdc_get_host(MSDC_EMMC,MSDC_BOOT_EN,0);
-	BUG_ON(!host);
-
-	if (host != (struct msdc_host *)card->host->private) {
-            printk(KERN_INFO DRV_NAME "%s: NOT emmc card,  \n", __func__);
-		return;
-	}
-	#endif
 	if (!mmc_card_mmc(card)) {
             printk(KERN_INFO "mtk-msdc %s: NOT emmc card,  \n", __func__);
 		return;
@@ -587,28 +578,6 @@ static long dumchar_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 			result= fo->act_filp->f_op->compat_ioctl( fo->act_filp, cmd, arg);
 		}
 	}else{
-#if 0
-		if(!strcmp(dev->dumname,"pmt")){
-#ifdef MTK_EMMC_SUPPORT
-		switch (cmd)
-			{
-				case PMT_READ:
-					printk(KERN_INFO "PMT IOCTL: PMT_READ\n");
-					result = read_pmt(argp);
-					break;
-				case PMT_WRITE:
-					printk(KERN_INFO "PMT IOCTL: PMT_WRITE\n");
-					result = write_pmt(argp);
-					break;
-				default:
-					result= -EINVAL;
-			}
-			return result;
-
-#endif
-		
-		}else{
-#endif		
 #ifdef MTK_EMMC_SUPPORT
 		size = (cmd & IOCSIZE_MASK) >> IOCSIZE_SHIFT;
 		if (cmd & IOC_IN) {
@@ -701,9 +670,6 @@ static long dumchar_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 		default:
 			result = -EINVAL;
 		}
-#endif
-#if 0
-	}
 #endif
 	}
 	return result;
@@ -962,59 +928,10 @@ int mtd_create_symlink(void)
 			printk("[mtd_create_symlink]: target=%s, name=%s  \n", link_target, link_name);
 		 	sys_symlink(link_target, link_name);
 		}
-#if 0
-		if((!strcmp(dumchar_devices[i].dumname,"usrdata") )||(!strcmp(dumchar_devices[i].dumname,"cache") )||(!strcmp(dumchar_devices[i].dumname,"android") )){
-			memset(ahead_target,0x0,sizeof(ahead_target));
-			memset(ahead_link,0x0,sizeof(ahead_link));			
-			sprintf(ahead_target, "/sys/block/mtdblock%d/queue/read_ahead_kb",dumchar_devices[i].mtd_index);
-			sprintf(ahead_link,"/read_ahead_kb@%s",dumchar_devices[i].dumname);
-			sys_symlink(ahead_target, ahead_link);
-			printk("[mtd_create_symlink]: target=%s, name=%s  \n", ahead_target, ahead_link);		
-		}
-#endif
 	}
 	return 0;
 }
 
-#if 0
-int mtd_close_read_ahead(void){
-	char target[256];
-	u32 i,ret,origin,value;
-	struct file *filp;
-	for(i=0;i<PART_NUM;i++){
-		if((!strcmp(dumchar_devices[i].dumname,"usrdata") )||(!strcmp(dumchar_devices[i].dumname,"cache") )||(!strcmp(dumchar_devices[i].dumname,"android") ))
-		{
-			origin=0;
-			value=0;
-			memset(target,0x0,sizeof(target));
-			sprintf(target, "/sys/block/mtdblock%d/queue/read_ahead_kb",dumchar_devices[i].mtd_index);
-			filp = filp_open(target, O_RDWR, 0666);
-			if (IS_ERR(filp))
-			{	ret = PTR_ERR(filp);
-				printk(KERN_ERR "[mtd_close_read_ahead]Open %s partition fail! errno=%d\n",target, ret);
-				continue;
-			}
-			ret = filp->f_op->read(filp, &origin,sizeof(origin), &(filp->f_pos));
-    			if (sizeof(origin) != ret)
-    			{
-       				printk(KERN_ERR "[mtd_close_read_ahead]read fail!errno=%d\n", ret);
-        			filp_close(filp, NULL);
-				continue;
-			}
-			ret = filp->f_op->write(filp, &value, sizeof(value), &(filp->f_pos));
-    			if (sizeof(value) != ret)
-			{
-        			printk(KERN_ERR "[mtd_close_read_ahead]write fail!errno=%d\n", ret);
-        			filp_close(filp, NULL);
-				continue;
-			}
-			filp_close(filp, NULL);
-			printk(KERN_INFO "[mtd_close_read_ahead]:update succeed!%s from %x to %x\n",target,origin,value);
-		}
-		
-	}	
-}
-#endif
 #endif
 
 int dumchar_release (struct inode *inode, struct file *filp)

@@ -1020,21 +1020,6 @@ DISP_STATUS DISP_Init(UINT32 fbVA, UINT32 fbPA, BOOL isLcmInited)
 		}
 	}
 
-#if 0
-	{
-		unsigned int i = 0;
-		unsigned int width, height;
-		for(i=0;i<DFO_BOOT_COUNT;i++)	
-		{
-			if(!strcmp(&dfo_boot_default.name[i], "LCM_FAKE_WIDTH"))
-				width = dfo_boot_default.value[i];
-			
-			if(!strcmp(&dfo_boot_default.name[i], "LCM_FAKE_HEIGHT"))
-				height = dfo_boot_default.value[i];
-		}
-		printk("DISP Info: from DFO, width/height=%d x %d\n", width, height);
-	}
-#endif
     
     return r;
 }

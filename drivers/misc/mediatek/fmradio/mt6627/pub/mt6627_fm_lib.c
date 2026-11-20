@@ -56,17 +56,9 @@ static struct fm_res_ctx *mt6627_res = NULL;
 //static fm_bool rssi_th_set = fm_false;
 
 
-#if 0//def MTK_FM_50KHZ_SUPPORT
-static struct fm_fifo *cqi_fifo = NULL;
-#endif
 static fm_s32 mt6627_is_dese_chan(fm_u16 freq);
 static fm_bool mt6627_I2S_hopping_check(fm_u16 freq);
 
-#if 0
-static fm_s32 mt6627_mcu_dese(fm_u16 freq, void *arg);
-static fm_s32 mt6627_gps_dese(fm_u16 freq, void *arg);
-static fm_s32 mt6627_I2s_Setting(fm_s32 onoff, fm_s32 mode, fm_s32 sample);
-#endif
 static fm_u16 mt6627_chan_para_get(fm_u16 freq);
 static fm_s32 mt6627_desense_check(fm_u16 freq,fm_s32 rssi);
 static fm_bool mt6627_TDD_chan_check(fm_u16 freq);
@@ -510,26 +502,6 @@ static fm_s32 mt6627_DspPatch(const fm_u8 *img, fm_s32 len, enum IMG_TYPE type)
     WCN_DBG(FM_NTC | CHIP, "binary len:%d, seg num:%d\n", len, seg_num);
 
     switch (type) {
-#if 0     
-    case IMG_ROM:
-
-        for (seg_id = 0; seg_id < seg_num; seg_id++) {
-            seg_len = ((seg_id + 1) < seg_num) ? PATCH_SEG_LEN : (len % PATCH_SEG_LEN);
-            WCN_DBG(FM_NTC | CHIP, "rom,[seg_id:%d],  [seg_len:%d]\n", seg_id, seg_len);
-            if (FM_LOCK(cmd_buf_lock)) return (-FM_ELOCK);
-            pkt_size = mt6627_rom_download(cmd_buf, TX_BUF_SIZE, seg_num, seg_id, &img[seg_id*PATCH_SEG_LEN], seg_len);
-            WCN_DBG(FM_NTC | CHIP, "pkt_size:%d\n", (fm_s32)pkt_size);
-            ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_ROM, SW_RETRY_CNT, ROM_TIMEOUT, NULL);
-            FM_UNLOCK(cmd_buf_lock);
-
-            if (ret) {
-                WCN_DBG(FM_ALT | CHIP, "mt6627_rom_download failed\n");
-                return ret;
-            }
-        }
-
-        break;
-#endif        
     case IMG_PATCH:
 
         for (seg_id = 0; seg_id < seg_num; seg_id++) {
@@ -548,26 +520,6 @@ static fm_s32 mt6627_DspPatch(const fm_u8 *img, fm_s32 len, enum IMG_TYPE type)
         }
 
         break;
-#if 0         
-    case IMG_HW_COEFFICIENT:
-
-        for (seg_id = 0; seg_id < seg_num; seg_id++) {
-            seg_len = ((seg_id + 1) < seg_num) ? PATCH_SEG_LEN : (len % PATCH_SEG_LEN);
-            WCN_DBG(FM_NTC | CHIP, "hwcoeff,[seg_id:%d],  [seg_len:%d]\n", seg_id, seg_len);
-            if (FM_LOCK(cmd_buf_lock)) return (-FM_ELOCK);
-            pkt_size = mt6627_hwcoeff_download(cmd_buf, TX_BUF_SIZE, seg_num, seg_id, &img[seg_id*PATCH_SEG_LEN], seg_len);
-            WCN_DBG(FM_NTC | CHIP, "pkt_size:%d\n", (fm_s32)pkt_size);
-            ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_HWCOEFF, SW_RETRY_CNT, HWCOEFF_TIMEOUT, NULL);
-            FM_UNLOCK(cmd_buf_lock);
-
-            if (ret) {
-                WCN_DBG(FM_ALT | CHIP, "mt6627_hwcoeff_download failed\n");
-                return ret;
-            }
-        }
-
-        break;
-#endif        
     case IMG_COEFFICIENT:
 
         for (seg_id = 0; seg_id < seg_num; seg_id++) {
@@ -791,21 +743,6 @@ static fm_s32 mt6627_PowerDown(void)
     return ret;
 }
 //just for dgb
-#if 0
-static void mt6627_bt_write(fm_u32 addr, fm_u32 val)
-{
-    fm_u32 tem,i=0;
-    mt6627_host_write(0x80103020,addr);
-    mt6627_host_write(0x80103024,val);
-    mt6627_host_read(0x80103000,&tem);
-    while ((tem == 4) && (i<1000))
-    {
-        i++;
-        mt6627_host_read(0x80103000,&tem);
-    }
-    return;
-}
-#endif
 static fm_bool mt6627_SetFreq(fm_u16 freq)
 {
     fm_s32 ret = 0;
@@ -816,23 +753,6 @@ static fm_bool mt6627_SetFreq(fm_u16 freq)
 
     fm_cb_op->cur_freq_set(freq);
 
-#if 0
-    //MCU clock adjust if need
-    if ((ret = mt6627_mcu_dese(freq, NULL)) < 0)
-	{
-		WCN_DBG(FM_ERR | MAIN, "mt6627_mcu_dese FAIL:%d\n", ret);
-    }
-
-    WCN_DBG(FM_INF | MAIN, "MCU %d\n", ret);
-
-    //GPS clock adjust if need
-    if ((ret = mt6627_gps_dese(freq, NULL)) < 0) 
-	{
-		WCN_DBG(FM_ERR | MAIN, "mt6627_gps_dese FAIL:%d\n", ret);
-    }
-
-    WCN_DBG(FM_INF | MAIN, "GPS %d\n", ret);
-#endif    
     //pwer up sequence 0425
     mt6627_top_write(0x0050,0x00000007);
     mt6627_set_bits(0x0F,0x0455,0xF800);
@@ -887,66 +807,9 @@ static fm_bool mt6627_SetFreq(fm_u16 freq)
     }
 
     WCN_DBG(FM_DBG | CHIP, "set freq to %d ok\n", freq);
-#if 0    
-    //ADPLL setting for dbg
-    mt6627_top_write(0x0050,0x00000007);
-    mt6627_top_write(0x0A08,0xFFFFFFFF);
-    mt6627_bt_write(0x82,0x11);
-    mt6627_bt_write(0x83,0x11);
-    mt6627_bt_write(0x84,0x11);
-    mt6627_top_write(0x0040,0x1C1C1C1C);
-    mt6627_top_write(0x0044,0x1C1C1C1C);
-    mt6627_write(0x70,0x0010);
-    /*0x0806 DCO clk
-      0x0802 ref clk
-      0x0804 feedback clk
-    */
-    mt6627_write(0xE0,0x0806);
-#endif    
     return fm_true;
 }
 
-#if 0
-/*
-* mt6627_Seek
-* @pFreq - IN/OUT parm, IN start freq/OUT seek valid freq
-* @seekdir - 0:up, 1:down
-* @space - 1:50KHz, 2:100KHz, 4:200KHz
-* return fm_true:seek success; fm_false:seek failed
-*/
-static fm_bool mt6627_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 seekdir, fm_u16 space)
-{
-    fm_s32 ret = 0;
-    fm_u16 pkt_size,temp;
-
-    mt6627_RampDown();
-    mt6627_read(FM_MAIN_CTRL, &temp);
-    mt6627_Mute(fm_true);
-
-    if (FM_LOCK(cmd_buf_lock)) return fm_false;
-    pkt_size = mt6627_seek(cmd_buf, TX_BUF_SIZE, seekdir, space, max_freq, min_freq);
-    ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_SEEK | FLAG_SEEK_DONE, SW_RETRY_CNT, SEEK_TIMEOUT, mt6627_get_read_result);
-    FM_UNLOCK(cmd_buf_lock);
-
-    if (!ret && mt6627_res) {
-        *pFreq = mt6627_res->seek_result;
-        //fm_cb_op->cur_freq_set(*pFreq);
-    } else {
-        WCN_DBG(FM_ALT | CHIP, "mt6627_seek failed\n");
-        return ret;
-    }
-
-    //get the result freq
-    WCN_DBG(FM_NTC | CHIP, "seek, result freq:%d\n", *pFreq);
-    mt6627_RampDown();
-	if((temp&0x0020) == 0)
-	{
-	    mt6627_Mute(fm_false);
-	}
-
-    return fm_true;
-}
-#endif
 #define FM_CQI_LOG_PATH "/mnt/sdcard/fmcqilog"
 
 static fm_s32 mt6627_full_cqi_get(fm_s32 min_freq, fm_s32 max_freq, fm_s32 space, fm_s32 cnt)
@@ -1053,247 +916,6 @@ static fm_s32 mt6627_full_cqi_get(fm_s32 min_freq, fm_s32 max_freq, fm_s32 space
     return ret;
 }
 
-#if 0
-static fm_bool mt6627_Scan(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 *pScanTBL,
-                           fm_u16 *ScanTBLsize, fm_u16 scandir, fm_u16 space)
-{
-    fm_s32 ret = 0;
-    fm_u16 pkt_size,temp;
-    fm_u16 offset = 0;
-    fm_u16 tmp_scanTBLsize = *ScanTBLsize;
-
-    if ((!pScanTBL) || (tmp_scanTBLsize == 0)) {
-        WCN_DBG(FM_ALT | CHIP, "scan, failed:invalid scan table\n");
-        return fm_false;
-    }
-
-    WCN_DBG(FM_NTC | CHIP, "start freq: %d, max_freq:%d, min_freq:%d, scan BTL size:%d, scandir:%d, space:%d\n", *pFreq, max_freq, min_freq, *ScanTBLsize, scandir, space);
-
-    mt6627_RampDown();
-    mt6627_read(FM_MAIN_CTRL, &temp);
-    mt6627_Mute(fm_true);
-
-    mt6627_full_cqi_get(min_freq, max_freq, space, 5);
-    
-    // normal scan
-    if (FM_LOCK(cmd_buf_lock)) return (-FM_ELOCK);
-    pkt_size = mt6627_scan(cmd_buf, TX_BUF_SIZE, scandir, space, max_freq, min_freq);
-    ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_SCAN | FLAG_SCAN_DONE, SW_RETRY_CNT, SCAN_TIMEOUT, mt6627_get_read_result);
-    FM_UNLOCK(cmd_buf_lock);
-
-    if (!ret && mt6627_res) {
-        fm_memcpy(pScanTBL, mt6627_res->scan_result, sizeof(fm_u16)*FM_SCANTBL_SIZE);
-        WCN_DBG(FM_NTC | CHIP, "Rx scan result:\n");
-
-        for (offset = 0; offset < tmp_scanTBLsize; offset++) {
-            WCN_DBG(FM_NTC | CHIP, "%d: %04x\n", (fm_s32)offset, *(pScanTBL + offset));
-        }
-
-        *ScanTBLsize = tmp_scanTBLsize;
-    } else {
-        WCN_DBG(FM_ALT | CHIP, "mt6627_scan failed\n");
-        return ret;
-    }
-
-    mt6627_set_bits(FM_MAIN_CTRL, 0x0000, 0xFFF0); //make sure tune/seek/scan/cqi bits = 0
-	if((temp&0x0020) == 0)
-	{
-		mt6627_Mute(fm_false);
-	}
-
-    return fm_true;
-}
-
-//add for scan cancel case
-static fm_bool cqi_abort = fm_false;
-
-static fm_s32 mt6627_CQI_Get(fm_s8 *buf, fm_s32 buf_len)
-{
-    fm_s32 ret = 0;
-    fm_s32 i;
-    fm_u16 pkt_size;
-    struct mt6627_fm_cqi *pmt6627_cqi;
-    struct adapt_fm_cqi  *pcqi;
-
-    if (!buf || buf_len < FM_CQI_BUF_SIZE) {
-        return -FM_EBUF;
-    }
-
-    if (FM_LOCK(cmd_buf_lock)) return (-FM_ELOCK);
-    pkt_size = mt6627_cqi_get(cmd_buf, TX_BUF_SIZE);
-    if (cqi_abort == fm_true) {
-        cqi_abort = fm_false;
-        ret = -1;
-    } else {
-        ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_SCAN | FLAG_CQI_DONE, SW_RETRY_CNT, SCAN_TIMEOUT, mt6627_get_read_result);
-    }
-    FM_UNLOCK(cmd_buf_lock);
-
-    if (!ret && mt6627_res) {
-        //FIXEDME
-        pmt6627_cqi = (struct mt6627_fm_cqi*)mt6627_res->cqi;
-        pcqi = (struct adapt_fm_cqi*)buf;
-
-        for (i = 0; i < (sizeof(mt6627_res->cqi) / sizeof(struct mt6627_fm_cqi)); i++) {
-            pcqi[i].ch = (pmt6627_cqi[i].ch * 10 / 2) + 6400;
-            pcqi[i].rssi = (fm_s32)pmt6627_cqi[i].rssi;
-
-            if (pcqi[i].rssi >= 32768) {
-                pcqi[i].rssi = pcqi[i].rssi - 65536;
-            }
-
-            pcqi[i].rssi = ((pcqi[i].rssi * 6) >> 4);
-            WCN_DBG(FM_NTC | CHIP, "%d --> %d(dbm)\n", pcqi[i].ch, pcqi[i].rssi);
-        }
-    } else {
-        WCN_DBG(FM_ALT | CHIP, "mt6627 get CQI failed:%d\n",ret);
-    }
-
-    mt6627_set_bits(FM_MAIN_CTRL, 0x0000, 0xFFF0); //make sure tune/seek/scan/cqi bits = 0
-
-    return ret;
-}
-
-static fm_bool scan_abort = fm_false;
-
-#ifdef MTK_FM_50KHZ_SUPPORT
-#define SCAN_SEG_LEN 250
-static fm_s8 raw_buf[16 * sizeof(struct adapt_fm_cqi)] = {0};
-
-static fm_bool mt6627_Scan_50KHz(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 *pScanTBL,
-                           fm_u16 *ScanTBLsize, fm_u16 scandir, fm_u16 space)
-{
-    fm_s32 ret = 0;
-    fm_s32 num;
-    fm_s32 seg;
-    fm_s32 i, j;
-    fm_u16 scan_tbl[FM_SCANTBL_SIZE]; //need no less than the chip
-    fm_s32 start_freq, end_freq;
-    fm_s32 ch_offset, step, tmp_val;
-    fm_s32 chl_cnt = 0;
-    fm_s32 word_offset, bit_offset;
-    fm_s32 space_val = 5;
-    struct adapt_fm_cqi *pCQI = (struct adapt_fm_cqi *)raw_buf;
-
-    if (space == 0x0001) {
-        space_val = 5; // 50Khz
-    } else if (space == 0x0002) {
-        space_val = 10; // 100Khz
-    } else if (space == 0x0004) {
-        space_val = 20; // 200Khz
-    }
-    
-    // calculate segment number
-    num = (max_freq - min_freq) / space_val; //Eg, (10800 - 8750) / 5 = 410
-    seg = (num / SCAN_SEG_LEN) + ((num % SCAN_SEG_LEN) ? 1 : 0); //Eg, (410 / 200) + ((410 % 200) ? 1 : 0) = 2 + 1 = 3
-
-    FM_FIFO_RESET(cqi_fifo);
-    fm_memset(pScanTBL, 0, sizeof(fm_u16) * (*ScanTBLsize));
-    
-    // do scan
-    scan_abort = fm_false; // reset scan cancel flag
-    for (i = 0; i < seg; i++) {
-        start_freq = min_freq + SCAN_SEG_LEN * space_val * i;
-        end_freq = min_freq + SCAN_SEG_LEN * space_val * (i + 1) - space_val;
-        end_freq = (end_freq > max_freq) ? max_freq : end_freq;
-        chl_cnt = 0;
-
-        if (fm_true == scan_abort) {
-            scan_abort = fm_false;
-            return fm_false;
-        }
-        
-        if (fm_false == mt6627_Scan(start_freq, end_freq, pFreq, scan_tbl, ScanTBLsize, scandir, space)) {
-            return fm_false;
-        }
-
-        // get channel count
-        for (ch_offset = 0; ch_offset < FM_SCANTBL_SIZE; ch_offset++) {
-		    if (scan_tbl[ch_offset] == 0)
-			    continue;
-		    for (step = 0; step < 16; step++) {
-			    if (scan_tbl[ch_offset] & (1 << step)) {
-                    tmp_val =  start_freq + (ch_offset * 16 + step) * space_val;
-                    WCN_DBG(FM_NTC | CHIP, "freq %d, end freq %d\n", tmp_val, end_freq);
-                    if (tmp_val <= end_freq) {
-                        chl_cnt++; 
-                        // set reult bitmap
-                        word_offset = (tmp_val - min_freq) / space_val / 16;
-                        bit_offset = (tmp_val - min_freq) / space_val % 16;
-                        if ((word_offset < 26) && (word_offset >= 0)) {
-                            pScanTBL[word_offset] |= (1 << bit_offset);
-                        }
-                        WCN_DBG(FM_NTC | CHIP, "cnt %d, word %d, bit %d\n", chl_cnt, word_offset, bit_offset);
-                    }
-			    }
-		    }
-	    }
-
-        // get cqi info
-        while (chl_cnt > 0) {
-            ret = mt6627_CQI_Get(raw_buf, 16 * sizeof(struct adapt_fm_cqi));
-            if (ret) {
-                return ret;
-            }
-
-        // add valid channel to cqi_fifo
-        for (j = 0; j < sizeof(raw_buf) / sizeof(struct adapt_fm_cqi); j++) {
-            if ((pCQI[j].ch >= start_freq) && (pCQI[j].ch <= end_freq)) {
-                FM_FIFO_INPUT(cqi_fifo, pCQI + j);
-                WCN_DBG(FM_NTC | CHIP, "%d %d(dbm) add to fifo\n", pCQI[j].ch, pCQI[j].rssi);
-            }
-        }
-            
-            chl_cnt -= 16;
-        }
-    }
-    
-    return fm_true;
-}
-
-
-static fm_s32 mt6627_CQI_Get_50KHz(fm_s8 *buf, fm_s32 buf_len)
-{
-    fm_s32 ret = 0;
-    fm_s32 i;
-    struct adapt_fm_cqi tmp = {
-        .ch = 0,
-        .rssi = 0,
-    };
-    struct adapt_fm_cqi *pcqi = (struct adapt_fm_cqi *)buf;
-
-    
-    if (!buf || buf_len < FM_CQI_BUF_SIZE) {
-        return -FM_EBUF;
-    }
-
-    for (i = 0; ((i < (buf_len / sizeof(struct adapt_fm_cqi))) && \
-        (fm_false == FM_FIFO_IS_EMPTY(cqi_fifo))); i++) {
-        FM_FIFO_OUTPUT(cqi_fifo, &tmp);
-        pcqi[i].ch = tmp.ch;
-        pcqi[i].rssi = tmp.rssi;
-        WCN_DBG(FM_NTC | CHIP, "%d %d(dbm) get from fifo\n", pcqi[i].ch, pcqi[i].rssi);
-    }
-    
-    return ret;
-}
-
-#endif //MTK_FM_50KHZ_SUPPORT
-static fm_s32 mt6627_SeekStop(void)
-{
-    return fm_force_active_event(FLAG_SEEK_DONE);
-}
-
-static fm_s32 mt6627_ScanStop(void)
-{
-    cqi_abort = fm_true;
-    scan_abort = fm_true;
-    fm_force_active_event(FLAG_SCAN_DONE | FLAG_CQI_DONE);
-    
-    return 0;
-}
-
-#endif
 
 /*
  * mt6627_GetCurRSSI - get current freq's RSSI value
@@ -1691,18 +1313,6 @@ fm_s32 MT6627fm_low_ops_register(struct fm_lowlevel_ops *ops)
     ops->bi.setfreq = mt6627_SetFreq;
     ops->bi.low_pwr_wa = MT6627fm_low_power_wa_default;
     ops->bi.get_aud_info = mt6627fm_get_audio_info;
-#if 0     
-    ops->bi.seek = mt6627_Seek;
-    ops->bi.seekstop = mt6627_SeekStop;
-    ops->bi.scan = mt6627_Scan;
-    ops->bi.cqi_get = mt6627_CQI_Get;
-    #ifdef MTK_FM_50KHZ_SUPPORT
-    ops->bi.scan = mt6627_Scan_50KHz;
-    ops->bi.cqi_get = mt6627_CQI_Get_50KHz;
-    #endif
-    ops->bi.scanstop = mt6627_ScanStop;
-    ops->bi.i2s_set = mt6627_I2s_Setting;
-#endif    
     ops->bi.rssiget = mt6627_GetCurRSSI;
     ops->bi.volset = mt6627_SetVol;
     ops->bi.volget = mt6627_GetVol;
@@ -1734,13 +1344,6 @@ fm_s32 MT6627fm_low_ops_register(struct fm_lowlevel_ops *ops)
         ret = -1;
     }
 
-#if 0//def MTK_FM_50KHZ_SUPPORT
-    cqi_fifo = fm_fifo_create("6628_cqi_fifo", sizeof(struct adapt_fm_cqi), 640);
-    if (!cqi_fifo) {
-        WCN_DBG(FM_ALT | CHIP, "6627 fm lib create cqi fifo failed\n");
-        ret = -1;
-    }
-#endif
 
     return ret;
 }
@@ -1751,9 +1354,6 @@ fm_s32 MT6627fm_low_ops_unregister(struct fm_lowlevel_ops *ops)
     //Basic functions.
     FMR_ASSERT(ops);
 
-#if 0//def MTK_FM_50KHZ_SUPPORT
-    fm_fifo_release(cqi_fifo);
-#endif
 
     if (cmd_buf) {
         fm_free(cmd_buf);

@@ -38,18 +38,6 @@ static char* wmt_conf_write_char(
     const struct parse_data *data
     );
 
-#if 0
-static int wmt_conf_parse_short(
-    P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-    const struct parse_data *data,
-    const char* pos
-    );
-
-static char* wmt_conf_write_short(
-    P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-    const struct parse_data *data
-    );
-#endif
 
 static int wmt_conf_parse_int(
     P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
@@ -100,10 +88,6 @@ static int wmt_conf_read_file_from_fs (
 #define _CHAR(f) #f, wmt_conf_parse_char, wmt_conf_write_char, OFFSET(rWmtCfgFile.f)
 #define CHAR(f) _CHAR(f), NULL, NULL
 
-#if 0
-#define _SHORT(f) #f, wmt_conf_parse_short, wmt_conf_write_short, OFFSET(rWmtCfgFile.f)
-#define SHORT(f) _SHORT(f), NULL, NULL
-#endif
 
 #define _INT(f) #f, wmt_conf_parse_int, wmt_conf_write_int, OFFSET(rWmtCfgFile.f)
 #define INT(f) _INT(f), NULL, NULL
@@ -163,48 +147,6 @@ static char*  wmt_conf_write_char(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const str
     return value;
 }
 
-#if 0
-static int wmt_conf_parse_short(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data,
-                 const char* pos)
-{
-    unsigned short* dst;
-    dst = (short* ) (((unsigned char*) pWmtCcci) + (long) data->param1);
-
-    //WMT_INFO_FUNC(">strlen(pos)=%d\n", strlen(pos));
-
-    if((strlen(pos) > 2) &&
-        ((*pos)=='0') && (*(pos+1)=='x') ){
-        *dst = simple_strtol(pos+2, NULL, 16);
-        WMT_CCCI_DBG_FUNC("wmtcfg==> %s=0x%x\n", data->name, *dst);
-    } else {
-        *dst = simple_strtol(pos, NULL, 10);
-        WMT_CCCI_DBG_FUNC("wmtcfg==> %s=%d\n", data->name, *dst);
-    }
-
-    return 0;
-}
-
-static char*  wmt_conf_write_short(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data)
-{
-    short* src;
-    int res;
-    char* value;
-
-    // TODO: [FixMe][George] FIX COMPILE WARNING HERE!
-    src = (short* ) (((unsigned char*) pWmtCcci) + (long) data->param1);
-
-    value = vmalloc(20);
-    if (value == NULL)
-        return NULL;
-    res = snprintf(value, 20, "0x%x", *src);
-    if (res < 0 || res >= 20) {
-        vfree(value);
-        return NULL;
-    }
-    value[20 - 1] = '\0';
-    return value;
-}
-#endif
 
 static int wmt_conf_parse_int(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data,
                  const char* pos)
@@ -302,18 +244,6 @@ static int wmt_conf_parse (
     pch = pBuf;
     /* pch is to be updated by strsep(). Keep pBuf unchanged!! */
 
-    #if 0
-    {
-        PCHAR buf_ptr = pBuf;
-        INT32 k=0;
-        WMT_INFO_FUNC("%s len=%d", "wmcfg.content:", size);
-        for(k=0; k < size ; k++){
-            //if(k%16 == 0)  WMT_INFO_FUNC("\n");
-            WMT_INFO_FUNC("%c",  buf_ptr[k]);
-        }
-        WMT_INFO_FUNC("--end\n");
-    }
-    #endif
 
     while ((pLine = strsep(&pch, "\r\n")) != NULL) {
         /* pch is updated to the end of pLine by strsep() and updated to '\0' */

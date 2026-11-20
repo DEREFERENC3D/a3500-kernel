@@ -42,32 +42,6 @@ const char *g_btm_op_name[]={
 	    "STP_OPID_BTM_EXIT"
     };
 
-#if 0
-static char *_stp_pkt_type(int type){
-
-    static char s[10]; 
-
-    switch(type){
-        case WMT_TASK_INDX:
-            osal_memcpy(s, "WMT", strlen("WMT")+1);
-            break;
-        case BT_TASK_INDX:
-            osal_memcpy(s, "BT", strlen("BT")+1);
-            break;
-        case GPS_TASK_INDX:
-            osal_memcpy(s, "GPS", strlen("GPS")+1);
-            break;
-        case FM_TASK_INDX:
-            osal_memcpy(s, "FM", strlen("FM")+1);
-            break;
-        default:
-            osal_memcpy(s, "UNKOWN", strlen("UNKOWN")+1);
-            break;
-    }
-
-    return s;
-}
-#endif 
 
 static INT32 _stp_btm_put_dump_to_nl(void)
 {
@@ -181,63 +155,6 @@ static INT32 _stp_btm_put_dump_to_aee(void)
 }
 
 
-#if 0
-INT32 _stp_trigger_firmware_assert_via_emi(VOID)
-{
-	UINT8 * p_virtual_addr = NULL;
-    INT32 status = -1;
-   	INT32 i = 0, j = 0;
-	
-    do {        
-        STP_BTM_INFO_FUNC("[Force Assert] stp_trigger_firmware_assert_via_emi -->\n");
-    	p_virtual_addr = wmt_plat_get_emi_virt_add(EXP_APMEM_CTRL_HOST_OUTBAND_ASSERT_W1);
-    	if(!p_virtual_addr)
-    	{
-    		STP_BTM_ERR_FUNC("get virtual address fail\n");
-    		return -1;
-    	}
-
-    	CONSYS_REG_WRITE(p_virtual_addr, EXP_APMEM_HOST_OUTBAND_ASSERT_MAGIC_W1);
-        STP_BTM_INFO_FUNC("[Force Assert] stp_trigger_firmware_assert_via_emi <--\n");
-#if 1
-        //wait for firmware assert 
-        osal_sleep_ms(50); 
-        //if firmware is not assert self, host driver helps it.
-        do
-        {
-            if(0 != mtk_wcn_stp_coredump_start_get()){
-                status = 0;
-                break;
-            }  
-			
-            mtk_wcn_stp_wakeup_consys();
-            STP_BTM_INFO_FUNC("[Force Assert] wakeup consys (%d)\n", i);
-            stp_dbg_poll_cpupcr(5 , 1 , 1);
-            osal_sleep_ms(5);
-
-			i++;
-            if(i > 20){
-				i = 0;
-                break;
-            }          
-        } while(1);
-#endif
-
-        if(0 != mtk_wcn_stp_coredump_start_get()){
-            status = 0;
-            break;
-        }
-
-		j++;
-        if(j > 8) {
-			j = 0;
-            break;        
-        }
-    } while(1);
-    
-    return status;
-}
-#else
 INT32 _stp_trigger_firmware_assert_via_emi(VOID)
 {
     INT32 status = -1;
@@ -262,7 +179,6 @@ INT32 _stp_trigger_firmware_assert_via_emi(VOID)
     
     return status;
 }
-#endif
 
 
 
@@ -1086,10 +1002,6 @@ static inline INT32 _stp_btm_dump_type(MTKSTP_BTM_T *stp_btm,ENUM_STP_BTM_OPID_T
 static inline INT32 _stp_btm_notify_wmt_dmp_wq(MTKSTP_BTM_T *stp_btm){
 
     INT32 retval;
-#if 0
-	UINT32 dump_type;
-	UINT8 *virtual_addr = NULL;
-#endif	
     if(stp_btm == NULL)
     {
         return STP_BTM_OPERATION_FAIL;
@@ -1207,34 +1119,6 @@ static inline INT32 _stp_btm_notify_wmt_trace_wq(MTKSTP_BTM_T *stp_btm)
 }
 static inline INT32 _stp_btm_do_fw_assert_via_emi(MTKSTP_BTM_T *stp_btm){
 
-#if 0
-    P_OSAL_OP       pOp;
-    INT32           bRet;
-    INT32 retval;
-
-    if(stp_btm == NULL)
-    {
-        return STP_BTM_OPERATION_FAIL;
-    }
-    else 
-    {
-        pOp = _stp_btm_get_free_op(stp_btm);
-        if (!pOp) 
-        {
-            STP_BTM_WARN_FUNC("get_free_lxop fail \n");
-            return -1;//break;
-        }
-        pOp->op.opId = STP_OPID_BTM_FORCE_FW_ASSERT;
-        pOp->signal.timeoutValue= 0;
-        bRet = _stp_btm_put_act_op(stp_btm, pOp);
-        STP_BTM_DBG_FUNC("OPID(%d) type(%d) bRet(%d) \n\n",
-            pOp->op.opId,
-            pOp->op.au4OpData[0],
-            bRet);
-        retval = (0 == bRet) ? STP_BTM_OPERATION_FAIL : STP_BTM_OPERATION_SUCCESS;
-    }
-    return retval;
-#endif
 	INT32 ret  = -1;
 
 	ret = _stp_trigger_firmware_assert_via_emi();

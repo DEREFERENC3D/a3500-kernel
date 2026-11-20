@@ -25,21 +25,5 @@ extern int mtk_conn_md_bridge_reg(uint32 u_id, CONN_MD_BRIDGE_OPS *p_ops);
 extern int mtk_conn_md_bridge_unreg(uint32 u_id);
 extern int mtk_conn_md_bridge_send_msg(ipc_ilm_t *ilm);
 
-#if 0
-static int __weak mtk_conn_md_bridge_reg(uint32 u_id, CONN_MD_BRIDGE_OPS *p_ops){
-	printk(KERN_ERR "MTK_CONN Weak FUNCTION~~~\n"); 
-	return 0;
-}
-
-static int __weak mtk_conn_md_bridge_unreg(uint32 u_id){
-	printk(KERN_ERR "MTK_CONN Weak FUNCTION~~~\n"); 
-	return 0;
-}
-
-static int __weak mtk_conn_md_bridge_send_msg(ipc_ilm_t *ilm){
-	printk(KERN_ERR "MTK_CONN Weak FUNCTION~~~\n"); 
-	return 0;
-}
-#endif
 
 #endif /*__CONN_MD_EXP_H_*/

@@ -249,48 +249,6 @@ static unsigned int mt_cirq_get_pol(unsigned int cirq_num)
         return MT_CIRQ_POL_NEG;
     }
 }
-#if 0
-/* 
- * 0: ack success
- * -1:cirq num is out of range
- * */
-static unsigned int mt_cirq_ack(unsigned int cirq_num)
-{
-    unsigned int base;
-    unsigned int bit = 1 << (cirq_num % 32);
-    print_func();
-
-    cirq_num_validate(cirq_num);
-    base = (cirq_num / 32) * 4 + CIRQ_ACK0;
-    mt65xx_reg_sync_writel(bit, base);
-
-
-    dbgmsg(CIRQ_LOG_LEVEL "[CIRQ] ack addr:%x = %x\n", base, bit);
-
-    return 0;
-}
-#endif
-#if 0
-/* 
- * 0: get sta success
- * -1:cirq num is out of range
- * */
-unsigned int mt_cirq_read_status(unsigned int cirq_num)
-{
-    unsigned int sta;
-    unsigned int base;
-    unsigned int bit = 1 << (cirq_num % 32);
-    volatile unsigned int val;
-    print_func();
-    cirq_num_validate(cirq_num);
-
-    base = (cirq_num / 32) * 4 + CIRQ_STA0;
-    val = readl(IOMEM(base));
-    sta = (val & bit);
-    return sta;
-
-}
-#endif
 void mt_cirq_enable(void){
     unsigned int base=CIRQ_CON;
     volatile unsigned int val;

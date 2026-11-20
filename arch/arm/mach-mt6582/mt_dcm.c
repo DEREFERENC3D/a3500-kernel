@@ -270,11 +270,7 @@ void dcm_enable(unsigned int type)
         dcm_clrl(INFRA_DCMDBC, 0x0000007F);//then clear b0~b6
 
 
-		#if 0// divided most, save power,
-		dcm_writel(INFRA_DCMFSEL, 0xFFE0F0F8);//clear bit0~bit2,clear bit8~bit11,clear bit16~bit20
-        #else//// divided by 1
 		dcm_writel(INFRA_DCMFSEL, 0xFFF0F0F8);//clear bit0~bit2,clear bit8~bit11,set bit20=1
-        #endif
 
 		dcm_setl(DRAMC_PD_CTRL, 0x3 << 24);////set bit24,bit25=1
 		dcm_sta |= IFR_DCM;
@@ -361,7 +357,7 @@ void dcm_enable(unsigned int type)
             dcm_writel(DISP_HW_DCM_DIS_CLR1, 0xFFFFFFFF);
 
 
-			//LARB0 „³ DISP, MDP
+			//LARB0  DISP, MDP
 	        //RO,bootup set once status = 1'b0,DCM off setting=N/A
 			dcm_readl(SMILARB0_DCM_STA);
 	        //RO,bootup set once status = 1'b1,DCM off setting=1'b0
@@ -396,7 +392,7 @@ void dcm_enable(unsigned int type)
             //dcm_writel(SMILARB0_DCM_SET, 0x3 << 15);
 
 
- 			//LARB2 „³ ISP,VENC
+ 			//LARB2  ISP,VENC
 	        //RO,bootup set once status = 1'b0,DCM off setting=N/A
 			dcm_readl(SMILARB2_DCM_STA);
 	        //RO,bootup set once status = 1'b1,DCM off setting=1'b0
@@ -419,7 +415,7 @@ void dcm_enable(unsigned int type)
             dcm_clrl(VDEC_DCM_CON, 0x1);//clear bit0
 
 
- 			//LARB1 „³ VDEC
+ 			//LARB1  VDEC
 	        //RO,bootup set once status = 1'b0,DCM off setting=N/A
 			dcm_readl(SMILARB1_DCM_STA);
 	        //RO,bootup set once status = 1'b1,DCM off setting=1'b0
@@ -568,7 +564,7 @@ void dcm_disable(unsigned int type)
         dcm_writel(DISP_HW_DCM_DIS_CLR1, 0x0);
 
 
-		//LARB0 „³ DISP, MDP
+		//LARB0  DISP, MDP
         //RO,bootup set once status = 1'b0,DCM off setting=N/A
 		dcm_readl(SMILARB0_DCM_STA);
         //RO,bootup set once status = 1'b1,DCM off setting=1'b0
@@ -601,7 +597,7 @@ void dcm_disable(unsigned int type)
         dcm_writel(VENC_CLK_DCM_CTRL, 0xFFFFFFFE);//clear bit0
         dcm_writel(VENC_CLK_CG_CTRL,  0x00000000);//clear bit0~bit31
 
-		//LARB2 „³ ISP,VENC
+		//LARB2  ISP,VENC
         //RO,bootup set once status = 1'b0,DCM off setting=N/A
 		dcm_readl(SMILARB2_DCM_STA);
         //RO,bootup set once status = 1'b1,DCM off setting=1'b0
@@ -620,7 +616,7 @@ void dcm_disable(unsigned int type)
 
         dcm_setl(VDEC_DCM_CON, 0x1);//,set bit0=1
 
-		//LARB1 „³ VDEC
+		//LARB1  VDEC
         //RO,bootup set once status = 1'b0,DCM off setting=N/A
 		dcm_readl(SMILARB1_DCM_STA);
         //RO,bootup set once status = 1'b1,DCM off setting=1'b0

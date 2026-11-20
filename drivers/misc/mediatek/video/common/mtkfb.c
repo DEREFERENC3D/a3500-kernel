@@ -1367,17 +1367,6 @@ static int mtkfb_get_overlay_layer_info(struct fb_overlay_layer_info* layerInfo)
     layerInfo->curr_conn_type = layer.curr_conn_type;
     layerInfo->next_conn_type = layer.next_conn_type;
     layerInfo->hw_conn_type = layer.hw_conn_type;
-#if 0
-    MTKFB_LOG("[FB Driver] mtkfb_get_overlay_layer_info():id=%u, layer en=%u, next_en=%u, curr_en=%u, hw_en=%u, next_idx=%u, curr_idx=%u, hw_idx=%u \n",
-    		layerInfo->layer_id,
-    		layerInfo->layer_enabled,
-    		layerInfo->next_en,
-    		layerInfo->curr_en,
-    		layerInfo->hw_en,
-    		layerInfo->next_idx,
-    		layerInfo->curr_idx,
-    		layerInfo->hw_idx);
-#endif
     MMProfileLogEx(MTKFB_MMP_Events.LayerInfo[layerInfo->layer_id], MMProfileFlagPulse, (layerInfo->next_idx<<16)+((layerInfo->curr_idx)&0xFFFF), (layerInfo->hw_idx<<16)+(layerInfo->next_en<<8)+(layerInfo->curr_en<<4)+layerInfo->hw_en);
     return 0;
 }
@@ -2405,12 +2394,6 @@ static void mtkfb_fb_565_to_8888(struct fb_info *fb_info)
             *d++ = RGB565_TO_ARGB8888(src_rgb565);
         }
 		d += (ALIGN_TO(xres, MTK_FB_ALIGNMENT)-xres);
-#if 0
-        for(k = xres; k < x_virtual; ++ k){
-            *d++ = 0xFFFFFFFF;
-            *s++;
-        }
-#endif
         s += (ALIGN_TO(xres, disphal_get_fb_alignment()) - xres);
     }
     //printf("[boot_logo_updater] loop copy color over\n");

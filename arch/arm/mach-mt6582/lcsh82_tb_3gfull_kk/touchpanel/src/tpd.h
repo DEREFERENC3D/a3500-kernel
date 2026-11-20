@@ -113,14 +113,6 @@ ssize_t tpd_virtual_key(char *buf);
 //#endif
 #endif
 
-#if 0
-void tpd_adc_init(void);
-void tpd_set_debounce_time(int debounce_time);
-void tpd_set_spl_number(int spl_num);
-u16 tpd_read(int position);
-u16 tpd_read_adc(u16 pos);
-u16 tpd_read_status(void);
-#endif
 
 extern int tpd_driver_add(struct tpd_driver_t *tpd_drv);
 extern int tpd_driver_remove(struct tpd_driver_t *tpd_drv);

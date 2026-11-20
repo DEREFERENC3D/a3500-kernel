@@ -26,10 +26,6 @@ static unsigned int interval = 1; /* seconds, 0 : no auto polling */
 static unsigned int trip_temp[10] = {120000,110000,100000,90000,80000,70000,65000,60000,55000,50000};
 static struct thermal_zone_device *thz_dev = NULL;
 
-#if 0
-static unsigned int cl_dev_sysrst_state = 0;
-static struct thermal_cooling_device *cl_dev_sysrst = NULL;
-#endif
 
 static int  mtktsxtal_debug_log = 1;
 static int  kernelmode = 0;
@@ -614,45 +610,6 @@ void mtktsxtal_unregister_thermal(void)
 	}
 }
 
-#if 0
-static int tsxtal_sysrst_get_max_state(struct thermal_cooling_device *cdev,
-				 unsigned long *state)
-{
-	mtktsxtal_dprintk("tsxtal_sysrst_get_max_state\n");
-	*state = 1;
-	return 0;
-}
-static int tsxtal_sysrst_get_cur_state(struct thermal_cooling_device *cdev,
-				 unsigned long *state)
-{
-	mtktsxtal_dprintk("tsxtal_sysrst_get_cur_state\n");
-
-	*state = cl_dev_sysrst_state;
-	return 0;
-}
-static int tsxtal_sysrst_set_cur_state(struct thermal_cooling_device *cdev,
-				 unsigned long state)
-{
-	mtktsxtal_dprintk("tsxtal_sysrst_set_cur_state\n");
-
-	cl_dev_sysrst_state = state;
-	if(cl_dev_sysrst_state == 1)
-	{
-		printk("XTAL_Thermal: ");
-		printk("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-		printk("*****************************************");
-		printk("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-
-	}
-	return 0;
-}
-
-static struct thermal_cooling_device_ops mtktsxtal_cooling_sysrst_ops = {
-	.get_max_state = tsxtal_sysrst_get_max_state,
-	.get_cur_state = tsxtal_sysrst_get_cur_state,
-	.set_cur_state = tsxtal_sysrst_set_cur_state,
-};
-#endif
 
 static int mtktsxtal_read(char *buf, char **start, off_t off, int count, int *eof, void *data)
 {
@@ -770,11 +727,6 @@ trip_5_temp=%d,trip_6_temp=%d,trip_7_temp=%d,trip_8_temp=%d,trip_9_temp=%d,time_
 
 int mtktsxtal_register_cooler(void)
 {
-#if 0
-	mtktsxtal_dprintk("mtktsxtal_register_cooler\n");
-	cl_dev_sysrst = mtk_thermal_cooling_device_register("2500", NULL,
-					   &mtktsxtal_cooling_sysrst_ops);
-#endif
    	return 0;
 }
 

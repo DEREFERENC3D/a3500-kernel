@@ -27,7 +27,7 @@ static __init int board_init(void)
      *          2). Perform board specific initialization:
      *              1-1). Register MT65xx platform devices.
      *              1-2). Register non-MT65xx platform devices.
-     *                    (e.g. external peripheral GPS, BT, ¡K etc.)
+     *                    (e.g. external peripheral GPS, BT, K etc.)
      */
     // mt6582_power_management_init();
 
@@ -37,9 +37,6 @@ static __init int board_init(void)
     // mt6582_pmic_low_power_init();
 
     /* BUG BUG: temporarily marked since customization is not ready yet */
-# if 0
-    custom_board_init();
-#endif
 
     return 0;
 }

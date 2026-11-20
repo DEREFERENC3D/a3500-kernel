@@ -446,14 +446,6 @@
 #define SMI1_BASE                   0xF000C000
 #define MIPI_CONFIG_BASE            0xF0010000
 #define KP_BASE                     0xF0011000
-#if 0
-#define DEVICE_APC_0_BASE           0xF0010000
-#define DEVICE_APC_1_BASE           0xF0011000
-#define DEVICE_APC_2_BASE           0xF0012000
-#define DEVICE_APC_3_BASE           0xF0013000
-#define DEVICE_APC_4_BASE           0xF0014000
-#define SMI0_BASE                   0xF0208000
-#endif
 #define EINT_BASE                   0xF000B000
 
 
@@ -499,20 +491,6 @@
 // APB Module pmic_wrap
 #define PWRAP_BASE (0xF000D000)
 
-#if 0
-//#define IRDA_BASE                 0xF1007000
-#define I2C4_BASE                   0xF1014000
-#define I2CDUAL_BASE                0xF1015000
-#define ACCDET_BASE                 0xF1016000
-#define AP_HIF_BASE                 0xF1017000
-#define MD_HIF_BASE                 0xF1018000
-#define GCPU_BASE                   0xF101B000
-#define GCPU_NS_BASE                0xF01C000
-#define GCPU_MMU_BASE               0xF01D000
-#define SATA_BASE                   0xF01E000
-#define CEC_BASE                    0xF01F000
-//#define SPI1_BASE                 0xF1022000
-#endif
 
 #define USB1_BASE                   0xF1200000
 #define USB2_BASE                   0xF1200000

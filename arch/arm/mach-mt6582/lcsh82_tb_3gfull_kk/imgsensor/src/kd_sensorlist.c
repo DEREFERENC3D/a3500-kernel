@@ -1481,14 +1481,6 @@ static long CAMERA_HW_Ioctl(
 
     pIdx = (u32*)pBuff;
     switch(a_u4Command) {
-#if 0
-        case KDIMGSENSORIOC_X_POWER_ON:
-            i4RetValue = kdModulePowerOn((CAMERA_DUAL_CAMERA_SENSOR_ENUM) *pIdx, true, CAMERA_HW_DRVNAME);
-            break;
-        case KDIMGSENSORIOC_X_POWER_OFF:
-            i4RetValue = kdModulePowerOn((CAMERA_DUAL_CAMERA_SENSOR_ENUM) *pIdx, false, CAMERA_HW_DRVNAME);
-            break;
-#endif
         case KDIMGSENSORIOC_X_SET_DRIVER:
             i4RetValue = kdSetDriver((unsigned int*)pBuff);
             break;

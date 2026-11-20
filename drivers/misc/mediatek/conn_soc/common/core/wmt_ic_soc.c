@@ -80,13 +80,6 @@ static UCHAR gFullPatchName[NAME_MAX + 1];
 static const WMT_IC_INFO_S *gp_soc_info = NULL;
 static WMT_PATCH gp_soc_patch_info;
 static WMT_CO_CLOCK gCoClockEn = WMT_CO_CLOCK_DIS;
-#if 0
-static UCHAR WMT_WAKEUP_DIS_GATE_CMD[] = {0x1, 0x3, 0x01, 0x00, 0x04};
-static UCHAR WMT_WAKEUP_DIS_GATE_EVT[] = {0x2, 0x3, 0x02, 0x0, 0x0, 0x04};
-
-static UCHAR WMT_WAKEUP_EN_GATE_CMD[] = {0x1, 0x3, 0x01, 0x00, 0x05};
-static UCHAR WMT_WAKEUP_EN_GATE_EVT[] = {0x2, 0x3, 0x02, 0x0, 0x0, 0x05};
-#endif
 
 #if CFG_WMT_UART_HIF_USE
 static UCHAR WMT_QUERY_BAUD_CMD[] = {0x01, 0x04, 0x01, 0x00, 0x02};
@@ -148,25 +141,7 @@ static UCHAR WMT_SET_STP_CMD[] = {0x01, 0x04, 0x05, 0x00, 0x03, 0xDF, 0x0E, 0x68
 static UCHAR WMT_SET_STP_EVT[] = {0x02, 0x04, 0x02, 0x00, 0x00, 0x03};
 static UCHAR WMT_STRAP_CONF_CMD_FM_COMM[] = {0x01, 0x05, 0x02, 0x00, 0x02, 0x02};
 static UCHAR WMT_STRAP_CONF_EVT[] = {0x02, 0x05, 0x02, 0x00, 0x00, 0x02};
-#if 0
-static UCHAR WMT_SET_OSC32K_BYPASS_CMD[]= {0x01, 0x0A, 0x01, 0x00, 0x05};
-static UCHAR WMT_SET_OSC32K_BYPASS_EVT[]= {0x02, 0x0A, 0x01, 0x00, 0x00};
-#endif
 
-#if 0
-//to enable dump feature
-static UINT8  WMT_CORE_DUMP_EN_CMD[] = {0x01, 0x0F, 0x02, 0x00, 0x03, 0x01};
-static UINT8  WMT_CORE_DUMP_EN_EVT[] = {0x02, 0x0F, 0x01, 0x00, 0x00};
-//to get system stack dump when f/w assert
-static UCHAR  WMT_CORE_DUMP_LEVEL_01_CMD[] = {0x1, 0x0F, 0x07, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static UCHAR  WMT_CORE_DUMP_LEVEL_01_EVT[] = {0x2, 0x0F, 0x01, 0x00, 0x00};
-//to get task and system stack dump when f/w assert
-static UCHAR  WMT_CORE_DUMP_LEVEL_02_CMD[] = {0x1, 0x0F, 0x07, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static UCHAR  WMT_CORE_DUMP_LEVEL_02_EVT[] = {0x2, 0x0F, 0x01, 0x00, 0x00};
-//to get bt related memory dump when f/w assert
-static UCHAR  WMT_CORE_DUMP_LEVEL_03_CMD[] = {0x1, 0x0F, 0x07, 0x00, 0x03, 0x00, 0x00, 0x09, 0xF0, 0x00, 0x0A};
-static UCHAR  WMT_CORE_DUMP_LEVEL_03_EVT[] = {0x2, 0x0F, 0x01, 0x00, 0x00};
-#endif
 //to get full dump when f/w assert
 static UCHAR  WMT_CORE_DUMP_LEVEL_04_CMD[] = {0x1, 0x0F, 0x07, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static UCHAR  WMT_CORE_DUMP_LEVEL_04_EVT[] = {0x2, 0x0F, 0x01, 0x00, 0x00};
@@ -995,82 +970,12 @@ mtk_wcn_soc_aif_ctrl (
 
     if ( (flag & WMT_LIB_AIF_FLAG_MASK) == WMT_LIB_AIF_FLAG_SHARE ) {
         WMT_INFO_FUNC("PCM & I2S PIN SHARE\n");
-        #if 0
-        switch (state) {
-        case WMT_IC_AIF_0:
-            /* BT_PCM_OFF & FM line in/out */
-            val = 0x00000770;
-            ret = wmt_core_reg_rw_raw(1, 0x80050140, &val, 0x00000FF0);
-            val = 0x00000000;
-            ret += wmt_core_reg_rw_raw(1, 0x80050150, &val, 0x00000800);
-            break;
-
-        case WMT_IC_AIF_1:
-            /* BT_PCM_ON & FM line in/out */
-            val = 0x00000700;
-            ret = wmt_core_reg_rw_raw(1, 0x80050140, &val, 0x00000FF0);
-            val = 0x00000000;
-            ret += wmt_core_reg_rw_raw(1, 0x80050150, &val, 0x00000800);
-            break;
-
-        case WMT_IC_AIF_2:
-            /* BT_PCM_OFF & FM I2S */
-            val = 0x00000710;
-            ret = wmt_core_reg_rw_raw(1, 0x80050140, &val, 0x00000FF0);
-            val = 0x00000800; /* 800:3-wire, 000: 4-wire */
-            ret += wmt_core_reg_rw_raw(1, 0x80050150, &val, 0x00000800);
-            break;
-        default:
-            WMT_ERR_FUNC("unsupported state (%d) \n", state);
-            ret = -1;
-            break;
-        }
-        #else
         WMT_WARN_FUNC("TBD!!");
         ret = 0;
-        #endif
     }
     else {
          /*PCM & I2S separate*/
         WMT_INFO_FUNC("PCM & I2S PIN SEPARATE\n");
-        #if 0
-        switch (state) {
-        case WMT_IC_AIF_0:
-            /* BT_PCM_OFF & FM line in/out */
-            val = 0x00000770;
-            ret = wmt_core_reg_rw_raw(1, 0x80050140, &val, 0x00000FF0);
-            val = 0x00000000;
-            ret += wmt_core_reg_rw_raw(1, 0x80050150, &val, 0x00000800);
-            break;
-
-        case WMT_IC_AIF_1:
-            /* BT_PCM_ON & FM line in/out */
-            val = 0x00000700;
-            ret = wmt_core_reg_rw_raw(1, 0x80050140, &val, 0x00000FF0);
-            val = 0x00000000;
-            ret += wmt_core_reg_rw_raw(1, 0x80050150, &val, 0x00000800);
-            break;
-
-        case WMT_IC_AIF_2:
-            /* BT_PCM_OFF & FM I2S */
-            val = 0x00000070;
-            ret = wmt_core_reg_rw_raw(1, 0x80050140, &val, 0x00000FF0);
-            val = 0x00000800; /* 800:3-wire, 000: 4-wire */
-            ret += wmt_core_reg_rw_raw(1, 0x80050150, &val, 0x00000800);
-
-            break;
-        case WMT_IC_AIF_3:
-            val = 0x00000000;
-            ret = wmt_core_reg_rw_raw(1, 0x80050140, &val, 0x00000FF0);
-            val = 0x00000800; /* 800:3-wire, 000: 4-wire */
-            ret += wmt_core_reg_rw_raw(1, 0x80050150, &val, 0x00000800);
-
-        default:
-            WMT_ERR_FUNC("unsupported state (%d) \n", state);
-            ret = -1;
-            break;
-        }
-        #else
         switch (state) {
         case WMT_IC_AIF_0:
             /* BT_PCM_OFF & FM line in/out */
@@ -1096,7 +1001,6 @@ mtk_wcn_soc_aif_ctrl (
             ret = -1;
            break;
         }
-        #endif
     }
 
     if (!ret) {

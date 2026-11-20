@@ -290,27 +290,6 @@
 #define VDEC_DCM_CON            (VDEC_GCON_BASE + 0x0018)
 #endif
 
-#if 0
-//#define CPU_DCM                 (0x01)
-//#define BUS_DCM                 (0x02)
-//#define TOP_DCM                 (0x03)
-#define IFRA_DCM                (0x04)
-#define PERI_DCM                (0x05)
-#define SMI_DCM                 (0x06)
-#define MFG_DCM                 (0x07)
-#define DIS_DCM                 (0x08)
-#define JPEG_DCM                (0x09)
-#define VDE_DCM                 (0x10)
-#define VEN_DCM                 (0x11)
-//#define DRAM_DCM                (0x12)
-#define TOPCKGEN_DCM            (0x13)
-#define CPUSYS_DCM				(0x14)
-#define MMSYS_DCM				(0x15)
-#define CAM_DCM					(0x16)
-#define CA7_DCM					(0x17)
-//#define M4U_DCM					(0x18)
-#define SMILARB_DCM				(0x19)
-#else
 #define CPU_DCM                 (1U << 0)
 #define IFR_DCM                 (1U << 1)
 #define PER_DCM                 (1U << 2)
@@ -323,7 +302,6 @@
 #define TOPCKGEN_DCM			(1U << 8)
 #define ALL_DCM                 (CPU_DCM|IFR_DCM|PER_DCM|SMI_DCM|MFG_DCM|DIS_DCM|ISP_DCM|VDE_DCM|TOPCKGEN_DCM)
 #define NR_DCMS                 (0x9)
-#endif
 
 //extern void dcm_get_status(unsigned int type);
 extern void dcm_enable(unsigned int type);

@@ -46,17 +46,6 @@
 #define STP_PSM_IDLE_TIME_SLEEP           5000   //temporary for stress testing
 #define STP_PSM_SDIO_IDLE_TIME_SLEEP           100   //temporary for SDIO stress testing
 #define STP_PSM_WAIT_EVENT_TIMEOUT        6000
-#if 0
-#define STP_PSM_WMT_EVENT_SLEEP_EN                    (0x1UL << 0)
-#define STP_PSM_WMT_EVENT_WAKEUP_EN                   (0x1UL << 1)
-#define STP_PSM_BLOCK_DATA_EN                         (0x1UL << 2)
-#define STP_PSM_WMT_EVENT_DISABLE_MONITOR             (0x1UL << 3)
-#define STP_PSM_WMT_EVENT_ROLL_BACK_EN                (0x1UL << 4)
-#define STP_PSM_RESET_EN                              (0x1UL << 5)
-#define STP_PSM_WMT_EVENT_HOST_WAKEUP_EN                    (0x1UL << 6)
-#define STP_PSM_WMT_EVENT_DISABLE_MONITOR_TX_HIGH_DENSITY   (0x1UL << 7) 
-#define STP_PSM_WMT_EVENT_DISABLE_MONITOR_RX_HIGH_DENSITY   (0x1UL << 8)
-#endif
 
 #define STP_PSM_WMT_EVENT_SLEEP_EN                    (0)
 #define STP_PSM_WMT_EVENT_WAKEUP_EN                   (1)

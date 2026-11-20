@@ -296,16 +296,6 @@ void mcidle_after_wfi(int cpu)
     mcidle_cnt[cpu]++;
 }
 
-#if 0
-static void go_to_mcidle(int cpu)
-{
-    mcidle_before_wfi(cpu);
-
-    //spm_mcdi_wfi();
-
-    mcidle_after_wfi(cpu);
-}
-#endif
 
 #endif //SPM_SODI_ENABLED
 
@@ -437,23 +427,14 @@ void spm_dpidle_before_wfi(void)
 
     faudintbus_pll2sq();
 
-#if 0
-        dpidle_timer_left = localtimer_get_counter();
-        gpt_set_cmp(GPT4, dpidle_timer_left);
-#else
         dpidle_timer_left2 = localtimer_get_counter();
         gpt_set_cmp(GPT4, dpidle_timer_left2);
-#endif
         start_gpt(GPT4);
 
 }
 
 void spm_dpidle_after_wfi(void)
 {
-#if 0
-    idle_info("[%s]timer_left=%u, timer_left2=%u, delta=%u\n", 
-        dpidle_timer_left, dpidle_timer_left2, dpidle_timer_left-dpidle_timer_left2);
-#endif
 
     //if (gpt_check_irq(GPT4)) {
     if (gpt_check_and_ack_irq(GPT4)) {

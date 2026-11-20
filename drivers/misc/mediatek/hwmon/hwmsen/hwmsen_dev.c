@@ -1023,21 +1023,6 @@ static void update_workqueue_polling_rate(int newDelay)
 		   i= atomic_read(&cxt->delay)/atomic_read(&hwm_obj->delay);
 		   cxt->delayCount = cxt->delayCountSet = i;
 		   HWM_LOG("%s:set delayCountSet=%d delay =%d handle=%d\r\n",__func__, i, atomic_read(&cxt->delay), idx);
-		#if 0
-		   switch(i)
-		   {
-		     case 3:
-			 	// 200/60 ;60/20
-			 	cxt->delayCount = cxt->delayCountSet = 3;
-				HWM_LOG("%s:set delayCountSet=3 delay =%d handle=%d\r\n",__func__,atomic_read(&cxt->delay), idx);
-			 	break;
-			 case 10:
-			 	// 200/20
-			 	cxt->delayCount = cxt->delayCountSet = 10;
-				HWM_LOG("%s:set delayCountSet=10 delay =%d handle=%d\r\n",__func__, atomic_read(&cxt->delay), idx);
-			 	break;
-		   }
-		#endif
 		}
    }
 }

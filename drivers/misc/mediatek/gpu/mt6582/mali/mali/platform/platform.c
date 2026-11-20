@@ -171,41 +171,6 @@ void mali_gpu_utilization_callback(struct mali_gpu_utilization_data *data)
 }
 
 
-#if 0//because not used
-static int mali_pm_freeze(struct device *device)
-{
-    int ret = 0;
-    
-    MALI_DEBUG_PRINT(1, ("Mali PM: %s\n", __FUNCTION__));
-    
-    if (NULL != device->driver &&
-        NULL != device->driver->pm &&
-        NULL != device->driver->pm->freeze)
-    {
-        /* Need to notify Mali driver about this event */
-        ret = device->driver->pm->freeze(device);
-    }
-
-    return ret;
-}
-
-static int mali_pm_thaw(struct device *device)
-{
-    int ret = 0;
-
-    MALI_DEBUG_PRINT(1, ("Mali PM: %s\n", __FUNCTION__));
-
-    if (NULL != device->driver &&
-        NULL != device->driver->pm &&
-        NULL != device->driver->pm->thaw)
-    {
-        /* Need to notify Mali driver about this event */
-        ret = device->driver->pm->thaw(device);
-    }
-
-    return ret;
-}
-#endif
 
 #ifdef CONFIG_PM_RUNTIME
 static int mali_runtime_suspend(struct device *device)

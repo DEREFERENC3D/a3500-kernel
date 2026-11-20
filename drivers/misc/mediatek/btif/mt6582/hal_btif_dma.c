@@ -603,12 +603,6 @@ we clear tx flag and disable btif tx interrupt
 /*vFIFO data has been read by DMA controller, just disable tx dma's irq*/
 		i_ret = hal_btif_dma_ier_ctrl(p_dma_info, false);
 	} else {
-#if 0
-		BTIF_ERR_FUNC
-		    ("**********************WARNING**************************\n");
-		BTIF_ERR_FUNC("invalid irq condition, dump register\n");
-		hal_dma_dump_reg(p_dma_info, REG_TX_DMA_ALL);
-#endif
 		BTIF_DBG_FUNC
 		    ("superious IRQ occurs, vff_len(%d), valid_size(%d), left_len(%d)\n",
 		     vff_len, valid_size, left_len);

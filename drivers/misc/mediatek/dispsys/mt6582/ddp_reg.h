@@ -70,13 +70,6 @@
               ((*(volatile unsigned int*)(reg32) & REG_FLD_MASK(field)) >> REG_FLD_SHIFT(field)) \
           } while(0)         
       
-#if 0
-#define DISP_REG_SET(reg32, val) (*(volatile unsigned int*)(reg32) = val)
-#define DISP_REG_SET_FIELD(field, reg32, val)  \
-    do {                                \
-           *(volatile unsigned int*)(reg32) = ((*(volatile unsigned int*)(reg32) & ~REG_FLD_MASK(field)) |  REG_FLD_VAL((field), (val)));  \
-    } while (0)
-#else  // use write_sync instead of write directly
 #define DISP_REG_SET(reg32, val) mt65xx_reg_sync_writel(val, (volatile unsigned int*)(reg32))
 /*
 #define DISP_REG_SET_FIELD(field, reg32, val)  \
@@ -85,7 +78,6 @@
     } while (0)
 */
 void DISP_REG_SET_FIELD(unsigned long field, unsigned long reg32, unsigned long val);
-#endif
 
 //-----------------------------------------------------------------
 // CMDQ

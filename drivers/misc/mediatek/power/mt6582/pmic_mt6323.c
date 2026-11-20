@@ -1084,19 +1084,6 @@ U32 pmic_config_interface (U32 RegNum, U32 val, U32 MASK, U32 SHIFT)
     }
     //xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[pmic_config_interface] write Reg[%x]=0x%x\n", RegNum, pmic6323_reg);
 
-    #if 0
-    //3. Double Check
-    //mt6323_read_byte(RegNum, &pmic6323_reg);
-    return_value= pwrap_wacs2(0, (RegNum), 0, &rdata);
-    pmic6323_reg=rdata;
-    if(return_value!=0)
-    {
-        xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "[pmic_config_interface] Reg[%x]= pmic_wrap write data fail\n", RegNum);
-        mutex_unlock(&pmic_access_mutex);
-        return return_value;
-    }
-    xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[pmic_config_interface] Reg[%x]=0x%x\n", RegNum, pmic6323_reg);
-    #endif
 
     mutex_unlock(&pmic_access_mutex);
 #else

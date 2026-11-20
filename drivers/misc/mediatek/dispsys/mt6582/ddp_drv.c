@@ -65,12 +65,6 @@ unsigned int dbg_log = 0;
 unsigned int irq_log = 0;  // must disable irq level log by default, else will block uart output, open it only for debug use
 unsigned int irq_err_log = 0;
 
-#if 0  // defined in ddp_debug.h
-#define DISP_WRN(string, args...) if(dbg_log) printk("[DSS]"string,##args)
-#define DISP_MSG(string, args...) if(0) printk("[DSS]"string,##args)
-#define DISP_ERR(string, args...) if(dbg_log) printk("[DSS]error:"string,##args)
-#define DISP_IRQ(string, args...) if(irq_log) printk("[DSS]"string,##args)
-#endif
 
 #define DISP_DEVNAME "mtk_disp"
 // device and driver
@@ -223,31 +217,6 @@ extern int write_tplay_handle(unsigned int handle_value);
 extern int set_tplay_handle_addr_request(void);
 #endif
 
-#if 0
-struct disp_path_config_struct
-{
-    DISP_MODULE_ENUM srcModule;
-    unsigned int addr; 
-    unsigned int inFormat; 
-    unsigned int pitch;
-    struct DISP_REGION srcROI;        // ROI
-
-    unsigned int layer;
-    bool layer_en;
-    enum OVL_LAYER_SOURCE source; 
-    struct DISP_REGION bgROI;         // background ROI
-    unsigned int bgColor;  // background color
-    unsigned int key;     // color key
-    bool aen;             // alpha enable
-    unsigned char alpha;
-
-    DISP_MODULE_ENUM dstModule;
-    unsigned int outFormat; 
-    unsigned int dstAddr;  // only take effect when dstModule=DISP_MODULE_WDMA1
-};
-int disp_path_enable();
-int disp_path_config(struct disp_path_config_struct* pConfig);
-#endif
 
 unsigned int* pRegBackup = NULL;
 
@@ -354,40 +323,6 @@ static int disp_irq_log_kthread_func(void *data)
 
         if((disp_irq_err==1) && (g_irq_err_print==1))
         {
-            #if 0
-            if(disp_irq_err&DDP_IRQ_OVL_L0_ABNORMAL)
-            {
-               DDP_IRQ_ERR("OVL_RDMA0_ABNORMAL");
-            }
-            if(disp_irq_err&DDP_IRQ_OVL_L1_ABNORMAL)
-            {
-               DDP_IRQ_ERR("OVL_RDMA1_ABNORMAL");
-            }
-            if(disp_irq_err&DDP_IRQ_OVL_L2_ABNORMAL)
-            {
-               DDP_IRQ_ERR("OVL_RDMA2_ABNORMAL");
-            }
-            if(disp_irq_err&DDP_IRQ_OVL_L3_ABNORMAL)
-            {
-               DDP_IRQ_ERR("OVL_RDMA3_ABNORMAL");
-            }
-            if(disp_irq_err&DDP_IRQ_OVL_L0_UNDERFLOW)
-            {
-               DDP_IRQ_ERR("OVL_RDMA0_ABNORMAL");
-            }
-            if(disp_irq_err&DDP_IRQ_OVL_L1_UNDERFLOW)
-            {
-               DDP_IRQ_ERR("OVL_RDMA1_ABNORMAL");
-            }
-            if(disp_irq_err&DDP_IRQ_OVL_L2_UNDERFLOW)
-            {
-               DDP_IRQ_ERR("OVL_RDMA2_ABNORMAL");
-            }
-            if(disp_irq_err&DDP_IRQ_OVL_L3_UNDERFLOW)
-            {
-               DDP_IRQ_ERR("OVL_RDMA3_ABNORMAL");
-            }
-            #endif            
             if(disp_irq_err&DDP_IRQ_RDMA_ABNORMAL)
             {
                DDP_IRQ_ERR("RDMA_ABNORMAL");
@@ -924,21 +859,6 @@ static /*__tcmfunc*/ irqreturn_t disp_irq_handler(int irq, void *dev_id)
                 MMProfileLogEx(DDP_MMP_Events.CMDQ_IRQ, MMProfileFlagPulse, reg_val, i);
             }
             break;
-#if 0      
-        case MT6582_G2D_IRQ_ID:
-            reg_val = DISP_REG_GET(DISP_REG_G2D_IRQ);
-            if(reg_val&G2D_IRQ_STA_BIT)
-            {
-				  unsigned long set_val = reg_val & ~(G2D_IRQ_STA_BIT); 
-                  DISP_IRQ("IRQ: G2D done! \n");
-				  g_disp_irq.irq_src |= (1<<DISP_MODULE_G2D);
-				  //clear intr
-				  DISP_REG_SET(DISP_REG_G2D_IRQ, set_val);
-            }                                   
-            
-            disp_invoke_irq_callbacks(DISP_MODULE_G2D, reg_val);
-            break;			
-#endif
         default: DISP_ERR("invalid irq=%d \n ", irq); break;
     }        
 
@@ -1225,20 +1145,6 @@ static long disp_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lo
 
     disp_node_struct *pNode = (disp_node_struct *)file->private_data;
 
-#if 0
-    if(inAddr==0)
-    {
-        inAddr = kmalloc(800*480*4, GFP_KERNEL);
-        memset((void*)inAddr, 0x55, 800*480*4);
-        DISP_MSG("inAddr=0x%x \n", inAddr);
-    }
-    if(outAddr==0)
-    {
-        outAddr = kmalloc(800*480*4, GFP_KERNEL);
-        memset((void*)outAddr, 0xff, 800*480*4);
-        DISP_MSG("outAddr=0x%x \n", outAddr);
-    }
-#endif
     DISP_DBG("cmd=0x%x, arg=0x%x \n", cmd, (unsigned int)arg);
     switch(cmd)
     {   
@@ -1853,15 +1759,6 @@ static long disp_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lo
             disp_path_enable();
 #endif			
             break;            
-#if 0
-        case DISP_IOCTL_G_WAIT_REQUEST:
-            ret = ddp_bitblt_ioctl_wait_reequest(arg);
-            break;
-
-        case DISP_IOCTL_T_INFORM_DONE:
-            ret = ddp_bitblt_ioctl_inform_done(arg);
-            break;
-#endif
 #if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
         case DISP_IOCTL_SET_TPLAY_HANDLE:
             if(copy_from_user(&value, (void*)arg , sizeof(unsigned int)))
@@ -2093,23 +1990,6 @@ static int disp_resume(struct platform_device *pdev)
     return cmdqResumeTask();
 }
 
-#if 0
-int disp_pm_restore_noirq(struct device *device)
-{
-    return 0; 
-}
-
-struct dev_pm_ops disp_pm_ops =
-{
-    .suspend       = disp_suspend,
-    .resume        = disp_resume,
-    .freeze        = disp_suspend,
-    .thaw          = disp_resume,
-    .poweroff      = disp_suspend,
-    .restore       = disp_resume,
-    .restore_noirq = disp_pm_restore_noirq,
-};
-#endif // 0
 
 
 static struct platform_driver disp_driver =
@@ -2127,25 +2007,6 @@ static struct platform_driver disp_driver =
 };
 
 
-#if 0
-static void disp_device_release(struct device *dev)
-{
-	// Nothing to release? 
-}
-
-static u64 disp_dmamask = ~(u32)0;
-
-static struct platform_device disp_device = {
-	.name	 = DISP_DEVNAME,
-	.id      = 0,
-	.dev     = {
-		.release = disp_device_release,
-		.dma_mask = &disp_dmamask,
-		.coherent_dma_mask = 0xffffffff,
-	},
-	.num_resources = 0,
-};
-#endif // 0
 
 static int __init disp_init(void)
 {
@@ -2158,15 +2019,6 @@ static int __init disp_init(void)
     spin_lock_init(&gPowerOperateLock);
     spin_lock_init(&g_disp_irq.irq_lock);
 
-#if 0
-    DISP_MSG("Register disp device\n");
-	if(platform_device_register(&disp_device))
-	{
-        DISP_ERR("failed to register disp device\n");
-        ret = -ENODEV;
-        return ret;
-	}
-#endif // 0
 
     DISP_MSG("Register the disp driver\n");    
     if(platform_driver_register(&disp_driver))

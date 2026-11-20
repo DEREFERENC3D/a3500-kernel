@@ -539,15 +539,6 @@ int hdmi_rdma_address_config(bool enable, hdmi_video_buffer_info buffer_info)
 
         struct disp_path_config_struct config = {0};
 
-#if 0
-        if ((buffer_info.src_height != ALIGN_TO(hdmi_height, 4))
-            || (buffer_info.src_width != ALIGN_TO(hdmi_width, 4)))
-        {
-            HDMI_DPI_LOG("info: fmt %d, h %d, w %d, x_o %d, y_o %d, pitch %d hdmi_h %d -w %d\n", buffer_info.src_fmt, buffer_info.src_height, buffer_info.src_width,
-                         buffer_info.src_offset_x, buffer_info.src_offset_y, buffer_info.src_pitch, hdmi_height, hdmi_width);
-            return -1;
-        }
-#endif
 
         // Config RDMA1->DPI
         config.addr = hdmiSourceAddr;
@@ -1530,37 +1521,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         }
         case MTK_HDMI_REGISTER_VIDEO_BUFFER:
         {
-#if 0
-            struct hdmi_video_buffer_info video_buffer_info;
-            RETIF(!p->is_enabled, 0);
-            RETIF(HDMI_OUTPUT_MODE_VIDEO_MODE != p->output_mode, 0);
-
-            if (copy_from_user(&video_buffer_info, (void __user *)argp, sizeof(video_buffer_info)))
-            {
-                HDMI_LOG("copy_from_user failed! line\n");
-                r = -EFAULT;
-                break;
-            }
-
-            if (video_buffer_info.src_vir_addr == 0)
-            {
-                HDMI_LOG("[Error]HDMI_REGISTER_VIDEO_BUFFER VA should not be NULL\n");
-                break;
-            }
-
-            if (down_interruptible(&hdmi_video_mode_mutex))
-            {
-                HDMI_LOG("[HDMI] can't get semaphore in\n");
-                break;
-            }
-
-            if (hdmi_add_video_buffer(&video_buffer_info, file) < 0)
-            {
-                r = -ENOMEM;
-            }
-
-            up(&hdmi_video_mode_mutex);
-#endif
             break;
 
         }

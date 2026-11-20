@@ -383,29 +383,6 @@ static int adbDegInfoHandle(struct usb_ep *ep, struct usb_request *req, char *fu
 
 		if((musb_ep->is_in == 1) && (ep_in == &(musb_ep->end_point)))
 		{
-#if 0
-	    if(req->length == sizeof(amessage))
-	    {
-	  		amessage *msg = (amessage*) req->buf;
-	  		if(msg != NULL){
-	  			switch(msg->command){
-					case A_SYNC:
-					case A_CNXN:
-					case A_OPEN:
-					case A_OKAY:
-					case A_CLSE:
-					case A_WRTE:
-					case A_AUTH:
-	  					printk(KERN_INFO "adb: %s msg (0x%x) (0x%x) (0x%x) (0x%x) (0x%x) (0x%x) \n", func, msg->command, msg->arg0, msg->arg1,
-							msg->data_length, msg->data_check, msg->magic);
-	  					break;
-					default:
-						printk(KERN_INFO "adb: %s msg A_DATA or A_DBUG \n", func);
-						break;
-				}
-			}
-		}
-#endif
 			if(req->length == sizeof(debuginfo))
 			{
 				debuginfo *dbg = (debuginfo*) req->buf;
@@ -895,13 +872,6 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 		}
 
 		if (request->actual == request->length) {
-#if 0
-			if(ep_in == &(musb_ep->end_point))
-			{
-				adbCmdLog(request->buf, request->actual, musb_ep->is_in, "musb_g_tx");
-				//printk(KERN_INFO "adb: musb_g_tx length = 0x%x, actual = 0x%x, packet_sz = 0x%x \n", request->length, request->actual, musb_ep->packet_sz);
-			}
-#endif
 			musb_g_giveback(musb_ep, request, 0);
 			/*
 			 * In the giveback function the MUSB lock is
@@ -1642,17 +1612,6 @@ static int musb_gadget_enable(struct usb_ep *ep,
 		 * will receive packets before ep enabled. when flush fifo
 		 * here will lost those packets. We will flush fifo during
 		 * disabe ep */
-#if 0
-		csr = MUSB_RXCSR_FLUSHFIFO | MUSB_RXCSR_CLRDATATOG;
-		if (musb_ep->type == USB_ENDPOINT_XFER_ISOC)
-			csr |= MUSB_RXCSR_P_ISO;
-		else if (musb_ep->type == USB_ENDPOINT_XFER_INT)
-			csr |= MUSB_RXCSR_DISNYET;
-
-		/* set twice in case of double buffering */
-		musb_writew(regs, MUSB_RXCSR, csr);
-		musb_writew(regs, MUSB_RXCSR, csr);
-#endif
 	}
 
 	fifo_setup(musb,musb_ep);
@@ -2217,21 +2176,6 @@ musb_gadget_set_self_powered(struct usb_gadget *gadget, int is_selfpowered)
 static void musb_pullup(struct musb *musb, int is_on, bool usb_in)
 {
 
-# if 0
-	u8 power;
-
-	power = musb_readb(musb->mregs, MUSB_POWER);
-	if (is_on)
-		power |= MUSB_POWER_SOFTCONN;
-	else
-		power &= ~MUSB_POWER_SOFTCONN;
-
-	/* FIXME if on, HdrcStart; if off, HdrcStop */
-
-	DBG(2, "gadget D+ pullup %s\n",
-		is_on ? "on" : "off");
-	musb_writeb(musb->mregs, MUSB_POWER, power);
-#else
 	DBG(0,"MUSB: gadget pull up %d start\n", is_on);
 
 	if (!usb_in && is_on) {
@@ -2245,22 +2189,8 @@ static void musb_pullup(struct musb *musb, int is_on, bool usb_in)
 	}
 
 	DBG(0,"MUSB: gadget pull up %d end\n", is_on);
-#endif
 }
 
-#if 0
-static int musb_gadget_vbus_session(struct usb_gadget *gadget, int is_active)
-{
-	DBG(2, "<= %s =>\n", __func__);
-
-	/*
-	 * FIXME iff driver's softconnect flag is set (as it is during probe,
-	 * though that can clear it), just musb_pullup().
-	 */
-
-	return -EINVAL;
-}
-#endif
 
 static int musb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
 {

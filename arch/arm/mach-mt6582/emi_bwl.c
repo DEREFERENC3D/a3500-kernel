@@ -26,29 +26,6 @@ static struct platform_driver ddr_type = {
     },
 };
 
-#if 0
-
-static struct platform_driver dramc_high = {
-    .driver     = {
-        .name = "dramc_high",
-        .owner = THIS_MODULE,
-    },
-};
-
-static struct platform_driver mem_bw_finetune_md = {
-    .driver     = {
-        .name = "mem_bw_finetune_md",
-        .owner = THIS_MODULE,
-    },
-};
-
-static struct platform_driver mem_bw_finetune_mm = {
-    .driver     = {
-        .name = "mem_bw_finetune_mm",
-        .owner = THIS_MODULE,
-    },
-};
-#endif
 
 /* define EMI bandwiwth limiter control table */
 static struct emi_bwl_ctrl ctrl_tbl[NR_CON_SCE];
@@ -493,59 +470,6 @@ static ssize_t finetune_mm_store(struct device_driver *driver, const char *buf, 
 
 DRIVER_ATTR(finetune_mm, 0644, finetune_mm_show, finetune_mm_store);
 
-#if 0
-/*
- * dramc_high_show: show the status of DRAMC_HI_EN
- * @driver:
- * @buf:
- * Return the number of read bytes.
- */
-static ssize_t dramc_high_show(struct device_driver *driver, char *buf)
-{
- unsigned int dramc_hi;
- 
- dramc_hi = (readl(EMI_TESTB) >> 12) & 0x1;
- if(dramc_hi == 1)
-  return sprintf(buf, "DRAMC_HI is ON\n");
- else
-  return sprintf(buf, "DRAMC_HI is OFF\n");
-}
-
-/*
- dramc_hign_store: enable/disable DRAMC untra high. WARNING: ONLY CAN BE ENABLED AT MD_STANDALONE!!!
- * @driver:
- * @buf: need to be "0" or "1"
- * @count:
- * Return the number of write bytes.
-*/
-static ssize_t dramc_high_store(struct device_driver *driver, const char *buf, size_t count)
-{
-  unsigned int value;
-  unsigned int emi_testb;
-  
-  if (sscanf(buf, "%u", &value) != 1)
-    return -EINVAL;
-  
-  emi_testb = readl(EMI_TESTB);
-  
-  if(value == 1)
-  {
-    emi_testb |= 0x1000; /* Enable DRAM_HI */
-    mt65xx_reg_sync_writel(emi_testb, EMI_TESTB);
-  }  
-  else if(value == 0)
-  {
-    emi_testb &= ~0x1000; /* Disable DRAM_HI */
-    mt65xx_reg_sync_writel(emi_testb, EMI_TESTB);  
-  }
-  else
-    return -EINVAL;
-  
-  return count;  
-}
-
-DRIVER_ATTR(dramc_high, 0644, dramc_high_show, dramc_high_store);
-#endif
 /*
  * emi_bwl_mod_init: module init function.
  */
@@ -553,71 +477,6 @@ static int __init emi_bwl_mod_init(void)
 {
   int ret;    
   
-#if 0 //Marcos: TBD
-  if(get_ddr_type() == LPDDR2) //LPDDR2
-  {
-    /* apply co-sim result for LPDDR2. */
-    mt65xx_reg_sync_writel(0x14212836, EMI_CONB);
-    mt65xx_reg_sync_writel(0x0f131314, EMI_CONC);
-    mt65xx_reg_sync_writel(0x14212836, EMI_COND);
-    mt65xx_reg_sync_writel(0x0f131314, EMI_CONE);
-    mt65xx_reg_sync_writel(0x0f131428, EMI_CONG);
-    mt65xx_reg_sync_writel(0x0f131428, EMI_CONH);
-    /* testing for MD2 timing fail */
-    mt65xx_reg_sync_writel(0x0c8f0ccd, EMI_SLCT);
-    //mt65xx_reg_sync_writel(0x088b08cd, EMI_SLCT);
-    mt65xx_reg_sync_writel(0x00720038, EMI_ARBK);
-    mt65xx_reg_sync_writel(0x00720038, EMI_ARBK_2ND);
-    mt65xx_reg_sync_writel(0x84462f2f, EMI_ARBJ);
-    mt65xx_reg_sync_writel(0x84462f2f, EMI_ARBJ_2ND);
-    mt65xx_reg_sync_writel(0x10202488, EMI_ARBI);
-    mt65xx_reg_sync_writel(0x10202488, EMI_ARBI_2ND);
-    mt65xx_reg_sync_writel(0x00070714, EMI_TESTB);
-    //mt65xx_reg_sync_writel(0x00070754, EMI_TESTB);
-    //mt65xx_reg_sync_writel(0x10000000, EMI_TESTD);    
-  }
-
-  else if(get_ddr_type() == DDR3_16) //DDR3-16bit
-  {
-    //write overhead value
-    mt65xx_reg_sync_writel(0x0B0B0E17, EMI_CONB);	//read  overhead for 4~1
-    mt65xx_reg_sync_writel(0x0B0B0B0B, EMI_CONC);	//read  overhead for 8~5
-    mt65xx_reg_sync_writel(0x1012161E, EMI_COND);	//write overhead for 4~1
-    mt65xx_reg_sync_writel(0x0B0B0D0E, EMI_CONE);   //write overhead for 8~5
-  }
-  else if(get_ddr_type() == DDR3_32)
-  {
-    /* apply co-sim result for LPDDR2. */
-    mt65xx_reg_sync_writel(0x14212836, EMI_CONB);
-    mt65xx_reg_sync_writel(0x0f131314, EMI_CONC);
-    mt65xx_reg_sync_writel(0x14212836, EMI_COND);
-    mt65xx_reg_sync_writel(0x0f131314, EMI_CONE);
-    mt65xx_reg_sync_writel(0x0f131428, EMI_CONG);
-    mt65xx_reg_sync_writel(0x0f131428, EMI_CONH);
-    /* testing for MD2 timing fail */
-    mt65xx_reg_sync_writel(0x088b08cd, EMI_SLCT);
-    mt65xx_reg_sync_writel(0x00720038, EMI_ARBK);
-    mt65xx_reg_sync_writel(0x00720038, EMI_ARBK_2ND);
-    mt65xx_reg_sync_writel(0x84462f2f, EMI_ARBJ);
-    mt65xx_reg_sync_writel(0x84462f2f, EMI_ARBJ_2ND);
-    mt65xx_reg_sync_writel(0x10202488, EMI_ARBI);
-    mt65xx_reg_sync_writel(0x10202488, EMI_ARBI_2ND);
-    mt65xx_reg_sync_writel(0x00070714, EMI_TESTB);
-    //mt65xx_reg_sync_writel(0x00070754, EMI_TESTB);
-    //mt65xx_reg_sync_writel(0x10000000, EMI_TESTD);  
-  }  
-  else if(get_ddr_type() == LPDDR3)
-  {
-    //TBD
-  }  */
-  else //mDDR
-  {
-    mt65xx_reg_sync_writel(0x2B2C2C2E, EMI_CONB);	//read  overhead for 4~1
-    mt65xx_reg_sync_writel(0x2627292B, EMI_CONC);	//read  overhead for 8~5
-    mt65xx_reg_sync_writel(0x2B2C2C2E, EMI_COND);	//write overhead for 4~1
-    mt65xx_reg_sync_writel(0x2627292B, EMI_CONE);       //write overhead for 8~5
-  }
-#endif  
     
   //write Filter Priority Encode
   //writel(0x01812488, EMI_ARBI); //TBD. need to set EMI_ARBI_2ND???
@@ -648,37 +507,6 @@ static int __init emi_bwl_mod_init(void)
   if (ret) {
     xlog_printk(ANDROID_LOG_ERROR, "EMI/BWL", "fail to create DRAM_TYPE sysfs file\n");
   }
-#if 0
-  /* Register DRAMC ultra high interface */
-  ret = platform_driver_register(&dramc_high);
-  ret = driver_create_file(&dramc_high.driver, &driver_attr_dramc_high);
-  if (ret) {
-    xlog_printk(ANDROID_LOG_ERROR, "EMI/BWL", "fail to create DRAMC_HIGH sysfs file\n");
-  }
-#endif
-#if 0
-  /* Register MD feature fine-tune interface */
-  ret = platform_driver_register(&mem_bw_finetune_md);
-  if (ret) {
-    xlog_printk(ANDROID_LOG_ERROR, "EMI/BWL", "fail to register EMI_BW_FINETUNE_MD driver\n");
-  }
-  
-  ret = driver_create_file(&mem_bw_finetune_md.driver, &driver_attr_finetune_md);
-  if (ret) {
-    xlog_printk(ANDROID_LOG_ERROR, "EMI/BWL", "fail to create EMI_BW_FINETUNE_MD sysfs file\n");
-  }
-  
-  /* Register MM feature fine-tune interface */
-  ret = platform_driver_register(&mem_bw_finetune_mm);
-  if (ret) {
-    xlog_printk(ANDROID_LOG_ERROR, "EMI/BWL", "fail to register EMI_BW_FINETUNE_MM driver\n");
-  }
-  
-  ret = driver_create_file(&mem_bw_finetune_mm.driver, &driver_attr_finetune_mm);
-  if (ret) {
-    xlog_printk(ANDROID_LOG_ERROR, "EMI/BWL", "fail to create EMI_BW_FINETUNE_MM sysfs file\n");
-  }
-#endif
   
   return 0;  
 }

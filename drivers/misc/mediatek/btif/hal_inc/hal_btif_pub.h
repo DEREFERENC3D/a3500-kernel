@@ -22,18 +22,6 @@ typedef enum _ENUM_BTIF_MODE_ {
 *****************************************************************************/
 P_MTK_BTIF_INFO_STR hal_btif_info_get(void);
 
-#if 0				/*included in hal_btif_info_get */
-/*****************************************************************************
-* FUNCTION
-*  hal_btif_get_irq
-* DESCRIPTION
-*  get BTIF module's IRQ information
-* PARAMETERS
-* RETURNS
-*  pointer to BTIF's irq structure
-*****************************************************************************/
-P_MTK_BTIF_IRQ_STR hal_btif_get_irq(void);
-#endif
 
 /*****************************************************************************
 * FUNCTION

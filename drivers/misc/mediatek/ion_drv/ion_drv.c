@@ -151,34 +151,6 @@ static long ion_sys_cache_sync(struct ion_client *client, ion_sys_cache_sync_par
             dmac_flush_range((void*)start, (void*)(start+size-1));
         }
 
-#if 0
-        // L2 cache sync
-        //printk("[ion_sys_cache_sync]: page_start=0x%08X, page_num=%d\n", page_start, page_num);
-        for (i=0; i<page_num; i++, page_start+=DEFAULT_PAGE_SIZE)
-        {
-            phys_addr_t phys_addr;
-
-            if (page_start>=VMALLOC_START && page_start<=VMALLOC_END)
-            {
-                ppage = vmalloc_to_page((void*)page_start);
-                if (!ppage)
-                {
-                	printk("[ion_sys_cache_sync]: Cannot get vmalloc page. addr=0x%08X\n", page_start);
-                    ion_unmap_kernel(client, pParam->handle);
-                    return -EFAULT;
-                }
-                phys_addr = page_to_phys(ppage);
-            }
-            else
-                phys_addr = virt_to_phys((void*)page_start);
-            if (pParam->sync_type == ION_CACHE_CLEAN_BY_RANGE)
-                outer_clean_range(phys_addr, phys_addr+DEFAULT_PAGE_SIZE);
-            else if (pParam->sync_type == ION_CACHE_INVALID_BY_RANGE)
-                outer_inv_range(phys_addr, phys_addr+DEFAULT_PAGE_SIZE);
-            else if (pParam->sync_type == ION_CACHE_FLUSH_BY_RANGE)
-                outer_flush_range(phys_addr, phys_addr+DEFAULT_PAGE_SIZE);
-        }
-#endif
 
 #ifdef __ION_CACHE_SYNC_USER_VA_EN__
         if(pParam->sync_type < ION_CACHE_CLEAN_BY_RANGE_USE_VA)

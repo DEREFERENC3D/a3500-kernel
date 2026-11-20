@@ -524,15 +524,6 @@ static inline unsigned int m4uHw_set_field(unsigned int M4UBase, unsigned int Re
     return (old&mask)>>shift;
 }
 
-#if 0
-static inline unsigned int m4uHw_get_field(unsigned int M4UBase, unsigned int Reg,
-                                      unsigned int bit_width, unsigned int shift)
-{
-    unsigned int mask = ((1<<bit_width)-1);
-    unsigned int reg = M4U_ReadReg32(M4UBase, Reg);
-    return ( (reg>>shift)&mask);
-}
-#endif
 
 static inline void m4uHw_set_field_by_mask(unsigned int M4UBase, unsigned int reg,
                                       unsigned int mask, unsigned int val)

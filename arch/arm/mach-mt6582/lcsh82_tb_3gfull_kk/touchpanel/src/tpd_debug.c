@@ -142,66 +142,6 @@ struct tpd_em_log_struct
     char data[BUFFER_SIZE];
 };
 static LIST_HEAD(tpd_em_log_list);
-#if 0
-
-static void *tpd_em_log_seq_start(struct seq_file *seq, loff_t *pos)
-{
-    struct tpd_em_log_struct *p;
-    loff_t off = 0;
-
-    list_for_each_entry(p, &tpd_em_log_list, list) {
-        if (*pos == off++) return p;
-    }
-    return NULL;
-}
-
-static void *tpd_em_log_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-{
-    struct list_head *n = ((struct tpd_em_log_struct *) v)->list.next;
-
-    ++*pos;
-    
-    return (n != &tpd_em_log_list) ? list_entry(n, struct tpd_em_log_struct, list) : NULL;
-}
-
-static void tpd_em_log_seq_stop(struct seq_file *s, void *v) 
-{ 
-    struct tpd_em_log_struct *p, *p_tmp;
-    list_for_each_entry_safe(p, p_tmp, &tpd_em_log_list, list) {
-        list_del(&p->list);
-        kfree(p);
-    }
-} 
-
-static int tpd_em_log_seq_show(struct seq_file *seq, void *v) 
-{
-    const struct tpd_em_log_struct *p = v;
-    seq_printf(seq, p->data);
-    return 0;
-} 
-
-
-
-static struct seq_operations tpd_em_log_seq_ops = { 
-    .start = tpd_em_log_seq_start,
-    .next = tpd_em_log_seq_next,
-    .stop = tpd_em_log_seq_stop,
-    .show = tpd_em_log_seq_show 
-};
-
-
-static int tpd_em_log_open(struct inode *inode, struct file *file) { 
-    return seq_open(file, &tpd_em_log_seq_ops);
-};
-
-static struct file_operations tpd_em_log_file_ops = { 
-    .owner = THIS_MODULE,
-    .open = tpd_em_log_open,
-    .read = seq_read,
-    .llseek = seq_lseek,
-    .release = seq_release 
-};
-#endif
 int tpd_log_line_buffer = 128; // per line 128 bytes
 int tpd_log_line_cnt = 1024*10;
 module_param(tpd_log_line_buffer, int, 00664);
@@ -361,25 +301,11 @@ void tpd_em_log_store(int raw_x, int raw_y, int cal_x, int cal_y, int p, int dow
     //struct tpd_em_log_struct *tpd_em_log_struct_new;
     struct timeval t;
     
-#if 0    
-    if (tpd_em_log_first) {
-        entry = create_proc_entry("tpd_em_log", 0, NULL);
-        if (entry) { 
-            entry->proc_fops = &tpd_em_log_file_ops;
-        } 
-        tpd_em_log_first = 0;
-        return;
-    }
-	tpd_em_log_struct_new = kmalloc(sizeof(struct tpd_em_log_struct), GFP_ATOMIC);
-
-	memset(tpd_em_log_struct_new, 0, sizeof(struct tpd_em_log_struct));
-#else
 	unsigned char *buffer = NULL;
 	//unsigned int unit = tpd_log_line_buffer;
 
 	//printk("[tpd_em_log]: start register log file");
 
-#endif
 	buffer = tpd_log_find_buffer();
 	if(buffer == NULL)
 	{	

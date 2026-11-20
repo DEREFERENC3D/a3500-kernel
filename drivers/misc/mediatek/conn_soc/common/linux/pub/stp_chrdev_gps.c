@@ -341,13 +341,6 @@ static int GPS_open(struct inode *inode, struct file *file)
 #endif
 
     if (mtk_wcn_stp_is_ready()) {
-#if 0
-        if (MTK_WCN_BOOL_FALSE == mtk_wcn_wmt_func_on(WMTDRV_TYPE_GPS)) {
-            GPS_WARN_FUNC("WMT turn on GPS fail!\n");
-            return -ENODEV;
-        }
-        GPS_INFO_FUNC("WMT turn on GPS OK!\n");
-#endif
         mtk_wcn_stp_register_event_cb(GPS_TASK_INDX, GPS_event_cb);
     }  else {        
         GPS_ERR_FUNC("STP is not ready, Cannot open GPS Devices\n\r");

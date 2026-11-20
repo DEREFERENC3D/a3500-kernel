@@ -482,20 +482,9 @@ static int32_t cmdq_read_error_proc(char    *pPage,
     int32_t     curPos;
     int32_t     length;
     int32_t     index;
-#if 0
-    int32_t     inner;
-#endif // 0
     ErrorStruct *pError;
     TaskStruct  *pTask;
 
-#if 0
-    uint32_t    *pCMD;
-    int32_t     size;
-    uint32_t    MVABase;
-    uint32_t    mask;
-    uint32_t    value;
-    uint32_t    addr;
-#endif // 0
 
     uint32_t    isFull;
 
@@ -549,167 +538,7 @@ static int32_t cmdq_read_error_proc(char    *pPage,
             continue;
         }
 
-    #if 0
-        if (pTask->engineFlag & (0x01 << tRDMA0))
-        {
-            for (inner = 0; inner < 1024; inner++)
-            {
-                length += sprintf(&pPage[length], "0x%08x: 0x%08x\n", (0xF4001000 + (inner << 2)), pError->regVal[tRDMA0][inner]);
-        
-                curPos = begin + length;
-                if (curPos < offset)
-                {
-                    length = 0;
-                    begin  = curPos;
-                }
 
-                if (curPos > (offset + count))
-                {
-                    *pEOF  = 0x0;
-                    isFull = 1;
-                    continue;
-                }
-            }
-        }
-
-        if (pTask->engineFlag & (0x01 << tWROT))
-        {
-            for (inner = 0; inner < 1024; inner++)
-            {
-                length += sprintf(&pPage[length], "0x%08x: 0x%08x\n", (0xF4005000 + (inner << 2)), pError->regVal[tWROT][inner]);
-        
-                curPos = begin + length;
-                if (curPos < offset)
-                {
-                    length = 0;
-                    begin  = curPos;
-                }
-
-                if (curPos > (offset + count))
-                {
-                    *pEOF  = 0x0;
-                    isFull = 1;
-                    continue;
-                }
-            }
-        }
-
-        if (pTask->engineFlag & (0x01 << tWDMA1))
-        {
-            for (inner = 0; inner < 1024; inner++)
-            {
-                length += sprintf(&pPage[length], "0x%08x: 0x%08x\n", (0xF4004000 + (inner << 2)), pError->regVal[tWDMA1][inner]);
-        
-                curPos = begin + length;
-                if (curPos < offset)
-                {
-                    length = 0;
-                    begin  = curPos;
-                }
-
-                if (curPos > (offset + count))
-                {
-                    *pEOF  = 0x0;
-                    isFull = 1;
-                    continue;
-                }
-            }
-        }
-    #endif // 0
-
-    #if 0 // too huge
-        pCMD    = pTask->pVABase;
-        size    = pTask->blockSize;
-        MVABase = pTask->MVABase;
-        mask    = 0xFFFFFFFF;
-        for (pCMD  = pTask->pVABase; size > 0; pCMD += 2, size -= 8, MVABase += 8)
-        {
-            switch(pCMD[1] >> 24)
-            {
-                case CMDQ_CODE_MOVE:
-                    mask = ~pCMD[0];
-                    length += sprintf(&pPage[length], "MVA: 0x%08x, MOVE 0x%08x\n", MVABase, pCMD[0]);
-                    break;
-                case CMDQ_CODE_WRITE:
-                    value = (pCMD[1] >> 22) & 0x03;
-                    addr  = (pCMD[1] & 0x3fffff);
-
-                    if (0 != mask)
-                    {
-                        value &= mask;
-                        addr  &= ~1;
-                    }
-                    else
-                    {
-                        mask = 0xFFFFFFFF;
-                    }
-
-                    if (0x00 == value)
-                    {
-                        addr |= (0x14 << 24);
-                    }
-                    else if (0x01 == value)
-                    {
-                        addr |= (0x15 << 24);
-                    }
-
-                    length += sprintf(&pPage[length], "MVA: 0x%08x, WRITE Addr: 0x%08x, Value: 0x%08x\n", MVABase, addr, pCMD[0]);
-                    break;
-                case CMDQ_CODE_POLL:
-                    value = (pCMD[1] >> 22) & 0x03;
-                    addr  = (pCMD[1] & 0x3fffff);
-                    
-                    if (0 != mask)
-                    {
-                        value &= mask;
-                        addr  &= ~1;
-                    }
-                    else
-                    {
-                        mask = 0xFFFFFFFF;
-                    }
-                    
-                    if (0x00 == value)
-                    {
-                        addr |= (0x14 << 24);
-                    }
-                    else if (0x01 == value)
-                    {
-                        addr |= (0x15 << 24);
-                    }
-
-                    length += sprintf(&pPage[length], "MVA: 0x%08x, POLL Addr: 0x%08x, Value: 0x%08x\n", MVABase, addr, pCMD[0]);
-                    break;
-                case CMDQ_CODE_JUMP:
-                    length += sprintf(&pPage[length], "MVA: 0x%08x, JUMP 0x%08x\n", MVABase, pCMD[0]);
-                    break;
-                case CMDQ_CODE_WFE:
-                    value = pCMD[1] & 0x00FFFFFF;
-                    length += sprintf(&pPage[length], "MVA: 0x%08x, WFE 0x%08x\n", MVABase, value);
-                    break;
-                case CMDQ_CODE_EOC:
-                    length += sprintf(&pPage[length], "MVA: 0x%08x, EOC 0x%08x\n", MVABase, pCMD[0]);
-                    break;
-                default:
-                    length += sprintf(&pPage[length], "MVA: 0x%08x, 0x%08x:0x%08x\n", MVABase, pCMD[1], pCMD[0]);
-                    break;
-            }
-
-            curPos = begin + length;
-            if (curPos < offset)
-            {
-                length = 0;
-                begin  = curPos;
-            }
-
-            if (curPos > (offset + count))
-            {
-                *pEOF  = 0x0;
-                isFull = 1;
-                break;
-            }
-        }
-    #endif // 0
     }
     spin_unlock_irqrestore(&gCmdqExecLock, flags); 
 
@@ -2300,13 +2129,6 @@ static void cmdq_attach_error_task(const TaskStruct *pTask,
                            pTask->pVABase, (pTask->blockSize), true);
         }
 
-        #if 0        
-        // reserve the first error task
-        if(0 == gCmdqContext.errNum)
-        {
-            pError[index].pTask = pTask;
-        }
-        #endif
         CMDQ_ERR("================= [CMDQ] End of Error %d ================\n", gCmdqContext.errNum);
         gCmdqContext.errNum++;
     }

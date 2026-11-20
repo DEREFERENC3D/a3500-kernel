@@ -195,15 +195,6 @@ static irqreturn_t _LCD_InterruptHandler(int irq, void *dev_id)
 		DBG_OnTeDelayDone();
 		LCD_MASKREG32(&LCD_REG->INT_STATUS, 0x8, 0x0);
     }
-#if 0  //TE mode 1
-	if(status.HTT)
-	{
-        if(_lcdContext.pIntCallback)
-            _lcdContext.pIntCallback(DISP_LCD_HTT_INT);
-        
-		DBG_OnTeDelayDone();
-	}
-#endif
 //	LCD_OUTREG32(&LCD_REG->INT_STATUS, 0);
     return IRQ_HANDLED;
 }
@@ -532,19 +523,6 @@ LCD_STATUS LCD_PowerOn(void)
     if (!s_isLcdPowerOn)
     {
 		int ret = 0;
-#if 0
-
-		DBI_LOG("lcd will be power on\n");
-      	ret = enable_clock(MT_CG_DISP1_DBI_ENGINE, "LCD");
-		ret += enable_clock(MT_CG_DISP1_DBI_SMI, "LCD");
-		ret += enable_clock(MT_CG_DISP1_DBI_OUTPUT, "LCD");
-		ret += enable_clock(MT_CG_DISP1_LCD, "LCD");
-		ret += enable_clock(MT_CG_DISP1_SLCD, "LCD");
-		if(ret > 0)
-		{
-			DBI_LOG("[LCD]power manager API return FALSE\n");
-		}      
-#endif
         _RestoreLCDRegisters();
         s_isLcdPowerOn = TRUE;
     }
@@ -561,18 +539,6 @@ LCD_STATUS LCD_PowerOff(void)
         _WaitForEngineNotBusy();
         _BackupLCDRegisters();
 	DBI_LOG("lcd will be power off\n");
-#if 0
-			ret = disable_clock(MT_CG_DISP1_SLCD, "LCD");
-			ret += disable_clock(MT_CG_DISP1_LCD, "LCD");
-			ret += disable_clock(MT_CG_DISP1_DBI_ENGINE, "LCD");
-			ret += disable_clock(MT_CG_DISP1_DBI_SMI, "LCD");
-			ret += disable_clock(MT_CG_DISP1_DBI_OUTPUT, "LCD");
-			if(ret > 0)
-			{
-				DBI_LOG("[LCD]power manager API return FALSE\n");
-			} 			
-		}       
-#endif
         s_isLcdPowerOn = FALSE;
     }
     return LCD_STATUS_OK;
@@ -626,11 +592,6 @@ LCD_STATUS LCD_EnableInterrupt(DISP_INTERRUPT_EVENTS eventID)
             //LCD_REG->INT_ENABLE.COMPLETED = 1;
             OUTREGBIT(LCD_REG_INTERRUPT,LCD_REG->INT_ENABLE,COMPLETED,1);
             break;
-#if 0 //mt6583 not support
-        case DISP_LCD_REG_COMPLETE_INT:
-            disp_register_irq(DISP_MODULE_MUTEX, _DBI_MUTEX_IRQ_Handler);
-            break;
-#endif
         case DISP_LCD_CDMQ_COMPLETE_INT:
             //LCD_REG->INT_ENABLE.CMDQ_COMPLETED = 1;
             OUTREGBIT(LCD_REG_INTERRUPT,LCD_REG->INT_ENABLE,CMDQ_COMPLETED,1);
@@ -909,18 +870,6 @@ LCD_STATUS LCD_LayerEnableDither(LCD_LAYER_ID id, UINT32 enable)
     ASSERT(id < LCD_LAYER_NUM || LCD_LAYER_ALL == id);
 
 //    _WaitForEngineNotBusy();
-#if 0
-    if (LCD_LAYER_ALL == id)
-    {
-        return LCD_STATUS_OK;
-    }
-    else if (id < LCD_LAYER_NUM)
-    {
-		LCD_REG_LAYER_CON ctrl = LCD_REG->LAYER[id].CONTROL;
-        ctrl.DITHER_EN = enable;
-        OUTREG32(&LCD_REG->LAYER[id].CONTROL, AS_UINT32(&ctrl));
-    }
-#endif    
     return LCD_STATUS_OK;
 }
 
@@ -1557,206 +1506,17 @@ static unsigned long v2p(unsigned long va)
 #endif
 LCD_STATUS LCD_Get_VideoLayerSize(unsigned int id, unsigned int *width, unsigned int *height)
 {
-#if 0
-    ASSERT(id < LCD_LAYER_NUM || LCD_LAYER_ALL == id);
-
-    _WaitForEngineNotBusy();
-
-    if (LCD_LAYER_ALL == id)
-    {
-        NOT_IMPLEMENTED();
-    }
-    else if (id < LCD_LAYER_NUM)
-    {
-        *width = LCD_REG->LAYER[id].SIZE.WIDTH;
-        *height = LCD_REG->LAYER[id].SIZE.HEIGHT;
-    }
-#endif
     return LCD_STATUS_OK;
 }
 
 LCD_STATUS LCD_Capture_Layerbuffer(unsigned int layer_id, unsigned int pvbuf, unsigned int bpp)
 {
-#if 0
-    unsigned int ppbuf = 0;
-    UINT16 offset_x, offset_y, w, h;
-    LCD_OUTPUT_MODE mode;
-    if(pvbuf == 0 || bpp == 0)
-    {
-        DBI_LOG("LCD_Capture_Layerbuffer, ERROR, parameters wrong: pvbuf=0x%08x, bpp=%d\n", pvbuf, bpp);
-        return LCD_STATUS_ERROR;
-    }
-
-    if(layer_id >= LCD_LAYER_NUM)
-    {
-        DBI_LOG("LCD_Capture_Layerbuffer, ERROR, parameters wrong: layer_id=%d\n", layer_id);
-        return LCD_STATUS_ERROR;
-    }
-
-    if(!LCD_IsLayerEnable(layer_id))
-    {
-        DBI_LOG("LCD_Capture_Layerbuffer, ERROR, the layer%d is not enabled\n", layer_id);
-        return LCD_STATUS_ERROR;
-    }
-
-    LCD_WaitForNotBusy();
-
-    _BackupLCDRegisters();
-
-    // begin capture
-    if(bpp == 32)
-        LCD_CHECK_RET(LCD_FBSetFormat(LCD_FB_FORMAT_ARGB8888));
-    else if(bpp == 16)
-        LCD_CHECK_RET(LCD_FBSetFormat(LCD_FB_FORMAT_RGB565));
-    else if(bpp == 24)
-        LCD_CHECK_RET(LCD_FBSetFormat(LCD_FB_FORMAT_RGB888));
-    else
-        DBI_LOG("mtkfb_capture_Videobuffer, fb color format not support\n");
-
-	offset_x = LCD_REG->LAYER[layer_id].OFFSET.X;
-	offset_y = LCD_REG->LAYER[layer_id].OFFSET.Y;
-	w = LCD_REG->LAYER[layer_id].SIZE.WIDTH;
-	h = LCD_REG->LAYER[layer_id].SIZE.HEIGHT;
-#if defined(MTK_M4U_SUPPORT)
-	
-	m4u_alloc_mva(M4U_CLNTMOD_LCDC, pvbuf, w*h*bpp/8, &ppbuf);
-#else
-    ppbuf = v2p(pvbuf);
-#endif
-	ASSERT(ppbuf != 0);
-
-	mode = LCD_GetOutputMode();
-	
-	LCD_CHECK_RET(LCD_LayerEnable(LCD_LAYER_ALL, 0));
-	LCD_CHECK_RET(LCD_LayerEnable(layer_id, 1));
-	LCD_CHECK_RET(LCD_LayerSetRotation(layer_id, LCD_LAYER_ROTATE_0));
-	LCD_CHECK_RET(LCD_SetRoiWindow(offset_x, offset_y, w, h));
-	LCD_CHECK_RET(LCD_FBSetPitch((LCD_REG->LAYER[layer_id].SIZE.WIDTH)*bpp/8));
-
-	LCD_CHECK_RET(LCD_FBSetStartCoord(0, 0));
-	LCD_CHECK_RET(LCD_FBReset());
-    
-	LCD_CHECK_RET(LCD_FBSetAddress(LCD_FB_0, ppbuf));
-	LCD_CHECK_RET(LCD_FBEnable(LCD_FB_0, TRUE));
-
-    LCD_CHECK_RET(LCD_SetOutputMode(LCD_OUTPUT_TO_MEM));
-    LCD_TE_Enable(FALSE);
-
-	LCD_SetOutputAlpha(0xff);
-
-//	LCD_CHECK_RET(LCD_SetRoiWindow(offset_x, offset_y, h, w));
-
-	LCD_MASKREG32(0xf20a10a0, 0x1, 0); //disable DC to DSI when write to memory partially
-#if defined(MTK_M4U_SUPPORT)
-	m4u_dma_cache_maint(M4U_CLNTMOD_LCDC, (void *)pvbuf, w*h*bpp/8, DMA_BIDIRECTIONAL);
-#endif
-
-    LCD_CHECK_RET(LCD_StartTransfer(TRUE));
- 
-	LCD_SetOutputMode(mode);
-    // capture end
-    _RestoreLCDRegisters();
-#if defined(MTK_M4U_SUPPORT)
-    m4u_dealloc_mva(M4U_CLNTMOD_LCDC, pvbuf, w*h*bpp/8, ppbuf);
-#endif
-#endif
     return LCD_STATUS_OK;   
 }
 
 
 LCD_STATUS LCD_Capture_Videobuffer(unsigned int pvbuf, unsigned int bpp, unsigned int video_rotation)
 {
-#if 0
-    unsigned int ppbuf = 0;
-    UINT16 offset_x, offset_y, w, h;
-    LCD_OUTPUT_MODE mode;
-    if(pvbuf == 0 || bpp == 0)
-    {
-        DBI_LOG("LCD_Capture_Videobuffer, ERROR, parameters wrong: pvbuf=0x%08x, bpp=%d\n", pvbuf, bpp);
-        return LCD_STATUS_OK;
-    }
-    
-    LCD_WaitForNotBusy();
-
-    _BackupLCDRegisters();
-
-    // begin capture
-    if(bpp == 32)
-        LCD_CHECK_RET(LCD_FBSetFormat(LCD_FB_FORMAT_ARGB8888));
-    else if(bpp == 16)
-        LCD_CHECK_RET(LCD_FBSetFormat(LCD_FB_FORMAT_RGB565));
-    else if(bpp == 24)
-        LCD_CHECK_RET(LCD_FBSetFormat(LCD_FB_FORMAT_RGB888));
-    else
-        DBI_LOG("mtkfb_capture_Videobuffer, fb color format not support\n");
-
-	offset_x = LCD_REG->LAYER[LCD_LAYER_2].OFFSET.X;
-	offset_y = LCD_REG->LAYER[LCD_LAYER_2].OFFSET.Y;
-	w = LCD_REG->LAYER[LCD_LAYER_2].SIZE.WIDTH;
-	h = LCD_REG->LAYER[LCD_LAYER_2].SIZE.HEIGHT;
-#if defined(MTK_M4U_SUPPORT)
-	
-	m4u_alloc_mva(M4U_CLNTMOD_LCDC, pvbuf, w*h*bpp/8, &ppbuf);
-#else
-    ppbuf = v2p(pvbuf);
-#endif
-	mode = LCD_GetOutputMode();
-	
-	LCD_CHECK_RET(LCD_LayerEnable(LCD_LAYER_ALL, 0));
-	LCD_CHECK_RET(LCD_LayerEnable(LCD_LAYER_2, 1));
-	LCD_CHECK_RET(LCD_LayerSetRotation(LCD_LAYER_2, LCD_LAYER_ROTATE_0));
-	LCD_CHECK_RET(LCD_SetRoiWindow(offset_x, offset_y, w, h));
-	LCD_CHECK_RET(LCD_FBSetPitch((LCD_REG->LAYER[LCD_LAYER_2].SIZE.WIDTH)*bpp/8));
-
-	switch(video_rotation)
-	{
-		case 0:break;
-		case 1:
-			LCD_CHECK_RET(LCD_LayerSetRotation(LCD_LAYER_2, LCD_LAYER_ROTATE_90));
-			LCD_CHECK_RET(LCD_SetRoiWindow(offset_x, offset_y, h, w));
-			LCD_CHECK_RET(LCD_FBSetPitch((LCD_REG->LAYER[LCD_LAYER_2].SIZE.HEIGHT)*bpp/8));
-			break;
-		case 2:
-			LCD_CHECK_RET(LCD_LayerSetRotation(LCD_LAYER_2, LCD_LAYER_ROTATE_180));break;
-		case 3:
-			LCD_CHECK_RET(LCD_LayerSetRotation(LCD_LAYER_2, LCD_LAYER_ROTATE_270));
-			LCD_CHECK_RET(LCD_SetRoiWindow(offset_x, offset_y, h, w));
-			LCD_CHECK_RET(LCD_FBSetPitch((LCD_REG->LAYER[LCD_LAYER_2].SIZE.HEIGHT)*bpp/8));
-			break;
-		default:
-		    DBI_LOG("[LCD_Capture_videobuffer] video_rotation = %d error\n", video_rotation);
-	}
-
-	LCD_CHECK_RET(LCD_FBSetStartCoord(0, 0));
-	LCD_CHECK_RET(LCD_FBReset());
-    
-	LCD_CHECK_RET(LCD_FBSetAddress(LCD_FB_0, ppbuf));
-	LCD_CHECK_RET(LCD_FBEnable(LCD_FB_0, TRUE));
-
-    LCD_CHECK_RET(LCD_SetOutputMode(LCD_OUTPUT_TO_MEM));
-    LCD_TE_Enable(FALSE);
-
-	LCD_SetOutputAlpha(0xff);
-
-//	LCD_CHECK_RET(LCD_SetRoiWindow(offset_x, offset_y, h, w));
-
-	LCD_MASKREG32(0xf20a10a0, 0x1, 0); //disable DC to DSI when write to memory partially
-#if defined(MTK_M4U_SUPPORT)
-	m4u_dma_cache_maint(M4U_CLNTMOD_LCDC, (void *)pvbuf, w*h*bpp/8, DMA_BIDIRECTIONAL);
-#endif
-
-	if(dbi_log_on)
-		LCD_DumpRegisters();
-
-    LCD_CHECK_RET(LCD_StartTransfer(TRUE));
- 
-	LCD_SetOutputMode(mode);
-    // capture end
-    _RestoreLCDRegisters();
-#if defined(MTK_M4U_SUPPORT)
-    m4u_dealloc_mva(M4U_CLNTMOD_LCDC, pvbuf, w*h*bpp/8, ppbuf);
-#endif
-#endif
     return LCD_STATUS_OK;   
 }
 
@@ -1959,13 +1719,6 @@ LCD_STATUS LCD_AllocUIMva(unsigned int va, unsigned int *mva, unsigned int size)
 #ifdef MTK_LCDC_ENABLE_M4U
     m4u_alloc_mva(M4U_CLNTMOD_LCDC_UI, va, size, mva);
 #endif
-#if 0
-	m4u_insert_seq_range(M4U_CLNTMOD_LCDC_UI,
-                                  		 *mva,
-                      					 *mva + size - 1,
-                      					 RT_RANGE_HIGH_PRIORITY,
-										 0);
-#endif
 	return LCD_STATUS_OK;
 }
 
@@ -1984,17 +1737,6 @@ LCD_STATUS LCD_AllocOverlayMva(unsigned int va, unsigned int *mva, unsigned int 
 
 LCD_STATUS LCD_DeallocMva(unsigned int va, unsigned int mva, unsigned int size)
 {
-#if 0
-//#ifdef MTK_LCDC_ENABLE_M4U
-    if (!_m4u_lcdc_func.isInit)
-	{
-		DBI_LOG("[TV]Error, M4U has not init func for TV-out\n");
-		return LCD_STATUS_ERROR;
-	}
-    _m4u_lcdc_func.m4u_invalid_tlb_range(M4U_CLNTMOD_LCDC, mva, mva + size - 1);
-    _m4u_lcdc_func.m4u_dealloc_mva(M4U_CLNTMOD_LCDC, va, size, mva);
-	return LCD_STATUS_OK;
-#endif
 }
 
 LCD_STATUS LCD_M4UPowerOn(void)
@@ -2009,14 +1751,6 @@ LCD_STATUS LCD_M4UPowerOff(void)
 
 int m4u_alloc_mva_stub(M4U_MODULE_ID_ENUM eModuleID, const unsigned int BufAddr, const unsigned int BufSize, unsigned int *pRetMVABuf)
 {
-#if 0
-	if (!_m4u_lcdc_func.isInit)
-	{
-		DBI_LOG("%s, Error, M4U has not init func\n", __func__);
-		return LCD_STATUS_ERROR;
-	}
-	return _m4u_lcdc_func.m4u_alloc_mva(eModuleID, BufAddr, BufSize, 0, 0, pRetMVABuf);
-#endif
 }
 EXPORT_SYMBOL(m4u_alloc_mva_stub);
   
@@ -2092,31 +1826,6 @@ LCD_STATUS LCD_W2TVR_NeedLimiteSpeed(BOOL enable)
 
 LCD_STATUS LCD_SetGMCThrottle()
 {
-#if 0
-    UINT16 i, pitch, h;
-	UINT32 total_req = 0;
-	INT32 throttle_cnt = 0;
-
-	if(!limit_w2m_speed && !limit_w2tvr_speed){
-		LCD_OUTREG32(&LCD_REG->SMI_CON, (throttle_cnt << 16) | (0 << 4) | 0x4);
-		return LCD_STATUS_OK;
-	}
-
-	for(i=0;i<LCD_LAYER_NUM;i++){
-		if(LCD_IsLayerEnable((LCD_LAYER_ID)i)){
-	  	    pitch = LCD_REG->LAYER[(LCD_LAYER_ID)i].WINDOW_PITCH;
-   		    h = LCD_REG->LAYER[(LCD_LAYER_ID)i].SIZE.HEIGHT;
-			total_req += pitch * h;
-		}
-	}
-
-	if(total_req != 0)
-		throttle_cnt = 34666666/total_req - 2;//34666666 is calculated by 130MHz/60fps*16
-	
-	if(throttle_cnt < 0)
-		throttle_cnt = 0;	
-	LCD_OUTREG32(&LCD_REG->GMC_CON, (throttle_cnt << 16) | (1 << 4) | 0x4);
-#endif	
 	return LCD_STATUS_OK;
 }
 

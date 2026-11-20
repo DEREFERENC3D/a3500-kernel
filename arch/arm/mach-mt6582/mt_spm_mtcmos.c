@@ -249,17 +249,6 @@ bool spm_cpusys_can_power_down(void)
  **************************************/
 static DEFINE_SPINLOCK(spm_noncpu_lock);
 
-#if 0
-void spm_mtcmos_noncpu_lock(unsigned long *flags)
-{
-    spin_lock_irqsave(&spm_noncpu_lock, *flags);
-}
-
-void spm_mtcmos_noncpu_unlock(unsigned long *flags)
-{
-    spin_unlock_irqrestore(&spm_noncpu_lock, *flags);
-}
-#else
 #define spm_mtcmos_noncpu_lock(flags)   \
 do {    \
     spin_lock_irqsave(&spm_noncpu_lock, flags);  \
@@ -270,7 +259,6 @@ do {    \
     spin_unlock_irqrestore(&spm_noncpu_lock, flags);    \
 } while (0)
 
-#endif
 
 
 #define VDE_PWR_STA_MASK    (0x1 << 7)
@@ -284,13 +272,6 @@ do {    \
 //#define MD2_PWR_STA_MASK    (0x1 << 1)
 #define MD1_PWR_STA_MASK    (0x1 << 0)
 
-#if 0
-#define PWR_RST_B           (0x1 << 0)
-#define PWR_ISO             (0x1 << 1)
-#define PWR_ON              (0x1 << 2)
-#define PWR_ON_S            (0x1 << 3)
-#define PWR_CLK_DIS         (0x1 << 4)
-#endif
 
 #define SRAM_PDN            (0xf << 8)
 //#define SRAM_ACK            (0xf << 12)
@@ -343,26 +324,15 @@ int spm_mtcmos_ctrl_vdec(int state)
 
         spm_write(SPM_VDE_PWR_CON, spm_read(SPM_VDE_PWR_CON) & ~(PWR_ON | PWR_ON_S));
 
-#if 0
-        udelay(1); 
-        if (spm_read(SPM_PWR_STATUS) & VDE_PWR_STA_MASK) { 
-            err = 1;
-        }
-#else
         while ((spm_read(SPM_PWR_STATUS) & VDE_PWR_STA_MASK) 
                 || (spm_read(SPM_PWR_STATUS_S) & VDE_PWR_STA_MASK)) {
         }
-#endif
     } else {    /* STA_POWER_ON */
         spm_write(SPM_VDE_PWR_CON, spm_read(SPM_VDE_PWR_CON) | PWR_ON);
         spm_write(SPM_VDE_PWR_CON, spm_read(SPM_VDE_PWR_CON) | PWR_ON_S);
-#if 0
-        udelay(1);
-#else
         while (!(spm_read(SPM_PWR_STATUS) & VDE_PWR_STA_MASK)
                 || !(spm_read(SPM_PWR_STATUS_S) & VDE_PWR_STA_MASK)) {
         }
-#endif
 
         spm_write(SPM_VDE_PWR_CON, spm_read(SPM_VDE_PWR_CON) & ~PWR_CLK_DIS);
         spm_write(SPM_VDE_PWR_CON, spm_read(SPM_VDE_PWR_CON) & ~PWR_ISO);
@@ -373,12 +343,6 @@ int spm_mtcmos_ctrl_vdec(int state)
         while ((spm_read(SPM_VDE_PWR_CON) & VDE_SRAM_ACK)) {
         }
 
-#if 0
-        udelay(1); 
-        if (!(spm_read(SPM_PWR_STATUS) & VDE_PWR_STA_MASK)) { 
-            err = 1;
-        }
-#endif
     }
 
     spm_mtcmos_noncpu_unlock(flags);
@@ -408,26 +372,15 @@ int spm_mtcmos_ctrl_isp(int state)
 
         spm_write(SPM_ISP_PWR_CON, spm_read(SPM_ISP_PWR_CON) & ~(PWR_ON | PWR_ON_S));
 
-#if 0
-        udelay(1); 
-        if (spm_read(SPM_PWR_STATUS) & ISP_PWR_STA_MASK) { 
-            err = 1;
-        }
-#else
         while ((spm_read(SPM_PWR_STATUS) & ISP_PWR_STA_MASK)
                 || (spm_read(SPM_PWR_STATUS_S) & ISP_PWR_STA_MASK)) {
         }
-#endif
     } else {    /* STA_POWER_ON */
         spm_write(SPM_ISP_PWR_CON, spm_read(SPM_ISP_PWR_CON) | PWR_ON);
         spm_write(SPM_ISP_PWR_CON, spm_read(SPM_ISP_PWR_CON) | PWR_ON_S);
-#if 0
-        udelay(1);
-#else
         while (!(spm_read(SPM_PWR_STATUS) & ISP_PWR_STA_MASK)
                 || !(spm_read(SPM_PWR_STATUS_S) & ISP_PWR_STA_MASK)) {
         }
-#endif
         spm_write(SPM_ISP_PWR_CON, spm_read(SPM_ISP_PWR_CON) & ~PWR_CLK_DIS);
         spm_write(SPM_ISP_PWR_CON, spm_read(SPM_ISP_PWR_CON) & ~PWR_ISO);
         spm_write(SPM_ISP_PWR_CON, spm_read(SPM_ISP_PWR_CON) | PWR_RST_B);
@@ -437,94 +390,12 @@ int spm_mtcmos_ctrl_isp(int state)
         while ((spm_read(SPM_ISP_PWR_CON) & ISP_SRAM_ACK)) {
         }
 
-#if 0
-        udelay(1); 
-        if (!(spm_read(SPM_PWR_STATUS) & ISP_PWR_STA_MASK)) { 
-            err = 1;
-        }
-#endif
     }
 
     spm_mtcmos_noncpu_unlock(flags);
 
     return err;
 }
-#if 0
-int spm_mtcmos_ctrl_disp(int state)
-{
-    int err = 0;
-    volatile unsigned int val;
-    unsigned long flags;
-
-    spm_mtcmos_noncpu_lock(flags);
-
-    if (state == STA_POWER_DOWN) {
-        spm_write(TOPAXI_PROT_EN, spm_read(TOPAXI_PROT_EN) | DISP_PROT_MASK);
-        while ((spm_read(TOPAXI_PROT_STA1) & DISP_PROT_MASK) != DISP_PROT_MASK) {
-        }
-        
-        spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) | SRAM_PDN);
-#if 0
-        while ((spm_read(SPM_DIS_PWR_CON) & DIS_SRAM_ACK) != DIS_SRAM_ACK) {
-        }
-#endif
-        spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) | PWR_ISO);
-
-        val = spm_read(SPM_DIS_PWR_CON);
-        //val = (val & ~PWR_RST_B) | PWR_CLK_DIS;
-        val = val | PWR_CLK_DIS;
-        spm_write(SPM_DIS_PWR_CON, val);
-
-        //spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) & ~(PWR_ON | PWR_ON_S));
-
-#if 0
-        udelay(1); 
-        if (spm_read(SPM_PWR_STATUS) & DIS_PWR_STA_MASK) { 
-            err = 1;
-        }
-#else
-        //while ((spm_read(SPM_PWR_STATUS) & DIS_PWR_STA_MASK)
-        //        || (spm_read(SPM_PWR_STATUS_S) & DIS_PWR_STA_MASK)) {
-        //}
-#endif
-    } else {    /* STA_POWER_ON */
-        //spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) | PWR_ON);
-        //spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) | PWR_ON_S);
-#if 0
-        udelay(1);
-#else
-        //while (!(spm_read(SPM_PWR_STATUS) & DIS_PWR_STA_MASK) 
-        //        || !(spm_read(SPM_PWR_STATUS_S) & DIS_PWR_STA_MASK)) {
-        //}
-#endif
-        spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) & ~PWR_CLK_DIS);
-        spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) & ~PWR_ISO);
-        //spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) | PWR_RST_B);
-
-        spm_write(SPM_DIS_PWR_CON, spm_read(SPM_DIS_PWR_CON) & ~SRAM_PDN);
-
-#if 0
-        while ((spm_read(SPM_DIS_PWR_CON) & DIS_SRAM_ACK)) {
-        }
-#endif
-
-#if 0
-        udelay(1); 
-        if (!(spm_read(SPM_PWR_STATUS) & DIS_PWR_STA_MASK)) { 
-            err = 1;
-        }
-#endif
-        spm_write(TOPAXI_PROT_EN, spm_read(TOPAXI_PROT_EN) & ~DISP_PROT_MASK);
-        while (spm_read(TOPAXI_PROT_STA1) & DISP_PROT_MASK) {
-        }
-    }
-
-    spm_mtcmos_noncpu_unlock(flags);
-
-    return err;
-}
-
-#else
 
 int spm_mtcmos_ctrl_disp(int state)
 {
@@ -599,7 +470,6 @@ int spm_mtcmos_ctrl_disp(int state)
 
     return err;
 }
-#endif
 
 int spm_mtcmos_ctrl_mfg(int state)
 {
@@ -629,26 +499,15 @@ int spm_mtcmos_ctrl_mfg(int state)
 
         spm_write(SPM_MFG_PWR_CON, spm_read(SPM_MFG_PWR_CON) & ~(PWR_ON | PWR_ON_S));
 
-#if 0
-        udelay(1); 
-        if (spm_read(SPM_PWR_STATUS) & MFG_PWR_STA_MASK) { 
-            err = 1;
-        }
-#else
         while ((spm_read(SPM_PWR_STATUS) & MFG_PWR_STA_MASK) 
                 || (spm_read(SPM_PWR_STATUS_S) & MFG_PWR_STA_MASK)) {
         }
-#endif
     } else {    /* STA_POWER_ON */
         spm_write(SPM_MFG_PWR_CON, spm_read(SPM_MFG_PWR_CON) | PWR_ON);
         spm_write(SPM_MFG_PWR_CON, spm_read(SPM_MFG_PWR_CON) | PWR_ON_S);
-#if 0
-        udelay(1);
-#else
         while (!(spm_read(SPM_PWR_STATUS) & MFG_PWR_STA_MASK) || 
                 !(spm_read(SPM_PWR_STATUS_S) & MFG_PWR_STA_MASK)) {
         }
-#endif
 
         spm_write(SPM_MFG_PWR_CON, spm_read(SPM_MFG_PWR_CON) & ~PWR_CLK_DIS);
         spm_write(SPM_MFG_PWR_CON, spm_read(SPM_MFG_PWR_CON) & ~PWR_ISO);
@@ -659,12 +518,6 @@ int spm_mtcmos_ctrl_mfg(int state)
         while ((spm_read(SPM_MFG_PWR_CON) & MFG_SRAM_ACK)) {
         }
 
-#if 0
-        udelay(1); 
-        if (!(spm_read(SPM_PWR_STATUS) & MFG_PWR_STA_MASK)) { 
-            err = 1;
-        }
-#endif
 //        spm_write(TOPAXI_PROT_EN, spm_read(TOPAXI_PROT_EN) & ~MFG_PROT_MASK);
 //        while (spm_read(TOPAXI_PROT_STA1) & MFG_PROT_MASK) {
 //        }
@@ -698,26 +551,15 @@ int spm_mtcmos_ctrl_infra(int state)
 
         spm_write(SPM_IFR_PWR_CON, spm_read(SPM_IFR_PWR_CON) & ~(PWR_ON | PWR_ON_S));
 
-#if 0
-        udelay(1); 
-        if (spm_read(SPM_PWR_STATUS) & IFR_PWR_STA_MASK) { 
-            err = 1;
-        }
-#else
         while ((spm_read(SPM_PWR_STATUS) & IFR_PWR_STA_MASK) 
                 || (spm_read(SPM_PWR_STATUS_S) & IFR_PWR_STA_MASK)) {
         }
-#endif
     } else {    /* STA_POWER_ON */
         spm_write(SPM_IFR_PWR_CON, spm_read(SPM_IFR_PWR_CON) | PWR_ON);
         spm_write(SPM_IFR_PWR_CON, spm_read(SPM_IFR_PWR_CON) | PWR_ON_S);
-#if 0
-        udelay(1);
-#else
         while (!(spm_read(SPM_PWR_STATUS) & IFR_PWR_STA_MASK) 
                 || !(spm_read(SPM_PWR_STATUS_S) & IFR_PWR_STA_MASK)) {
         }
-#endif
 
         spm_write(SPM_IFR_PWR_CON, spm_read(SPM_IFR_PWR_CON) & ~PWR_CLK_DIS);
         spm_write(SPM_IFR_PWR_CON, spm_read(SPM_IFR_PWR_CON) & ~PWR_ISO);
@@ -728,12 +570,6 @@ int spm_mtcmos_ctrl_infra(int state)
         while ((spm_read(SPM_IFR_PWR_CON) & IFR_SRAM_ACK)) {
         }
 
-#if 0
-        udelay(1); 
-        if (!(spm_read(SPM_PWR_STATUS) & IFR_PWR_STA_MASK)) { 
-            err = 1;
-        }
-#endif
     }
 
     spm_mtcmos_noncpu_unlock(flags);
@@ -758,37 +594,20 @@ int spm_mtcmos_ctrl_ddrphy(int state)
 
         spm_write(SPM_DPY_PWR_CON, spm_read(SPM_DPY_PWR_CON) & ~(PWR_ON | PWR_ON_S));
 
-#if 0
-        udelay(1); 
-        if (spm_read(SPM_PWR_STATUS) & DPY_PWR_STA_MASK) { 
-            err = 1;
-        }
-#else
         while ((spm_read(SPM_PWR_STATUS) & DPY_PWR_STA_MASK) 
                 || (spm_read(SPM_PWR_STATUS_S) & DPY_PWR_STA_MASK)) {
         }
-#endif
     } else {    /* STA_POWER_ON */
         spm_write(SPM_DPY_PWR_CON, spm_read(SPM_DPY_PWR_CON) | PWR_ON);
         spm_write(SPM_DPY_PWR_CON, spm_read(SPM_DPY_PWR_CON) | PWR_ON_S);
-#if 0
-        udelay(1);
-#else
         while (!(spm_read(SPM_PWR_STATUS) & DPY_PWR_STA_MASK) 
                 || !(spm_read(SPM_PWR_STATUS_S) & DPY_PWR_STA_MASK)) {
         }
-#endif
 
         spm_write(SPM_DPY_PWR_CON, spm_read(SPM_DPY_PWR_CON) & ~PWR_CLK_DIS);
         spm_write(SPM_DPY_PWR_CON, spm_read(SPM_DPY_PWR_CON) & ~PWR_ISO);
         spm_write(SPM_DPY_PWR_CON, spm_read(SPM_DPY_PWR_CON) | PWR_RST_B);
 
-#if 0
-        udelay(1); 
-        if (!(spm_read(SPM_PWR_STATUS) & DPY_PWR_STA_MASK)) { 
-            err = 1;
-        }
-#endif
     }
 
     spm_mtcmos_noncpu_unlock(flags);
@@ -824,26 +643,15 @@ int spm_mtcmos_ctrl_mdsys1(int state)
 
         spm_write(SPM_MD_PWR_CON, spm_read(SPM_MD_PWR_CON) & ~(PWR_ON | PWR_ON_S));
 
-#if 0
-        udelay(1); 
-        if (spm_read(SPM_PWR_STATUS) & MD1_PWR_STA_MASK) { 
-            err = 1;
-        }
-#else
         while ((spm_read(SPM_PWR_STATUS) & MD1_PWR_STA_MASK)
                 || (spm_read(SPM_PWR_STATUS_S) & MD1_PWR_STA_MASK)) {
         }
-#endif
     } else {    /* STA_POWER_ON */
         spm_write(SPM_MD_PWR_CON, spm_read(SPM_MD_PWR_CON) | PWR_ON);
         spm_write(SPM_MD_PWR_CON, spm_read(SPM_MD_PWR_CON) | PWR_ON_S);
-#if 0
-        udelay(1);
-#else
         while (!(spm_read(SPM_PWR_STATUS) & MD1_PWR_STA_MASK) 
                 || !(spm_read(SPM_PWR_STATUS_S) & MD1_PWR_STA_MASK)) {
         }
-#endif
 
         spm_write(SPM_MD_PWR_CON, spm_read(SPM_MD_PWR_CON) & ~PWR_CLK_DIS);
         spm_write(SPM_MD_PWR_CON, spm_read(SPM_MD_PWR_CON) & ~PWR_ISO);
@@ -851,12 +659,6 @@ int spm_mtcmos_ctrl_mdsys1(int state)
 
         spm_write(SPM_MD_PWR_CON, spm_read(SPM_MD_PWR_CON) & ~MD_SRAM_PDN);
 
-#if 0
-        udelay(1); 
-        if (!(spm_read(SPM_PWR_STATUS) & MD1_PWR_STA_MASK)) { 
-            err = 1;
-        }
-#endif
         spm_write(TOPAXI_PROT_EN, spm_read(TOPAXI_PROT_EN) & ~MD1_PROT_MASK);
         while (spm_read(TOPAXI_PROT_STA1) & MD1_PROT_MASK) {
         }
@@ -894,26 +696,15 @@ int spm_mtcmos_ctrl_connsys(int state)
 
         spm_write(SPM_CONN_PWR_CON, spm_read(SPM_CONN_PWR_CON) & ~(PWR_ON | PWR_ON_S));
 
-#if 0
-        udelay(1); 
-        if (spm_read(SPM_PWR_STATUS) & CONN_PWR_STA_MASK) { 
-            err = 1;
-        }
-#else
         while ((spm_read(SPM_PWR_STATUS) & CONN_PWR_STA_MASK) 
                 || (spm_read(SPM_PWR_STATUS_S) & CONN_PWR_STA_MASK)) {
         }
-#endif
     } else {    
         spm_write(SPM_CONN_PWR_CON, spm_read(SPM_CONN_PWR_CON) | PWR_ON);
         spm_write(SPM_CONN_PWR_CON, spm_read(SPM_CONN_PWR_CON) | PWR_ON_S);
-#if 0
-        udelay(1);
-#else
         while (!(spm_read(SPM_PWR_STATUS) & CONN_PWR_STA_MASK) 
                 || !(spm_read(SPM_PWR_STATUS_S) & CONN_PWR_STA_MASK)) {
         }
-#endif
 
         spm_write(SPM_CONN_PWR_CON, spm_read(SPM_CONN_PWR_CON) & ~PWR_CLK_DIS);
         spm_write(SPM_CONN_PWR_CON, spm_read(SPM_CONN_PWR_CON) & ~PWR_ISO);
@@ -921,12 +712,6 @@ int spm_mtcmos_ctrl_connsys(int state)
 
         spm_write(SPM_CONN_PWR_CON, spm_read(SPM_CONN_PWR_CON) & ~MD_SRAM_PDN);
 
-#if 0
-        udelay(1); 
-        if (!(spm_read(SPM_PWR_STATUS) & CONN_PWR_STA_MASK)) { 
-            err = 1;
-        }
-#endif
         spm_write(TOPAXI_PROT_EN, spm_read(TOPAXI_PROT_EN) & ~CONN_PROT_MASK);
         while (spm_read(TOPAXI_PROT_STA1) & CONN_PROT_MASK) {
         }

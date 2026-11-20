@@ -594,28 +594,6 @@ static int smi_open(struct inode *inode, struct file *file)
 static int smi_release(struct inode *inode, struct file *file)
 {
 
-#if 0
-    unsigned long u4Index = 0 ;
-    unsigned long u4AssignCnt = 0;
-    unsigned long * pu4Cnt = (unsigned long *)file->private_data;
-    MTK_SMI_BWC_CONFIG config;
-
-    for(; u4Index < SMI_BWC_SCEN_CNT ; u4Index += 1)
-    {
-        if(pu4Cnt[u4Index])
-        {
-            SMIMSG("Process:%s does not turn off BWC properly , force turn off %d\n" , current->comm , u4Index);
-            u4AssignCnt = pu4Cnt[u4Index];
-            config.b_on_off = 0;
-            config.scenario = (MTK_SMI_BWC_SCEN)u4Index;
-            do
-            {
-                smi_bwc_config( &config , pu4Cnt);
-            }
-            while(0 < u4AssignCnt);
-        }
-    }
-#endif
 
     if(NULL != file->private_data)
     {
@@ -777,29 +755,6 @@ static int smi_probe(struct platform_device *pdev)
 
 #ifdef __MAU_SPC_ENABLE__
     //init mau to monitor mva 0~0x2ffff & 0x40000000~0xffffffff
-#if 0
-    {
-        MTK_MAU_CONFIG cfg;
-        int i;
-        for( i=0 ; i < SMI_LARB_NR ; i++)
-        {
-            cfg.larb = i;
-            cfg.entry = 0;
-            cfg.port_msk = 0xffffffff;
-            cfg.virt = 1;
-            cfg.monitor_read = 1;
-            cfg.monitor_write = 1;
-            cfg.start = 0;
-            cfg.end = 0x2ffff;
-            mau_config(&cfg);
-
-            cfg.entry = 1;
-            cfg.start = 0x40000000;
-            cfg.end = 0xffffffff;
-            mau_config(&cfg);
-        }
-    }
-#endif 
 #endif
     return 0;
 }

@@ -778,21 +778,6 @@ static void save_gic_distributor_private(u32 *pointer, unsigned gic_distributor_
     /*  Save SGI,PPI security status*/
     *pointer = id->security[0];
     ++pointer;
-#if 0
-    /*
-     * Private peripheral interrupts need to be replayed on
-     * the destination cpu interface for consistency. This
-     * is the responsibility of the peripheral driver. When
-     * it sees a pending interrupt while saving its context
-     * it should record enough information to recreate the
-     * interrupt while restoring.
-     * We don't save the Pending/Active status and clear it
-     * so that it does not interfere when we are back.
-     */
-    /*  Clear PPI pending status*/
-    id->pending.clear[0] = 0xffffffff;
-    id->active.clear[0] = 0xffffffff;
-#endif
 #if 1 
     /*  Save SGI,PPI pending status*/
     *pointer = id->pending.set[0];
@@ -882,14 +867,6 @@ static void restore_gic_distributor_private(u32 *pointer, unsigned gic_distribut
     /* Restore SGI,PPI security status*/
     id->security[0] = *pointer;
     ++pointer;
-#if 0
-    /*
-     * Clear active and  pending PPIs as they will be recreated by the
-     * peripiherals
-     */
-    id->active.clear[0] = 0xffffffff;
-    id->pending.clear[0] = 0xffffffff;
-#endif
 #if 1
     /*  Restore SGI,PPI pending status*/
     id->pending.set[0] = *pointer;
@@ -1324,19 +1301,6 @@ void stop_generic_timer(generic_timer_context * ctr_ctx)
      */
     write_cntp_ctl(TIMER_MASK_IRQ);
 
-#if 0 // wait GIC APIs by Sten
-    /*
-     * If the local timer interrupt was being used as
-     * the asynchronous trigger, then it was disabled
-     * in handle_interrupt() to prevent this level-
-     * triggerred interrupt from firing. Now that its
-     * been acked at the peripheral. We can renable it
-     */
-    if (!hyp_timer_trigger) {
-        if (ctr_ctx->cntp_ctl & TIMER_IRQ_STAT)
-            gic_enable_int(LCL_TIMER_IRQ);
-    }
-#endif    
 
     return;
 }
@@ -1511,10 +1475,6 @@ static void platform_restore_context(void)
         /* enable L2 invalidate when reset */
         reg_write(CA7_CACHE_CONFIG, reg_read(CA7_CACHE_CONFIG) & ~(1U << 4));
     }
-#if 0 /* FIXME early porting */
-    trace_stop_dormant();
-    trace_start_dormant();
-#endif    
     dormant_ret_flag[cpu_id] = 1;
 
     power_state[cpu_id] = STATUS_RUN;

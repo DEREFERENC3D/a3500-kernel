@@ -506,17 +506,6 @@ static fm_s32 rds_g0_ps_get(fm_u16 crc, fm_u16 blkD, fm_u8 addr, fm_u8 *buf)
 
 	buf[idx] = blkD >> 8;
 	buf[idx+1] = blkD & 0xFF;
-	#if 0
-    rds_checksum_check(crc, FM_RDS_GDBK_IND_D, &valid);
-
-    if (valid == fm_true) {
-        buf[idx] = blkD >> 8;
-        buf[idx+1] = blkD & 0xFF;
-    } else {
-        WCN_DBG(FM_ERR | RDSC, "ps crc check err\n");
-        return -FM_ECRC;
-    }
-    #endif
 
     WCN_DBG(FM_NTC | RDSC, "PS:addr[%02x]:0x%02x 0x%02x\n", addr, buf[idx], buf[idx+1]);
     return 0;
@@ -610,41 +599,6 @@ static fm_s32 rds_g0_ps_cmp(fm_u8 addr, fm_u16 cbc, fm_u8 *fresh,
 	}
 	
 	Pre_PS_Num = PS_Num;
-#if	0
-	if (rds_cbc_get(cbc, RDS_BLK_D) == 0) {
-	    once[j*addr] = fresh[j*addr];
-	    once[j*addr+1] = fresh[j*addr+1];
-	}
-	if((once[j*addr] == fresh[j*addr])&&(once[j*addr+1] == fresh[j*addr+1]))
-	{
-		twice[j*addr] = once[j*addr];
-		twice[j*addr+1] = once[j*addr+1];
-		*valid = fm_true;
-	}
-	else
-	{
-		once[j*addr] = fresh[j*addr];
-		once[j*addr+1] = fresh[j*addr+1];
-		*valid = fm_false;
-	}
-#endif
-#if	0
-    for (i = 0; i < j; i++) {
-        if (fresh[j*addr+i] == once[j*addr+i]) {
-            twice[j*addr+i] = once[j*addr+i]; //get the same byte 2 times
-            cnt++;
-        } else {
-            once[j*addr+i] = fresh[j*addr+i]; //use new val
-        }
-    }
-
-    //check if we got a valid segment
-    if (cnt == j) {
-        *valid = fm_true;
-    } else {
-        *valid = fm_false;
-    }
-#endif
     //WCN_DBG(FM_NTC | RDSC, "PS seg=%s\n", *valid == fm_true ? "fm_true" : "fm_false");
     WCN_DBG(FM_NTC | RDSC, "bitmap=%x\n", *bm);
     WCN_DBG(FM_NTC | RDSC, "PS[1]=%x %x %x %x %x %x %x %x\n", once[0],once[1],once[2],once[3],once[4],once[5],once[6],once[7]);
@@ -1222,19 +1176,6 @@ static fm_s32 rds_retrieve_g0_ps(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRD
         .state_get = fm_state_get,
         .state_set = fm_state_set,
     };
-#if 0     
-    static struct rds_bitmap ps_bm = {
-        .bm = 0,
-        .cnt = 0,
-        .max_addr = 0x03,
-        .bm_get = rds_bm_get,
-        .bm_cnt_get = rds_bm_cnt_get,
-        .bm_set = rds_bm_set,
-        .bm_get_pos = rds_bm_get_pos,
-        .bm_clr = rds_bm_clr,
-        .bm_cmp = rds_bm_cmp,
-    };
-#endif
     fm_u16 *event = &pstRDSData->event_status;
 
     //parsing Program service name segment (in BlockD)
@@ -1335,13 +1276,6 @@ static fm_s32 rds_retrieve_g0_ps(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRD
 					fm_memset(pstRDSData->PS_Data.PS[2], 0x00, 8);
 				}
             }
-#if 0
-            ps_bm.bm_clr(&ps_bm);
-            //clear buf
-            fm_memset(pstRDSData->PS_Data.PS[0], 0x20, 8);
-            fm_memset(pstRDSData->PS_Data.PS[1], 0x20, 8);
-            fm_memset(pstRDSData->PS_Data.PS[2], 0x20, 8);
-#endif            
             STATE_SET(&ps_sm, RDS_PS_FINISH);
             break;
         case RDS_PS_FINISH:
@@ -1472,13 +1406,6 @@ static fm_s32 rds_retrieve_g2(fm_u16 *source, fm_u8 subtype, rds_t *target)
         switch (STATE_GET(&rt_sm)) {
         case RDS_RT_START:
 		{
-#if 0
-            if (txtAB_change == fm_true)
-            {
-                STATE_SET(&rt_sm, RDS_RT_DECISION);
-            } 
-            else 
-#endif
             {
                 if (rds_g2_rt_get(crc, subtype, blkC, blkD, rt_addr, fresh) == 0) 
                 {
@@ -1574,14 +1501,6 @@ static fm_s32 rds_retrieve_g2(fm_u16 *source, fm_u8 subtype, rds_t *target)
 	                WCN_DBG(FM_NTC | RDSC, "Get 0x20 RT %d\n", invalid_cnt);
             }
 
-#if 0
-            if (txtAB_change == fm_true) {
-                txtAB_change = fm_false;
-                //we need get new RT after show the old RT to the display
-                STATE_SET(&rt_sm, RDS_RT_START);
-            } 
-            else 
-#endif
             {
                 STATE_SET(&rt_sm, RDS_RT_FINISH);
             }

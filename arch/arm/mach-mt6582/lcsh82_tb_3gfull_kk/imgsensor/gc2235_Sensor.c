@@ -222,20 +222,6 @@ kal_uint16 GC2235_SetGain(kal_uint16 iGain)
 void GC2235_night_mode(kal_bool enable)
 {
 /*No Need to implement this function*/
-#if 0 
-	const kal_uint16 dummy_pixel = GC2235_sensor.line_length - GC2235_PV_PERIOD_PIXEL_NUMS;
-	const kal_uint16 pv_min_fps =  enable ? GC2235_sensor.night_fps : GC2235_sensor.normal_fps;
-	kal_uint16 dummy_line = GC2235_sensor.frame_height - GC2235_PV_PERIOD_LINE_NUMS;
-	kal_uint16 max_exposure_lines;
-	
-	printk("[GC2235_night_mode]enable=%d",enable);
-	if (!GC2235_sensor.video_mode) return;
-	max_exposure_lines = GC2235_sensor.pclk * GC2235_FPS(1) / (pv_min_fps * GC2235_sensor.line_length);
-	if (max_exposure_lines > GC2235_sensor.frame_height) /* fix max frame rate, AE table will fix min frame rate */
-//	{
-//	  dummy_line = max_exposure_lines - GC2235_PV_PERIOD_LINE_NUMS;
-//	}
-#endif
 }   /*  GC2235_NightMode    */
 
 

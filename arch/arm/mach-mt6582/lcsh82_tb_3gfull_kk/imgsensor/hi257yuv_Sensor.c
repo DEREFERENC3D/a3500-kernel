@@ -2967,45 +2967,6 @@ UINT32 HI257SetMaxFramerateByScenario(
     kal_uint32 pclk;
     kal_int16 dummyLine;
     kal_uint16 lineLength,frameHeight;
-#if 0
-    SENSORDB("HI257SetMaxFramerateByScenario: scenarioId = %d, frame rate = %d\n",scenarioId,frameRate);
-    switch (scenarioId)
-    {
-        case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
-             pclk = HI257sensor_pclk;
-             lineLength = HI257_PV_PERIOD_PIXEL_NUMS;
-             frameHeight = (10 * pclk)/frameRate/lineLength;
-             dummyLine = frameHeight - HI257_PV_PERIOD_LINE_NUMS;
-             HI257.sensorMode = SENSOR_MODE_PREVIEW;
-             HI257_SetDummy(0, dummyLine);
-             break;
-        case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
-             pclk = HI257sensor_pclk;
-             lineLength = HI257_PV_PERIOD_PIXEL_NUMS;
-             frameHeight = (10 * pclk)/frameRate/lineLength;
-             dummyLine = frameHeight - HI257_PV_PERIOD_LINE_NUMS;
-             HI257.sensorMode = SENSOR_MODE_PREVIEW;
-             HI257_SetDummy(0, dummyLine);
-             break;
-        case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
-        case MSDK_SCENARIO_ID_CAMERA_ZSD:
-             pclk = HI257sensor_pclk;
-             lineLength = HI257_FULL_PERIOD_PIXEL_NUMS;
-             frameHeight = (10 * pclk)/frameRate/lineLength;
-             dummyLine = frameHeight - HI257_FULL_PERIOD_LINE_NUMS;
-             HI257.sensorMode = SENSOR_MODE_CAPTURE;
-             HI257_SetDummy(0, dummyLine);
-             break;
-        case MSDK_SCENARIO_ID_CAMERA_3D_PREVIEW: //added
-             break;
-        case MSDK_SCENARIO_ID_CAMERA_3D_VIDEO:
-             break;
-        case MSDK_SCENARIO_ID_CAMERA_3D_CAPTURE: //added
-             break;
-        default:
-             break;
-    }
-#endif
   return ERROR_NONE;
 }
 

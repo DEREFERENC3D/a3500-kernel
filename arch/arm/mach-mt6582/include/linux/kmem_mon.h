@@ -102,11 +102,6 @@ typedef struct mem_info_struct {
 // ends
 
 	// TODO: allocation failures
-#if 0	
-	int fail_freq;
-	unsigned long fail_caller;
-	char last_fail_parameter[MAX_FAIL_PARAMETER]; // only record the latest failure's paramter
-#endif
 	int caller_start_idx;
 	int next_mem_node;
 	//

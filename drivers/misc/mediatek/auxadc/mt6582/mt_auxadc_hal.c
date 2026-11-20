@@ -103,19 +103,6 @@
  * Integrate with NVRAM 
 ****************************************************************************/
 //use efuse cali
-#if 0
-static kal_uint32 g_adc_ge = 0;
-static kal_uint32 g_adc_oe = 0;
-//static kal_uint32 g_o_vts = 0;
-static kal_uint32 g_o_vbg = 0;
-//static kal_uint32 g_degc_cali = 0;
-static kal_uint32 g_adc_cali_en = 0;
-//static kal_uint32 g_o_vts_abb = 0;
-//static kal_int32 g_o_slope = 0;
-//static kal_uint32 g_o_slope_sign = 0;
-//static kal_uint32 g_id = 0;
-static kal_uint32 g_y_vbg = 0;//defaul 1967 if cali_en=0
-#endif
 static DEFINE_MUTEX(mutex_get_cali_value);
 static int adc_auto_set =0;
 
@@ -149,12 +136,6 @@ int IMM_auxadc_GetOneChannelValue(int dwChannel, int data[4], int* rawdata)
    int data_ready_count=0;
    
    mutex_lock(&mutex_get_cali_value);
-#if 0   
-   if(enable_clock(MT_PDN_PERI_AUXADC,"AUXADC"))
-   {
-	printk("hwEnableClock AUXADC failed.");
-   }
-#endif   
    if(dwChannel == PAD_AUX_XP)mt_auxadc_disable_penirq();
    //step1 check con2 if auxadc is busy
    while ((*(volatile u16 *)AUXADC_CON2) & 0x01) 
@@ -226,12 +207,6 @@ int IMM_auxadc_GetOneChannelValue(int dwChannel, int data[4], int* rawdata)
    data[0] = (channel[dwChannel] * 150 / AUXADC_PRECISE / 100);
    data[1] = ((channel[dwChannel] * 150 / AUXADC_PRECISE) % 100);
    
-#if 0
-   if(disable_clock(MT_PDN_PERI_AUXADC,"AUXADC"))
-   {
-        printk("hwEnableClock AUXADC failed.");
-   }
-#endif   
     mutex_unlock(&mutex_get_cali_value);
    
    return 0;
@@ -257,23 +232,6 @@ int IMM_auxadc_GetOneChannelValue_Cali(int Channel, int*voltage)
      
 }
 
-#if 0
-static int IMM_auxadc_get_evrage_data(int times, int Channel)
-{
-	int ret = 0, data[4], i, ret_value = 0, ret_temp = 0;
-
-	i = times;
-	while (i--)
-	{
-		ret_value = IMM_auxadc_GetOneChannelValue(Channel, data, &ret_temp);
-		ret += ret_temp;
-		printk("[auxadc_get_data(channel%d)]: ret_temp=%d\n",Channel,ret_temp);        
-	}
-
-	ret = ret / times;
-	return ret;
-}
-#endif
 
 static void mt_auxadc_cal_prepare(void)
 {

@@ -45,21 +45,12 @@
 #define FM_DBG	L7
 
 extern fm_u32 g_dbg_level;
-#if 0
-#define WCN_DBG(flag, fmt, args...) \
-	do { \
-		if ((((flag)&0x0000000f)<=(g_dbg_level&0x0000000f)) && ((flag)&0xfffffff0)& g_dbg_level) { \
-			xlog_printk(ANDROID_LOG_INFO, "[" #flag "]", fmt, ## args);\
-		} \
-	} while(0)
-#else	
 #define WCN_DBG(flag, fmt, args...) \
     do { \
         if ((((flag)&0x0000000f)<=(g_dbg_level&0x0000000f)) && ((flag)&0xfffffff0)& g_dbg_level) { \
             printk(KERN_DEBUG "[" #flag "]" fmt, ## args); \
         } \
     } while(0)
-#endif
 
 #define FM_USE_XLOG
 

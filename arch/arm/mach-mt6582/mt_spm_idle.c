@@ -334,14 +334,6 @@ static void spm_init_event_vector(const pcm_desc_t *pcmdesc)
     /* init event vector register */
     spm_write(SPM_PCM_EVENT_VECTOR0, pcmdesc->vec0);
     spm_write(SPM_PCM_EVENT_VECTOR1, pcmdesc->vec1);
-#if 0    
-    spm_write(SPM_PCM_EVENT_VECTOR2, pcmdesc->vec2);
-    spm_write(SPM_PCM_EVENT_VECTOR3, pcmdesc->vec3);
-    spm_write(SPM_PCM_EVENT_VECTOR4, pcmdesc->vec4);
-    spm_write(SPM_PCM_EVENT_VECTOR5, pcmdesc->vec5);
-    spm_write(SPM_PCM_EVENT_VECTOR6, pcmdesc->vec6);
-    spm_write(SPM_PCM_EVENT_VECTOR7, pcmdesc->vec7);
-#endif
     /* event vector will be enabled by PCM itself */
 }
 
@@ -365,12 +357,6 @@ static void spm_set_ap_standbywfi(bool IsMcdi)
     }
     else
     {
-    #if 0
-        spm_write(SPM_CORE0_WFI_SEL, 0x0);
-        //spm_write(SPM_CORE1_WFI_SEL, 0x0);
-        //spm_write(SPM_CORE2_WFI_SEL, 0x0);
-        //spm_write(SPM_CORE3_WFI_SEL, 0x0);    
-    #endif
     }
 
 }

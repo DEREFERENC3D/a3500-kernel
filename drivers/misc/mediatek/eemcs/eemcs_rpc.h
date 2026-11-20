@@ -85,29 +85,6 @@ typedef struct IPC_RPC_StreamBuffer_STRUCT
 } IPC_RPC_StreamBuffer_T;
 typedef IPC_RPC_StreamBuffer_T* pIPC_RPC_StreamBuffer_T;
 
-#if 0 
-/* Struct to define the control channel of RPC service */
-typedef struct CCCI_RPC_STRUCT
-{
-    kal_uint32 send_channel;            /* RPC channel for TX */
-    kal_uint32 receive_channel;         /* RPC channel for RX */
-    /* <CCCI released APIs> */
-    kal_int32  (*ccci_write_gpd)(CCCI_CHANNEL_T channel, ccci_io_request_t *p_ccci_DL_ior, ccci_io_ext_info_t* pextinfo);
-
-    kal_int32  (*ccci_init_gpdior)(CCCI_CHANNEL_T channel, CCCI_IORCALLBACK ior_funp);
-    kal_int32  (*ccci_deinit)(CCCI_CHANNEL_T channel);
-	kal_int32  (*ccci_rpc_polling_io)(CCCI_CHANNEL_T channel,qbm_gpd * p_gpd,kal_bool is_tx);
-
-	kal_bool   (*check_kal_systemInit)(void);
-
-    kal_uint32 ut_flag;
-
-    qbm_gpd *p_polling_gpd;             /* polling mode GPD */
-    kal_uint32 allocated_gpd_number;
-
-} CCCI_RPC_T;
-
-#endif
 
 #define FS_NO_ERROR                                      0
 #define FS_NO_OP                                        -1

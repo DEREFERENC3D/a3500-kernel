@@ -432,13 +432,6 @@ static INT32 wcn_gzip_compressor(void *worker, UINT8 *in_buf, INT32 in_sz, UINT8
     }
     
     if (in_sz > 0) {
-        #if 0
-        ret = zlib_deflateReset(stream);
-        if (ret != Z_OK) {
-            STP_DBG_ERR_FUNC("reset failed!\n");
-            return -2;
-        }
-        #endif
 
         stream->next_in = in_buf;
         stream->avail_in = in_sz;
@@ -1619,16 +1612,6 @@ INT32 stp_dbg_set_fw_info(UINT8 *issue_info,UINT32 len,ENUM_STP_FW_ISSUE_TYPE is
 		}
 
 		tempbuf[len] = '\0';
-#if 0
-		STP_DBG_INFO_FUNC("FW assert infor len(%d)\n",len);
-		for(i = 0;i < len;i++)
-		{
-			if(0 == len%64)
-				printk("\n");
-			printk("%c",tempbuf[i]);
-		}
-		printk("\n");
-#endif
 		for(type_index = STP_DBG_ASSERT_INFO;type_index < STP_DBG_PARSER_TYPE_MAX;type_index ++)
 		{
 			iRet += _stp_dbg_parser_assert_str(&tempbuf[0],type_index);

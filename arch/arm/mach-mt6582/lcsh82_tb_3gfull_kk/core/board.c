@@ -86,14 +86,6 @@ const static u32 mtk_wcn_cmb_sdio_eint_m_gpio = GPIO_WIFI_EINT_PIN_M_GPIO;
     #endif
 
 #else
-#if 0
-static sdio_irq_handler_t mt_wifi_irq_handler = NULL;
-static pm_message_t mt_wifi_pm_state = { .event = PM_EVENT_HIBERNATE };
-static pm_callback_t mt_wifi_pm_cb = NULL;
-static void *mt_wifi_pm_data = NULL;
-static void *mt_wifi_irq_data = NULL;
-static int mt_wifi_pm_late_cb = 0;
-#endif
 /* temp solution to avoid compile error */
 
 #ifndef CUST_EINT_WIFI_NUM
@@ -333,50 +325,6 @@ EXPORT_SYMBOL(mtk_wcn_sdio_irq_flag_set);
 #endif
 #if defined(CONFIG_WLAN)
 #if !defined(CONFIG_MTK_WCN_CMB_SDIO_SLOT)
-#if 0
-static void mt_wifi_enable_irq(void)
-{
-    mt_eint_unmask(CUST_EINT_WIFI_NUM);
-}
-
-static void mt_wifi_disable_irq(void)
-{
-    mt_eint_mask(CUST_EINT_WIFI_NUM);
-}
-
-static void mt_wifi_eirq_handler(void)
-{
-    if (mt_wifi_irq_handler) {
-        mt_wifi_irq_handler(mt_wifi_irq_data);
-    }
-}
-
-static void mt_wifi_request_irq(sdio_irq_handler_t irq_handler, void *data)
-{
-		#if CUST_EINT_WIFI_SENSITIVE
-    mt_eint_set_sens(CUST_EINT_WIFI_NUM, CUST_EINT_WIFI_SENSITIVE);
-    #endif
-    
-    #if CUST_EINT_WIFI_DEBOUNCE_EN
-    mt_eint_set_hw_debounce(CUST_EINT_WIFI_NUM, CUST_EINT_WIFI_DEBOUNCE_CN);
-    #endif
-    mt_eint_registration(CUST_EINT_WIFI_NUM,
-				CUST_EINT_WIFI_TYPE,
-        mt_wifi_eirq_handler,
-        0);
-    mt_eint_mask(CUST_EINT_WIFI_NUM);
-
-    mt_wifi_irq_handler = irq_handler;
-    mt_wifi_irq_data    = data;
-}
-
-static void mt_wifi_register_pm(pm_callback_t pm_cb, void *data)
-{
-    /* register pm change callback */
-    mt_wifi_pm_cb = pm_cb;
-    mt_wifi_pm_data = data;
-}
-#endif
 
 #endif /* end of !defined(CONFIG_MTK_WCN_CMB_SDIO_SLOT) */ 
 
@@ -657,37 +605,6 @@ struct msdc_hw msdc1_hw = {
 	};
     #else
 
-#if 0
-struct msdc_hw msdc2_hw = {
-    .clk_src        = MSDC_CLKSRC_200MHZ,
-    .cmd_edge       = MSDC_SMPL_FALLING,
-    .rdata_edge     = MSDC_SMPL_FALLING,
-    .wdata_edge     = MSDC_SMPL_FALLING,
-    .clk_drv        = 3,
-    .cmd_drv        = 2,
-    .dat_drv        = 2,
-    .clk_drv_sd_18	= 4,
-    .cmd_drv_sd_18	= 3,
-    .dat_drv_sd_18	= 3,
-    .data_pins      = 4,
-    .data_offset    = 0,
-    .flags          = MSDC_SYS_SUSPEND | MSDC_WP_PIN_EN | MSDC_CD_PIN_EN | MSDC_REMOVABLE | MSDC_HIGHSPEED,
-  	  .dat0rddly		= 0,
-			.dat1rddly		= 0,
-			.dat2rddly		= 0,
-			.dat3rddly		= 0,
-			.dat4rddly		= 0,
-			.dat5rddly		= 0,
-			.dat6rddly		= 0,
-			.dat7rddly		= 0,
-			.datwrddly		= 0,
-			.cmdrrddly		= 0,
-			.cmdrddly		= 0,
-    .host_function	= MSDC_SD,
-    .boot			= 0,
-    .cd_level		= MSDC_CD_LOW,
-};
-#endif
     #endif
 #endif
 #if defined(CFG_DEV_MSDC3)
@@ -723,31 +640,6 @@ struct msdc_hw msdc2_hw = {
 	    .disable_sdio_eirq = mtk_wcn_cmb_sdio_disable_eirq,
 	    .register_pm       = mtk_wcn_cmb_sdio_register_pm,
 	};
-	#if 0
-    
-	struct msdc_hw msdc3_hw = {
-	    .clk_src        = 1,
-	    .cmd_edge       = MSDC_SMPL_FALLING,
-	    .data_edge      = MSDC_SMPL_FALLING,
-	    .clk_drv        = 4,
-	    .cmd_drv        = 4,
-	    .dat_drv        = 4,
-	    .data_pins      = 4,
-	    .data_offset    = 0,
-	    .flags          = MSDC_SDCARD_FLAG,
-	    .dat0rddly		= 0,
-			.dat1rddly		= 0,
-			.dat2rddly		= 0,
-			.dat3rddly		= 0,
-			.dat4rddly		= 0,
-			.dat5rddly		= 0,
-			.dat6rddly		= 0,
-			.dat7rddly		= 0,
-			.datwrddly		= 0,
-			.cmdrrddly		= 0,
-			.cmdrddly		= 0,
-	};
-	#endif
 	#endif
 #endif
 #if defined(CFG_DEV_MSDC4)

@@ -802,35 +802,6 @@ static int simple_sd_ioctl_sd30_mode_switch(struct msdc_ioctl* msdc_ctl)
 							 break;
 		default 		   : break;
 	}
-#if 0
-	switch(msdc_ctl->sd30_max_current){
-		case MAX_CURRENT_200 : msdc_host_mode[id] |= MMC_CAP_MAX_CURRENT_200;
-							   msdc_host_mode[id] &= (~MMC_CAP_MAX_CURRENT_400)&(~MMC_CAP_MAX_CURRENT_600)&(~MMC_CAP_MAX_CURRENT_800);
-							   printk("[****SD_Debug****]host will support MAX_CURRENT_200\n");
-							   break;
-		case MAX_CURRENT_400 : msdc_host_mode[id] |= MMC_CAP_MAX_CURRENT_200 | MMC_CAP_MAX_CURRENT_400;
-							   msdc_host_mode[id] &= (~MMC_CAP_MAX_CURRENT_600)&(~MMC_CAP_MAX_CURRENT_800);
-							   printk("[****SD_Debug****]host will support MAX_CURRENT_400\n");
-							   break;
-		case MAX_CURRENT_600 : msdc_host_mode[id] |= MMC_CAP_MAX_CURRENT_200 | MMC_CAP_MAX_CURRENT_400|MMC_CAP_MAX_CURRENT_600;
-							   msdc_host_mode[id] &= (~MMC_CAP_MAX_CURRENT_800);
-							   printk("[****SD_Debug****]host will support MAX_CURRENT_600\n");
-							   break;
-		case MAX_CURRENT_800 : msdc_host_mode[id] |= MMC_CAP_MAX_CURRENT_200 | MMC_CAP_MAX_CURRENT_400|MMC_CAP_MAX_CURRENT_600|MMC_CAP_MAX_CURRENT_800;
-							   printk("[****SD_Debug****]host will support MAX_CURRENT_800\n");
-							   break;
-		default 			 : break;
-	}
-	switch(msdc_ctl->sd30_power_control){
-		case SDXC_NO_POWER_CONTROL : msdc_host_mode[id] &= (~MMC_CAP_SET_XPC_330) & (~MMC_CAP_SET_XPC_300) & (~MMC_CAP_SET_XPC_180);
-									 printk("[****SD_Debug****]host will not support SDXC power control\n");
-							         break;
-		case SDXC_POWER_CONTROL    : msdc_host_mode[id] |= MMC_CAP_SET_XPC_330 | MMC_CAP_SET_XPC_300 | MMC_CAP_SET_XPC_180;
-									 printk("[****SD_Debug****]host will support SDXC power control\n");
-							     	 break;
-		default			           : break;
-	}
-#endif
     return 0;
 }
 
@@ -993,7 +964,7 @@ static int simple_mmc_erase_func(unsigned int start, unsigned int size)
     {
         arg = __MMC_DISCARD_ARG; 
     }else if (host->mmc->card->ext_csd.sec_feature_support & EXT_CSD_SEC_GB_CL_EN){
-        /* for Hynix eMMC chip£¬do trim even if it is  MMC_QUIRK_TRIM_UNSTABLE */
+        /* for Hynix eMMC chipdo trim even if it is  MMC_QUIRK_TRIM_UNSTABLE */
         arg = __MMC_TRIM_ARG; 
     }else if(mmc_can_erase(host->mmc->card)){
         /* mmc_erase() will remove the erase group un-aligned part, 

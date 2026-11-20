@@ -134,13 +134,6 @@ do {    \
     }   \
 } while(0)
 
-#if 0
-#define ERR_MSG(fmt, args...) \
-do { \
-    xlog_printk(ANDROID_LOG_ERROR,"MSDC",TAG"%d -> "fmt" <- %s() : L<%d> PID<%s><0x%x>\n", \
-        host->id,  ##args , __FUNCTION__, __LINE__, current->comm, current->pid); \
-} while(0); 
-#else
 
 #define MAX_PRINT_PERIOD            (500000000)  // 500ms
 #define MAX_PRINT_NUMS_OVER_PERIOD  (50)
@@ -166,7 +159,6 @@ do { \
            }   \
        }       \
     } while(0); 
-#endif
 
 
 #define INIT_MSG(fmt, args...) \
@@ -175,18 +167,9 @@ do { \
         host->id,  ##args , __FUNCTION__, __LINE__, current->comm, current->pid); \
 } while(0);
 
-#if 0
-/* PID in ISR in not corrent */
-#define IRQ_MSG(fmt, args...) \
-do { \
-    printk(KERN_ERR TAG"%d -> "fmt" <- %s() : L<%d>\n", \
-        host->id,  ##args , __FUNCTION__, __LINE__); \
-} while(0);
-#else 
 #define IRQ_MSG(fmt, args...) \
 do { \
 } while(0);	
-#endif 
 
 int msdc_debug_proc_init(void); 
 

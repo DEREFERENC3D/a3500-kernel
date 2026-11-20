@@ -189,19 +189,6 @@ static int dma_channel_program(struct dma_channel *channel,
 		if (ret)
 			return ret;
 	}
-#if 0
-	/*
-	 * The DMA engine in RTL1.8 and above cannot handle
-	 * DMA addresses that are not aligned to a 4 byte boundary.
-	 * It ends up masking the last two bits of the address
-	 * programmed in DMA_ADDR.
-	 *
-	 * Fail such DMA transfers, so that the backup PIO mode
-	 * can carry out the transfer
-	 */
-	if ((musb->hwvers >= MUSB_HWVERS_1800) && (dma_addr % 4))
-		return false;
-#endif
 	channel->actual_len = 0;
 	musb_channel->start_addr = dma_addr;
 	musb_channel->len = len;

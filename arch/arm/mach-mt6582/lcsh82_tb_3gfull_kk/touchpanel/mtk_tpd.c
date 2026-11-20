@@ -214,13 +214,6 @@ int tpd_driver_add(struct tpd_driver_t *tpd_drv)
 			tpd_driver_list[i].resume = tpd_drv->resume;
 			tpd_driver_list[i].tpd_have_button = tpd_drv->tpd_have_button;
 			tpd_driver_list[i].attrs = tpd_drv->attrs;
-			#if 0
-			if(tpd_drv->tpd_local_init()==0)
-			{
-				TPD_DMESG("load %s sucessfully\n", tpd_driver_list[i].tpd_device_name);
-				g_tpd_drv = &tpd_driver_list[i];
-			}
-			#endif
 			break;
 		}
 		if(strcmp(tpd_driver_list[i].tpd_device_name, tpd_drv->tpd_device_name) == 0)
@@ -267,21 +260,6 @@ static int tpd_probe(struct platform_device *pdev) {
 	  TPD_DMESG("enter %s, %d\n", __FUNCTION__, __LINE__); 
 	  /* Select R-Touch */
 	 // if(g_tpd_drv == NULL||tpd_load_status == 0) 
-#if 0
-	 if(g_tpd_drv == NULL) 
-	  {
-	  	g_tpd_drv = &tpd_driver_list[0];
-	  	/* touch_type:0: r-touch, 1: C-touch */
-	  	touch_type = 0;
-	  	TPD_DMESG("Generic touch panel driver\n");
-	  }
-	  	
-    #ifdef CONFIG_HAS_EARLYSUSPEND
-    MTK_TS_early_suspend_handler.suspend = g_tpd_drv->suspend;
-    MTK_TS_early_suspend_handler.resume = g_tpd_drv->resume;
-    register_early_suspend(&MTK_TS_early_suspend_handler);
-    #endif
-    #endif
 
     if (misc_register(&tpd_misc_device))
     {
@@ -358,49 +336,24 @@ static int tpd_probe(struct platform_device *pdev) {
     	set_bit(ABS_MT_TOUCH_MINOR, tpd->dev->absbit);
     	set_bit(ABS_MT_POSITION_X, tpd->dev->absbit);
     	set_bit(ABS_MT_POSITION_Y, tpd->dev->absbit);
-        #if 0 // linux kernel update from 2.6.35 --> 3.0
-    	tpd->dev->absmax[ABS_MT_POSITION_X] = TPD_RES_X;
-    	tpd->dev->absmin[ABS_MT_POSITION_X] = 0;
-    	tpd->dev->absmax[ABS_MT_POSITION_Y] = TPD_RES_Y;
-    	tpd->dev->absmin[ABS_MT_POSITION_Y] = 0;
-    	tpd->dev->absmax[ABS_MT_TOUCH_MAJOR] = 100;
-    	tpd->dev->absmin[ABS_MT_TOUCH_MINOR] = 0;
-#else
 		input_set_abs_params(tpd->dev, ABS_MT_POSITION_X, 0, TPD_RES_X, 0, 0);
 		input_set_abs_params(tpd->dev, ABS_MT_POSITION_Y, 0, TPD_RES_Y, 0, 0);
 		input_set_abs_params(tpd->dev, ABS_MT_TOUCH_MAJOR, 0, 100, 0, 0);
 		input_set_abs_params(tpd->dev, ABS_MT_TOUCH_MINOR, 0, 100, 0, 0); 	
-#endif
     	TPD_DMESG("Cap touch panel driver\n");
   	}
 //#endif
-    #if 0 //linux kernel update from 2.6.35 --> 3.0
-    tpd->dev->absmax[ABS_X] = TPD_RES_X;
-    tpd->dev->absmin[ABS_X] = 0;
-    tpd->dev->absmax[ABS_Y] = TPD_RES_Y;
-    tpd->dev->absmin[ABS_Y] = 0;
-	
-    tpd->dev->absmax[ABS_PRESSURE] = 255;
-    tpd->dev->absmin[ABS_PRESSURE] = 0;
-    #else
 		input_set_abs_params(tpd->dev, ABS_X, 0, TPD_RES_X, 0, 0);
 		input_set_abs_params(tpd->dev, ABS_Y, 0, TPD_RES_Y, 0, 0);
 		input_abs_set_res(tpd->dev, ABS_X, TPD_RES_X);
 		input_abs_set_res(tpd->dev, ABS_Y, TPD_RES_Y);
 		input_set_abs_params(tpd->dev, ABS_PRESSURE, 0, 255, 0, 0);
 
-    #endif
     if(input_register_device(tpd->dev))
         TPD_DMESG("input_register_device failed.(tpd)\n");
     else
 			tpd_register_flag = 1;
     /* init R-Touch */
-    #if 0
-	  if(touch_type == 0) 
-	  {
-	  	g_tpd_drv->tpd_local_init();
-	  }    
-		#endif
     if(g_tpd_drv->tpd_have_button)
     {
     	tpd_button_init();

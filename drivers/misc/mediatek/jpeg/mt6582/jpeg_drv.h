@@ -615,16 +615,6 @@ typedef struct
                                                                                                                
 #define JPEG_IOCTL_MAGIC        'x'                                                                            
 
-#if 0                                                                                                               
-  #define JPEG_DEC_IOCTL_INIT     _IO  (JPEG_IOCTL_MAGIC, 1)                                                     
-  //#define JPEG_DEC_IOCTL_CONFIG   _IOW (JPEG_IOCTL_MAGIC, 2, JPEG_DEC_DRV_IN)                                    
-  #define JPEG_DEC_IOCTL_START    _IO  (JPEG_IOCTL_MAGIC, 3)                                                     
-  #define JPEG_DEC_IOCTL_WAIT     _IOWR(JPEG_IOCTL_MAGIC, 6, JPEG_DEC_DRV_OUT)                                   
-  #define JPEG_DEC_IOCTL_DEINIT   _IO  (JPEG_IOCTL_MAGIC, 8)                                                     
-  //#define JPEG_DEC_IOCTL_RESUME   _IOW(JPEG_IOCTL_MAGIC, 4, JPEG_DEC_RESUME_IN)                                
-  //#define JPEG_DEC_IOCTL_RANGE    _IOWR(JPEG_IOCTL_MAGIC, 5, JPEG_DEC_RANGE_IN)                                
-  //#define JPEG_DEC_IOCTL_COPY     _IOWR(JPEG_IOCTL_MAGIC, 7, int)                                              
-#endif
 
 ///////////////////// JPEG DEC IOCTL /////////////////////////////////////
 #define JPEG_DEC_IOCTL_INIT     _IO    (JPEG_IOCTL_MAGIC,  1)

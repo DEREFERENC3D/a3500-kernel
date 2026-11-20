@@ -166,42 +166,6 @@ static struct i2c_driver SN5001_i2c_driver = {
 
 static struct SN5001_priv *SN5001_obj = NULL;
 static struct platform_driver SN5001_alsps_driver;
-#if 0	// modified by zhangtao 20130910
-/*------------------------i2c function for 89-------------------------------------*/
-int SN5001_i2c_master_operate(struct i2c_client *client, const char *buf, int count, int i2c_flag)
-{
-	int res = 0;
-	mutex_lock(&SN5001_mutex);
-	switch(i2c_flag){	
-	case I2C_FLAG_WRITE:
-	client->addr &=I2C_MASK_FLAG;
-	res = i2c_master_send(client, buf, count);
-	client->addr &=I2C_MASK_FLAG;
-	break;
-	
-	case I2C_FLAG_READ:
-	client->addr &=I2C_MASK_FLAG;
-	client->addr |=I2C_WR_FLAG;
-	client->addr |=I2C_RS_FLAG;
-	res = i2c_master_send(client, buf, count);
-	client->addr &=I2C_MASK_FLAG;
-	break;
-	default:
-	APS_LOG("SN5001_i2c_master_operate i2c_flag command not support!\n");
-	break;
-	}
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	mutex_unlock(&SN5001_mutex);
-	return res;
-	EXIT_ERR:
-	mutex_unlock(&SN5001_mutex);
-	APS_ERR("SN5001_i2c_transfer fail\n");
-	return res;
-}
-#endif
 
 // I2C Read
 static int SN5001_i2c_read_reg(u8 regnum)
@@ -261,29 +225,6 @@ static void SN5001_power(struct alsps_hw *hw, unsigned int on)
 	static unsigned int power_on = 0;
 
 	//APS_LOG("power %s\n", on ? "on" : "off");
-#if 0	// modified by zhangtao 
-	if(hw->power_id != POWER_NONE_MACRO)
-	{
-		if(power_on == on)
-		{
-			APS_LOG("ignore power control: %d\n", on);
-		}
-		else if(on)
-		{
-			if(!hwPowerOn(hw->power_id, hw->power_vol, "SN5001")) 
-			{
-				APS_ERR("power on fails!!\n");
-			}
-		}
-		else
-		{
-			if(!hwPowerDown(hw->power_id, "SN5001")) 
-			{
-				APS_ERR("power off fail!!\n");   
-			}
-		}
-	}
-#endif
 
 #if 1	// modified by zhangtao 20130910
 	if(power_on == on)
@@ -311,43 +252,6 @@ static long SN5001_enable_als(struct i2c_client *client, int enable)
 	struct SN5001_priv *obj = i2c_get_clientdata(client);
 	u8 databuf[2];	  
 	long res = 0;
-#if 0	// modified by zhangtao 
-	databuf[0]= SN5001_CMM_ENABLE;
-	res = SN5001_i2c_master_operate(client, databuf, 0x101, I2C_FLAG_READ);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	APS_LOG("SN5001_CMM_ENABLE als value = %x\n",databuf[0]);
-	
-	if(enable)
-		{
-			databuf[1] = databuf[0]|0x03;
-			databuf[0] = SN5001_CMM_ENABLE;
-			APS_LOG("SN5001_CMM_ENABLE enable als value = %x\n",databuf[1]);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			atomic_set(&obj->als_deb_on, 1);
-			atomic_set(&obj->als_deb_end, jiffies+atomic_read(&obj->als_debounce)/(1000/HZ));
-		}
-	else {
-		if(test_bit(CMC_BIT_PS, &obj->enable))
-			databuf[1] = databuf[0]&0xFD;
-		else
-			databuf[1] = databuf[0]&0xF8;
-		
-			databuf[0] = SN5001_CMM_ENABLE;
-			APS_LOG("SN5001_CMM_ENABLE disable als value = %x\n",databuf[1]);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-		}
-#endif	
 		return 0;
 		
 	EXIT_ERR:
@@ -361,73 +265,6 @@ static long SN5001_enable_ps(struct i2c_client *client, int enable)
 	struct SN5001_priv *obj = i2c_get_clientdata(client);
 	u8 databuf[2];    
 	long res = 0;
-#if 0	// modified by zhangtao 
-	databuf[0]= SN5001_CMM_ENABLE;
-	res = SN5001_i2c_master_operate(client, databuf, 0x101, I2C_FLAG_READ);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	
-	APS_LOG("SN5001_CMM_ENABLE ps value = %x\n",databuf[0]);
-	
-	if(enable)
-		{
-			databuf[1] = databuf[0]|0x05;
-			databuf[0] = SN5001_CMM_ENABLE;
-			APS_LOG("SN5001_CMM_ENABLE enable ps value = %x\n",databuf[1]);	
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			atomic_set(&obj->ps_deb_on, 1);
-			atomic_set(&obj->ps_deb_end, jiffies+atomic_read(&obj->ps_debounce)/(1000/HZ));
-		}
-	else{
-		if(test_bit(CMC_BIT_ALS, &obj->enable))
-			databuf[1] = databuf[0]&0xFB;
-		else
-			databuf[1] = databuf[0]&0xF8;
-		
-			databuf[0] = SN5001_CMM_ENABLE;
-			APS_LOG("SN5001_CMM_ENABLE disable ps value = %x\n",databuf[1]);	
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-
-			databuf[0] = SN5001_CMM_INT_LOW_THD_LOW;	
-			databuf[1] = (u8)(750 & 0x00FF);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_LOW_THD_HIGH;	
-			databuf[1] = (u8)((750 & 0xFF00) >> 8);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_HIGH_THD_LOW;	
-			databuf[1] = (u8)(900 & 0x00FF);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_HIGH_THD_HIGH;	
-			databuf[1] = (u8)((900 & 0xFF00) >> 8);;
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-		}
-#endif
 
 #if 1	// modified by zhangtao 20130910
 	if (enable)
@@ -464,57 +301,6 @@ static int SN5001_check_and_clear_intr(struct i2c_client *client)
 {
 	int res,intp,intl;
 	u8 buffer[2];
-#if 0	// modified by zhangtao 20130910
-	if (mt_get_gpio_in(GPIO_ALS_EINT_PIN) == 1) /*skip if no interrupt*/  
-	    return 0;
-
-	buffer[0] = SN5001_CMM_STATUS;
-	res = SN5001_i2c_master_operate(client, buffer, 0x101, I2C_FLAG_READ);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	
-	res = 0;
-	intp = 0;
-	intl = 0;
-	if(0 != (buffer[0] & 0x20))
-	{
-		res = 1;
-		intp = 1;
-	}
-	if(0 != (buffer[0] & 0x10))
-	{
-		res = 1;
-		intl = 1;		
-	}
-
-	if(1 == res)
-	{
-		if((1 == intp) && (0 == intl))
-		{
-			buffer[0] = (TAOS_TRITON_CMD_REG|TAOS_TRITON_CMD_SPL_FN|0x05);
-		}
-		else if((0 == intp) && (1 == intl))
-		{
-			buffer[0] = (TAOS_TRITON_CMD_REG|TAOS_TRITON_CMD_SPL_FN|0x06);
-		}
-		else
-		{
-			buffer[0] = (TAOS_TRITON_CMD_REG|TAOS_TRITON_CMD_SPL_FN|0x07);
-		}
-
-		res = SN5001_i2c_master_operate(client, buffer, 0x1, I2C_FLAG_WRITE);
-		if(res <= 0)
-		{
-			goto EXIT_ERR;
-		}
-		else
-		{
-			res = 0;
-		}
-	}
-#endif
 	return res;
 
 EXIT_ERR:
@@ -528,30 +314,6 @@ static int SN5001_check_intr(struct i2c_client *client)
 {
 	int res,intp,intl;
 	u8 buffer[2];
-#if 0	// modified by zhangtao 20130910
-	if (mt_get_gpio_in(GPIO_ALS_EINT_PIN) == 1) /*skip if no interrupt*/  
-	return 0;
-
-	buffer[0] = SN5001_CMM_STATUS;
-	res = SN5001_i2c_master_operate(client, buffer, 0x101, I2C_FLAG_READ);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	res = 0;
-	intp = 0;
-	intl = 0;
-	if(0 != (buffer[0] & 0x20))
-	{
-		res = 0;
-		intp = 1;
-	}
-	if(0 != (buffer[0] & 0x10))
-	{
-		res = 0;
-		intl = 1;		
-	}
-#endif
 	return res;
 
 EXIT_ERR:
@@ -563,18 +325,6 @@ static int SN5001_clear_intr(struct i2c_client *client)
 {
 	int res;
 	u8 buffer[2];
-#if 0	// modified by zhangtao 20130910	
-	buffer[0] = (TAOS_TRITON_CMD_REG|TAOS_TRITON_CMD_SPL_FN|0x07);
-	res = SN5001_i2c_master_operate(client, buffer, 0x1, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	else
-	{
-		res = 0;
-	}
-#endif	
 	return res;
 
 EXIT_ERR:
@@ -622,162 +372,6 @@ static int SN5001_init_client(struct i2c_client *client)
 	struct SN5001_priv *obj = i2c_get_clientdata(client);
 	u8 databuf[2];    
 	int res = 0;
-#if 0	// modified by zhangtao 
-	databuf[0] = (TAOS_TRITON_CMD_REG|TAOS_TRITON_CMD_SPL_FN|0x00);
-	res = SN5001_i2c_master_operate(client, databuf, 0x1, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	
-	databuf[0] = SN5001_CMM_ENABLE;
-	if(obj->hw->polling_mode_ps == 1)
-	databuf[1] = 0x08;
-	if(obj->hw->polling_mode_ps == 0)
-	databuf[1] = 0x28;
-	res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	
-	databuf[0] = SN5001_CMM_ATIME;    
-	databuf[1] = 0xF6;
-	res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-
-	databuf[0] = SN5001_CMM_PTIME;    
-	databuf[1] = 0xFF;
-	res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-
-	databuf[0] = SN5001_CMM_WTIME;    
-	databuf[1] = 0xFC;
-	res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	/*for interrup work mode support -- by liaoxl.lenovo 12.08.2011*/
-	if(0 == obj->hw->polling_mode_ps)
-	{
-		if(1 == ps_cali.valid)
-		{
-			databuf[0] = SN5001_CMM_INT_LOW_THD_LOW;	
-			databuf[1] = (u8)(ps_cali.far_away & 0x00FF);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_LOW_THD_HIGH;	
-			databuf[1] = (u8)((ps_cali.far_away & 0xFF00) >> 8);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_HIGH_THD_LOW;	
-			databuf[1] = (u8)(ps_cali.close & 0x00FF);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_HIGH_THD_HIGH;	
-			databuf[1] = (u8)((ps_cali.close & 0xFF00) >> 8);;
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-		}
-		else
-		{
-			databuf[0] = SN5001_CMM_INT_LOW_THD_LOW;	
-			databuf[1] = (u8)(750 & 0x00FF);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_LOW_THD_HIGH;	
-			databuf[1] = (u8)((750 & 0xFF00) >> 8);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_HIGH_THD_LOW;	
-			databuf[1] = (u8)(900 & 0x00FF);
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-			databuf[0] = SN5001_CMM_INT_HIGH_THD_HIGH;	
-			databuf[1] = (u8)((900 & 0xFF00) >> 8);;
-			res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-			if(res <= 0)
-			{
-				goto EXIT_ERR;
-			}
-
-		}
-
-		databuf[0] = SN5001_CMM_Persistence;
-		databuf[1] = 0x20;
-		res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-		if(res <= 0)
-		{
-			goto EXIT_ERR;
-		}
-
-	}
-
-	databuf[0] = SN5001_CMM_CONFIG;    
-	databuf[1] = 0x00;
-	res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-
-       /*Lenovo-sw chenlj2 add 2011-06-03,modified pulse 2  to 4 */
-	databuf[0] = SN5001_CMM_PPCOUNT;    
-	databuf[1] = SN5001_CMM_PPCOUNT_VALUE;
-	res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-
-        /*Lenovo-sw chenlj2 add 2011-06-03,modified gain 16  to 1 */
-	databuf[0] = SN5001_CMM_CONTROL;    
-	databuf[1] = SN5001_CMM_CONTROL_VALUE;
-	res = SN5001_i2c_master_operate(client, databuf, 0x2, I2C_FLAG_WRITE);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	/*for interrup work mode support -- by liaoxl.lenovo 12.08.2011*/
-	if((res = SN5001_setup_eint(client))!=0)
-	{
-		APS_ERR("setup eint: %d\n", res);
-		return res;
-	}
-	if((res = SN5001_check_and_clear_intr(client)))
-	{
-		APS_ERR("check/clear intr: %d\n", res);
-	    return res;
-	}
-#endif
 
 #if 1	// modified by zhangtao 
 	res = SN5001_i2c_write_reg(0x01, 0x00);
@@ -818,74 +412,6 @@ int SN5001_read_als(struct i2c_client *client, u16 *data)
 	u8 buffer[2];
 	u16 atio;
 	int res = 0;
-#if 0	// modified by zhangtao 
-	if(client == NULL)
-	{
-		APS_DBG("CLIENT CANN'T EQUL NULL\n");
-		return -1;
-	}
-	
-	buffer[0]=SN5001_CMM_C0DATA_L;
-	res = SN5001_i2c_master_operate(client, buffer, 0x201, I2C_FLAG_READ);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	
-	c0_value = buffer[0] | (buffer[1]<<8);
-	c0_nf = obj->als_modulus*c0_value;
-	//APS_LOG("c0_value=%d, c0_nf=%d, als_modulus=%d\n", c0_value, c0_nf, obj->als_modulus);
-
-	buffer[0]=SN5001_CMM_C1DATA_L;
-	res = SN5001_i2c_master_operate(client, buffer, 0x201, I2C_FLAG_READ);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	
-	c1_value = buffer[0] | (buffer[1]<<8);
-	c1_nf = obj->als_modulus*c1_value;	
-	//APS_LOG("c1_value=%d, c1_nf=%d, als_modulus=%d\n", c1_value, c1_nf, obj->als_modulus);
-	
-	if((c0_value > c1_value) &&(c0_value < 50000))
-	{  	/*Lenovo-sw chenlj2 add 2011-06-03,add {*/
-		atio = (c1_nf*100)/c0_nf;
-
-	//APS_LOG("atio = %d\n", atio);
-	if(atio<30)
-	{
-		*data = (13*c0_nf - 24*c1_nf)/10000;
-	}
-	else if(atio>= 30 && atio<38) /*Lenovo-sw chenlj2 add 2011-06-03,modify > to >=*/
-	{ 
-		*data = (16*c0_nf - 35*c1_nf)/10000;
-	}
-	else if(atio>= 38 && atio<45)  /*Lenovo-sw chenlj2 add 2011-06-03,modify > to >=*/
-	{ 
-		*data = (9*c0_nf - 17*c1_nf)/10000;
-	}
-	else if(atio>= 45 && atio<54) /*Lenovo-sw chenlj2 add 2011-06-03,modify > to >=*/
-	{ 
-		*data = (6*c0_nf - 10*c1_nf)/10000;
-	}
-	else
-		*data = 0;
-	/*Lenovo-sw chenlj2 add 2011-06-03,add }*/
-    }
-	else if (c0_value > 50000)
-	{
-		*data = 65535;
-	}
-	else if(c0_value == 0)
-        {
-                *data = 0;
-        }
-        else
-	{
-		APS_DBG("SN5001_read_als als_value is invalid!!\n");
-		return -1;
-	}	
-#endif
 	//APS_LOG("SN5001_read_als als_value_lux = %d\n", *data);
 	return 0;	 
 
@@ -902,24 +428,6 @@ int SN5001_read_als_ch0(struct i2c_client *client, u16 *data)
 	u16 c0_value;	 
 	u8 buffer[2];
 	int res = 0;
-#if 0	// modified by zhangtao 
-	if(client == NULL)
-	{
-		APS_DBG("CLIENT CANN'T EQUL NULL\n");
-		return -1;
-	}
-
-//get adc channel 0 value
-	buffer[0]=SN5001_CMM_C0DATA_L;
-	res = SN5001_i2c_master_operate(client, buffer, 0x201, I2C_FLAG_READ);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	c0_value = buffer[0] | (buffer[1]<<8);
-	*data = c0_value;
-	//APS_LOG("c0_value=%d\n", c0_value);
-#endif	
 	return 0;	 
 
 	
@@ -932,48 +440,6 @@ EXIT_ERR:
 
 static int SN5001_get_als_value(struct SN5001_priv *obj, u16 als)
 {
-#if 0	// modified by zhangtao 
-	int idx;
-	int invalid = 0;
-	for(idx = 0; idx < obj->als_level_num; idx++)
-	{
-		if(als < obj->hw->als_level[idx])
-		{
-			break;
-		}
-	}
-	
-	if(idx >= obj->als_value_num)
-	{
-		APS_ERR("SN5001_get_als_value exceed range\n"); 
-		idx = obj->als_value_num - 1;
-	}
-	
-	if(1 == atomic_read(&obj->als_deb_on))
-	{
-		unsigned long endt = atomic_read(&obj->als_deb_end);
-		if(time_after(jiffies, endt))
-		{
-			atomic_set(&obj->als_deb_on, 0);
-		}
-		
-		if(1 == atomic_read(&obj->als_deb_on))
-		{
-			invalid = 1;
-		}
-	}
-
-	if(!invalid)
-	{
-		//APS_ERR("ALS: %05d => %05d\n", als, obj->hw->als_value[idx]);	
-		return obj->hw->als_value[idx];
-	}
-	else
-	{
-		//APS_ERR("ALS: %05d => %05d (-1)\n", als, obj->hw->als_value[idx]);    
-		return -1;
-	}
-#endif	
 }
 /*----------------------------------------------------------------------------*/
 long SN5001_read_ps(struct i2c_client *client, u16 *data)
@@ -987,16 +453,6 @@ long SN5001_read_ps(struct i2c_client *client, u16 *data)
 		APS_DBG("CLIENT CANN'T EQUL NULL\n");
 		return -1;
 	}
-#if 0	// modified by zhangtao 20130910
-	buffer[0]=SN5001_CMM_PDATA_L;
-	res = SN5001_i2c_master_operate(client, buffer, 0x201, I2C_FLAG_READ);
-	if(res <= 0)
-	{
-		goto EXIT_ERR;
-	}
-	
-	*data = buffer[0] | (buffer[1]<<8);
-#endif
 
 #if 1	// modified by zhangtao 20130910
 	res = SN5001_i2c_read_reg(0x00);
@@ -1021,70 +477,6 @@ static int SN5001_get_ps_value(struct SN5001_priv *obj, u16 ps)
 	int val;// mask = atomic_read(&obj->ps_mask);
 	int invalid = 0;
 	static int val_temp=1;
-#if 0	// modified by zhangtao 20130910
-	if(ps_cali.valid == 1)
-		{
-			if((ps >ps_cali.close))
-			{
-				val = 0;  /*close*/
-				val_temp = 0;
-				intr_flag_value = 1;
-			}
-			
-			else if((ps < ps_cali.far_away))
-			{
-				val = 1;  /*far away*/
-				val_temp = 1;
-				intr_flag_value = 0;
-			}
-			else
-				val = val_temp;
-
-			APS_LOG("TMD2771_get_ps_value val  = %d",val);
-	}
-	else
-	{
-			if((ps  > atomic_read(&obj->ps_thd_val_high)))
-			{
-				val = 0;  /*close*/
-				val_temp = 0;
-				intr_flag_value = 1;
-			}
-			else if((ps  < atomic_read(&obj->ps_thd_val_low)))
-			{
-				val = 1;  /*far away*/
-				val_temp = 1;
-				intr_flag_value = 0;
-			}
-			else
-			       val = val_temp;	
-			
-	}
-	
-	if(atomic_read(&obj->ps_suspend))
-	{
-		invalid = 1;
-	}
-	else if(1 == atomic_read(&obj->ps_deb_on))
-	{
-		unsigned long endt = atomic_read(&obj->ps_deb_end);
-		if(time_after(jiffies, endt))
-		{
-			atomic_set(&obj->ps_deb_on, 0);
-		}
-		
-		if (1 == atomic_read(&obj->ps_deb_on))
-		{
-			invalid = 1;
-		}
-	}
-	else if (obj->als > 45000)
-	{
-		//invalid = 1;
-		APS_DBG("ligh too high will result to failt proximiy\n");
-		return 1;  /*far away*/
-	}
-#endif
 
 #if 1	// modified by zhangtao 20130910
 	if(ps == 0x08)
@@ -1145,145 +537,6 @@ static void SN5001_eint_work(struct work_struct *work)
 	hwm_sensor_data sensor_data;
 	u8 databuf[3];
 	int res = 0;
-#if 0	// modified by zhangtao 20130910
-	if((err = SN5001_check_intr(obj->client)))
-	{
-		APS_ERR("SN5001_eint_work check intrs: %d\n", err);
-	}
-	else
-	{
-		//get raw data
-		SN5001_read_ps(obj->client, &obj->ps);
-		SN5001_read_als_ch0(obj->client, &obj->als);
-		APS_LOG("SN5001_eint_work rawdata ps=%d als_ch0=%d!\n",obj->ps,obj->als);
-		
-		if(obj->als > 40000)
-			{
-			APS_LOG("SN5001_eint_work ALS too large may under lighting als_ch0=%d!\n",obj->als);
-			return;
-			}
-		sensor_data.values[0] = SN5001_get_ps_value(obj, obj->ps);
-		sensor_data.value_divide = 1;
-		sensor_data.status = SENSOR_STATUS_ACCURACY_MEDIUM;	
-
-#ifdef DEBUG_SN5001
-		databuf[0]= SN5001_CMM_ENABLE;
-		res = SN5001_i2c_master_operate(obj->client, databuf, 0x101, I2C_FLAG_READ);
-		if(res <= 0)
-		{
-			goto EXIT_ERR;
-		}
-		APS_LOG("SN5001_eint_work SN5001_CMM_ENABLE ps value = %x\n",databuf[0]);
-		
-		databuf[0] = SN5001_CMM_INT_LOW_THD_LOW;
-		res = SN5001_i2c_master_operate(obj->client, databuf, 0x201, I2C_FLAG_READ);
-		if(res <= 0)
-		{
-			goto EXIT_ERR;
-		}
-		APS_LOG("SN5001_eint_work SN5001_CMM_INT_LOW_THD_LOW before databuf[0]=%d databuf[1]=%d!\n",databuf[0],databuf[1]);
-
-		databuf[0] = SN5001_CMM_INT_HIGH_THD_LOW;
-		res = SN5001_i2c_master_operate(obj->client, databuf, 0x201, I2C_FLAG_READ);
-		if(res <= 0)
-		{
-			goto EXIT_ERR;
-		}
-		APS_LOG("SN5001_eint_work SN5001_CMM_INT_HIGH_THD_LOW before databuf[0]=%d databuf[1]=%d!\n",databuf[0],databuf[1]);
-#endif
-/*singal interrupt function add*/
-		if(intr_flag_value){
-						databuf[0] = SN5001_CMM_INT_LOW_THD_LOW;	
-						databuf[1] = (u8)((atomic_read(&obj->ps_thd_val_low)) & 0x00FF);
-						res = SN5001_i2c_master_operate(obj->client, databuf, 0x2, I2C_FLAG_WRITE);
-						if(res <= 0)
-						{
-							goto EXIT_ERR;
-						}
-						
-						databuf[0] = SN5001_CMM_INT_LOW_THD_HIGH;	
-						databuf[1] = (u8)(((atomic_read(&obj->ps_thd_val_low)) & 0xFF00) >> 8);
-						res = SN5001_i2c_master_operate(obj->client, databuf, 0x2, I2C_FLAG_WRITE);
-						if(res <= 0)
-						{
-							goto EXIT_ERR;
-						}
-						databuf[0] = SN5001_CMM_INT_HIGH_THD_LOW;	
-						databuf[1] = (u8)(0x00FF);
-						res = SN5001_i2c_master_operate(obj->client, databuf, 0x2, I2C_FLAG_WRITE);
-						if(res <= 0)
-						{
-							goto EXIT_ERR;
-						}
-						
-						databuf[0] = SN5001_CMM_INT_HIGH_THD_HIGH; 
-						databuf[1] = (u8)((0xFF00) >> 8);
-						res = SN5001_i2c_master_operate(obj->client, databuf, 0x2, I2C_FLAG_WRITE);
-						if(res <= 0)
-						{
-							goto EXIT_ERR;
-						}
-						
-				}
-				else{	
-						databuf[0] = SN5001_CMM_INT_LOW_THD_LOW;	
-						databuf[1] = (u8)(0 & 0x00FF);
-						res = SN5001_i2c_master_operate(obj->client, databuf, 0x2, I2C_FLAG_WRITE);
-						if(res <= 0)
-						{
-							goto EXIT_ERR;
-						}
-						
-						databuf[0] = SN5001_CMM_INT_LOW_THD_HIGH;	
-						databuf[1] = (u8)((0 & 0xFF00) >> 8);
-						res = SN5001_i2c_master_operate(obj->client, databuf, 0x2, I2C_FLAG_WRITE);
-						if(res <= 0)
-						{
-							goto EXIT_ERR;
-						}
-						
-						databuf[0] = SN5001_CMM_INT_HIGH_THD_LOW;	
-						databuf[1] = (u8)((atomic_read(&obj->ps_thd_val_high)) & 0x00FF);
-						res = SN5001_i2c_master_operate(obj->client, databuf, 0x2, I2C_FLAG_WRITE);
-						if(res <= 0)
-						{
-							goto EXIT_ERR;
-						}
-					
-						databuf[0] = SN5001_CMM_INT_HIGH_THD_HIGH; 
-						databuf[1] = (u8)(((atomic_read(&obj->ps_thd_val_high)) & 0xFF00) >> 8);
-						res = SN5001_i2c_master_operate(obj->client, databuf, 0x2, I2C_FLAG_WRITE);
-						res = i2c_master_send(obj->client, databuf, 0x2);
-						if(res <= 0)
-						{
-							goto EXIT_ERR;
-						}
-				}
-				
-		//let up layer to know
-		#ifdef DEBUG_SN5001
-		databuf[0] = SN5001_CMM_INT_LOW_THD_LOW;
-		res = SN5001_i2c_master_operate(obj->client, databuf, 0x201, I2C_FLAG_READ);
-		if(res <= 0)
-		{
-			goto EXIT_ERR;
-		}
-		APS_LOG("SN5001_eint_work SN5001_CMM_INT_LOW_THD_LOW after databuf[0]=%d databuf[1]=%d!\n",databuf[0],databuf[1]);
-
-		databuf[0] = SN5001_CMM_INT_HIGH_THD_LOW;
-		res = SN5001_i2c_master_operate(obj->client, databuf, 0x201, I2C_FLAG_READ);
-		if(res <= 0)
-		{
-			goto EXIT_ERR;
-		}
-		APS_LOG("SN5001_eint_work SN5001_CMM_INT_HIGH_THD_LOW after databuf[0]=%d databuf[1]=%d!\n",databuf[0],databuf[1]);
-		#endif
-		if((err = hwmsen_get_interrupt_data(ID_PROXIMITY, &sensor_data)))
-		{
-		  APS_ERR("call hwmsen_get_interrupt_data fail = %d\n", err);
-		}
-	}
-#endif
 
 #if 1	// modified by zhangtao 20130910
 		SN5001_read_ps(obj->client, &obj->ps);
@@ -1521,32 +774,6 @@ static int SN5001_i2c_suspend(struct i2c_client *client, pm_message_t msg)
 //	struct SN5001_priv *obj = i2c_get_clientdata(client);    
 //	int err;
 	APS_FUN();    
-#if 0
-	if(msg.event == PM_EVENT_SUSPEND)
-	{   
-		if(!obj)
-		{
-			APS_ERR("null pointer!!\n");
-			return -EINVAL;
-		}
-		
-		atomic_set(&obj->als_suspend, 1);
-		if(err = SN5001_enable_als(client, 0))
-		{
-			APS_ERR("disable als: %d\n", err);
-			return err;
-		}
-
-		atomic_set(&obj->ps_suspend, 1);
-		if(err = SN5001_enable_ps(client, 0))
-		{
-			APS_ERR("disable ps:  %d\n", err);
-			return err;
-		}
-		
-		SN5001_power(obj->hw, 0);
-	}
-#endif
 	return 0;
 }
 /*----------------------------------------------------------------------------*/
@@ -1555,36 +782,6 @@ static int SN5001_i2c_resume(struct i2c_client *client)
 //	struct SN5001_priv *obj = i2c_get_clientdata(client);        
 //	int err;
 	APS_FUN();
-#if 0
-	if(!obj)
-	{
-		APS_ERR("null pointer!!\n");
-		return -EINVAL;
-	}
-
-	SN5001_power(obj->hw, 1);
-	if(err = SN5001_init_client(client))
-	{
-		APS_ERR("initialize client fail!!\n");
-		return err;        
-	}
-	atomic_set(&obj->als_suspend, 0);
-	if(test_bit(CMC_BIT_ALS, &obj->enable))
-	{
-		if(err = SN5001_enable_als(client, 1))
-		{
-			APS_ERR("enable als fail: %d\n", err);        
-		}
-	}
-	atomic_set(&obj->ps_suspend, 0);
-	if(test_bit(CMC_BIT_PS,  &obj->enable))
-	{
-		if(err = SN5001_enable_ps(client, 1))
-		{
-			APS_ERR("enable ps fail: %d\n", err);                
-		}
-	}
-#endif
 	return 0;
 }
 /*----------------------------------------------------------------------------*/

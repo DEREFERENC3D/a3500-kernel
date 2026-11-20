@@ -36,20 +36,6 @@
 static fm_cust_cfg fm_config;
 static fm_s32 fm_index = 0;
 
-#if 0
-static fm_s32 to_upper(fm_s8 *str)
-{
-    fm_s32 i = 0;
-
-    for (i = 0; i < (int)strlen(str); i++) {
-        if (('a' <= str[i]) && (str[i] <= 'z')) {
-            str[i] = str[i] - ('a' - 'A');
-        }
-    }
-
-    return 0;
-}
-#endif
 
 fm_s32 to_upper_n(fm_s8 *str, fm_s32 len)
 {

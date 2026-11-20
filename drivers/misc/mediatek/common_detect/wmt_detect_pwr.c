@@ -186,11 +186,6 @@ static int wmt_detect_chip_pwr_on (void)
 	_wmt_detect_set_output_mode(COMBO_RST_PIN);
 	_wmt_detect_output_low(COMBO_RST_PIN);
 	
-#if 0
-	_wmt_detect_set_output_mode(COMBO_WIFI_EINT_PIN);
-	
-	_wmt_detect_output_low(COMBO_WIFI_EINT_PIN);
-#endif
 
 	/*pull high LDO*/
 	_wmt_detect_output_high(COMBO_LDO_PIN);

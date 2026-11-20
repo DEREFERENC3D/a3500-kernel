@@ -37,9 +37,6 @@
 #define MT6626_DEEMPHASIS_50us TRUE
 
 //customer need customize the I2C port
-#if 0//def MT6516
-#define MT6626_I2C_PORT   2
-#else 
 #define MT6626_I2C_PORT   0
 //#endif
 
@@ -77,5 +74,4 @@
 #define ext_clk				//if define ext_clk use external reference clock or mask will use internal
 #define MT6626_DEV			"MT6626"   
 
-#endif //end of #ifndef __MT6626_FM_H__
 

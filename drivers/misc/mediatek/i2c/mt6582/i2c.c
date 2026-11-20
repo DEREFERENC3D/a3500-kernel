@@ -62,15 +62,6 @@ static mt_i2c  *g_i2c[2];
   #define I2C_T_SPEED 3
   /*7 ports,16 types of message*/
   U8 i2c_port[ PORT_COUNT ][ MESSAGE_COUNT ];
-#if 0
-  #define I2CINFO( type, format, arg...) do { \
-    if ( type < MESSAGE_COUNT && type >= 0 ) { \
-      if ( i2c_port[i2c->id][0] != 0 && ( i2c_port[i2c->id][type] != 0 || i2c_port[i2c->id][MESSAGE_COUNT - 1] != 0) ) { \
-        I2CLOG( format, ## arg); \
-      } \
-    } \
-  } while (0)
-#endif
 #define I2CINFO( type, format, arg...) do { \
         I2CLOG( format, ## arg); \
   } while (0)

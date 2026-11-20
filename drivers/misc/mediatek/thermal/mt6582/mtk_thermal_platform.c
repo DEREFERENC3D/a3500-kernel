@@ -529,13 +529,6 @@ int mtk_thermal_get_gpu_info(
         *gpufreq = gpufreqs;
     }
 
-#if 0
-    if (gpuloading && (NULL != mtk_thermal_get_gpu_loading_fp))
-    {
-        gpuloadings[0] = (int) mtk_thermal_get_gpu_loading_fp();
-        *gpuloading = gpuloadings;
-    }
-#else
     if (gpuloading)
     {
         unsigned int rd_gpu_loading = 0;
@@ -545,7 +538,6 @@ int mtk_thermal_get_gpu_info(
             *gpuloading = gpuloadings;
         }
     }
-#endif
     
 
     return 0;

@@ -612,29 +612,6 @@ static MINT32 ISP_DumpReg(MVOID)
     //                              #define ISP_ADDR_END    0x15006000
     //
 
-#if 0  //kk test 0:new tile format
-    for(i = 0x0; i <= 0x20; i += 4)
-    {
-        //LOG_DBG("0x%08X %08X ", ISP_ADDR + i, ISP_RD32(ISP_ADDR + i));
-        LOG_DBG("0x%08X %08X ", ISP_ADDR + i, ISP_RD32(ISP_ADDR + i));
-    }
-    //ignore read clear registers
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x24, 0);
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x28, 0);
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x2C, ISP_RD32(ISP_ADDR + 0x2C));
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x30, 0);
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x34, 0);
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x38, ISP_RD32(ISP_ADDR + 0x38));
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x3C, 0);
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x40, 0);
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x44, 0);
-    LOG_DBG("0x%08X %08X ", ISP_ADDR + 0x48, 0);
-    for(i = 0x4C; i <= 0x5048; i += 4)
-    {
-        //LOG_DBG("0x%08X %08X ", ISP_ADDR + i, ISP_RD32(ISP_ADDR + i));
-        LOG_DBG("0x%08X %08X ", ISP_ADDR + i, ISP_RD32(ISP_ADDR + i));
-    }
-#else
     
     // for tpipe main start
     LOG_DBG("start MT");
@@ -1087,7 +1064,6 @@ static MINT32 ISP_DumpReg(MVOID)
 
 #endif
 
-#endif
     
     //spin_unlock_irqrestore(&(g_IspInfo.SpinLock), flags);
     
@@ -1122,7 +1098,7 @@ Bit 31:28 ? {sot_reg, eol_reg, eot_reg, sof} , reg means status record
 Bit 27:24 ?{eot, eol,eot, req}
 Bit 23 : rdy
 
-Rdy should be 1    at idle or end of tile, if not 0, 很可能是mdp 沒回rdy 
+Rdy should be 1    at idle or end of tile, if not 0, 雈iOmdp S^rdy 
 Req  should be 0   at idle or end of tile
 
 sot_reg, eol_reg, eot_reg should be 1  at idle or end of tile
@@ -1133,7 +1109,7 @@ pix count  :  bit 15:0
 
 
 2. 0x4044 / 0x4048 status
-      It is 無須 enable, 
+      It is L enable, 
 It is clear by 0x4020[31] write or read clear,
 It has many information on it,
 You can look coda
@@ -1302,69 +1278,6 @@ static void SeninfOverrunDump(void)
     LOG_DBG("+");
     LOG_DBG("(0xF0203108 0x%08x)",ISP_RD32((void *)0xF0203108));
         
-#if 0     
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1100);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1002);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1102);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1202);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1302);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1006);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1106);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x110A);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x100B);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x110B);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x110C);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1016);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1017);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1018);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x1019);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x101A);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x101B);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x9000);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x9001);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-    ISP_WR32((void *)ISP_REG_ADDR_CTL_DBG_SET, 0x9002);
-    LOG_DBG("(0x%08x 0x%08x)",ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_SET),ISP_RD32((void *)ISP_REG_ADDR_CTL_DBG_PORT));
-
-#else    
 
     if(debugFlag == 0)
     {
@@ -1474,7 +1387,6 @@ static void SeninfOverrunDump(void)
         debugFlag = 1;
     }
 
-#endif
     LOG_DBG("-");        
 }
 
@@ -1609,13 +1521,6 @@ int MDPReset_Process(int params)
 ********************************************************************************/
 static MVOID ISP_EnableClock(MBOOL En)
 {
-#if 0  // using LDVT. Temp solution for LDVT
-
-    LOG_INF("in LDVT,En(%d),g_EnableClkCnt(%d)", En, g_EnableClkCnt);
-
-    ISP_WR32(CAMINF_BASE, 0x00);
-    
-#else   // Not using LDVT    
 
     LOG_INF("En(%d),g_EnableClkCnt(%d)", En, g_EnableClkCnt);
 
@@ -1652,7 +1557,6 @@ static MVOID ISP_EnableClock(MBOOL En)
         g_EnableClkCnt--;
         LOG_DBG("Camera clock disabled. g_EnableClkCnt(%d)", g_EnableClkCnt);        
     }
-#endif
 
     LOG_DBG("-");
 }
@@ -1744,70 +1648,6 @@ static inline MVOID ISP_Reset(MVOID)
     g_TempAddr = 0;
 
 //js_test
-#if 0 //TODO:test code for SMI bandwidth control , remove later
-    //larb_clock_on();
-    //SMI_PowerOn();
-#define SMI_LARB_NUMBER 5
-        for (i=0; i<SMI_LARB_NUMBER; i++) {
-                larb_clock_on(i);
-        }
-        LOG_DBG("+LARB in reset,BWL(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X),220(0x%08X)/(0x%08X),0x14(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X)", \
-            ISP_RD32(0xF0202000+0x204), \
-            ISP_RD32(0xF0202000+0x20c), \
-            ISP_RD32(0xF0202000+0x210), \
-            ISP_RD32(0xF0202000+0x214), \
-            ISP_RD32(0xF0202000+0x220), \
-            ISP_RD32(0xF0202000+0x230), \
-            ISP_RD32(SMI_LARB0+0x10), \
-            ISP_RD32(SMI_LARB1+0x10), \
-            ISP_RD32(SMI_LARB2+0x10), \
-            ISP_RD32(SMI_LARB3+0x10), \
-            ISP_RD32(SMI_LARB4+0x10));
-
-        //BW limit:
-        //SMI_COMMON_APB_BASE+0x204=0xb92  //larb0 venc
-        //SMI_COMMON_APB_BASE+0x20c=0xa4b  //larb2 disp
-        //SMI_COMMON_APB_BASE+0x210=0x96d  //larb3 cdp
-        //SMI_COMMON_APB_BASE+0x214=0x9a7  //larb4 isp
-        ISP_WR32(0xF0202000+0x204,0xb92);
-        ISP_WR32(0xF0202000+0x20c,0xa4b);
-        ISP_WR32(0xF0202000+0x210,0x96d);
-        ISP_WR32(0xF0202000+0x214,0xfff);//pass1
-
-
-        //Allocate larb->2 smi common
-        //LARB2&3 use m4u#0, else use m4u#1
-        //SMI_COMMON_APB_BASE+0x220=0x1505
-        ISP_WR32(0xF0202000+0x220,0x1505);
-
-        //SMI COMMON reduce command buffer
-        //ISP_WR32(SMI_COMMON_APB_BASE+0x230,0x1560);
-        ISP_WR32(0xF0202000+0x230,0x1560);
-
-        //SMI LARB reduce command buffer
-        ISP_WR32(SMI_LARB0+0x14,0x400420);
-        ISP_WR32(SMI_LARB1+0x14,0x400420);
-        ISP_WR32(SMI_LARB2+0x14,0x400420);
-        ISP_WR32(SMI_LARB3+0x14,0x400420);//pass2
-        //ISP_WR32(SMI_LARB4+0x14,0x400420);//pass1
-
-        LOG_DBG("-LARB in reset,BWL(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X),220(0x%08X)/(0x%08X),0x14(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X)", \
-            ISP_RD32(0xF0202000+0x204), \
-            ISP_RD32(0xF0202000+0x20c), \
-            ISP_RD32(0xF0202000+0x210), \
-            ISP_RD32(0xF0202000+0x214), \
-            ISP_RD32(0xF0202000+0x220), \
-            ISP_RD32(0xF0202000+0x230), \
-            ISP_RD32(SMI_LARB0+0x10), \
-            ISP_RD32(SMI_LARB1+0x10), \
-            ISP_RD32(SMI_LARB2+0x10), \
-            ISP_RD32(SMI_LARB3+0x10), \
-            ISP_RD32(SMI_LARB4+0x10));
-
-        for (i=0; i<SMI_LARB_NUMBER; i++) {
-                larb_clock_off(i);
-        }
-#endif
    
     LOG_DBG("-");
 }
@@ -2633,22 +2473,6 @@ static MINT32 ISP_RTBC_ENQUE(MINT32 dma)
     
     //spin_lock_irqsave(&(g_IspInfo.SpinLockRTBC),g_Flash_SpinLock);
     
-#if 0
-    //check if buffer exist
-    for(i = 0; i < ISP_RT_BUF_SIZE; i++)
-    {
-        if(g_pstRTBuf->ring_buf[rt_dma].data[i].base_pAddr == g_rt_buf_info.base_pAddr)
-        {
-            buffer_exist = 1;
-            break;
-        }
-        
-        if(g_pstRTBuf->ring_buf[rt_dma].data[i].base_pAddr == 0)
-        {
-            break;
-        }
-    }
-#endif
     
     if(buffer_exist)
     {
@@ -3144,20 +2968,6 @@ static long ISP_Buf_CTRL_FUNC(MUINT32 Param)
                         //}    
                     }
                     
-#if 0
-LOG_DBG("+LARB in DEQUE,BWL(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X),220(0x%08X)/(0x%08X),0x14(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X)", \
-    ISP_RD32(0xF0202000+0x204), \
-    ISP_RD32(0xF0202000+0x20c), \
-    ISP_RD32(0xF0202000+0x210), \
-    ISP_RD32(0xF0202000+0x214), \
-    ISP_RD32(0xF0202000+0x220), \
-    ISP_RD32(0xF0202000+0x230), \
-    ISP_RD32(SMI_LARB0+0x10), \
-    ISP_RD32(SMI_LARB1+0x10), \
-    ISP_RD32(SMI_LARB2+0x10), \
-    ISP_RD32(SMI_LARB3+0x10), \
-    ISP_RD32(SMI_LARB4+0x10));
-#endif
 
 #else
                     
@@ -3263,23 +3073,6 @@ LOG_DBG("+LARB in DEQUE,BWL(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X),220(0x%08X)/(0x%0
                     LOG_DBG("[rtbc][CLEAR]:rt_dma(%d)",rt_dma);
                 //}
                 
-#if 0
-                g_pstRTBuf->ring_buf[rt_dma].total_count= 0;
-                g_pstRTBuf->ring_buf[rt_dma].start    = 0;
-                g_pstRTBuf->ring_buf[rt_dma].empty_count= 0;
-                g_pstRTBuf->ring_buf[rt_dma].active   = 0;
-
-                for (i=0;i<ISP_RT_BUF_SIZE;i++) {
-                    if ( g_pstRTBuf->ring_buf[rt_dma].data[i].base_pAddr == g_rt_buf_info.base_pAddr ) {
-                        buffer_exist = 1;
-                        break;
-                    }
-                    //
-                    if ( g_pstRTBuf->ring_buf[rt_dma].data[i].base_pAddr == 0 ) {
-                        break;
-                    }
-                }
-#else
                 memset((char*)g_pstRTBuf,0x00,sizeof(ISP_RT_BUF_STRUCT));
                 g_prv_tstamp_s = 0;
                 g_prv_tstamp_us = 0;
@@ -3295,7 +3088,6 @@ LOG_DBG("+LARB in DEQUE,BWL(0x%08X)/(0x%08X)/(0x%08X)/(0x%08X),220(0x%08X)/(0x%0
                 g_oldImg2oAddr = DEFAULT_PA;
                 g_newImg2oAddr = DEFAULT_PA;
 
-#endif
                 break;
             case ISP_RT_BUF_CTRL_MAX:   // Add this to remove build warning                
                 break;  // Do nothing
@@ -3563,18 +3355,6 @@ static MINT32 ISP_DONE_Buf_Time(unsigned long long sec,unsigned long usec)
         LOG_DBG("[rtbc]E:fbc(0x%x/0x%x)",ISP_RD32((void *)ISP_REG_ADDR_IMGO_FBC),ISP_RD32((void *)ISP_REG_ADDR_IMG2O_FBC));
     }
     
-#if 0
-    if ( spin_trylock_bh(&(g_IspInfo.SpinLockRTBC)) ) {
-        if(g_IspInfo.DebugMask & ISP_DBG_BUF_CTRL) {
-            LOG_DBG("[rtbc]:unlock state");
-        }
-    }
-    else {
-        if(g_IspInfo.DebugMask & ISP_DBG_BUF_CTRL) {
-            LOG_DBG("[rtbc]:locked state");
-        }
-    }
-#endif
 
     //spin_lock_irqsave(&(g_IspInfo.SpinLockRTBC),g_Flash_SpinLock);
     

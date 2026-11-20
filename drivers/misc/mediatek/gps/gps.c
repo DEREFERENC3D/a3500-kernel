@@ -208,16 +208,8 @@ static inline void mt3326_gps_power(struct mt3326_gps_hardware *hw,
                 GPS_ERR("ext_power_on fail\n");
         }
         
-    #if 0
-        if (!hwEnableClock(MT6516_PDN_PERI_UART2,"MT3326"))
-            GPS_ERR("enable clock fail");
-    #endif
         mdelay(120);
     } else {    
-    #if 0   
-        if (!hwDisableClock(MT6516_PDN_PERI_UART2,"MT3326"))
-            GPS_ERR("disable clock fail\n");
-    #endif     
         if (hw->ext_power_off) {
 			      err = hw->ext_power_off(force);
             if (err)

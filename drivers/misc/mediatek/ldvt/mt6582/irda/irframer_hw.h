@@ -1,128 +1,5 @@
 #ifndef _IRFRAMER_HW_H
 #define _IRFRAMER_HW_H
-#ifdef MT6573
-	#define IRDA_IRQ MT6573_IRDA_IRQ_LINE
-	#include <mach/mt6573_reg_base.h>
-	#include <mach/mt6573_pll.h>
-	#include <mach/mt6573_gpio.h>
-	#define IRDA_base IRDA_BASE
-	
-#elif defined(MT6516)
-	#include <mach/mt6516_apmcusys.h>
-	#include <mach/mt6516_gpio.h>
-	#define IRDA_IRQ MT6516_IRDA_IRQ_LINE
-	#define mt65xx_irq_unmask MT6516_IRQUnmask
-	extern void MT6516_IRQUnmask(unsigned int);
-	#define mt65xx_irq_mask   MT6516_IRQMask
-	extern void MT6516_IRQMask(unsigned int);
-#elif defined(MT6575)
-	#define IRDA_IRQ MT6575_IRDA_IRQ_ID
-	#include <mach/mt6575_reg_base.h>
-//	#include <mach/mt6575_pll.h>
-	#include <mach/mt6575_gpio.h>
-	#include <mach/mt_clkmgr.h>
-	#include <mach/sync_write.h>
-	#include "mach/irqs.h"
-	#define  IRDA_base  (I2C2_BASE+0x1000)
-	#define DMA_GLBSTA_RUN(ch)      (0x00000001 << ((ch)))
-	#define DMA_GLBSTA_IT(ch)       (0x00000001 << ((ch)))
-	#define DMA_GDMA_LEN_MAX_MASK   (0x000FFFFF)
-
-	#define DMA_CON_DIR             (0x00000001)
-	#define DMA_CON_FPEN            (0x00000002)    /* Use fix pattern. */
-	#define DMA_CON_SLOW_EN         (0x00000004)
-	#define DMA_CON_DFIX            (0x00000008)
-	#define DMA_CON_SFIX            (0x00000010)
-	#define DMA_CON_WPEN            (0x00008000)
-	#define DMA_CON_WPSD            (0x00100000)
-	#define DMA_CON_WSIZE_1BYTE     (0x00000000)
-	#define DMA_CON_WSIZE_2BYTE     (0x01000000)
-	#define DMA_CON_WSIZE_4BYTE     (0x02000000)
-	#define DMA_CON_RSIZE_1BYTE     (0x00000000)
-	#define DMA_CON_RSIZE_2BYTE     (0x10000000)
-	#define DMA_CON_RSIZE_4BYTE     (0x20000000)
-	#define DMA_CON_BURST_MASK      (0x00070000)
-	#define DMA_CON_SLOW_OFFSET     (5)
-	#define DMA_CON_SLOW_MAX_MASK   (0x000003FF)
-
-
-
-	#define DMA_BASE_CH(n)      (AP_DMA_BASE + 0x0080 * (n + 1))
-	#define DMA_GLOBAL_INT_FLAG (AP_DMA_BASE + 0x0000) 
-
-/*
- * General DMA channel register mapping:
- */
-#define DMA_INT_FLAG(base)      (base + 0x0000)
-#define DMA_INT_EN(base)        (base + 0x0004)
-#define DMA_START(base)         (base + 0x0008)
-#define DMA_RESET(base)         (base + 0x000C)
-#define DMA_STOP(base)          (base + 0x0010)
-#define DMA_FLUSH(base)         (base + 0x0014)
-#define DMA_CON(base)           (base + 0x0018)
-#define DMA_SRC(base)           (base + 0x001C)
-#define DMA_DST(base)           (base + 0x0020)
-#define DMA_LEN1(base)          (base + 0x0024)
-#define DMA_LEN2(base)          (base + 0x0028)
-#define DMA_JUMP_ADDR(base)     (base + 0x002C)
-#define DMA_IBUFF_SIZE(base)    (base + 0x0038)
-//#define DMA_CONNECT(base)       (base + 0x0034)
-#define DMA_DBG_STAT(base)      (base + 0x0050)
-
-#define DMA_GLBSTA_RUN(ch)      (0x00000001 << ((ch)))
-#define DMA_GLBSTA_IT(ch)       (0x00000001 << ((ch)))
-#define DMA_GDMA_LEN_MAX_MASK   (0x000FFFFF)
-
-#define DMA_CON_DIR             (0x00000001)
-#define DMA_CON_FPEN            (0x00000002)    /* Use fix pattern. */
-#define DMA_CON_SLOW_EN         (0x00000004)
-#define DMA_CON_DFIX            (0x00000008)
-#define DMA_CON_SFIX            (0x00000010)
-#define DMA_CON_WPEN            (0x00008000)
-#define DMA_CON_WPSD            (0x00100000)
-#define DMA_CON_WSIZE_1BYTE     (0x00000000)
-#define DMA_CON_WSIZE_2BYTE     (0x01000000)
-#define DMA_CON_WSIZE_4BYTE     (0x02000000)
-#define DMA_CON_RSIZE_1BYTE     (0x00000000)
-#define DMA_CON_RSIZE_2BYTE     (0x10000000)
-#define DMA_CON_RSIZE_4BYTE     (0x20000000)
-#define DMA_CON_BURST_MASK      (0x00070000)
-#define DMA_CON_SLOW_OFFSET     (5)
-#define DMA_CON_SLOW_MAX_MASK   (0x000003FF)
-
-#define DMA_START_BIT           (0x00000001)
-#define DMA_STOP_BIT            (0x00000000)
-#define DMA_INT_FLAG_BIT        (0x00000001)
-#define DMA_INT_FLAG_CLR_BIT    (0x00000000)
-#define DMA_INT_EN_BIT          (0x00000001)
-#define DMA_FLUSH_BIT           (0x00000001)
-#define DMA_FLUSH_CLR_BIT       (0x00000000)
-#define DMA_UART_RX_INT_EN_BIT  (0x00000003)
-#define DMA_INT_EN_CLR_BIT      (0x00000000)
-
-	extern void irda_start_dma(void);
-	extern void irda_stop_dma(void);
-	
-struct irda_dma_conf
-{
-    unsigned int count;
-    int iten;
-    unsigned int burst;
-    int dinc;
-    int sinc;
-    unsigned int limiter;
-    unsigned int src;
-    unsigned int dst;
-    int wpen;
-    int wpsd;
-    unsigned int wplen;
-    unsigned int wpto;
-    int dir;
-};
-
-#define P_DMA_IRDA 6
-
-#endif
 
 #define TAG "Irda_Debug--->"
 #ifdef DEBUG
@@ -132,43 +9,6 @@ struct irda_dma_conf
 #endif
 
 
-#ifdef MT6573
-typedef enum {
-    DMA_FULL_CHANNEL = 0,
-    DMA_HALF_CHANNEL,
-    DMA_VIRTUAL_FIFO
-} DMA_TYPE;
-typedef struct DMA_CHAN {
-    struct mt_dma_conf config;
-    u32 baseAddr;
-    DMA_TYPE type;
-    unsigned char chan_num;
-    unsigned int registered;
-} DMA_CHAN;
-
-
-#define DMA_BASE_CH(n) (AP_DMA_BASE + 0x0080*(n + 1))
-#define DMA_GLOBAL_INT_FLAG (AP_DMA_BASE + 0x0000) 
-#define DMA_VPORT_BASE 0xF7002600
-#define DMA_VPORT_CH(ch) (DMA_VPORT_BASE + (ch - DMA_VF_START) * 0x00000100)
-#define DMA_SRC(base) (base + 0x001C)
-#define DMA_DST(base) (base + 0x0020)
-#define DMA_LEN2(base) (base + 0x0028)
-#define DMA_JUMP_ADDR(base) (base + 0x002C)
-#define DMA_LEN1(base) (base + 0x0024)
-#define DMA_CON(base) (base + 0x0018)
-#define DMA_START(base)	(base + 0x0008)
-#define DMA_FLUSH(base) (base + 0x0014)
-#define DMA_INT_FLAG(base) (base + 0x0000)
-#define DMA_INT_EN(base) (base + 0x0004)
-#define DMA_MEM_ADDR(base) (base + 0x001C)
-#define DMA_VFF_WPT(base) (base + 0x002C)
-#define DMA_VFF_RPT(base) (base + 0x0030)
-#define DMA_VFF_VALID_SIZE(base) (base + 0x003C)
-#define DMA_VFF_THRE(base) (base + 0x0028)
-#define DMA_VFF_LEN(base) (base + 0x024)
-
-#endif
 
 
 
@@ -201,11 +41,6 @@ struct mt_irda_framer
 		int direction;
 		void *buff;
 		dma_addr_t buff_dma;
-#ifdef MT6573
-		struct mt_dma_conf *dma;
-#elif defined(MT6575)
-		struct irda_dma_conf *dma;
-#endif
 		spinlock_t lock;
 		__u32 speed;
 		__u32 new_speed;
@@ -292,13 +127,6 @@ struct mt_irda_framer
 
 /*IR_BOFS*/
 #define IR_BOFS_MASK          0x007f
-#if 0
-#if defined(IRDA_SIR_BOF_0XC0)
-   #define IR_BOFS_INIVALUE      0x008b
-#else
-#define IR_BOFS_INIVALUE      0x000b
-#endif
-#endif
 /*IR_ABORT*/
 #define IR_ABORT_BIT          0x0001   /*Trx enable*/
 
@@ -307,13 +135,6 @@ struct mt_irda_framer
 #define IR_TX_EN_MODE          0x0002   /*0:3/16 , 1: 1.61us*/
 
 #define IR_TX_EN_ONESHIT       0x0008   /*HW auto clear tx_en, when frame is sent*/
-#if 0
-#if defined(IRDA_SIR_3_DIV_16)
-   #define IR_TX_EN_NORMAL        0x0001   /*3/16, don't invert signal*/
-#else
-   #define IR_TX_EN_NORMAL        0x0003   /*1.61us, don't invert signal*/
-#endif
-#endif
 #define IR_TX_EN_DISABLE       0x0000
 /*HW 6228/6229 ECO to cover Vishay transicver*/
 #define IR_TX_MIR576_ENABLE       0x8

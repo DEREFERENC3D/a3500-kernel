@@ -635,11 +635,6 @@ void Auddrv_Handle_Mem_context(AFE_MEM_CONTROL_T *Mem_Block)
         case MEM_VUL:
             HW_Cur_ReadIdx = Afe_Get_Reg(AFE_VUL_CUR);
             break;
-#if 0//            
-        case MEM_DAI:
-            HW_Cur_ReadIdx = Afe_Get_Reg(AFE_DAI_CUR);
-            break;
-#endif
         case MEM_AWB:
             HW_Cur_ReadIdx = Afe_Get_Reg(AFE_AWB_CUR);
             break;
@@ -745,14 +740,6 @@ void Auddrv_UL_Interrupt_Handler(void)  // irq2 ISR handler
         Mem_Block = &VUL_Control_context;
         Auddrv_Handle_Mem_context(Mem_Block);
     }
-#if 0 //  don't support DAI        
-    if (Afe_Dac_Con0 & 0x10)
-    {
-        //handle DAI Context
-        Mem_Block = &DAI_Control_context;
-        Auddrv_Handle_Mem_context(Mem_Block);
-    }
-#endif
     if (Afe_Dac_Con0 & 0x40)
     {
         // handle AWB Context
@@ -997,9 +984,6 @@ static int AudDrv_probe(struct platform_device *dev)
     memset((void *)&AFE_dL2_Control_context, 0, sizeof(AFE_MEM_CONTROL_T));
     memset((void *)&AWB_Control_context, 0, sizeof(AFE_MEM_CONTROL_T));
     memset((void *)&VUL_Control_context, 0, sizeof(AFE_MEM_CONTROL_T));
-#if 0 //  don't support DAI 
-    memset((void *)&DAI_Control_context, 0, sizeof(AFE_MEM_CONTROL_T));
-#endif
     memset((void *)&MODDAI_Control_context, 0, sizeof(AFE_MEM_CONTROL_T));
     memset((void *)&Suspend_reg, 0, sizeof(AudAfe_Suspend_Reg));
     memset((void *)&SPH_Ctrl_State, 0, sizeof(SPH_Control));
@@ -1007,9 +991,6 @@ static int AudDrv_probe(struct platform_device *dev)
     AFE_dL2_Control_context.MemIfNum = MEM_DL2 ;
     AWB_Control_context.MemIfNum = MEM_AWB ;
     VUL_Control_context.MemIfNum = MEM_VUL ;
-#if 0 //  don't support DAI 
-    DAI_Control_context.MemIfNum = MEM_DAI ;
-#endif
     MODDAI_Control_context.MemIfNum = MEM_MOD_DAI ;
     memset((void *)&SPH_Ctrl_State, 0, sizeof(SPH_Control));
 
@@ -1222,15 +1203,6 @@ static void AudDrv_Store_reg_AFE(AudAfe_Suspend_Reg *pBackup_reg)
     pBackup_reg->Suspend_AFE_GAIN2_CON3 =            Afe_Get_Reg(AFE_GAIN2_CON3);
     pBackup_reg->Suspend_AFE_GAIN2_CONN =            Afe_Get_Reg(AFE_GAIN2_CONN);
 
-#if 0
-    pBackup_reg->Suspend_DBG_MON0 =                  Afe_Get_Reg(DBG_MON0);
-    pBackup_reg->Suspend_DBG_MON1 =                  Afe_Get_Reg(DBG_MON1);
-    pBackup_reg->Suspend_DBG_MON2 =                  Afe_Get_Reg(DBG_MON2);
-    pBackup_reg->Suspend_DBG_MON3 =                  Afe_Get_Reg(DBG_MON3);
-    pBackup_reg->Suspend_DBG_MON4 =                  Afe_Get_Reg(DBG_MON4);
-    pBackup_reg->Suspend_DBG_MON5 =                  Afe_Get_Reg(DBG_MON5);
-    pBackup_reg->Suspend_DBG_MON6 =                  Afe_Get_Reg(DBG_MON6);
-#endif
     pBackup_reg->Suspend_AFE_ASRC_CON0 =             Afe_Get_Reg(AFE_ASRC_CON0);
     pBackup_reg->Suspend_AFE_ASRC_CON1 =             Afe_Get_Reg(AFE_ASRC_CON1);
     pBackup_reg->Suspend_AFE_ASRC_CON2 =             Afe_Get_Reg(AFE_ASRC_CON2);
@@ -1758,20 +1730,6 @@ int AudDrv_Force_Free_Buffer(int mem_type)
             VUL_Control_context.MemIfNum = MEM_VUL ;
             break;
         }
-#if 0 //   don't support DAI 
-        case MEM_DAI:
-        {
-            pAFE_MEM = &DAI_Control_context;
-            pblock =  &(pAFE_MEM->rBlock);
-#if defined(MTK_AUDIO_DYNAMIC_SRAM_SUPPORT)
-            if (Aud_Int_Mem_Flag & (1 << MEM_DAI) == 0) // Not use SRAM as memory
-#endif
-            Auddrv_Free_Dma_Memory(pAFE_MEM);
-            memset((void *)&DAI_Control_context, 0, sizeof(AFE_MEM_CONTROL_T));
-            DAI_Control_context.MemIfNum = MEM_DAI ;
-            break;
-        }
-#endif
         case MEM_MOD_DAI:
         {
             pAFE_MEM = &MODDAI_Control_context;
@@ -1918,13 +1876,6 @@ int AudDrv_Allocate_Buffer(struct file *fp, kal_uint32 Afe_Buf_Length , int mem_
             pAFE_MEM = &VUL_Control_context;
             break;
         }
-#if 0//  don't support DAI     
-        case MEM_DAI:
-        {
-            pAFE_MEM = &DAI_Control_context;
-            break;
-        }
-#endif
         case MEM_MOD_DAI:
         {
             pAFE_MEM = &MODDAI_Control_context;
@@ -1997,14 +1948,6 @@ int AudDrv_Allocate_Buffer(struct file *fp, kal_uint32 Afe_Buf_Length , int mem_
             Afe_Set_Reg(AFE_VUL_END  , pblock->pucPhysBufAddr + (Afe_Buf_Length - 1) , 0xffffffff);
             break;
         }
-#if 0 // 
-        case MEM_DAI:
-        {
-            Afe_Set_Reg(AFE_DAI_BASE , pblock->pucPhysBufAddr , 0xffffffff);
-            Afe_Set_Reg(AFE_DAI_END  , pblock->pucPhysBufAddr + (Afe_Buf_Length - 1) , 0xffffffff);
-            break;
-        }
-#endif
         case MEM_MOD_DAI:
         {
             Afe_Set_Reg(AFE_MOD_PCM_BASE , pblock->pucPhysBufAddr , 0xffffffff);
@@ -2079,20 +2022,6 @@ int AudDrv_Free_Buffer(struct file *fp, int mem_type)
             VUL_Control_context.MemIfNum = MEM_VUL ;
             break;
         }
-#if 0//  don't support DAI     
-        case MEM_DAI:
-        {
-            pAFE_MEM = &DAI_Control_context;
-            pblock =  &(pAFE_MEM->rBlock);
-#if defined(MTK_AUDIO_DYNAMIC_SRAM_SUPPORT)
-            if (Aud_Int_Mem_Flag & (1 << MEM_DAI) == 0) // Not use SRAM as memory
-#endif
-            Auddrv_Free_Dma_Memory(pAFE_MEM);
-            memset((void *)&DAI_Control_context, 0, sizeof(AFE_MEM_CONTROL_T));
-            DAI_Control_context.MemIfNum = MEM_DAI ;
-            break;
-        }
-#endif
         case MEM_MOD_DAI:
         {
             pAFE_MEM = &MODDAI_Control_context;
@@ -2194,10 +2123,6 @@ AFE_MEM_CONTROL_T *Auddrv_Get_MemIF_Context(int MEM_Type)
             return &AWB_Control_context;
         case MEM_VUL:
             return &VUL_Control_context;
-#if 0 //  don't support DAI            
-        case MEM_DAI:
-            return &DAI_Control_context;
-#endif
         case MEM_MOD_DAI:
             return &MODDAI_Control_context;
         default:
@@ -2225,12 +2150,6 @@ AFE_MEM_CONTROL_T *Auddrv_Find_MemIF_Fp(struct file *fp)
     {
         return &VUL_Control_context;
     }
-#if 0 //  don't support DAI        
-    else if (DAI_Control_context.flip == fp)
-    {
-        return &DAI_Control_context;
-    }
-#endif
     else if (MODDAI_Control_context.flip == fp)
     {
         return &MODDAI_Control_context;
@@ -2251,9 +2170,6 @@ bool Auddrv_CheckRead_MemIF_Fp(int MEM_Type)
             return false;
         case MEM_AWB:
         case MEM_VUL:
-#if 0 //  don't support DAI            
-        case MEM_DAI:
-#endif
         case MEM_MOD_DAI:
             return true;
         default:
@@ -2709,20 +2625,6 @@ int AudDrv_GET_UL_REMAIN_TIME(struct file *fp)
             samplerate = (samplerate >> 16) & 0x0000000f;
             samplerate = AudDrv_SampleRateIndexConvert(samplerate);
             break;
-#if 0//            
-        case MEM_DAI:
-            HW_Cur_ReadIdx = Afe_Get_Reg(AFE_DAI_CUR);
-            samplerate = (samplerate >> 20) & 0x00000001;
-            if (samplerate == 0)
-            {
-                samplerate = 8000;
-            }
-            else
-            {
-                samplerate = 16000;
-            }
-            break;
-#endif
         case MEM_AWB:
             HW_Cur_ReadIdx = Afe_Get_Reg(AFE_AWB_CUR);
             samplerate = (samplerate >> 12) & 0x0000000f;
@@ -2827,11 +2729,6 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
         }
         case AUDDRV_GPIO_IOCTL:
         {
-#if 0   //Debug only , Won't run @ run time     
-            mt_set_gpio_mode(GPIO136, GPIO_MODE_00);
-            mt_set_gpio_dir(GPIO136, GPIO_DIR_OUT); //output
-            mt_set_gpio_out(GPIO136, arg ? GPIO_OUT_ONE : GPIO_OUT_ZERO);
-#endif
             break;
         }
         case SET_ANAAFE_REG:
@@ -2932,22 +2829,6 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
             AudDrv_Clk_Off();
             break;
         }
-#if 0 //  don't support DAI        
-        case ALLOCATE_MEMIF_DAI:
-        {
-            AudDrv_Clk_On();
-            ret =  AudDrv_Allocate_Buffer(fp, arg, MEM_DAI);
-            AudDrv_Clk_Off();
-            break;
-        }
-        case FREE_MEMIF_DAI:
-        {
-            AudDrv_Clk_On();
-            ret =  AudDrv_Free_Buffer(fp, MEM_DAI);
-            AudDrv_Clk_Off();
-            break;
-        }
-#endif
         case ALLOCATE_MEMIF_MODDAI:
         {
             AudDrv_Clk_On();
@@ -3883,14 +3764,6 @@ ssize_t AudDrv_MEMIF_Read(struct file *fp,  char __user *data, size_t count, lof
                     ret = wait_event_interruptible_timeout(VUL_Wait_Queue, VUL_wait_queue_flag, AFE_UL_TIMEOUT);
                     break;
                 }
-#if 0 //  don't support DAI               
-                case MEM_DAI:
-                {
-                    DAI_wait_queue_flag = 0;
-                    ret = wait_event_interruptible_timeout(DAI_Wait_Queue, DAI_wait_queue_flag, AFE_UL_TIMEOUT);
-                    break;
-                }
-#endif
                 case MEM_AWB:
                 {
                     AWB_wait_queue_flag = 0;

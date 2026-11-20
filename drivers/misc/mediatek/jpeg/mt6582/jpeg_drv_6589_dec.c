@@ -3,17 +3,10 @@
 #include <linux/kernel.h>
 #include <linux/xlog.h>
 
-#if 0
-#define JPEG_MSG(...)   xlog_printk(ANDROID_LOG_DEBUG, "xlog/jpeg", __VA_ARGS__)
-#define JPEG_WRN(...)   xlog_printk(ANDROID_LOG_WARN,  "xlog/jpeg", __VA_ARGS__)
-#define JPEG_ERR(...)   xlog_printk(ANDROID_LOG_ERROR, "xlog/jpeg", __VA_ARGS__)
-#define JPEG_VEB(...)   xlog_printk(ANDROID_LOG_VERBOSE, "xlog/jpeg", __VA_ARGS__)
-#else
  #define JPEG_MSG printk
  #define JPEG_WRN printk
  #define JPEG_ERR printk
  #define JPEG_VEB printk
-#endif
 
 #include "jpeg_drv_6589_reg.h"
 
@@ -151,15 +144,6 @@ void jpeg_drv_dec_set_brz_factor(unsigned char yHScale, unsigned char yVScale, u
     //yVScale =  yVScale;
     //cbcrHScale = cbcrHScale;    
     //cbcrVScale = cbcrVScale;    
-#if 0
-    if( srcFormat == JPG_COLOR_444    ||
-        srcFormat == JPG_COLOR_422V   ||
-        srcFormat == JPG_COLOR_422Vx2 
-       ){
-      
-      cbcrHScale++;
-    }
-#endif
     u4Value = (cbcrVScale << BIT_BRZ_CV_SHIFT) | (cbcrHScale << BIT_BRZ_CH_SHIFT) | 
               (yVScale << BIT_BRZ_YV_SHIFT) | (yHScale << BIT_BRZ_YH_SHIFT) ;
     
@@ -333,10 +317,6 @@ void jpeg_drv_dec_set_comp0_du(unsigned int GrayDuNum)
 
 void jpeg_drv_dec_set_du_membership(unsigned int u4Membership, unsigned int GMC_en, unsigned int IsGray)
 {
-#if 0
-	//u4Membership = u4Membership | 0x3FFFFF24 ;//111_111_111_111_111_111_111_100_100_100
-	u4Membership = u4Membership | 0x24924924 ; // 100_100_100_100_100_100_100_100_100_100
-#endif
 	
 	if(IsGray)
 	   u4Membership = (IsGray<<31) | (GMC_en << 30) | 0x3FFFFFFC ;
@@ -770,22 +750,12 @@ void jpeg_drv_dec_rw_reg(void)
         addr = JPEG_DEC_BASE + i;
         JPEG_VEB("addr %03x(%03d) ", i, i/4);
 
-#if 0
-        // power down related register 
-        if ((i==0xC4) || (i==0xC8))
-            restore = *((volatile unsigned int*)addr);
-#endif            
         
         *((volatile unsigned int*)addr) = 0x00000000;
         JPEG_VEB("write 0x00000000 read: 0x%08x\n", *((volatile unsigned int*)addr));
         
         *((volatile unsigned int*)addr) = 0xffffffff;
         JPEG_VEB("              write 0xffffffff read: 0x%08x\n", *((volatile unsigned int*)addr));
-#if 0
-        // power down related register 
-        if ((i==0xC4) || (i==0xC8))
-            *((volatile unsigned int*)addr) = restore;
-#endif
 
         wait_pr();
     }

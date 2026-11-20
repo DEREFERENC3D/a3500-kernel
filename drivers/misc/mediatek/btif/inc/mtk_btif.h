@@ -91,25 +91,6 @@ typedef struct _mtk_btif_setting_ {
 } mtk_btif_setting, *p_mtk_btif_setting;
 /*---------------------------------------------------------------------------*/
 
-#if 0
-/*---------------------------------------------------------------------------*/
-typedef struct _mtk_btif_register_ {
-	unsigned int iir;	/*Interrupt Identification Register */
-	unsigned int lsr;	/*Line Status Register */
-	unsigned int fake_lcr;	/*Fake Lcr Regiseter */
-	unsigned int fifo_ctrl;	/*FIFO Control Register */
-	unsigned int ier;	/*Interrupt Enable Register */
-	unsigned int sleep_en;	/*Sleep Enable Register */
-	unsigned int rto_counter;	/*Rx Timeout Counter Register */
-	unsigned int dma_en;	/*DMA Enalbe Register */
-	unsigned int tri_lvl;	/*Tx/Rx Trigger Level Register */
-	unsigned int wat_time;	/*Async Wait Time Register */
-	unsigned int handshake;	/*New HandShake Mode Register */
-	unsigned int sleep_wak;	/*Sleep Wakeup Reigster */
-} mtk_btif_register, *p_mtk_btif_register;
-/*---------------------------------------------------------------------------*/
-
-#endif
 
 typedef struct _btif_buf_str_ {
 	unsigned int size;
@@ -127,18 +108,12 @@ typedef struct _mtk_btif_dma_ {
 					/*p_mtk_btif*/ void *p_btif;
 					/*BTIF pointer to which DMA belongs */
 
-#if 0
-	unsigned int channel;	/*DMA's channel */
-#endif
 
 	ENUM_BTIF_DIR dir;	/*DMA's direction: */
 	bool enable;		/*DMA enable or disable flag */
 
 	P_MTK_DMA_INFO_STR p_dma_info;	/*DMA's IRQ information */
 
-#if 0
-	mtk_dma_register register;	/*DMA's register */
-#endif
 
 	spinlock_t iolock;	/*io lock for DMA channel */
 	atomic_t entry;		/* entry count */
@@ -171,17 +146,11 @@ typedef struct _mtk_btif_ {
 	unsigned int open_counter;	/*open counter */
 	bool enable;		/*BTIF module enable flag */
 	bool lpbk_flag;		/*BTIF module enable flag */
-#if 0
-	unsigned int base;	/* BTIF controller base address */
-#endif
 
 	ENUM_BTIF_STATE state;	/*BTIF state mechanism */
 	struct mutex state_mtx;	/*lock to BTIF state mechanism's state change */
 	struct mutex ops_mtx;	/*lock to BTIF's open and close */
 
-#if 0
-	mtk_btif_register register;	/*BTIF registers */
-#endif
 
 	ENUM_BTIF_MODE tx_mode;	/* BTIF Tx channel mode */
 	ENUM_BTIF_MODE rx_mode;	/* BTIF Rx channel mode */
@@ -235,28 +204,6 @@ typedef struct _mtk_btif_ {
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#if 0
-/*---------------------------------------------------------------------------*/
-typedef struct _mtk_dma_register_ {
-	unsigned int int_flag;	/*Tx offset:0x0     Rx offset:0x0 */
-	unsigned int int_enable;	/*Tx offset:0x4     Rx offset:0x4 */
-	unsigned int dma_enable;	/*Tx offset:0x8     Rx offset:0x8 */
-	unsigned int dma_reset;	/*Tx offset:0xc     Rx offset:0xc */
-	unsigned int dma_stop;	/*Tx offset:0x10     Rx offset:0x10 */
-	unsigned int dma_flush;	/*Tx offset:0x14     Rx offset:0x14 */
-	unsigned int vff_addr;	/*Tx offset:0x1c     Rx offset:0x1c */
-	unsigned int vff_len;	/*Tx offset:0x24     Rx offset:0x24 */
-	unsigned int vff_thr;	/*Tx offset:0x28     Rx offset:0x28 */
-	unsigned int vff_wpt;	/*Tx offset:0x2c     Rx offset:0x2c */
-	unsigned int vff_rpt;	/*Tx offset:0x30     Rx offset:0x30 */
-	unsigned int rx_fc_thr;	/*Tx:No this register     Rx offset:0x34 */
-	unsigned int int_buf_size;	/*Tx offset:0x38     Rx offset:0x38 */
-	unsigned int vff_valid_size;	/*Tx offset:0x3c     Rx offset:0x3c */
-	unsigned int vff_left_size;	/*Tx offset:0x40     Rx offset:0x40 */
-	unsigned int debug_status;	/*Tx offset:0x50     Rx offset:0x50 */
-} mtk_dma_register, *p_mtk_dma_register;
-/*---------------------------------------------------------------------------*/
-#endif
 
 /*---------------------------------------------------------------------------*/
 typedef struct _mtk_btif_user_ {

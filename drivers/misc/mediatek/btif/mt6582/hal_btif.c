@@ -609,13 +609,6 @@ int hal_btif_irq_handler(P_MTK_BTIF_INFO_STR p_btif,
 	unsigned int base = p_btif->base;
 	unsigned long irq_flag = 0;
 
-#if 0
-/*check parameter valid or not*/
-	if ((NULL == p_buf) || (max_len == 0)) {
-		i_ret = ERR_INVALID_PAR;
-		return i_ret;
-	}
-#endif
 	spin_lock_irqsave(&(g_clk_cg_spinlock), irq_flag);
 #if MTK_BTIF_ENABLE_CLK_CTL
 	if (0 == clock_is_on(MTK_BTIF_CG_BIT)) {
@@ -629,16 +622,6 @@ int hal_btif_irq_handler(P_MTK_BTIF_INFO_STR p_btif,
 	iir = BTIF_READ32(BTIF_IIR(base));
 
 /*is rx interrupt exist?*/
-#if 0
-	while ((iir & BTIF_IIR_RX) && (rx_len < max_len)) {
-		rx_len +=
-		    btif_rx_irq_handler(p_btif, (p_buf + rx_len),
-					(max_len - rx_len));
-
-/*update IIR*/
-		iir = BTIF_READ32(BTIF_IIR(base));
-	}
-#endif
 
 	while (iir & (BTIF_IIR_RX | BTIF_IIR_RX_TIMEOUT)) {
 		rx_len += btif_rx_irq_handler(p_btif, p_buf, max_len);
@@ -1020,25 +1003,6 @@ int hal_btif_dump_reg(P_MTK_BTIF_INFO_STR p_btif, ENUM_BTIF_REG_ID flag)
 	BTIF_INFO_FUNC("base address: 0x%x\n", base);
 	switch (flag) {
 	case REG_BTIF_ALL:
-#if 0
-		BTIF_INFO_FUNC("BTIF_IER:0x%x\n", BTIF_READ32(BTIF_IER(base)));
-		BTIF_INFO_FUNC("BTIF_IIR:0x%x\n", BTIF_READ32(BTIF_IIR(base)));
-		BTIF_INFO_FUNC("BTIF_FAKELCR:0x%x\n",
-			       BTIF_READ32(BTIF_FAKELCR(base)));
-		BTIF_INFO_FUNC("BTIF_LSR:0x%x\n", BTIF_READ32(BTIF_LSR(base)));
-		BTIF_INFO_FUNC("BTIF_SLEEP_EN:0x%x\n",
-			       BTIF_READ32(BTIF_SLEEP_EN(base)));
-		BTIF_INFO_FUNC("BTIF_DMA_EN:0x%x\n",
-			       BTIF_READ32(BTIF_DMA_EN(base)));
-		BTIF_INFO_FUNC("BTIF_RTOCNT:0x%x\n",
-			       BTIF_READ32(BTIF_RTOCNT(base)));
-		BTIF_INFO_FUNC("BTIF_TRI_LVL:0x%x\n",
-			       BTIF_READ32(BTIF_TRI_LVL(base)));
-		BTIF_INFO_FUNC("BTIF_WAT_TIME:0x%x\n",
-			       BTIF_READ32(BTIF_WAT_TIME(base)));
-		BTIF_INFO_FUNC("BTIF_HANDSHAKE:0x%x\n",
-			       BTIF_READ32(BTIF_HANDSHAKE(base)));
-#endif
 		btif_dump_array("BTIF register", reg_map, sizeof(reg_map));
 		break;
 	default:

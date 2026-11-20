@@ -278,13 +278,8 @@
 
 #define fgIsVDecNorm(arg) ((arg >= VID_DEC_SPEED_TYPE_PAUSE) && (arg <= VID_DEC_SPEED_TYPE_NORMAL))
 
-#if 0//def NONCACHE
-#define MpvAddrWithNonCacheOffset(arg) CACHE(arg)
-#define MpvAddrWithoutNonCacheOffset(arg) NONCACHE(arg)
-#else
 #define MpvAddrWithNonCacheOffset(arg) (arg)//((arg & 0x0FFFFFFF) + 0xC0000000)
 #define MpvAddrWithoutNonCacheOffset(arg) (arg)//(arg & 0x0FFFFFFF)
-#endif
 
 
 #endif /* _MPV_TYPE_H_ */

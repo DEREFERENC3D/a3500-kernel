@@ -463,40 +463,6 @@ void  DPI_MIPI_clk_setting(unsigned int mipi_pll_clk_ref,unsigned int mipi_pll_c
 
 DPI_STATUS DPI_Init(BOOL isDpiPoweredOn)
 {
-#if 0
-    printk("[DPI] DPI_Init for 6582 Test Har Code setting\n");
-    unsigned int reg_value = 0;
-    
-    mipi_tx_phy_config(0, 1, 1 ,1, 1);
-    // ???
-    //OUTREG32(0xF4000108, 0xC);
-    //OUTREG32(0xF4000118, 0xC);
-  
-    //DPI_PowerOn();
-    //OUTREG32(0x1400f000,0x1);
-    //OUTREG32(0x1400f000,0x41);
-
-    //Set Colorbar Output
-    //OUTREG32(DPI_BASE + 0x04C, 0x41);
-	
-    OUTREG32(0xf0005000 + 0xCC4, 0x0000000f);
-    OUTREG32(0xf0005000 + 0xB18, 0x00000ff0);
-    OUTREG32(0xf0005000 + 0xB14, 0x00000660);
-    OUTREG32(0xf0005000 + 0xB28, 0x000000ff);
-    OUTREG32(0xf0005000 + 0xB24, 0x00000066);
-
-    //DPI_Init_PLL(0, 0x80000081, 0x800fb333);
-    DPI_DumpRegisters();
-    DISP_LOG_PRINT(ANDROID_LOG_WARN, "DPI", "0xF4000110 : 0x%08x\n", INREG32(0xF4000110));
-    DISP_LOG_PRINT(ANDROID_LOG_WARN, "DPI", "0xF000623C : 0x%08x\n", INREG32(0xF000623C));
-
-    //for(reg_value = 0;  reg_value < 10000; reg_value)
-    //{
-    //	udelay(1000);
-    //	DISP_LOG_PRINT(ANDROID_LOG_WARN, "DPI", "DPI+%04x : 0x%08x\n", 0x40, INREG32(DPI_BASE + 0x40));
-    //}
-
-#else
     //DPI_REG_CNTL cntl;
     //DPI_REG_EMBSYNC_SETTING embsync;
 
@@ -545,7 +511,6 @@ DPI_STATUS DPI_Init(BOOL isDpiPoweredOn)
     }
 #endif
 	LCD_W2M_NeedLimiteSpeed(TRUE);
-#endif
     return DPI_STATUS_OK;
 }
 EXPORT_SYMBOL(DPI_Init);
@@ -592,34 +557,6 @@ DPI_STATUS DPI_Init_PLL(unsigned int mipi_pll_clk_ref,unsigned int mipi_pll_clk_
 
 DPI_MIPI_clk_setting( mipi_pll_clk_ref,  mipi_pll_clk_div1, mipi_pll_clk_div2);
 	
-#if 0
-    MIPITX_CFG0_REG con0 = DSI_PHY_REG_DPI->MIPITX_CON0;
-    MIPITX_CFG1_REG con1 = DSI_PHY_REG_DPI->MIPITX_CON1;
-#ifdef DPI_MIPI_API 
-	enable_mipi(MT65XX_MIPI_TX, "DPI");
-#endif
-    #ifdef BUILD_UBOOT
-	OUTREG16(0xc2080858, 0x8000);
-	OUTREG16(0xc20a3824, 0x4008);
-	MASKREG16(0xc20a380c, 0x000c, 0x0000); //default value is 0x7008, but should be 0x7000
-	#else
-	OUTREG16(0xf2080858, 0x8000); //??
-	OUTREG16(0xf20a3824, 0x4008);
-	MASKREG16(0xf20a380c, 0x000c, 0x0000); //default value is 0x7008, but should be 0x7000
-	MASKREG16(PLL_SOURCE, 0x0010, 0x0010); //
-	#endif
-    con1.RG_PLL_DIV1 = mipi_pll_clk_div1;
-    con1.RG_PLL_DIV2 = mipi_pll_clk_div2;
-
-	con0.PLL_CLKR_EN = 1;
-	con0.PLL_EN = 1;
-	con0.RG_DPI_EN = 1;
-
-    // Set to DSI_PHY_REG
-    
-    OUTREG32(&DSI_PHY_REG_DPI->MIPITX_CON0, AS_UINT32(&con0));
-    OUTREG32(&DSI_PHY_REG_DPI->MIPITX_CON1, AS_UINT32(&con1));
-#else
 //#ifndef BUILD_UBOOT
 #if 0
 	OUTREG32(DISPSYS_BASE + 0x34, 0x02);//set RDMA0 to DPI
@@ -689,7 +626,6 @@ DPI_MIPI_clk_setting( mipi_pll_clk_ref,  mipi_pll_clk_div1, mipi_pll_clk_div2);
     //release mutex0
     // OUTREG32(MUTEX_BASE + 0x24, 0);
     // while((INREG32(MUTEX_BASE + 0x24)&&0x02)!=0){} // polling until mutex lock complete
-#endif
 #endif
 	return DPI_STATUS_OK;
 }
@@ -789,10 +725,6 @@ DPI_STATUS DPI_EnableClk()
     OUTREG32(&DPI_REG->DPI_EN, AS_UINT32(&en));
    //release mutex0
 //#ifndef BUILD_UBOOT
-#if 0
-    OUTREG32(DISP_MUTEX_BASE + 0x24, 0);
-    while((INREG32(DISP_MUTEX_BASE + 0x24)&0x02)!=0){} // polling until mutex lock complete
-#endif
     return DPI_STATUS_OK;
 }
 EXPORT_SYMBOL(DPI_EnableClk);
@@ -1105,135 +1037,6 @@ EXPORT_SYMBOL(DPI_GetCurrentFB);
 
 DPI_STATUS DPI_Capture_Framebuffer(unsigned int pvbuf, unsigned int bpp)
 {
-#if 0
-    unsigned int i = 0;
-    unsigned char *fbv;
-    unsigned int fbsize = 0;
-    unsigned int dpi_fb_bpp = 0;
-    unsigned int w,h;
-	BOOL dpi_needPowerOff = FALSE;
-	if(!s_isDpiPowerOn){
-		DPI_PowerOn();
-		dpi_needPowerOff = TRUE;
-		LCD_WaitForNotBusy();
-	    LCD_WaitDPIIndication(FALSE);
-		LCD_FBReset();
-    	LCD_StartTransfer(TRUE);
-		LCD_WaitDPIIndication(TRUE);
-	}
-
-    if(pvbuf == 0 || bpp == 0)
-    {
-        DISP_LOG_PRINT(ANDROID_LOG_ERROR, "DPI", "DPI_Capture_Framebuffer, ERROR, parameters wrong: pvbuf=0x%08x, bpp=%d\n", pvbuf, bpp);
-        return DPI_STATUS_OK;
-    }
-
-    if(DPI_FBGetFormat() == DPI_FB_FORMAT_RGB565)
-    {
-        dpi_fb_bpp = 16;
-    }
-    else if(DPI_FBGetFormat() == DPI_FB_FORMAT_RGB888)
-    {
-        dpi_fb_bpp = 24;
-    }
-    else
-    {
-        DISP_LOG_PRINT(ANDROID_LOG_ERROR, "DPI", "DPI_Capture_Framebuffer, ERROR, dpi_fb_bpp is wrong: %d\n", dpi_fb_bpp);
-        return DPI_STATUS_OK;
-    }
-
-    w = lcm_params->width;
-    h = lcm_params->height;
-    fbsize = w*h*dpi_fb_bpp/8;
-	if(dpi_needPowerOff)
-    	fbv = (unsigned char*)ioremap_cached((unsigned int)DPI_REG->FB[0].ADDR, fbsize);
-	else
-    	fbv = (unsigned char*)ioremap_cached((unsigned int)DPI_REG->FB[DPI_GetCurrentFB()].ADDR, fbsize);
-
-    DISP_LOG_PRINT(ANDROID_LOG_INFO, "DPI", "current fb count is %d\n", DPI_GetCurrentFB());
-
-    if(bpp == 32 && dpi_fb_bpp == 24)
-    {
-    	if(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)){
-			unsigned int pix_count = w * h - 1;
-    		for(i = 0;i < w*h; i++)
-    		{
-            	*(unsigned int*)(pvbuf+ (pix_count - i) * 4) = 0xff000000|fbv[i*3]|(fbv[i*3+1]<<8)|(fbv[i*3+2]<<16);
-    		}
-		}
-		else{
-    		for(i = 0;i < w*h; i++)
-    		{
-            	*(unsigned int*)(pvbuf+i*4) = 0xff000000|fbv[i*3]|(fbv[i*3+1]<<8)|(fbv[i*3+2]<<16);
-    		}
-		}
-    }
-    else if(bpp == 32 && dpi_fb_bpp == 16)
-    {
-        unsigned int t;
-		unsigned short* fbvt = (unsigned short*)fbv;
-
-		if(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)){
-			unsigned int pix_count = w * h - 1;
-
-    		for(i = 0;i < w*h; i++)
-    		{
-				t = fbvt[i];
-            	*(unsigned int*)(pvbuf+ (pix_count - i) * 4) = 0xff000000|((t&0x001F)<<3)|((t&0x07E0)<<5)|((t&0xF800)<<8);
-    		}
-		}
-		else{
-        	for(i = 0;i < w*h; i++)
-    		{
-	    		t = fbvt[i];
-            	*(unsigned int*)(pvbuf+i*4) = 0xff000000|((t&0x001F)<<3)|((t&0x07E0)<<5)|((t&0xF800)<<8);
-    		}
-		}
-    }
-    else if(bpp == 16 && dpi_fb_bpp == 16)
-    {
-		if(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)){
-			unsigned int pix_count = w * h - 1;
-			unsigned short* fbvt = (unsigned short*)fbv;
-    		for(i = 0;i < w*h; i++)
-    		{
-            	*(unsigned short*)(pvbuf+ (pix_count - i) * 2) = fbvt[i];
-    		}
-		}
-		else
-    		memcpy((void*)pvbuf, (void*)fbv, fbsize);
-    }
-    else if(bpp == 16 && dpi_fb_bpp == 24)
-    {
-		if(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)){
-			unsigned int pix_count = w * h - 1;
-    		for(i = 0;i < w*h; i++)
-    		{
-            	*(unsigned short*)(pvbuf+ (pix_count - i) * 2) = ((fbv[i*3+0]&0xF8)>>3)|
-	            	                        				((fbv[i*3+1]&0xFC)<<3)|
-														    ((fbv[i*3+2]&0xF8)<<8);
-    		}
-		}
-		else{
-    		for(i = 0;i < w*h; i++)
-    		{
-            	*(unsigned short*)(pvbuf+i*2) = ((fbv[i*3+0]&0xF8)>>3)|
-	            	                        ((fbv[i*3+1]&0xFC)<<3)|
-						    				((fbv[i*3+2]&0xF8)<<8);
-    		}
-		}
-    }
-    else
-    {
-    	DISP_LOG_PRINT(ANDROID_LOG_ERROR, "DPI", "DPI_Capture_Framebuffer, bpp:%d & dpi_fb_bpp:%d is not supported now\n", bpp, dpi_fb_bpp);
-    }
-
-    iounmap(fbv);
-
-	if(dpi_needPowerOff){
-		DPI_PowerOff();
-	}
-#else
 	unsigned int mva;
     unsigned int ret = 0;
     M4U_PORT_STRUCT portStruct;
@@ -1310,7 +1113,6 @@ DPI_STATUS DPI_Capture_Framebuffer(unsigned int pvbuf, unsigned int bpp)
                     pvbuf,
                         lcm_params->height*lcm_params->width*bpp/8,
                         mva);
-#endif
 
     return DPI_STATUS_OK;
 }

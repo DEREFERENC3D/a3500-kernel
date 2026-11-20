@@ -128,15 +128,6 @@ typedef struct
 #define MIN_FRAME_RATE							12
 
 //s_porting add
-#if 0
-/* SENSOR FULL SIZE */
-	#define IMAGE_SENSOR_FULL_WIDTH						(2592-16)
-	#define IMAGE_SENSOR_FULL_HEIGHT					(1944-14)
-
-/* SENSOR PV SIZE */
-	#define IMAGE_SENSOR_PV_WIDTH						(1296-8)//(1280-4)
-	#define IMAGE_SENSOR_PV_HEIGHT						(972-8)//(960-4)
-#else
 //to fit current isp setting mech.
 /* SENSOR FULL SIZE */
 	#define IMAGE_SENSOR_FULL_WIDTH						(2592-32)
@@ -145,7 +136,6 @@ typedef struct
 /* SENSOR PV SIZE */
 	#define IMAGE_SENSOR_PV_WIDTH						(1288-8)//(1280-4)
 	#define IMAGE_SENSOR_PV_HEIGHT						(970-10)//(960-4)
-#endif
 //e_porting add
 
 /* SENSOR SCALER FACTOR */

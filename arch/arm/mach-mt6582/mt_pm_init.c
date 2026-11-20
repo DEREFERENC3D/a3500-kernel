@@ -75,41 +75,6 @@ EXPORT_SYMBOL(mt_get_emi_freq);
 
 unsigned int mt_get_bus_freq(void)
 {
-#if 0
-    int output = 0;
-    unsigned int temp, clk26cali_0, clk_cfg_9, clk_misc_cfg_1, clk26cali_2;
-
-    clk26cali_0 = DRV_Reg32(CLK26CALI_0);
-    pminit_write(CLK26CALI_0, clk26cali_0 | 0x80); // enable fmeter_en
-
-    clk_misc_cfg_1 = DRV_Reg32(CLK_MISC_CFG_1);
-    pminit_write(CLK_MISC_CFG_1, 0x00FFFFFF); // select divider
-
-    clk_cfg_9 = DRV_Reg32(CLK_CFG_9);
-    pminit_write(CLK_CFG_9, (1 << 16)); // select ckgen_cksw
-
-    temp = DRV_Reg32(CLK26CALI_0);
-    pminit_write(CLK26CALI_0, temp | 0x10); // start fmeter
-
-    /* wait frequency meter finish */
-    while (DRV_Reg32(CLK26CALI_0) & 0x10)
-    {
-        //printk("wait for bus frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
-        mdelay(10);
-    }
-
-    temp = DRV_Reg32(CLK26CALI_2) & 0xFFFF;
-
-    output = (temp * 26000) / 1024; // Khz
-
-    pminit_write(CLK_CFG_9, clk_cfg_9);
-    pminit_write(CLK_MISC_CFG_1, clk_misc_cfg_1);
-    pminit_write(CLK26CALI_0, clk26cali_0);
-
-    //printk("CLK26CALI = 0x%x, bus frequency = %d Khz\n", temp, output);
-
-    return output;
-#else
     unsigned int mainpll_con0, mainpll_con1, main_diff;
     unsigned int clk_cfg_0, bus_clk;
     unsigned int output_freq = 0;
@@ -163,7 +128,6 @@ unsigned int mt_get_bus_freq(void)
     //printk("bus frequency = %d Khz\n", bus_clk);
 
     return bus_clk; // Khz
-#endif
 }
 EXPORT_SYMBOL(mt_get_bus_freq);
 

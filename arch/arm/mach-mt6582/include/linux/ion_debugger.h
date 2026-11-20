@@ -172,29 +172,4 @@ typedef struct ion_client_usage_record
 	struct ion_record_basic_info tracking_info;
 	int fd;	 
 }ion_client_usage_record_t;
-#if 0
-struct ion_buffer_record
-{
-        struct ion_buffer_record *next;
-        struct ion_buffer *buffer;
-        unsigned int heap_type;
-        union{
-                void *priv_virt;
-                unsigned long priv_phys;
-        };
-        struct ion_buffer_usage_record *buffer_using_list;
-        struct ion_buffer_usage_record *buffer_freed_list;
-        struct mutex ion_buffer_usage_mutex;
-        struct ion_address_usage_record *address_using_list;
-        struct ion_address_usage_record *address_freed_list;
-        struct mutex ion_address_usage_mutex;
-        struct ion_fd_usage_record *fd_using_list;
-        struct ion_fd_usage_record *fd_freed_list;
-        struct mutex ion_fd_usage_mutex;
-};
-extern void *ion_get_list(struct ion_buffer_record *buffer, unsigned int list_type);
-extern struct ion_buffer_usage_record *ion_get_inuse_buffer_record();
-extern struct ion_buffer_usage_record *ion_get_freed_buffer_record();
-extern unsigned int ion_get_data_from_record(void *record,unsigned int data_type);
-#endif
 #endif

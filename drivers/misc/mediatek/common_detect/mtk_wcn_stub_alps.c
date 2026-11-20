@@ -76,14 +76,6 @@ static wmt_deep_idle_ctrl_cb cmb_stub_deep_idle_ctrl_cb = NULL;
  * functions, and type definition after modifying other kernel built-in modules,
  * such as AUDIO. [FixMe][GeorgeKuo]
  */
- #if 0
-static CMB_STUB_AIF_X audio2aif[] = {
-    [COMBO_AUDIO_STATE_0] = CMB_STUB_AIF_0,
-    [COMBO_AUDIO_STATE_1] = CMB_STUB_AIF_1,
-    [COMBO_AUDIO_STATE_2] = CMB_STUB_AIF_2,
-    [COMBO_AUDIO_STATE_3] = CMB_STUB_AIF_3,
-};
-#endif
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
@@ -224,24 +216,11 @@ static int
 _mt_combo_plt_do_deep_idle(COMBO_IF src, int enter) {
     int ret = -1;
 
-#if 0
-    const char *combo_if_name[] =
-    {   "COMBO_IF_UART",
-        "COMBO_IF_MSDC"
-    };
-#endif
 
     if(src != COMBO_IF_UART && src!= COMBO_IF_MSDC && src != COMBO_IF_BTIF){
         CMB_STUB_LOG_WARN("src = %d is error\n", src);
         return ret;
     }
-#if 0
-    if(src >= 0 && src < COMBO_IF_MAX){
-        CMB_STUB_LOG_INFO("src = %s, to enter deep idle? %d \n",
-            combo_if_name[src],
-            enter);
-    }
-#endif
     /*TODO: For Common SDIO configuration, we need to do some judgement between STP and WIFI
             to decide if the msdc will enter deep idle safely*/
 

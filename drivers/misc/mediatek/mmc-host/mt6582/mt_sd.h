@@ -1267,13 +1267,6 @@ static inline unsigned int uffs(unsigned int x)
 #define sdr_read8(reg)           __raw_readb((const volatile void *)reg)
 #define sdr_read16(reg)          __raw_readw((const volatile void *)reg)
 #define sdr_read32(reg)          __raw_readl((const volatile void *)reg)
-#if 0
-#define sdr_write8(reg,val)      __raw_writeb(val,reg)
-#define sdr_write16(reg,val)     __raw_writew(val,reg)
-#define sdr_write32(reg,val)     __raw_writel(val,reg)
-#define sdr_set_bits(reg,bs)     ((*(volatile u32*)(reg)) |= (u32)(bs))
-#define sdr_clr_bits(reg,bs)     ((*(volatile u32*)(reg)) &= ~((u32)(bs)))
-#else
 #define sdr_write8(reg,val)      mt65xx_reg_sync_writeb(val,reg)
 #define sdr_write16(reg,val)     mt65xx_reg_sync_writew(val,reg)
 #define sdr_write32(reg,val)     mt65xx_reg_sync_writel(val,reg)
@@ -1290,7 +1283,6 @@ do{\
 		sdr_write32(reg,tv); \
 	}while(0)
 
-#endif
 
 #define sdr_set_field(reg,field,val) \
     do {	\

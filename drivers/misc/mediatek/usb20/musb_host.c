@@ -172,19 +172,6 @@ static inline void musb_h_tx_start(struct musb_hw_ep *ep)
 	}
 
 }
-#if 0
-static inline void musb_h_tx_dma_start(struct musb_hw_ep *ep)
-{
-	u16	txcsr;
-
-	/* NOTE: no locks here; caller should lock and select EP */
-	txcsr = musb_readw(ep->regs, MUSB_TXCSR);
-	txcsr |= MUSB_TXCSR_DMAENAB | MUSB_TXCSR_H_WZC_BITS;
-	if (is_cppi_enabled())
-		txcsr |= MUSB_TXCSR_DMAMODE;
-	musb_writew(ep->regs, MUSB_TXCSR, txcsr);
-}
-#endif
 static void musb_ep_set_qh(struct musb_hw_ep *ep, int is_in, struct musb_qh *qh)
 {
 	if (is_in != 0 || ep->is_shared_fifo)
@@ -329,23 +316,6 @@ __acquires(musb->lock)
 static inline void musb_save_toggle(struct musb_qh *qh, int is_in,
 				    struct urb *urb)
 {
-#if 0
-	void __iomem		*epio = qh->hw_ep->regs;
-	u16			csr;
-
-	/*
-	 * FIXME: the current Mentor DMA code seems to have
-	 * problems getting toggle correct.
-	 */
-
-	if (is_in)
-		csr = musb_readw(epio, MUSB_RXCSR) & MUSB_RXCSR_H_DATATOGGLE;
-	else
-		csr = musb_readw(epio, MUSB_TXCSR) & MUSB_TXCSR_H_DATATOGGLE;
-
-	usb_settoggle(urb->dev, qh->epnum, !is_in, csr ? 1 : 0);
-
-#endif
 
     struct musb *musb = qh->hw_ep->musb;
     u8 epnum = qh->hw_ep->epnum;
@@ -828,15 +798,7 @@ static void musb_ep_program(struct musb *musb, u8 epnum,
 					| MUSB_TXCSR_TXPKTRDY
 					);
 			//csr |= MUSB_TXCSR_MODE;
-#if 0
-			if (usb_gettoggle(urb->dev, qh->epnum, 1))
-				csr |= MUSB_TXCSR_H_WR_DATATOGGLE
-					| MUSB_TXCSR_H_DATATOGGLE;
-			else
-				csr |= MUSB_TXCSR_CLRDATATOG;
-#else
                         musb_set_toggle (qh, !is_out, urb);//wz add to init the toggle
-#endif
 			musb_writew(epio, MUSB_TXCSR, csr);
 			/* REVISIT may need to clear FLUSHFIFO ... */
 			csr &= ~MUSB_TXCSR_DMAMODE;
@@ -923,13 +885,6 @@ finish:
 
 		if (hw_ep->rx_reinit) {
 			musb_rx_reinit(musb, qh, hw_ep);
-#if 0
-			/* init new state: toggle and NYET, maybe DMA later */
-			if (usb_gettoggle(urb->dev, qh->epnum, 0))
-				csr = MUSB_RXCSR_H_WR_DATATOGGLE
-					| MUSB_RXCSR_H_DATATOGGLE;
-			else
-#endif
 				csr = 0;
                          musb_set_toggle (qh, !is_out, urb);//wz add to init the toggle
 			if (qh->type == USB_ENDPOINT_XFER_INT)
@@ -953,37 +908,6 @@ finish:
         if (/*(is_cppi_enabled() || tusb_dma_omap()) &&*/ dma_channel) {
 		/* Candidate for DMA */
 //ALPS00798316, Enable DMA RxMode1
-#if 0
-//ALPS00798316, Enable DMA RxMode1
-                dma_channel->actual_len = 0L;
-                qh->segsize = len;
-
-                dma_channel->desired_mode = 0;//for MT65xx, Rx is configured as DMA mode 0!
-                csr &=~MUSB_RXCSR_DMAENAB; //disable DMAENAB for the func:musb_host_rx
-
-                /* AUTOREQ is in a DMA register */
-                musb_writew(hw_ep->regs, MUSB_RXCSR, csr);
-		csr = musb_readw(hw_ep->regs, MUSB_RXCSR);
-#if 0
-
-			/*
-			 * Unless caller treats short RX transfers as
-			 * errors, we dare not queue multiple transfers.
-                 */
-			dma_ok = dma_controller->channel_program(dma_channel,
-					packet_sz, !(urb->transfer_flags &
-						     URB_SHORT_NOT_OK),
-                                                        urb->transfer_dma + offset,
-                                                        qh->segsize);
-                if (!dma_ok) {
-				dma_controller->channel_release(dma_channel);
-				hw_ep->rx_channel = dma_channel = NULL;
-                } else
-                    csr |= MUSB_RXCSR_DMAENAB;
-#endif          
-
-//ALPS00798316, Enable DMA RxMode1
-#else
 			dma_channel->actual_len = 0L;
 			qh->segsize = len;
 
@@ -1079,7 +1003,6 @@ finish:
 
 
 			}
-#endif
 //ALPS00798316, Enable DMA RxMode1
         }
 
@@ -1477,45 +1400,6 @@ void musb_host_tx(struct musb *musb, u8 epnum)
 		 * switch back to mode 0 to get that interrupt; we'll come
 		 * back here once it happens.
 		 */
-#if 0
-		if (tx_csr & MUSB_TXCSR_DMAMODE) {
-			/*
-			 * We shouldn't clear DMAMODE with DMAENAB set; so
-			 * clear them in a safe order.  That should be OK
-			 * once TXPKTRDY has been set (and I've never seen
-			 * it being 0 at this moment -- DMA interrupt latency
-			 * is significant) but if it hasn't been then we have
-			 * no choice but to stop being polite and ignore the
-			 * programmer's guide... :-)
-			 *
-			 * Note that we must write TXCSR with TXPKTRDY cleared
-			 * in order not to re-trigger the packet send (this bit
-			 * can't be cleared by CPU), and there's another caveat:
-			 * TXPKTRDY may be set shortly and then cleared in the
-			 * double-buffered FIFO mode, so we do an extra TXCSR
-			 * read for debouncing...
-			 */
-			tx_csr &= musb_readw(epio, MUSB_TXCSR);
-			if (tx_csr & MUSB_TXCSR_TXPKTRDY) {
-				tx_csr &= ~(MUSB_TXCSR_DMAENAB |
-					    MUSB_TXCSR_TXPKTRDY);
-				musb_writew(epio, MUSB_TXCSR,
-					    tx_csr | MUSB_TXCSR_H_WZC_BITS);
-			}
-			tx_csr &= ~(MUSB_TXCSR_DMAMODE |
-				    MUSB_TXCSR_TXPKTRDY);
-			musb_writew(epio, MUSB_TXCSR,
-				    tx_csr | MUSB_TXCSR_H_WZC_BITS);
-
-			/*
-			 * There is no guarantee that we'll get an interrupt
-			 * after clearing DMAMODE as we might have done this
-			 * too late (after TXPKTRDY was cleared by controller).
-			 * Re-read TXCSR as we have spoiled its previous value.
-			 */
-			tx_csr = musb_readw(epio, MUSB_TXCSR);
-		}
-#endif
 
 		/*
 		 * We may get here from a DMA completion or TXPKTRDY interrupt.
@@ -1585,15 +1469,6 @@ void musb_host_tx(struct musb *musb, u8 epnum)
 		urb->actual_length = qh->offset;
 		musb_advance_schedule(musb, urb, hw_ep, USB_DIR_OUT);
 		return;
-#if 0
-	} else if ((usb_pipeisoc(pipe) || transfer_pending) && dma) {
-		if (musb_tx_dma_program(musb->dma_controller, hw_ep, qh, urb,
-				offset, length)) {
-			if (is_cppi_enabled() || tusb_dma_omap())
-				musb_h_tx_dma_start(hw_ep);
-			return;
-		}
-#endif
 	} else	if (tx_csr & MUSB_TXCSR_DMAENAB) {
 		DBG(4, "not complete, but DMA enabled?\n");
 		return;
@@ -1785,49 +1660,16 @@ void musb_host_rx(struct musb *musb, u8 epnum)
 	 */
 
 	/* FIXME this is _way_ too much in-line logic for Mentor DMA */
-#if 0
-	if (rx_csr & MUSB_RXCSR_H_REQPKT)  {
-		/* REVISIT this happened for a while on some short reads...
-		 * the cleanup still needs investigation... looks bad...
-		 * and also duplicates dma cleanup code above ... plus,
-		 * shouldn't this be the "half full" double buffer case?
-		 */
-		if (dma_channel_status(dma) == MUSB_DMA_STATUS_BUSY) {
-			dma->status = MUSB_DMA_STATUS_CORE_ABORT;
-			(void) musb->dma_controller->channel_abort(dma);
-			xfer_len = dma->actual_len;
-			done = true;
-		}
-
-		DBG(2, "RXCSR%d %04x, reqpkt, len %zu%s\n", epnum, rx_csr,
-				xfer_len, dma ? ", dma" : "");
-		rx_csr &= ~MUSB_RXCSR_H_REQPKT;
-
-		musb_ep_select(mbase, epnum);
-		musb_writew(epio, MUSB_RXCSR,
-				MUSB_RXCSR_H_WZC_BITS | rx_csr);
-	}
-#endif
 	if (dma && (rx_csr & MUSB_RXCSR_DMAENAB)) {
 		xfer_len = dma->actual_len;
 
 //ALPS00798316, Enable DMA RxMode1
 		//DBG(7, "urb->actual_length = %d, xfer_len = %d, urb->transfer_buffer_length = %d, dma->actual_len=%d, qh->maxpacket = %d \n", urb->actual_length, xfer_len, urb->transfer_buffer_length, dma->actual_len, qh->maxpacket);
-		#if 0
-//ALPS00798316, Enable DMA RxMode1
-		val &= ~(MUSB_RXCSR_DMAENAB
-			| MUSB_RXCSR_H_AUTOREQ
-			| MUSB_RXCSR_AUTOCLEAR
-			| MUSB_RXCSR_RXPKTRDY);
-
-//ALPS00798316, Enable DMA RxMode1
-		#else
 		val &= ~(MUSB_RXCSR_DMAENAB
 			| MUSB_RXCSR_H_AUTOREQ
 			| MUSB_RXCSR_AUTOCLEAR
 			| MUSB_RXCSR_RXPKTRDY
 			| MUSB_RXCSR_DMAMODE);//should be clear!
-		#endif
 //ALPS00798316, Enable DMA RxMode1
 
 		musb_writew(hw_ep->regs, MUSB_RXCSR, val);
@@ -1932,24 +1774,6 @@ void musb_host_rx(struct musb *musb, u8 epnum)
 			}
 
 			dma->desired_mode = 0;
-#if 0
-//#ifdef USE_MODE1
-			/* because of the issue below, mode 1 will
-			 * only rarely behave with correct semantics.
-			 */
-			if ((urb->transfer_flags &
-						URB_SHORT_NOT_OK)
-				&& (urb->transfer_buffer_length -
-						urb->actual_length)
-					> qh->maxpacket)
-				dma->desired_mode = 1;
-			if (rx_count < hw_ep->max_packet_sz_rx) {
-				length = rx_count;
-				dma->desired_mode = 0;
-			} else {
-				length = urb->transfer_buffer_length;
-			}
-#endif
 
 /* Disadvantage of using mode 1:
  *	It's basically usable only for mass storage class; essentially all
@@ -2119,39 +1943,6 @@ static int musb_schedule(
 		hw_ep = musb->endpoints + epnum;//got the right ep
 		DBG(3,"musb_schedule:: find a hw_ep%d\n",hw_ep->epnum);
 		break;
-#if 0
-		if (is_in)
-			diff = hw_ep->max_packet_sz_rx;
-		else
-			diff = hw_ep->max_packet_sz_tx;
-		diff -= (qh->maxpacket * qh->hb_mult);
-
-		if (diff >= 0 && best_diff > diff) {
-
-			/*
-			 * Mentor controller has a bug in that if we schedule
-			 * a BULK Tx transfer on an endpoint that had earlier
-			 * handled ISOC then the BULK transfer has to start on
-			 * a zero toggle.  If the BULK transfer starts on a 1
-			 * toggle then this transfer will fail as the mentor
-			 * controller starts the Bulk transfer on a 0 toggle
-			 * irrespective of the programming of the toggle bits
-			 * in the TXCSR register.  Check for this condition
-			 * while allocating the EP for a Tx Bulk transfer.  If
-			 * so skip this EP.
-			 */
-			hw_ep = musb->endpoints + epnum;
-			toggle = usb_gettoggle(urb->dev, qh->epnum, !is_in);
-			txtype = (musb_readb(hw_ep->regs, MUSB_TXTYPE)
-					>> 4) & 0x3;
-			if (!is_in && (qh->type == USB_ENDPOINT_XFER_BULK) &&
-				toggle && (txtype == USB_ENDPOINT_XFER_ISOC))
-				continue;
-
-			best_diff = diff;
-			best_end = epnum;
-		}
-#endif
 	}
 
 	if(!hw_ep){
@@ -2159,30 +1950,6 @@ static int musb_schedule(
         return -1;
         }
 
-#if 0
-	/* use bulk reserved ep1 if no other ep is free */
-	if (best_end < 0 && qh->type == USB_ENDPOINT_XFER_BULK) {
-		hw_ep = musb->bulk_ep;
-		if (is_in)
-			head = &musb->in_bulk;
-		else
-			head = &musb->out_bulk;
-
-		/* Enable bulk RX/TX NAK timeout scheme when bulk requests are
-		 * multiplexed.  This scheme doen't work in high speed to full
-		 * speed scenario as NAK interrupts are not coming from a
-		 * full speed device connected to a high speed device.
-		 * NAK timeout interval is 8 (128 uframe or 16ms) for HS and
-		 * 4 (8 frame or 8ms) for FS device.
-		 */
-		if (qh->dev)
-			qh->intv_reg =
-				(USB_SPEED_HIGH == qh->dev->speed) ? 8 : 4;
-		goto success;
-	} else if (best_end < 0) {
-		return -ENOSPC;
-	}
-#endif
 
 	idle = 1;
 	qh->mux = 0;
@@ -2272,21 +2039,6 @@ static int musb_urb_enqueue(
 	 * Some musb cores don't support high bandwidth ISO transfers; and
 	 * we don't (yet!) support high bandwidth interrupt transfers.
 	 */
-#if 0
-	qh->hb_mult = 1 + ((qh->maxpacket >> 11) & 0x03);
-	if (qh->hb_mult > 1) {
-		int ok = (qh->type == USB_ENDPOINT_XFER_ISOC);
-
-		if (ok)
-			ok = (usb_pipein(urb->pipe) && musb->hb_iso_rx)
-				|| (usb_pipeout(urb->pipe) && musb->hb_iso_tx);
-		if (!ok) {
-			ret = -EMSGSIZE;
-			goto done;
-		}
-		qh->maxpacket &= 0x7ff;
-	}
-#endif
 	qh->epnum = usb_endpoint_num(epd);
 
 	/* NOTE: urb->dev->devnum is wrong during SET_ADDRESS */

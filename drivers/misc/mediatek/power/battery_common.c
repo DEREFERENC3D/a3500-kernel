@@ -3271,26 +3271,6 @@ static DEVICE_ATTR(BN_TestMode, 0664, show_BN_TestMode, store_BN_TestMode);
 ///////////////////////////////////////////////////////////////////////////////////////////
 //// platform_driver API 
 ///////////////////////////////////////////////////////////////////////////////////////////
-#if 0
-static int battery_cmd_read(char *buf, char **start, off_t off, int count, int *eof, void *data)
-{
-    int len = 0;
-    char *p = buf;
-    
-    p += sprintf(p, "g_battery_thermal_throttling_flag=%d,\nbattery_cmd_thermal_test_mode=%d,\nbattery_cmd_thermal_test_mode_value=%d\n", 
-        g_battery_thermal_throttling_flag, battery_cmd_thermal_test_mode, battery_cmd_thermal_test_mode_value);
-    
-    *start = buf + off;
-    
-    len = p - buf;
-    if (len > off)
-        len -= off;
-    else
-        len = 0;
-    
-    return len < count ? len  : count;
-}
-#endif
 
 static ssize_t battery_cmd_write(struct file *file, const char *buffer, size_t count, loff_t *data)
 {

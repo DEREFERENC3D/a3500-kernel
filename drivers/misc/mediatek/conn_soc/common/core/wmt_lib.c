@@ -806,14 +806,6 @@ static INT32 wmtd_thread (void *pvData)
             WMT_WARN_FUNC("get_lxop activeQ fail\n");
             continue;
         }
-#if 0 //wmt_core_opid_handler will do sanity check on opId, so no usage here
-        id = lxop_get_opid(pLxOp);
-        if (id >= WMT_OPID_MAX) {
-            WMT_WARN_FUNC("abnormal opid id: 0x%x \n", id);
-            iResult = -1;
-            goto handlerDone;
-        }
-#endif
 
         if (osal_test_bit(WMT_STAT_RST_ON, &pWmtDev->state)) {
             /* when whole chip reset, only HW RST and SW RST cmd can execute*/
@@ -873,12 +865,6 @@ static MTK_WCN_BOOL wmt_lib_put_op (
         return MTK_WCN_BOOL_FALSE;
     }
 
-#if 0
-	if(pOpQ == &gDevWmt.rFreeOpQ)
-	{
-		WMT_INFO_FUNC("current wmt free queue count is(%d),opid(%d)\n",RB_COUNT(pOpQ),pOp->op.opId);
-	}
-#endif
     /* acquire lock success */
     if (!RB_FULL(pOpQ)) {
         RB_PUT(pOpQ, pOp);
@@ -1045,75 +1031,8 @@ MTK_WCN_BOOL wmt_lib_put_act_op (P_OSAL_OP pOp)
 }
 
 // TODO:[ChangeFeature][George] is this function obsoleted?
-#if 0
-INT32 wmt_lib_reg_rw (
-    UINT32 isWrite,
-    UINT32 offset,
-    PUINT32 pvalue,
-    UINT32 mask
-    )
-{
-    P_WMT_LXOP lxop;
-    MTK_WCN_BOOL bRet;
-    PUINT32 plv = NULL;
-    UINT32 pbuf[2];
-    P_OSAL_EVENT pSignal = NULL;
-    if (!pvalue) {
-        WMT_WARN_FUNC("!pvalue \n");
-        return -1;
-    }
-    lxop = wmt_lib_get_free_lxop();
-    if (!lxop) {
-        WMT_WARN_FUNC("get_free_lxop fail \n");
-
-        return -1;
-    }
-
-    plv = (PUINT32)(((UINT32)pbuf + 0x3) & ~0x3UL);
-    *plv = *pvalue;
-    pSignal = &lxop->signal;
-    WMT_DBG_FUNC("OPID_REG_RW isWrite(%d) offset(0x%x) value(0x%x) mask(0x%x)\n",
-        isWrite, offset, *pvalue, mask);
-
-    lxop->op.opId = WMT_OPID_REG_RW;
-    lxop->op.au4OpData[0] = isWrite;
-    lxop->op.au4OpData[1] = offset;
-    lxop->op.au4OpData[2] = (UINT32)plv;
-    lxop->op.au4OpData[3] = mask;
-    pSignal->timeoutValue = MAX_EACH_WMT_CMD;
-
-    DISABLE_PSM_MONITOR();
-    bRet = wmt_lib_put_act_lxop(lxop);
-    ENABLE_PSM_MONITOR();
-
-    if (MTK_WCN_BOOL_FALSE != bRet) {
-        WMT_DBG_FUNC("OPID_REG_RW isWrite(%u) offset(0x%x) value(0x%x) mask(0x%x) ok\n",
-            isWrite, offset, *plv, mask);
-        if (!isWrite) {
-            *pvalue = *plv;
-        }
-    }
-    else {
-        WMT_WARN_FUNC("OPID_REG_RW isWrite(%u) offset(0x%x) value(0x%x) mask(0x%x) bRet(%d)\n",
-            isWrite, offset, *plv, mask, bRet);
-    }
-
-    return bRet;
-}
-#endif
 
 // TODO:[ChangeFeature][George] is this function obsoleted?
-#if 0
-static VOID wmt_lib_clear_chip_id(VOID)
-{
-/*
-    gDevWmt.pChipInfo = NULL;
-*/
-    gDevWmt.hw_ver = WMTHWVER_INVALID;
-
-    return;
-}
-#endif
 
 // TODO: [FixMe][GeorgeKuo]: change this API to report real chip id, hw_ver, and
 // fw_ver instead of WMT-translated WMTHWVER
@@ -1469,10 +1388,6 @@ VOID wmt_lib_state_init(VOID)
     //RB_INIT(&pDevWmt->rActiveOpQ, WMT_OP_BUF_SIZE);
 
     while (!RB_EMPTY(&pDevWmt->rActiveOpQ)) {
-		#if 0
-		osal_signal_init(&(pOp->signal));
-        wmt_lib_put_op(&pDevWmt->rFreeOpQ, pOp);
-		#endif
 		pOp = wmt_lib_get_op(&pDevWmt->rActiveOpQ);
         if (osal_op_is_wait_for_signal(pOp)) {
             osal_op_raise_signal(pOp, -1);
@@ -1489,39 +1404,6 @@ VOID wmt_lib_state_init(VOID)
     return;
 }
 
-#if 0
-INT32 wmt_lib_sdio_ctrl(UINT32 on)
-{
-    
-    P_OSAL_OP pOp;
-    MTK_WCN_BOOL bRet;
-    P_OSAL_SIGNAL pSignal;
-
-    pOp = wmt_lib_get_free_op();
-    if (!pOp) {
-        WMT_WARN_FUNC("get_free_lxop fail\n");
-        return MTK_WCN_BOOL_FALSE;
-    }
-
-    WMT_DBG_FUNC("call WMT_OPID_SDIO_CTRL\n");
-
-    pSignal = &pOp->signal;
-    pOp->op.opId = WMT_OPID_SDIO_CTRL;
-    pOp->op.au4OpData[0] = on;
-    pSignal->timeoutValue= MAX_GPIO_CTRL_TIME;
-
-
-    bRet = wmt_lib_put_act_op(pOp);
-    if (MTK_WCN_BOOL_FALSE == bRet) {
-        WMT_WARN_FUNC("WMT_OPID_SDIO_CTRL failed\n");
-        return -1;
-    }
-    else {
-        WMT_DBG_FUNC("OPID(WMT_OPID_SDIO_CTRL)ok\n");
-    }
-    return 0;
-}
-#endif
 
 MTK_WCN_BOOL wmt_lib_hw_state_show(VOID)
 {

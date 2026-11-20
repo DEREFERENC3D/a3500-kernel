@@ -81,14 +81,6 @@ void vVDEC_HAL_MPEG_AlignRdPtr(
     UINT32 u4AlignType                                  ///< [IN] Align type
 );
 
-#if 0   //VDEC_REMOVE_UNUSED_FUNC
-/// Read barrel shifter bitcount after initializing 
-/// \return  Bitcount counted by HAL
-UINT32 u4VDEC_HAL_MPEG_GetBitcount(
-    UINT32 u4BSID,                                      ///< [IN] Barrel shifter hardware ID of one video decoder
-    UINT32 u4VDecID                                    ///< [IN] Video decoder hardware ID
-);
-#endif
 
 /// Set video decoder hardware registers to load quantization, only for MPEG12
 /// \return None
@@ -138,16 +130,6 @@ void vVDEC_HAL_MPEG_ReLoadQuantMatrix(
     BOOL fgIntra                                                                         ///< [IN] flag of intra block or not
 );
 
-#if 0   //VDEC_REMOVE_UNUSED_FUNC
-/// Write video decoder hardware quantization matrix
-/// and load it
-/// \return None
-void vVDEC_HAL_MPEG_ReStoreQuantMatrix(
-    UINT32 u4VDecID,                                                                 ///< [IN] Video decoder hardware ID
-    BOOL fgIntra,                                                                       ///< [IN]  flag of intra block or not
-    VDEC_INFO_MPEG_QANTMATRIX_T *prQuantMatrix                    ///< [IN] Pointer to MPEG quantization matrix array
-);
-#endif
 
 //
 void vVDEC_HAL_MPEG_ResetQuantMatrix(

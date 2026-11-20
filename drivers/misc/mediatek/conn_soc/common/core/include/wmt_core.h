@@ -38,12 +38,6 @@
 #define DWCNT_CTRL_DATA  (16)
 
 
-#if 0 // TODO: [obsolete][GeorgeKuo]: remove ubsolete definitions
-#define WMT_SET (1)
-#define WMT_QUERY (0)
-#define WMT_PKT_FMT_RAW (1)
-#define WMT_PKT_FMT_STP (0)
-#endif
 
 #define WMT_FUNC_CTRL_ON  (MTK_WCN_BOOL_TRUE)
 #define WMT_FUNC_CTRL_OFF (MTK_WCN_BOOL_FALSE)
@@ -89,20 +83,6 @@ typedef enum _ENUM_WMT_HIF_T
     WMT_HIF_MAX
 } ENUM_WMT_HIF_T, *P_ENUM_WMT_HIF_T;
 
-#if 0 /* [George] moved to wmt_exp.h for hif_sdio's use */
-typedef enum {
-    WMT_SDIO_SLOT_INVALID = 0,
-    WMT_SDIO_SLOT_SDIO1 = 1, /* Wi-Fi dedicated SDIO1*/
-    WMT_SDIO_SLOT_SDIO2 = 2,
-    WMT_SDIO_SLOT_MAX
-} WMT_SDIO_SLOT_NUM;
-
-typedef enum {
-    WMT_SDIO_FUNC_STP = 0,
-    WMT_SDIO_FUNC_WIFI = 1,
-    WMT_SDIO_FUNC_MAX
-} WMT_SDIO_FUNC_TYPE;
-#endif
 
 typedef enum _ENUM_WMT_OPID_T {
     WMT_OPID_HIF_CONF = 0,
@@ -190,10 +170,6 @@ typedef struct _WMT_GEN_CONF {
 } WMT_GEN_CONF, *P_WMT_GEN_CONF;
 
 typedef enum _ENUM_DRV_STS_ {
-#if 0
-    DRV_STS_INVALID = 0,
-    DRV_STS_UNREG = 1, /* Initial State */
-#endif
     DRV_STS_POWER_OFF = 0, /* initial state */
     DRV_STS_POWER_ON = 1, /* powered on, only WMT */
     DRV_STS_FUNC_ON = 2, /* FUNC ON */

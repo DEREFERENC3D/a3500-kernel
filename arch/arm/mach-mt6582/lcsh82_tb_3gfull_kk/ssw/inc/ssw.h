@@ -33,15 +33,6 @@ static int dbg_en = 1;
 
 
 /*-------------------------variable define----------------------------------*/
-#if 0
-#ifndef SSW_DUAL_TALK
-#define SSW_DUAL_TALK 0
-#endif
-
-#ifndef SSW_SING_TALK
-#define SSW_SING_TALK 1
-#endif
-#endif
 
 /*------------------------Error Code---------------------------------------*/
 #define SSW_SUCCESS 			(0)

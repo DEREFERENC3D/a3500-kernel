@@ -961,15 +961,6 @@ static int __init gpt_mod_init(void)
 {
     create_proc_read_entry("gpt_stat", S_IRUGO, NULL, gpt_stat_read, NULL);
 
-#if 0
-#ifndef CONFIG_MT6582_FPGA
-
-    printk("GPT: chipver=%d\n", mt_get_chip_sw_ver());
-#else
-    printk("GPT: FPGA2\n" );
-#endif
-
-#endif
 	printk("GPT: iniit\n" );
 
     return 0;

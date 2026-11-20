@@ -540,12 +540,6 @@ static void sdm_pll_enable_op(struct pll *pll)
 //		printk("return \n");
 //		return 0;//for debug
 //	}
-#if 0
-    if( pll->base_addr == VENCPLL_CON0)
-    {
-        clk_clrl(CLK_CFG_0, 0x00800000);	//power on DDRPHCFG_CLK
-    }
-#endif
     clk_setl(pll->pwr_addr, PLL_PWR_ON);
     udelay(2);
     clk_clrl(pll->pwr_addr, PLL_ISO_EN);
@@ -556,12 +550,6 @@ static void sdm_pll_enable_op(struct pll *pll)
     if (pll->feat & HAVE_RST_BAR) {
         clk_setl(pll->base_addr, RST_BAR_MASK);
     }
-#if 0
-    if( pll->base_addr == VENCPLL_CON0)
-    {
-        clk_setl(CLK_CFG_0, 0x00800000);	//power off DDRPHCFG_CLK
-    }
-#endif    
     //disable protect
 //    if(pll->base_addr == VENCPLL_CON0)
 //	{
@@ -590,12 +578,6 @@ static void sdm_pll_disable_op(struct pll *pll)
 //    	while ((clk_readl(TOPAXI_PROT_STA1) & VENCPLL_PROT_MASK) != VENCPLL_PROT_MASK) {
 //        }
 //    }	
-#if 0
-    if( pll->base_addr == VENCPLL_CON0)
-    {
-        clk_clrl(CLK_CFG_0, 0x00800000);
-    }
-#endif
     if (pll->feat & HAVE_RST_BAR) {
         clk_clrl(pll->base_addr, RST_BAR_MASK);
     }
@@ -604,12 +586,6 @@ static void sdm_pll_disable_op(struct pll *pll)
 
     clk_setl(pll->pwr_addr, PLL_ISO_EN);
     clk_clrl(pll->pwr_addr, PLL_PWR_ON);
-#if 0    
-    if( pll->base_addr == VENCPLL_CON0)
-    {
-        clk_setl(CLK_CFG_0, 0x00800000);
-    }
-#endif    
 }
 
 static void sdm_pll_fsel_op(struct pll *pll, unsigned int value)
@@ -699,10 +675,6 @@ static unsigned int sdm_pll_vco_calc_op(struct pll *pll)
 
     vco = (vco_i + vco_f) * 1000 * vcodivsel / prediv;
 
-#if 0 
-    clk_info("[%s]%s: [0x%08x, 0x%08x] vco_i=%uMHz, vco_f=%uMHz, vco=%uKHz\n", 
-            __func__, pll->name, con0, con1, vco_i, vco_f, vco);
-#endif
 
     return vco;
 }
@@ -988,10 +960,6 @@ int pll_hp_switch_on(int id, int hp_on)
     }
     clkmgr_unlock(flags);
 
-#if 0
-    clk_info("[%s]hp_switch(%d->%d), hp_on=%d\n", 
-            __func__, old_value, pll->hp_switch, hp_on);
-#endif
 
 out:
     return err;
@@ -1023,10 +991,6 @@ int pll_hp_switch_off(int id, int hp_off)
     }
     clkmgr_unlock(flags);
 
-#if 0
-    clk_info("[%s]hp_switch(%d->%d), hp_off=%d\n", 
-            __func__, old_value, pll->hp_switch, hp_off);
-#endif
 
 out:
     return err;
@@ -2925,19 +2889,6 @@ void print_grp_regs(void)
  **********       initialization       **********
  ************************************************/
 
-#if 0
-static void subsys_all_force_on(void)
-{
-    if (test_spm_gpu_power_on()) {
-        spm_mtcmos_ctrl_mfg(STA_POWER_ON);
-    } else {
-        clk_warn("[%s]: not force to turn on MFG\n", __func__);
-    }
-
-    spm_mtcmos_ctrl_vdec(STA_POWER_ON);
-    spm_mtcmos_ctrl_venc(STA_POWER_ON);
-}
-#endif
 
 static void cg_all_force_on(void)
 {
@@ -3012,12 +2963,6 @@ static void mt_subsys_init(void)
 #endif
     }
 
-#if 0
-    //not used 
-    syss[SYS_DIS].mux = &muxs[MT_MUX_DISP];
-    syss[SYS_VEN].mux = &muxs[MT_MUX_VENC];
-    syss[SYS_VDE].mux = &muxs[MT_MUX_VDEC];
-#endif
 }
 
 static void mt_plls_init(void)
@@ -3109,24 +3054,6 @@ static void mt_muxs_init(void)
         break;
     }*/
 
-#if 0
-    //not used 
-    muxs[MT_MUX_AUDINTBUS].siblings = &muxs[MT_MUX_AUDIO];
-
-    muxs[MT_MUX_MSDC0].pll = &plls[MSDCPLL];
-    muxs[MT_MUX_MSDC1].pll = &plls[MSDCPLL];
-    muxs[MT_MUX_MSDC2].pll = &plls[MSDCPLL];
-    muxs[MT_MUX_MSDC3].pll = &plls[MSDCPLL];
-    muxs[MT_MUX_MSDC4].pll = &plls[MSDCPLL];
-
-    muxs[MT_MUX_MFG].pll = &plls[MMPLL];
-    muxs[MT_MUX_VENC].pll = &plls[MMPLL];
-    muxs[MT_MUX_HYD].pll = &plls[MMPLL];
-
-    muxs[MT_MUX_JPG].pll = &plls[MAINPLL];
-    muxs[MT_MUX_CAM].pll = &plls[MAINPLL];
-    muxs[MT_MUX_VDEC].pll = &plls[MAINPLL];
-#endif
 }
 
 
@@ -3233,20 +3160,6 @@ static void mt_clks_init(void)
 
 }
 
-#if 0
-static void mt_md1_cg_init(void)
-{
-    clk_clrl(PERI_PDN_MD_MASK, 1U << 0);
-    clk_writel(PERI_PDN0_MD1_SET, 0xFFFFFFFF);
-}
-#endif
-#if 0
-static void mt_md2_cg_init(void)
-{
-    clk_clrl(PERI_PDN_MD_MASK, 1U << 1);
-    clk_writel(PERI_PDN0_MD2_SET, 0xFFFFFFFF);
-}
-#endif
 
 int mt_clkmgr_bringup_init(void)
 {
@@ -3692,12 +3605,7 @@ static int mux_stat_read(char *page, char **start, off_t off,
     p += sprintf(p, "********** mux stat dump **********\n");
     for (i = 0; i < NR_MUXS; i++) {
         mux = id_to_mux(i);
-#if 0
-        p += sprintf(p, "[%02d][%-14s]state=%u, cnt=%u", i, mux->name, 
-                mux->state, mux->cnt);
-#else
         p += sprintf(p, "[%02d][%-14s]cnt=%u", i, mux->name, mux->cnt);
-#endif
         list_for_each(pos, &mux->head) {
             node = list_entry(pos, struct stat_node, link);
             p += sprintf(p, "\t(%s,%u,%u)", node->name, node->cnt_on, node->cnt_off);

@@ -233,16 +233,6 @@ typedef struct _VDEC_FBM_INFO_T
 #endif    
 }VDEC_FBM_INFO_T;
 
-#if 0
-typedef struct _VDEC_NOTIFY_INFO_T
-{
-    void* pvPtsNfyTag;
-    PFN_PTS_NFY_FCT pfPtsNfyFct; 
-    void* pvInpNfyTag;
-    PFN_ACQUIRE_FCT pfAcquireNfy; 
-    PFN_RELEASE_FCT pfReleaseNfy; 
-}VDEC_NOTIFY_INFO_T;
-#endif
 
 typedef struct _VDEC_SYNC_INFO_T
 {
@@ -258,19 +248,6 @@ typedef struct _VDEC_EC_INFO_T
   BOOL fgDetectRefLost;
 }VDEC_EC_INFO_T;
 
-#if 0
-typedef struct _VDEC_PB_INFO_T
-{
-  UINT32 u4DecPicType;
-  UINT32 u4DecSpeed;
-    MPV_FRAME_ACCURATE_TYPE_T       e_frame_accurate_type;
-    union 
-    {        
-        MPV_FRAME_ACCURATE_PTS_INFO_T         t_frame_accurate_pts;
-        MPV_FRAME_ACCURATE_NUM_INFO_T         t_frame_accurate_num;    
-    } u; 
-}VDEC_PB_INFO_T;
-#endif
 
 typedef struct _VDEC_MW_INFO_INFO
 {
@@ -397,11 +374,6 @@ typedef struct _VDEC_NORM_INFO_T
 //    PBINF_V rLastIPbInf;
     UINT32  u4LatestFrameRate;
     UINT32 u4DisplayRef;
-#if 0//def FBM_DIGEST_MODE
-    UINT16 u2DigestLineSize;		
-    UINT16 u2DigestHSize;     		
-    UINT16 u2DigestVSize;      	
-#endif
     UINT32  u4PicSize;    
     UINT32  u4SampleWidth;    
     UINT32  u4SampleHeight;        

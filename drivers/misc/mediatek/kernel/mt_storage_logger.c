@@ -1173,78 +1173,6 @@ static int storage_logger_proc_show(struct seq_file *m, void *v)
 }
 #endif
 
-#if 0
-static int storage_logger_proc_show(struct seq_file *m, void *v)
-{
-	int binOffset = 0;
-	int nrItem = 0;
-	char* fmt;
-	char procname[16];
-	unsigned long long curtime_high, curtime_low;
-	unsigned long nanosec_rem;
-	uint localbuffer[MAX_SINGLE_LINE_SIZE_INT];
-
-	while (binOffset < writeIndex)
-	{
-		unsigned int msg_id, tmp_pid, func_id, line_cnt, payload_len;
-		struct logger_type_info *info = NULL;
-
-		/*Parser the data from the log memory*/
-		msg_id = storage_logger_mem_pool[binOffset++];
-		msg_id = min(msg_id, (unsigned int)LOGGER_MSG_ID_MAX);
-
-		if(enable_ProcName) {
-			memcpy(procname,(char*)(storage_logger_mem_pool+binOffset),8);
-			procname[8]='\0';
-			binOffset +=2;
-		}
-
-		tmp_pid = storage_logger_mem_pool[binOffset++];
-		func_id = storage_logger_mem_pool[binOffset++];
-		line_cnt = storage_logger_mem_pool[binOffset++];
-
-		curtime_low = storage_logger_mem_pool[binOffset++];
-		curtime_high = storage_logger_mem_pool[binOffset++];
-		curtime_low += (curtime_high<<32);
-
-		payload_len = storage_logger_mem_pool[binOffset++];
-
-		info = find_type_info(msg_id);
-		func_id = min(func_id, info->func_id_max);
-
-		/* Output the relative info into the display buffer */
-		if(info->type == LOGGER_TYPE_USB) {
-			nanosec_rem = do_div(curtime_low, 1000000000);
-			seq_printf(m,"[USB] MsgID:%d,PID:[%s|%d]-%s @%d,[%5lu.%06lu]-", \
-					msg_id, procname, tmp_pid, info->logger_func_string[func_id].FuncName, \
-					line_cnt, (unsigned long) curtime_low, nanosec_rem / 1000);
-		} else {
-			seq_printf(m,"MsgID:%d,PID:[%s|%d],%s_%d,[%Lu]-", \
-					msg_id, procname,tmp_pid, info->logger_func_string[func_id].FuncName, \
-					line_cnt, curtime_low);
-		}
-
-		/* Decode the binary buffer */
-		fmt = info->logger_format[msg_id-(info->msg_id_start)].DispFmt;
-
-#ifdef CONFIG_BINARY_PRINTF
-		bstr_printf((char *)localbuffer, MAX_SINGLE_LINE_SIZE, fmt, storage_logger_mem_pool+binOffset);
-#endif
-		/* Output the decoded info to the display buffer */
-		seq_printf(m," %s\n",(char *)localbuffer);
-		binOffset += payload_len; /*Payload is decoded!!!!*/
-		nrItem++;
-
-		if (nrItem > readMax && readMax != 0)
-			break;
-	}
-
-	seq_printf(m,"Storage logger - nrItem = %d\r\n", nrItem-1);
-	SLog_MSG("Finish nrItem %d, Wx= %d,Rx = %d", nrItem-1, writeIndex, readIndex);
-
-	return 0;
-}
-#endif
 
 static int straverse(struct seq_file *m, loff_t offset)
 {
@@ -1259,13 +1187,6 @@ static int straverse(struct seq_file *m, loff_t offset)
 		m->index = index;
 		return 0;
 	}
-#if 0 //No need for storage logger
-	if (!m->buf) {
-		m->buf = vmalloc(m->size = PAGE_SIZE);
-		if (!m->buf)
-			return -ENOMEM;
-	}
-#endif
 	p = m->op->start(m, &index);
 	while (p) {
 		error = PTR_ERR(p);
@@ -1302,10 +1223,6 @@ static int straverse(struct seq_file *m, loff_t offset)
 
 Eoverflow:
 	m->op->stop(m, p);
-#if 0 //No need for storage logger
-	vfree(m->buf);
-	m->buf = vmalloc(m->size <<= 1);
-#endif
 	return !m->buf ? -ENOMEM : -EAGAIN;
 }
 
@@ -1394,175 +1311,10 @@ Done:
 	return copied;
 }
 
-#if 0
-ssize_t  storage_logger_proc_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
-{
-	struct seq_file *m = file->private_data;
-	size_t copied = 0;
-	loff_t pos;
-	size_t n;
-	void *p;
-	int err = 0;
-
-	/* Force disable the storage logger */
-	if (enable_StorageLogger) 	{
-		enable_StorageLogger = false;
-		/* Take a sleep to wait the storage logger stopping */
-		msleep(10);
-	}
-	printk(KERN_INFO"Holmes storage_logger_proc_read: %d %Lu %Lu\n",size,*ppos,m->read_pos);
-	mutex_lock(&m->lock);
-	
-	/* Don't assume *ppos is where we left it */
-	if (unlikely(*ppos != m->read_pos)) {
-		m->read_pos = *ppos;
-		while ((err = straverse(m, *ppos)) == -EAGAIN)
-			;	
-		
-		if (err) {
-			/* With prejudice... */
-			m->read_pos = 0;
-			m->version = 0;
-			m->index = 0;
-			m->count = 0;
-			goto Done;
-		}
-	}
-
-	/*
-	 * seq_file->op->..m_start/m_stop/m_next may do special actions
-	 * or optimisations based on the file->f_version, so we want to
-	 * pass the file->f_version to those methods.
-	 *
-	 * seq_file->version is just copy of f_version, and seq_file
-	 * methods can treat it simply as file version.
-	 * It is copied in first and copied out after all operations.
-	 * It is convenient to have it as  part of structure to avoid the
-	 * need of passing another argument to all the seq_file methods.
-	 */
-	m->version = file->f_version;
-	/* grab buffer if we didn't have one */
-	if (!m->buf) {
-		m->buf = vmalloc(m->size = PAGE_SIZE);
-		if (!m->buf)
-			goto Enomem;
-	}
-	/* if not empty - flush it first */
-	if (m->count) {
-		n = min(m->count, size);
-		err = copy_to_user(buf, m->buf + m->from, n);
-		printk(KERN_INFO"Holmes copy_to_user: %d\n",n);
-
-		if (err)
-			goto Efault;
-		m->count -= n;
-		m->from += n;
-		size -= n;
-		buf += n;
-		copied += n;
-		if (!m->count)
-			m->index++;
-		if (!size)
-			goto Done;
-	}
-	/* we need at least one record in buffer */
-	pos = m->index;
-	p = m->op->start(m, &pos);
-	printk(KERN_INFO"Holmes start: %Lu     %d\n",m->index,m->count);
-
-	while (1) {
-		err = PTR_ERR(p);
-		if (!p || IS_ERR(p))
-			break;
-		err = m->op->show(m, p);
-
-		printk(KERN_INFO"Holmes show: %Lu   %d\n",m->index,m->count);
-
-		if (err < 0)
-			break;
-		if (unlikely(err))
-			m->count = 0;
-		if (unlikely(!m->count)) {
-			p = m->op->next(m, p, &pos);
-			m->index = pos;
-			continue;
-		}
-		if (m->count < m->size)
-			goto Fill;
-		m->op->stop(m, p);
-		vfree(m->buf);
-		m->buf = vmalloc(m->size <<= 1);
-		if (!m->buf)
-			goto Enomem;
-		m->count = 0;
-		m->version = 0;
-		pos = m->index;
-		p = m->op->start(m, &pos);
-		printk(KERN_INFO"Holmes start2: %Lu   %d\n",m->index,m->count);
-	}
-	m->op->stop(m, p);
-	m->count = 0;
-	goto Done;
-Fill:
-	/* they want more? let's try to get some more */
-	while (m->count < size) {
-		size_t offs = m->count;
-		loff_t next = pos;
-		p = m->op->next(m, p, &next);
-		if (!p || IS_ERR(p)) {
-			err = PTR_ERR(p);
-			break;
-		}
-		err = m->op->show(m, p);
-		if (m->count == m->size || err) {
-			m->count = offs;
-			if (likely(err <= 0))
-				break;
-		}
-		pos = next;
-	}
-	m->op->stop(m, p);
-	n = min(m->count, size);
-	err = copy_to_user(buf, m->buf, n);
-	printk(KERN_INFO"Holmes copy_to_user: %d\n",n);
-
-	if (err)
-		goto Efault;
-	copied += n;
-	m->count -= n;
-	if (m->count)
-		m->from = n;
-	else
-		pos++;
-	m->index = pos;
-Done:
-	if (!copied)
-		copied = err;
-	else {
-		*ppos += copied;
-		m->read_pos += copied;
-	}
-	file->f_version = m->version;
-	mutex_unlock(&m->lock);
-	printk(KERN_INFO"Holmes return: %d\n",copied);
-
-	return copied;
-Enomem:
-	err = -ENOMEM;
-	goto Done;
-Efault:
-	err = -EFAULT;
-	goto Done;
-}
-#endif
 
 int __storage_logger_proc_release(struct inode *inode, struct file *file)
 {
 	struct seq_file *m = file->private_data;
-#if 0 //No need for storage logger
-	m->buf = seq_buf_ptr;
-	vfree(m->buf);
-#endif
 	kfree(m);
 	return 0;
 }

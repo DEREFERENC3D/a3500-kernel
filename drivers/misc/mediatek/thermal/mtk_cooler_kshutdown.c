@@ -83,11 +83,6 @@ static int mtk_cooler_kshutdown_register_ltf(void)
                                                              &mtk_cl_kshutdown_ops);
   }
 
-#if 0
-  cl_kshutdown_dev = mtk_thermal_cooling_device_register("mtk-cl-shutdown", 
-                                                         NULL,
-                                                         &mtk_cl_kshutdown_ops);
-#endif
 
   return 0;
 }
@@ -106,13 +101,6 @@ static void mtk_cooler_kshutdown_unregister_ltf(void)
       cl_kshutdown_state[i] = 0;
     }
   }
-#if 0
-  if (cl_kshutdown_dev) 
-  {
-    mtk_thermal_cooling_device_unregister(cl_kshutdown_dev);
-    cl_kshutdown_dev = NULL;
-  }
-#endif
 }
 
 

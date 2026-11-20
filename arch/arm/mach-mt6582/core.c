@@ -144,14 +144,6 @@ static struct map_desc mt_io_desc[] __initdata =
         .length = SZ_2M + SZ_1M,
         .type = MT_DEVICE
     },
-    #if 0
-    {
-        .virtual = MMSYS1_CONFIG_BASE,
-        .pfn = __phys_to_pfn(IO_VIRT_TO_PHYS(MMSYS1_CONFIG_BASE)),
-        .length = SZ_16M,
-        .type = MT_DEVICE
-    },
-    #endif
     {
         /* From: 0xF2000000 to 0xF2020000*/
         .virtual = SYSRAM_BASE,

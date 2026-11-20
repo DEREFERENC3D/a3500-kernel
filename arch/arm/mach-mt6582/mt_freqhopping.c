@@ -109,11 +109,7 @@ static const struct freqhopping_ssc mt_ssc_armpll_setting[MT_SSC_NR_PREDEFINE_SE
 static const struct freqhopping_ssc mt_ssc_mainpll_setting[MT_SSC_NR_PREDEFINE_SETTING]= {
 	{0,0,0,0,0,0},//Means disable
 	{0,0xFF,0xFF,0xFF,0xFF,0xFF},//Means User-Define
-#if 0	
-	{1612000 ,2 ,7 ,0, 4, 0xA8000},// 0~-4%
-#else
 	{1612000 ,0 ,9 ,0, 8, 0xA8000},// 0~-8%
-#endif	
 	{0,0,0,0,0,0} //EOF
 };
 
@@ -689,8 +685,8 @@ static int mt_h2oc_mempll(void)
 
 	FH_MSG("EN: %s:%d",__func__,g_curr_dramc);
 
-	/*Please note that the DFS can・t be applied in systems with DDR3 DRAM!
-	  It・s only for the mobile DRAM (LPDDR*)! */
+	/*Please note that the DFS cant be applied in systems with DDR3 DRAM!
+	  Its only for the mobile DRAM (LPDDR*)! */
 
 	if( (get_ddr_type() != LPDDR2) && (get_ddr_type() != LPDDR3) ) {
 		FH_MSG("Not LPDDR*");
@@ -765,7 +761,7 @@ static int mt_h2oc_mempll(void)
 	fh_write32(REG_FHCTL_CFG, (1 << 8));
 
 	//Use 2G1 hopping table to DFS
-	//SW need fill 64・b1 in 2G1 DRAM address (channel number = 0)
+	//SW need fill 64b1 in 2G1 DRAM address (channel number = 0)
 	fh_write32(REG_FHDMA_2G1BASE,  __pa(g_mempll_fh_table));
 
 	//sync NCPO value
@@ -777,8 +773,8 @@ static int mt_h2oc_mempll(void)
        	mb();
 
 	//Configure hopping slope
-	//sfstr_dts[3:0] = 4・d0(0.27us)
-	//sfstr_dys[3:0] = 4・d9(0.023437500)
+	//sfstr_dts[3:0] = 4d0(0.27us)
+	//sfstr_dys[3:0] = 4d9(0.023437500)
 	//slope = 26MHz * 0.007812500 / 0.27us = 0.75MHz/us < 2.5MHz/us
 	fh_write32(REG_FHCTL2_CFG, ( (0 << 24) | (7 << 28) | 5));
 	
@@ -840,8 +836,8 @@ static int mt_oc2h_mempll(void)
 	
 	FH_MSG("EN: %s:%d",__func__,g_curr_dramc);
 	
-	/*Please note that the DFS can・t be applied in systems with DDR3 DRAM!
-	  It・s only for the mobile DRAM (LPDDR*)! */
+	/*Please note that the DFS cant be applied in systems with DDR3 DRAM!
+	  Its only for the mobile DRAM (LPDDR*)! */
 
 	if( (get_ddr_type() != LPDDR2) && (get_ddr_type() != LPDDR3) ) {
 		FH_MSG("Not LPDDR*");
@@ -915,7 +911,7 @@ static int mt_oc2h_mempll(void)
 	fh_write32(REG_FHCTL_CFG, (1 << 8));
 
 	//Use 2G1 hopping table to DFS
-	//SW need fill 64・b1 in 2G1 DRAM address (channel number = 0)
+	//SW need fill 64b1 in 2G1 DRAM address (channel number = 0)
 	fh_write32(REG_FHDMA_2G1BASE,  __pa(g_mempll_fh_table));
 
 	//sync NCPO value
@@ -927,8 +923,8 @@ static int mt_oc2h_mempll(void)
 	mb();
 
 	//Configure hopping slope
-	//sfstr_dts[3:0] = 4・d0(0.27us)
-	//sfstr_dys[3:0] = 4・d9(0.023437500)
+	//sfstr_dts[3:0] = 4d0(0.27us)
+	//sfstr_dys[3:0] = 4d9(0.023437500)
 	//slope = 26MHz * 0.007812500 / 0.27us = 0.75MHz/us < 2.5MHz/us
 	fh_write32(REG_FHCTL2_CFG, ( (0 << 24) | (7 << 28) | 5));
 	
@@ -987,8 +983,8 @@ static int mt_fh_hal_l2h_mempll(void)  //mempll low to high (200->266MHz)
 	
 	FH_MSG("EN: %s:%d",__func__,g_curr_dramc);
 	
-	/*Please note that the DFS can・t be applied in systems with DDR3 DRAM!
-	  It・s only for the mobile DRAM (LPDDR*)! */
+	/*Please note that the DFS cant be applied in systems with DDR3 DRAM!
+	  Its only for the mobile DRAM (LPDDR*)! */
 
 	if( (get_ddr_type() != LPDDR2) && (get_ddr_type() != LPDDR3) ) {
 		FH_MSG("Not LPDDR*");
@@ -1061,7 +1057,7 @@ static int mt_fh_hal_l2h_mempll(void)  //mempll low to high (200->266MHz)
 	fh_write32(REG_FHCTL_CFG, (1 << 8));
 
 	//Use 2G1 hopping table to DFS
-	//SW need fill 64・b1 in 2G1 DRAM address (channel number = 0)
+	//SW need fill 64b1 in 2G1 DRAM address (channel number = 0)
 	fh_write32(REG_FHDMA_2G1BASE,  __pa(g_mempll_fh_table));
 
 	//sync NCPO value
@@ -1072,8 +1068,8 @@ static int mt_fh_hal_l2h_mempll(void)  //mempll low to high (200->266MHz)
 	mb();
 
 	//Configure hopping slope
-	//sfstr_dts[3:0] = 4・d0(0.27us)
-	//sfstr_dys[3:0] = 4・d9(0.023437500)
+	//sfstr_dts[3:0] = 4d0(0.27us)
+	//sfstr_dys[3:0] = 4d9(0.023437500)
 	//slope = 26MHz * 0.007812500 / 0.27us = 0.75MHz/us < 2.5MHz/us
 	fh_write32(REG_FHCTL2_CFG, ( (0 << 24) | (7 << 28) | 5));
 	
@@ -1132,8 +1128,8 @@ static int mt_fh_hal_h2l_mempll(void)  //mempll low to high (200->266MHz)
 	
 	FH_MSG("EN: %s:%d",__func__,g_curr_dramc);
 	
-	/*Please note that the DFS can・t be applied in systems with DDR3 DRAM!
-	  It・s only for the mobile DRAM (LPDDR*)! */
+	/*Please note that the DFS cant be applied in systems with DDR3 DRAM!
+	  Its only for the mobile DRAM (LPDDR*)! */
 
 	if( (get_ddr_type() != LPDDR2) && (get_ddr_type() != LPDDR3) ) {
 		FH_MSG("Not LPDDR*");
@@ -1206,7 +1202,7 @@ static int mt_fh_hal_h2l_mempll(void)  //mempll low to high (200->266MHz)
 	fh_write32(REG_FHCTL_CFG, (1 << 8));
 
 	//Use 2G1 hopping table to DFS
-	//SW need fill 64・b1 in 2G1 DRAM address (channel number = 0)
+	//SW need fill 64b1 in 2G1 DRAM address (channel number = 0)
 	fh_write32(REG_FHDMA_2G1BASE,  __pa(g_mempll_fh_table));
 
 	//sync NCPO value
@@ -1217,8 +1213,8 @@ static int mt_fh_hal_h2l_mempll(void)  //mempll low to high (200->266MHz)
        	mb();
 
 	//Configure hopping slope
-	//sfstr_dts[3:0] = 4・d0(0.27us)
-	//sfstr_dys[3:0] = 4・d9(0.023437500)
+	//sfstr_dts[3:0] = 4d0(0.27us)
+	//sfstr_dys[3:0] = 4d9(0.023437500)
 	//slope = 26MHz * 0.007812500 / 0.27us = 0.75MHz/us < 2.5MHz/us
 	fh_write32(REG_FHCTL2_CFG, ( (0 << 24) | (7 << 28) | 5));
 	
@@ -1456,8 +1452,8 @@ static int mt_fh_hal_l2h_dvfs_mempll(void)  //mempll low to high (200->266MHz)
 	unsigned int	i=0;
 
 	FH_MSG("EN: %s:",__func__);
-	/*Please note that the DFS can・t be applied in systems with DDR3 DRAM!
-	  It・s only for the mobile DRAM (LPDDR*)! */
+	/*Please note that the DFS cant be applied in systems with DDR3 DRAM!
+	  Its only for the mobile DRAM (LPDDR*)! */
 
 	if( (get_ddr_type() != LPDDR2) && (get_ddr_type() != LPDDR3) ) {
 		FH_MSG("Not LPDDR*");
@@ -1568,8 +1564,8 @@ static int mt_fh_hal_h2l_dvfs_mempll(void)  //mempll high to low(266->200MHz)
 	unsigned int	i=0;
 
 	FH_MSG("EN: %s:",__func__);
-	/*Please note that the DFS can・t be applied in systems with DDR3 DRAM!
-	  It・s only for the mobile DRAM (LPDDR*)! */
+	/*Please note that the DFS cant be applied in systems with DDR3 DRAM!
+	  Its only for the mobile DRAM (LPDDR*)! */
 
 	if( (get_ddr_type() != LPDDR2) && (get_ddr_type() != LPDDR3) ) {
 		FH_MSG("Not LPDDR*");
@@ -1681,8 +1677,8 @@ static int mt_h2oc_dfs_mempll(void)
 	unsigned int	i=0;
 
 	FH_MSG("EN: %s:",__func__);
-	/*Please note that the DFS can・t be applied in systems with DDR3 DRAM!
-	  It・s only for the mobile DRAM (LPDDR*)! */
+	/*Please note that the DFS cant be applied in systems with DDR3 DRAM!
+	  Its only for the mobile DRAM (LPDDR*)! */
 
 	if( (get_ddr_type() != LPDDR2) && (get_ddr_type() != LPDDR3) ) {
 		FH_MSG("Not LPDDR*");
@@ -1949,18 +1945,6 @@ static int freqhopping_dramc_proc_read(struct seq_file* m, void* v)
 	seq_printf(m, "get_ddr_type(): %d\r\n",get_ddr_type());	
 	seq_printf(m, "rank: 0x%x\r\n",(DRV_Reg32(EMI_CONA) & 0x20000));	
 
-#if 0
-	*start = page + off;
-
-	len = p - page;
-
-	if (len > off)
-		len -= off;
-	else
-		len = 0;
-
-	return len < count ? len : count;
-#endif 
   return 0;		
 }
 
@@ -1995,17 +1979,6 @@ static int freqhopping_dramc_proc_write(struct file *file, const char *buffer, u
 			FH_MSG("must be 200/266/293!");
 		}
 
-#if 0 
-		if(freq == 266){
-			FH_MSG("==> %d",mt_fh_hal_dram_overclock(266));
-		}
-		else if(freq == 293){
-			FH_MSG("==> %d",mt_fh_hal_dram_overclock(293));
-		}
-		else if(freq == LOW_DRAMC){
-			FH_MSG("==> %d",mt_fh_hal_dram_overclock(208));
-		}
-#endif
 
 		return count;
 	}
@@ -2032,18 +2005,6 @@ static int freqhopping_dvfs_proc_read(struct seq_file* m, void* v)
 		seq_printf(m, "FHCTL%d:   CFG:0x%08x    DVFS:0x%08x\r\n",i, DRV_Reg32(REG_FHCTL0_CFG+(i*0x14)), DRV_Reg32(REG_FHCTL0_DVFS+(i*0x14)));
 	}
 
-#if 0
-	*start = page + off;
-
-	len = p - page;
-
-	if (len > off)
-		len -= off;
-	else
-		len = 0;
-
-	return len < count ? len : count;
-#endif
   return 0;  		
 }
 
@@ -2216,18 +2177,6 @@ static int freqhopping_dumpregs_proc_read(struct seq_file* m, void* v)
 			DRV_Reg32(DDRPHY_BASE+0x63C),
 			DRV_Reg32(DDRPHY_BASE+0x640)); //TODO: Hard code for now...
 		
-#if 0
-	*start = page + off;
-
-	len = p - page;
-
-	if (len > off)
-		len -= off;
-	else
-		len = 0;
-
-	return len < count ? len : count;
-#endif
   return 0;		
 }
 
@@ -2277,18 +2226,6 @@ static int freqhopping_clkgen_proc_read(struct seq_file* m, void* v)
 			DRV_Reg32(DDRPHY_BASE+0x60C),
 			DRV_Reg32(DDRPHY_BASE+0x614),
 			DRV_Reg32(DDRPHY_BASE+0x61C));
-#if 0
-	*start = page + off;
-
-	len = p - page;
-
-	if (len > off)
-		len -= off;
-	else
-		len = 0;
-
-	return len < count ? len : count;
-#endif
   return 0;		
 }
 
@@ -2360,9 +2297,6 @@ static int freqhopping_clkgen_proc_write(struct file *file, const char *buffer, 
 			fh_write32(DDRPHY_BASE+0x604, ( (DRV_Reg32(DDRPHY_BASE+0x604)) | 0x1<<4));
 			fh_write32(DDRPHY_BASE+0x604, ( (DRV_Reg32(DDRPHY_BASE+0x604)) | 0x1<<9));
 
-#if 0			
-			fh_write32(DDRPHY_BASE+0x608, ( (DRV_Reg32(DDRPHY_BASE+0x608)) & ~0x000E0000 ));
-#endif 
 			fh_write32(DDRPHY_BASE+0x608, ( (DRV_Reg32(DDRPHY_BASE+0x608)) | 0x00040000 ));
 
 			fh_write32(DDRPHY_BASE+0x608, ( (DRV_Reg32(DDRPHY_BASE+0x608)) & ~0xF0000000 ));

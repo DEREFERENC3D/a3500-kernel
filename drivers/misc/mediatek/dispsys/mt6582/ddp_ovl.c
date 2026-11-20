@@ -105,39 +105,6 @@ int OVLReset() {
         }
    }
 
-#if 0   
-   DISP_REG_SET(DISP_REG_OVL_ROI_SIZE    , 0x00);           // clear regs
-   DISP_REG_SET(DISP_REG_OVL_ROI_BGCLR   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_SRC_CON     , 0x00);
-   
-   DISP_REG_SET(DISP_REG_OVL_L0_CON      , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L0_SRCKEY   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L0_SRC_SIZE , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L0_OFFSET   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L0_ADDR     , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L0_PITCH    , 0x00);
-   
-   DISP_REG_SET(DISP_REG_OVL_L1_CON      , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L1_SRCKEY   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L1_SRC_SIZE , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L1_OFFSET   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L1_ADDR     , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L1_PITCH    , 0x00);
-   
-   DISP_REG_SET(DISP_REG_OVL_L2_CON      , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L2_SRCKEY   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L2_SRC_SIZE , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L2_OFFSET   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L2_ADDR     , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L2_PITCH    , 0x00);
-   
-   DISP_REG_SET(DISP_REG_OVL_L3_CON      , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L3_SRCKEY   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L3_SRC_SIZE , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L3_OFFSET   , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L3_ADDR     , 0x00);
-   DISP_REG_SET(DISP_REG_OVL_L3_PITCH    , 0x00);
-#endif
 
     return 0;
 }
@@ -363,38 +330,9 @@ int OVLLayerConfig(unsigned int layer,
     width = dst_w;
     start = address;
     end = start + bpp * width - 1;  // Last byte of last pixel of first lline
-#if 0
-    if ((width != 0) && (((start&0x70) > 0x40) || ((end&0x70) < 0x40))) {
-    	for (i = 0; start < end;) {
-    	    i += bpp;
-    		start += bpp;
-    		if ((start&0x70) <= 0x40) {
-    			break;
-    		}
-    	}
-    	width -= i/bpp;
-    	end = start + width * bpp - 1; // Last byte of last pixel
-    	for (i = 0; end > start;) {
-    	    i += bpp;
-    		end -= bpp;
-    		if ((end&0x70) >= 0x40) {
-    			break;
-    		}
-    	}
-    	
-    	width -= i/bpp;
-    	// Reset hw start address and layer ROI width
-    	address = start;
-    	if (width <= 0) {
-            width = dst_w;
-    	}
-    	printk("OVL align 64byte:ROI(%d,%d %d,%d), (%d,%d), 0x%08x-->0x%08x, %d-->%d\n", src_x, src_y, dst_w, dst_h, dst_x, dst_w, addr, address, dst_w, width);
-    }
-#else
     if (src_pitch && ( (src_pitch&0x7f) != 0 || (start&0x70) >= 0x50 || (end&0x70) < 0x30 )) {
         printk("[DDP] warning: hw request(pitch:0x%x,star:0x%x,end:0x%x)\n", src_pitch, start, end);
     }
-#endif
     switch(layer) {
         case 0:
             if((source==OVL_LAYER_SOURCE_MEM) && (addr!=1))

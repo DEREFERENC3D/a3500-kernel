@@ -30,25 +30,13 @@ struct mt_mon_log
     __u32 BM_TTYPE3;
     __u32 BM_TTYPE4;
     __u32 BM_TTYPE5;
-#if 0    
-    __u32 BM_TTYPE6;
-    __u32 BM_TTYPE7;
-#endif    
     __u32 BM_TTYPE9;
     __u32 BM_TTYPE10;
     __u32 BM_TTYPE11;
     __u32 BM_TTYPE12;
     __u32 BM_TTYPE13;
-#if 0    
-    __u32 BM_TTYPE14;
-    __u32 BM_TTYPE15;
-#endif
 
     /* 6582 doesn't have MCI */
-#if 0
-    __u32 MCI_CNT0;
-    __u32 MCI_CNT1;
-#endif
     __u32 BM_TPCT1;
     
     __u32 DRAMC_PageHit;

@@ -77,11 +77,6 @@ void mt_fiq_printf(const char *fmt, ...)
 
     s = (char *)buf;
     while ((c = *s++)) {
-#if 0
-        if (c == '\n') {
-            fiq_uart_putc(NULL, '\r');
-        }
-#endif
         fiq_uart_putc(NULL, c);
     }
 }

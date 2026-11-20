@@ -2800,16 +2800,6 @@ u8 gup_clk_calibration(void)
         gup_clk_dac_setting(i);
         gup_clk_count_init(1, CLK_AVG_TIME);
 
-    #if 0
-        gup_output_pulse(PULSE_LENGTH);
-        count = gup_clk_count_get();
-  
-        if (count > PULSE_LENGTH * 60)//60= 60Mhz * 1us
-        {
-            break;
-        }
-        
-    #else
         GTP_GPIO_OUTPUT(GTP_INT_PORT, 0);
         
         //local_irq_save(flags);
@@ -2842,30 +2832,12 @@ u8 gup_clk_calibration(void)
             break;
         }
 
-    #endif
     }
 
     //clk_dac = i;
 
     //gtp_reset_guitar(i2c_client_point, 20);
 
-#if 0//for debug
-    //-- ouput clk to GPIO 4
-    buf = 0x00;
-    i2c_write_bytes(i2c_client_point, 0x41FA, &buf, 1);
-    buf = 0x00;
-    i2c_write_bytes(i2c_client_point, 0x4104, &buf, 1);
-    buf = 0x00;
-    i2c_write_bytes(i2c_client_point, 0x4105, &buf, 1);
-    buf = 0x00;
-    i2c_write_bytes(i2c_client_point, 0x4106, &buf, 1);
-    buf = 0x01;
-    i2c_write_bytes(i2c_client_point, 0x4107, &buf, 1);
-    buf = 0x06;
-    i2c_write_bytes(i2c_client_point, 0x41F8, &buf, 1);
-    buf = 0x02;
-    i2c_write_bytes(i2c_client_point, 0x41F9, &buf, 1);
-#endif
 
     GTP_GPIO_AS_INT(GTP_INT_PORT);
     return i;

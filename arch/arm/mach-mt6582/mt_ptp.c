@@ -851,9 +851,6 @@ irqreturn_t mt_ptp_isr(int irq, void *dev_id)
 {
     unsigned int PTPINTSTS, temp, temp_0, temp_ptpen;
 
-    #if 0
-    mt_ptp_reg_dump();
-    #endif
 
     PTPINTSTS = ptp_read(PTP_PTPINTSTS);
     temp_ptpen = ptp_read(PTP_PTPEN);
@@ -1115,16 +1112,6 @@ unsigned int PTP_INIT_01_API(void)
         return 0;
     }
 
-    #if 0
-    // set PTP IRQ
-    ret = request_irq(MT_PTP_FSM_IRQ_ID, mt_ptp_isr, IRQF_TRIGGER_LOW, "ptp", NULL);
-    if (ret)
-    {
-        ptp_notice("PTP IRQ register failed (%d)\n", ret);
-        WARN_ON(1);
-    }
-    ptp_notice("Set PTP IRQ OK.\n");
-    #endif
 
     PTP_Initialization_01(&ptp_init_value);
 
@@ -1153,41 +1140,7 @@ static int ptp_probe(struct platform_device *pdev)
     int ret;
     u32 test_mode = 0;
 
-    #if 0
-    u32 rdata = 0;
-    #endif
 
-    #if 0
-    if (pwrap_read((u32)RTC_AL_DOM, &rdata) == 0)
-    {
-        rdata = (rdata >> 8) & 0x7;
-        ptp_notice("rdata = 0x%x \n", rdata);
-
-        if (rdata == 1)
-        {
-            val_0 = val_0_1;
-            val_1 = val_1_1;
-            val_2 = val_2_1;
-            val_3 = val_3_1;
-
-            test_mode = 1;
-        }
-        else if (rdata == 2)
-        {
-            val_0 = val_0_2;
-            val_1 = val_1_2;
-            val_2 = val_2_2;
-            val_3 = val_3_2;
-
-            test_mode = 1;
-        }
-        else
-        {
-            /* don't care */
-            test_mode = 0;
-        }
-    }
-    #endif
 
     #if PTP_GET_REAL_VAL
     if (!test_mode)

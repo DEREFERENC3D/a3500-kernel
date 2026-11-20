@@ -2654,24 +2654,6 @@ static inline int mva_owner_match(M4U_MODULE_ID_ENUM id, M4U_MODULE_ID_ENUM owne
     if(owner == id)
         return 1;
 
-#if 0
-    if(owner==M4U_CLNTMOD_RDMA_GENERAL &&
-       (id==M4U_CLNTMOD_RDMA0||id==M4U_CLNTMOD_RDMA1) 
-       )
-    {
-        return 1;
-    }
-    if(owner==M4U_CLNTMOD_ROT_GENERAL &&
-        (id==M4U_CLNTMOD_VDO_ROT0||
-        id==M4U_CLNTMOD_RGB_ROT0||
-        id==M4U_CLNTMOD_RGB_ROT1||
-        id==M4U_CLNTMOD_VDO_ROT1||
-        id==M4U_CLNTMOD_RGB_ROT2)
-        )
-    {
-        return 1;
-    }
-#endif
 
     return 0;
 }

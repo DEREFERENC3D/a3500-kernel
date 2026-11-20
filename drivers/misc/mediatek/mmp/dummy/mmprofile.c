@@ -145,17 +145,6 @@ struct file_operations mmprofile_fops = {
 
 static int mmprofile_probe(struct platform_device *pdev)
 {
-#if 0
-	struct class_device *class_dev = 0;
-	int ret = alloc_chrdev_region(&mmprofile_devno, 0, 1, MMP_DEVNAME);
-
-	mmprofile_cdev = cdev_alloc();
-	mmprofile_cdev->owner = THIS_MODULE;
-	mmprofile_cdev->ops = &mmprofile_fops;
-	ret = cdev_add(mmprofile_cdev, mmprofile_devno, 1);
-	mmprofile_class = class_create(THIS_MODULE, MMP_DEVNAME);
-	class_dev = (struct class_device *)device_create(mmprofile_class, NULL, mmprofile_devno, NULL, MMP_DEVNAME);
-#endif
 	return 0;
 }
 
@@ -164,47 +153,14 @@ static int mmprofile_remove(struct platform_device *pdev)
 	return 0;
 }
 
-#if 0
-static struct platform_driver mmprofile_driver = {
-	.probe  = mmprofile_probe,
-	.remove = mmprofile_remove,
-	.driver = { .name = MMP_DEVNAME }
-};
-
-static struct platform_device mmprofile_device = {
-	.name = MMP_DEVNAME,
-	.id   = 0,
-};
-
-#endif
 
 static int __init mmprofile_init(void)
 {
-#if 0
-	if (platform_device_register(&mmprofile_device)) 
-	{
-		return -ENODEV;
-	}
-	if (platform_driver_register(&mmprofile_driver))
-	{
-		platform_device_unregister(&mmprofile_device);
-		return -ENODEV;
-	}
-#endif
 	return 0;
 }
 
 static void __exit mmprofile_exit(void)
 {
-#if 0
-	device_destroy(mmprofile_class, mmprofile_devno);    
-	class_destroy(mmprofile_class);
-	cdev_del(mmprofile_cdev);
-	unregister_chrdev_region(mmprofile_devno, 1);
-
-	platform_driver_unregister(&mmprofile_driver);
-	platform_device_unregister(&mmprofile_device);
-#endif
 }
 // Driver specific end
 

@@ -246,9 +246,6 @@ extern P_WMT_HIF_CONF wmt_lib_get_hif(VOID);
 extern MTK_WCN_BOOL wmt_lib_get_cmd_status(VOID);
 
 /* GeorgeKuo: replace set_chip_gpio() with more specific ones */
-#if 0/* moved to wmt_exp.h */
-extern INT32 wmt_lib_set_aif (CMB_STUB_AIF_X aif, MTK_WCN_BOOL share); /* set AUDIO interface options */
-#endif
 extern INT32 wmt_lib_host_awake_get(VOID);
 extern INT32 wmt_lib_host_awake_put(VOID);
 extern UINT32 wmt_lib_dbg_level_set(UINT32 level);

@@ -87,12 +87,6 @@ bool hwPowerOn(MT65XX_POWER powerId, MT65XX_POWER_VOLTAGE powerVolt, char *mode_
             break ;
         }
         /* already it */
-        #if 0
-        else if (!strcmp(g_MT_PMIC_BusHW.Power[powerId].mod_name[i], mode_name))
-        {
-            MSG(CG,"[%d] Power already register\r\n",powerId );        
-        }
-        #endif
     }    
     g_MT_PMIC_BusHW.Power[powerId].dwPowerCount++ ;
     /* We've already enable this LDO before */

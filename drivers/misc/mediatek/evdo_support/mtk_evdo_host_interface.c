@@ -1,18 +1,12 @@
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 
-#if 0
-/* declare function prototype */
-#endif
 
 #define CMD_LEN 10
 static char myCmdBuf[CMD_LEN];
 
 void evdo_host_wakeup(void)
 {
-#if 0
-	/* call correct wake up func here */
-#endif
 }
 
 ssize_t evdo_host_reset_proc_read(struct file *file_ptr, char __user *user_buffer, size_t count, loff_t *position)

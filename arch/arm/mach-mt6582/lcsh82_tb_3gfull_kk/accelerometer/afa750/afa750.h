@@ -27,11 +27,7 @@
 extern struct acc_hw* AFA750_get_cust_acc_hw(void);
 
 
-#if 0 // Johnson_Qian 2012_09_29
-#define AFA750_I2C_SLAVE_ADDR   (0x3C<<1) //0x78 //0x3D<->SA0=1 ;0x3C<->SA0=0  0x01111000
-#else
 #define AFA750_I2C_SLAVE_ADDR   (0x3D<<1)//0x78 //0x3D<->SA0=1 ;0x3C<->SA0=0  0x01111000
-#endif
 /*----------------------------------------------------------------------------*/
 #define I2C_DEVICEID_AFA750     0x3C
 

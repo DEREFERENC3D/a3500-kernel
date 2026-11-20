@@ -150,14 +150,6 @@ static int autok_thread_func(void *data)
         
     
     // Initialize   
-    #if 0
-        mt_cpufreq_disable(0, true);
-    	printk(KERN_ERR "[AUTOK_THREAD] Thread start");
-    #ifdef MTK_SDIO30_ONLINE_TUNING_SUPPORT    
-        atomic_set(&host->ot_work.ot_disable, 1);
-    #endif  // MTK_SDIO30_ONLINE_TUNING_SUPPORT
-        autok_claim_host(host);
-    #endif
         //
         
         // Inform msdc_set_mclk() auto-K is going to process
@@ -193,15 +185,6 @@ static int autok_thread_func(void *data)
         msdc_gate_clock(host,1);
     
         //
-    #if 0 
-        autok_release_host(host);   
-    	mt_cpufreq_disable(0, false);
-        
-    #ifdef MTK_SDIO30_ONLINE_TUNING_SUPPORT
-        atomic_set(&host->ot_work.autok_done, 1);
-        atomic_set(&host->ot_work.ot_disable, 0);
-    #endif  // MTK_SDIO30_ONLINE_TUNING_SUPPORT
-    #endif
     
         // [FIXDONE] Tell native module that auto-K has finished
         if(stage == 1)

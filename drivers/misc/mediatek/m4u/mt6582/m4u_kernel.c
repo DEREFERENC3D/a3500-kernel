@@ -110,78 +110,6 @@ void init_mlock_cnt(void)
 EXPORT_SYMBOL(init_mlock_cnt);
 
 
-#if 0  // use new user_v2p()
-unsigned int m4u_user_v2p(unsigned int va)
-{
-    unsigned int pmdOffset = (va & (PMD_SIZE - 1));
-    unsigned int pageOffset = (va & (PAGE_SIZE - 1));
-    pgd_t *pgd;
-    pmd_t *pmd;
-    pte_t *pte;
-    unsigned int pa;
-    
-    if(NULL==current)
-    {
-    	  M4UMSG("error: m4u_user_v2p, current is NULL! \n");
-    	  return 0;
-    }
-    if(NULL==current->mm)
-    {
-    	  M4UMSG("error: m4u_user_v2p, current->mm is NULL! tgid=0x%x, name=%s \n", current->tgid, current->comm);
-    	  return 0;
-    }
-        
-    pgd = pgd_offset(current->mm, va); /* what is tsk->mm */
-    M4UDBG("m4u_user_v2p(), pgd 0x%x\n", pgd);    
-    M4UDBG("pgd_none=%d, pgd_bad=%d\n", pgd_none(*pgd), pgd_bad(*pgd));
-    
-    if(pgd_none(*pgd)||pgd_bad(*pgd))
-    {
-        M4UMSG("warning: m4u_user_v2p(), va=0x%x, pgd invalid! \n", va);
-        return 0;
-    }
-    
-    pmd = pmd_offset(pgd, va);
-    M4UDBG("m4u_user_v2p(), pmd 0x%x\n", pmd);
-    M4UDBG("pmd_none=%d, pmd_bad=%d, pmd_val=0x%x\n", pmd_none(*pmd), pmd_bad(*pmd), pmd_val(*pmd));
-   
-    /* If this is a page table entry, keep on walking to the next level */ 
-    if (( (unsigned int)pmd_val(*pmd) & PMD_TYPE_MASK) == PMD_TYPE_TABLE)
-    {
-        if(pmd_none(*pmd)||pmd_bad(*pmd))
-        {
-            M4UDBG("warning: m4u_user_v2p(), va=0x%x, pmd invalid! \n", va);
-            return 0;
-        }
-        
-        // we encounter some pte not preset issue, do not know why    
-        pte = pte_offset_map(pmd, va);        
-        if(pte_present(*pte)) 
-        { 
-            pa=(pte_val(*pte) & (PAGE_MASK)) | pageOffset; 
-            M4UDBG("PA = 0x%8x\n", pa);
-            return pa; 
-        }
-    }
-    else /* Only 1 level page table */
-    {
-       if(pmd_none(*pmd))
-       {
-          M4UDBG("Error: m4u_user_v2p(), virtual addr 0x%x, pmd invalid! \n", va);
-          return 0;
-       }
-       pa=(pte_val(*pmd) & (PMD_MASK)) | pmdOffset; 
-       M4UDBG("PA = 0x%8x\n", pa);
-       return pa;    
-    }
-    
-    M4UDBG("warning: m4u_user_v2p(), pte invalid! \n");
-    // m4u_dump_maps(va);
-    
-    return 0;
-}
-
-#else
 unsigned int m4u_user_v2p(unsigned int va)
 {
     unsigned int pageOffset = (va & (PAGE_SIZE - 1));
@@ -249,7 +177,6 @@ unsigned int m4u_user_v2p(unsigned int va)
     
     return 0;
 }
-#endif
 EXPORT_SYMBOL(m4u_user_v2p);
 
 /*

@@ -2017,31 +2017,6 @@ void mt_accdet_suspend(void)  // only one suspend mode
 	ACCDET_DEBUG("[Accdet] in suspend1: ACCDET_IRQ_STS = 0x%x\n", pmic_pwrap_read(ACCDET_IRQ_STS));
 #else
 
-#if 0
-#ifdef ACCDET_EINT
-    if(accdet_get_enable_RG()&& call_status == 0)
-    {
-	   //record accdet status
-	   //ACCDET_DEBUG("[Accdet]accdet_working_in_suspend\n");
-	   printk(KERN_DEBUG "[Accdet]accdet_working_in_suspend\n");
-	   g_accdet_working_in_suspend = 1;
-       pre_state_swctrl = accdet_get_swctrl();
-	   // disable ACCDET unit
-       accdet_disable_hal();
-	   //disable_clock
-	   accdet_disable_clk();
-    }
-#else
-    // disable ACCDET unit
-    if(call_status == 0)
-    {
-       pre_state_swctrl = accdet_get_swctrl();
-       accdet_disable_hal();
-       //disable_clock
-       accdet_disable_clk(); 
-    }
-#endif	
-#endif 
 	printk(KERN_DEBUG "[Accdet]accdet_suspend: ACCDET_CTRL=[0x%x], STATE=[0x%x]->[0x%x]\n", pmic_pwrap_read(ACCDET_CTRL), pre_state_swctrl, pmic_pwrap_read(ACCDET_STATE_SWCTRL));
 #endif
 }
@@ -2056,26 +2031,6 @@ void mt_accdet_resume(void) // wake up
 #ifdef ACCDET_MULTI_KEY_FEATURE
 	ACCDET_DEBUG("[Accdet] in resume1: ACCDET_IRQ_STS = 0x%x\n", pmic_pwrap_read(ACCDET_IRQ_STS));
 #else
-#if 0
-#ifdef ACCDET_EINT
-
-	if(1==g_accdet_working_in_suspend &&  0== call_status)
-	{
-	
-	   //enable_clock
-	   accdet_enable_hal(pre_state_swctrl); 
-       //clear g_accdet_working_in_suspend
-	   g_accdet_working_in_suspend =0;
-	   ACCDET_DEBUG("[Accdet]accdet_resume : recovery accdet register\n");
-	   
-	}
-#else
-	if(call_status == 0)
-	{
-       accdet_enable_hal(pre_state_swctrl);
-	}
-#endif
-#endif
 	printk(KERN_DEBUG "[Accdet]accdet_resume: ACCDET_CTRL=[0x%x], STATE_SWCTRL=[0x%x]\n", pmic_pwrap_read(ACCDET_CTRL), pmic_pwrap_read(ACCDET_STATE_SWCTRL));
 
 #endif

@@ -391,19 +391,6 @@ static void msdc_get_field(unsigned int address,unsigned int start_bit,unsigned 
 
 static void msdc_init_gpt(void)
 {
-#if 0
-    GPT_CONFIG config;	
-    
-    config.num  = GPT6;
-    config.mode = GPT_FREE_RUN;
-    config.clkSrc = GPT_CLK_SRC_SYS;
-    config.clkDiv = GPT_CLK_DIV_1;   /* 13MHz GPT6 */
-            
-    if (GPT_Config(config) == FALSE )
-        return;                       
-        
-    GPT_Start(GPT6);	
-#endif
 }
 
 u32 msdc_time_calc(u32 old_L32, u32 old_H32, u32 new_L32, u32 new_H32)
@@ -528,13 +515,6 @@ void msdc_performance(u32 opcode, u32 sizes, u32 bRx, u32 ticks)
         result->total_tx_bytes += sizes; 	
     }
     result->total_tc += ticks; 
-#if 0    
-    /* dump when total_tc > 30s */
-    if (result->total_tc >= sdio_pro_time * TICKS_ONE_MS * 1000) {
-        msdc_sdio_profile(result);       
-        memset(result, 0 , sizeof(struct sdio_profile));                                             
-    }
-#endif
 
 
 
@@ -1807,39 +1787,8 @@ static int msdc_debug_proc_write(struct file *file, const char *buf, unsigned lo
 					}
 				}
 			if(current_limit != 0){
-#if 0 /* cause MMC_CAP_MAX??? and MMC_CAP_SET??? removed from linux3.6 */
-				switch(current_limit){
-					case MAX_CURRENT_200 : msdc_host_mode[id] |= MMC_CAP_MAX_CURRENT_200;
-										   msdc_host_mode[id] &= (~MMC_CAP_MAX_CURRENT_400)&(~MMC_CAP_MAX_CURRENT_600)&(~MMC_CAP_MAX_CURRENT_800);
-										   printk("[****SD_Debug****]host will support MAX_CURRENT_200\n");
-									       break;
-					case MAX_CURRENT_400 : msdc_host_mode[id] |= MMC_CAP_MAX_CURRENT_200 | MMC_CAP_MAX_CURRENT_400;
-										   msdc_host_mode[id] &= (~MMC_CAP_MAX_CURRENT_600)&(~MMC_CAP_MAX_CURRENT_800);
-										   printk("[****SD_Debug****]host will support MAX_CURRENT_400\n");
-									       break;
-					case MAX_CURRENT_600 : msdc_host_mode[id] |= MMC_CAP_MAX_CURRENT_200 | MMC_CAP_MAX_CURRENT_400|MMC_CAP_MAX_CURRENT_600;
-										   msdc_host_mode[id] &= (~MMC_CAP_MAX_CURRENT_800);
-										   printk("[****SD_Debug****]host will support MAX_CURRENT_600\n");
-									       break;
-					case MAX_CURRENT_800 : msdc_host_mode[id] |= MMC_CAP_MAX_CURRENT_200 | MMC_CAP_MAX_CURRENT_400|MMC_CAP_MAX_CURRENT_600|MMC_CAP_MAX_CURRENT_800;
-									  	   printk("[****SD_Debug****]host will support MAX_CURRENT_800\n");
-									       break;
-					default			     : break;
-					}
-#endif
 				}
 			if(pw_cr != 0)
-#if 0
-				switch(pw_cr){
-					case SDXC_NO_POWER_CONTROL : msdc_host_mode[id] &= (~MMC_CAP_SET_XPC_330) & (~MMC_CAP_SET_XPC_300) & (~MMC_CAP_SET_XPC_180);
-												 printk("[****SD_Debug****]host will not support SDXC power control\n");
-										         break;
-					case SDXC_POWER_CONTROL    : msdc_host_mode[id] |= MMC_CAP_SET_XPC_330 | MMC_CAP_SET_XPC_300 | MMC_CAP_SET_XPC_180;
-												 printk("[****SD_Debug****]host will support SDXC power control\n");
-										     	 break;
-					default			           : break;
-				}
-#endif
 					printk("[****SD_Debug****]to enable the above settings, please suspend and resume the phone again\n");
 			}else {
 				printk("[****SD_Debug****]msdc[%d] supports: \n", id); 
@@ -1863,25 +1812,8 @@ static int msdc_debug_proc_write(struct file *file, const char *buf, unsigned lo
 				   printk("\n");
 				}
 				{
-#if 0				
-				   printk("[****SD_Debug****]      current limit: ");
-				   if(msdc_host_mode[id] & MMC_CAP_MAX_CURRENT_200) printk("200mA, ");
-				   if(msdc_host_mode[id] & MMC_CAP_MAX_CURRENT_400) printk("400mA, ");
-				   if(msdc_host_mode[id] & MMC_CAP_MAX_CURRENT_600) printk("600mA, ");
-				   if(msdc_host_mode[id] & MMC_CAP_MAX_CURRENT_800) printk("800mA, ");
-				   if(!(msdc_host_mode[id] & (MMC_CAP_MAX_CURRENT_200 | MMC_CAP_MAX_CURRENT_400 | MMC_CAP_MAX_CURRENT_600 | MMC_CAP_MAX_CURRENT_800))) printk("N/A");
-				   printk("\n");
-#endif
 				}
 				{
-#if 0				
-				   printk("[****SD_Debug****]      power control: ");
-				   if(msdc_host_mode[id] & MMC_CAP_SET_XPC_330) printk("3.3v ");
-				   if(msdc_host_mode[id] & MMC_CAP_SET_XPC_300) printk("3v ");
-				   if(msdc_host_mode[id] & MMC_CAP_SET_XPC_180) printk("1.8v ");
-				   if(!(msdc_host_mode[id] & (MMC_CAP_SET_XPC_330 | MMC_CAP_SET_XPC_300 | MMC_CAP_SET_XPC_180))) printk("N/A");
-				   printk("\n");
-#endif
 				}
 			}
 		}

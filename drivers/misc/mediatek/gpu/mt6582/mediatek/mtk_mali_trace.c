@@ -16,49 +16,21 @@ static unsigned long __read_mostly  gMarkWriteAddr = 0;
 
 static void inline mali_update_write_addr(void)
 {
-#if 0
-    if(unlikely(0 == gMarkWriteAddr))
-    {
-        gMarkWriteAddr = kallsyms_lookup_name("tracing_mark_write");
-    }
-#endif // 0
 }
 
 
 static void mali_kernel_trace_begin(char *pName)
 {
-#if 0
-    mali_update_write_addr();
-
-    event_trace_printk(gMarkWriteAddr,
-                       "B|%d|%s\n",
-                       current->tgid, pName);
-#endif // 0
 }
 
 
 static void mali_kernel_trace_counter(char *pName, int count)
 {
-#if 0
-    mali_update_write_addr();
-
-    event_trace_printk(gMarkWriteAddr,
-                       "C|%d|%s|%d\n",
-                       (in_interrupt()? -1: current->tgid),
-                       pName,
-                       count);
-#endif // 0
 }
 
 
 static void mali_kernel_trace_end(void)
 {
-#if 0
-    mali_update_write_addr();
-
-    event_trace_printk(gMarkWriteAddr,
-                       "E\n"); 
-#endif // 0
 }
 
 

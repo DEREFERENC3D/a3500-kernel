@@ -320,12 +320,6 @@ long BT_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
     switch(cmd)
     {
-#if 0
-        case 0: // enable/disable STP
-            /* George: STP is controlled by WMT only */
-            /* mtk_wcn_stp_enable(arg); */
-            break;
-#endif
         case 1: // send raw data
             BT_DBG_FUNC("BT_ioctl(): disable raw data from BT dev \n");
             retval = -EINVAL;
@@ -382,13 +376,6 @@ static int BT_open(struct inode *inode, struct file *file)
 #endif
 
     if (mtk_wcn_stp_is_ready()) {
-#if 0 /* GeorgeKuo: turn on function before check stp ready */
-         /* turn on BT */
-        if (MTK_WCN_BOOL_FALSE == mtk_wcn_wmt_func_on(WMTDRV_TYPE_BT)) {
-            BT_WARN_FUNC("WMT turn on BT fail!\n");
-            return -ENODEV;
-        }
-#endif
         mtk_wcn_stp_set_bluez(0);
 
         BT_INFO_FUNC("Now it's in MTK Bluetooth Mode\n");

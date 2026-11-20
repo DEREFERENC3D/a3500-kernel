@@ -471,11 +471,6 @@ INT32 wmt_dbg_reg_read(INT32 par1, INT32 par2, INT32 par3)
     //par3-->register mask
     UINT32 value = 0x0;
     UINT32 iRet = -1;
-#if 0    
-    DISABLE_PSM_MONITOR();
-    iRet = wmt_core_reg_rw_raw(0, par2, &value, par3);
-    ENABLE_PSM_MONITOR();
-#endif
     iRet = wmt_lib_reg_rw(0, par2, &value, par3);
     WMT_INFO_FUNC("read combo chip register (0x%08x) with mask (0x%08x) %s, value = 0x%08x\n", \
         par2, \
@@ -491,11 +486,6 @@ INT32 wmt_dbg_reg_write(INT32 par1, INT32 par2, INT32 par3)
     //par2-->register address    
     //par3-->value to set
     UINT32 iRet = -1;
-    #if 0
-    DISABLE_PSM_MONITOR();
-    iRet = wmt_core_reg_rw_raw(1, par2, &par3, 0xffffffff);
-    ENABLE_PSM_MONITOR();
-    #endif
     iRet = wmt_lib_reg_rw(1, par2, &par3, 0xffffffff);
     WMT_INFO_FUNC("write combo chip register (0x%08x) with value (0x%08x) %s\n", \
         par2, \
@@ -540,11 +530,6 @@ INT32 wmt_dbg_efuse_write(INT32 par1, INT32 par2, INT32 par3)
 INT32 wmt_dbg_sdio_ctrl(INT32 par1, INT32 par2, INT32 par3)
 {
 /*remove sdio card detect/remove control because of btif is used*/
-#if 0
-    INT32 iRet = -1;
-    iRet = wmt_lib_sdio_ctrl (0 != par2 ? 1 : 0);
-    WMT_INFO_FUNC("ctrl SDIO function %s\n", 0 == iRet ? "succeed" : "failed");
-#endif
 	return 0;
 }
 
@@ -1382,15 +1367,6 @@ MTK_WCN_BOOL wmt_dev_is_file_exist(UCHAR *pFileName)
 static unsigned long count_last_access_btif = 0;
 static unsigned long jiffies_last_poll = 0;
 
-#if 0
-static INT32 wmt_dev_tra_sdio_update(void)
-{          
-    count_last_access_sdio += 1;  
-    //WMT_INFO_FUNC("jiffies_last_access_sdio: jiffies = %ul\n", jiffies);
-
-    return 0;
-}
-#endif
 
 extern INT32 wmt_dev_tra_bitf_update(void)
 {          
@@ -1504,21 +1480,6 @@ LONG wmt_dev_tm_temp_query(void)
         }
 
         //only WIFI tx power might make temperature varies largely
-        #if 0
-        if(!query_cond)
-        {
-            last_access_time = wmt_dev_tra_uart_poll();
-            if( jiffies_to_msecs(last_access_time) < TIME_THRESHOLD_TO_TEMP_QUERY)
-            {
-                query_cond = 1;
-                WMT_DBG_FUNC("uart busy traffic , we must query temperature..\n");
-            }
-            else
-            {
-                WMT_DBG_FUNC("uart still idle traffic , we don't query temp temperature..\n");
-            }
-        }
-        #endif
     }
  #endif   
     // Query condition 3:
@@ -1641,17 +1602,6 @@ WMT_read (
             iRet = cmdLen;
         }
     }
-#if 0
-    if (test_and_clear_bit(WMT_STAT_CMD, &pWmtDevCtx->state)) {
-        iRet = osal_strlen(localBuf) < NAME_MAX ? osal_strlen(localBuf) : NAME_MAX;
-        // we got something from STP driver
-        WMT_DBG_FUNC("copy cmd to user by read:%s\n", localBuf);
-        if (copy_to_user(buf, localBuf, iRet)) {
-            iRet = -EFAULT;
-            goto read_done;
-        }
-    }
-#endif
     return iRet;
 }
 
@@ -1666,11 +1616,6 @@ unsigned int WMT_poll(struct file *filp, poll_table *wait)
     {
         mask |= POLLIN | POLLRDNORM;  /* readable */
     }
-#if 0
-    if (test_bit(WMT_STAT_CMD, &pWmtDevCtx->state)) {
-        mask |= POLLIN | POLLRDNORM;  /* readable */
-    }
-#endif
     mask |= POLLOUT | POLLWRNORM; /* writable */
     return mask;
 }
@@ -2166,28 +2111,6 @@ static int WMT_init(void)
     WMT_INFO_FUNC("driver(major %d) installed \n", gWmtMajor);
 
 
-#if 0
-    pWmtDevCtx = wmt_drv_create();
-    if (!pWmtDevCtx) {
-        WMT_ERR_FUNC("wmt_drv_create() fails \n");
-        goto error;
-    }
-
-    ret = wmt_drv_init(pWmtDevCtx);
-    if (ret) {
-        WMT_ERR_FUNC("wmt_drv_init() fails (%d) \n", ret);
-        goto error;
-    }
-
-    WMT_INFO_FUNC("stp_btmcb_reg\n");
-    wmt_cdev_btmcb_reg();
-
-    ret = wmt_drv_start(pWmtDevCtx);
-    if (ret) {
-        WMT_ERR_FUNC("wmt_drv_start() fails (%d) \n", ret);
-        goto error;
-    }
-#endif
     ret = wmt_lib_init();
     if (ret) {
         WMT_ERR_FUNC("wmt_lib_init() fails (%d) \n", ret);

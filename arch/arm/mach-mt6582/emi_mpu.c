@@ -315,12 +315,6 @@ static irqreturn_t mpu_violation_irq(int irq, void *dev_id)
     
     printk("[EMI MPU] _id2mst = %d\n", __id2mst(master_ID));
 
-#if 0   //Marcos(MT6582): Each hw module has an unique ID. There is no need to use notifier function to distinguish different hw module which has the same bus ID.
-    list_for_each(p, &(emi_mpu_notifier_list[__id2mst(master_ID)])) {
-        block = list_entry(p, struct emi_mpu_notifier_block, list);
-        block->notifier(dbg_t + EMI_PHY_OFFSET, wr_vio);
-    }
-#endif
 
     vio_addr = dbg_t + EMI_PHY_OFFSET;
 
@@ -436,35 +430,6 @@ int emi_mpu_set_region_protection(unsigned int start, unsigned int end, int regi
  * notifier: the callback function
  * Return 0 for success, otherwise negative error code.
  */
- #if 0
-int emi_mpu_notifier_register(int master, emi_mpu_notifier notifier)
-{
-    struct emi_mpu_notifier_block *block;
-    static int emi_mpu_notifier_init = 0;
-    int i;
-
-    if (master >= MST_INVALID) {
-        return -EINVAL;
-    }
-
-    block = kmalloc(sizeof(struct emi_mpu_notifier_block), GFP_KERNEL);
-    if (!block) {
-        return -ENOMEM;
-    }
-
-    if (!emi_mpu_notifier_init) {
-        for (i = 0; i < NR_MST; i++) {
-            INIT_LIST_HEAD(&(emi_mpu_notifier_list[i]));
-        }
-        emi_mpu_notifier_init = 1;
-    }
-
-    block->notifier = notifier;
-    list_add(&(block->list), &(emi_mpu_notifier_list[master]));
-
-    return 0;
-}
-#endif
 
 static ssize_t emi_mpu_show(struct device_driver *driver, char *buf)
 {

@@ -398,11 +398,7 @@ static long fbconfig_ioctl(struct file * file, unsigned int cmd, unsigned long a
         {
 		    LCM_DRIVER * lcm = lcm_drv;
             // get_lcm_id() need implemented in lcm driver ...
-            #if 0		
-                unsigned int lcm_id =lcm->get_lcm_id();
-            #else
                 unsigned int lcm_id = 0 ;
-            #endif
             return copy_to_user(argp, &lcm_id,  sizeof(lcm_id)) ? -EFAULT : 0;
         }
 	case LCM_GET_DSI_CONTINU:
@@ -481,9 +477,6 @@ static long fbconfig_ioctl(struct file * file, unsigned int cmd, unsigned long a
                     printk("sxk=>copy_from_user failed! line:%d \n", __LINE__);
                     return -EFAULT;
                 }
-#if 0
-                print_record(record_head);
-#endif
                 record_list_initialed = 1;
             }
             else
@@ -492,10 +485,6 @@ static long fbconfig_ioctl(struct file * file, unsigned int cmd, unsigned long a
                     printk("[DRIVER_IC_CONFIG]: copy_from_user failed! line:%d \n", __LINE__);
                     return -EFAULT;
                 }
-#if 0//FBCONFIG_DEBUG
-                    printk("sxk=>will print before add to list \n");
-                    print_record(record_tmp);
-#endif
                 record_list_add();//add new node to list ;
 
             }

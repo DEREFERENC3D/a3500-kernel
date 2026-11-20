@@ -223,17 +223,6 @@ typedef struct _H264_DRV_INFO_T
 #endif  
 }H264_DRV_INFO_T;
 
-#if 0
-static VDEC_INFO_H264_SPS_T _arH264SPS[MPV_MAX_VLD][MAX_SPS_NUM];
-static VDEC_INFO_H264_PPS_T _arH264PPS[MPV_MAX_VLD][MAX_PPS_NUM];
-static VDEC_INFO_H264_SLICE_HDR_T _rH264SliceHdr[MPV_MAX_VLD];
-static VDEC_INFO_H264_DEC_PRM_T _rH264DecPrm[MPV_MAX_VLD];
-static VDEC_INFO_H264_FBUF_INFO_T _arH264FbInfo[MPV_MAX_VLD][H264_MAX_FB_NUM];
-static VDEC_INFO_H264_FBUF_INFO_T *_prH264CurrFbInfo[MPV_MAX_VLD];
-static VDEC_INFO_H264_REF_PIC_LIST_T _arH264RefPicList[MPV_MAX_VLD][6];
-static VDEC_INFO_H264_P_REF_PRM_T _arPRefPicListInfo[MPV_MAX_VLD];
-static VDEC_INFO_H264_B_REF_PRM_T _arBRefPicListInfo[MPV_MAX_VLD];
-#endif
     
 #define fgIsRefPic(arg) ((arg > 0))
 #define fgIsIDRPic(arg) ((arg == IDR_SLICE))

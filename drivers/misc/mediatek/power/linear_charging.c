@@ -445,16 +445,7 @@ static kal_uint32 charging_full_check(void)
 static void charging_current_calibration(void)
 {
 	kal_int32 bat_isense_offset;
-#if 0	
-	kal_int32 bat_vol = battery_meter_get_battery_voltage();
-	kal_int32 Vsense = battery_meter_get_VSense();
-
-	bat_isense_offset = bat_vol - Vsense;
-
-	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] bat_vol=%d, Vsense=%d, offset=%d \r\n",bat_vol,Vsense,bat_isense_offset);
-#else
 	bat_isense_offset = 0;
-#endif
 
 	battery_meter_sync(bat_isense_offset);
 }

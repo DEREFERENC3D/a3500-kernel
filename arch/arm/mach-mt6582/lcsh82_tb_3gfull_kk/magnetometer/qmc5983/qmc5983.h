@@ -129,26 +129,6 @@
   
 #ifdef __KERNEL__
 	 
-#if 0 /*use mediatek's layout setting*/
-	 struct QMC5983_platform_data {
-	 
-		 u8 h_range;
-	 
-		 u8 axis_map_x;
-		 u8 axis_map_y;
-		 u8 axis_map_z;
-	 
-		 u8 negate_x;
-		 u8 negate_y;
-		 u8 negate_z;
-	 
-		 int (*init)(void);
-		 void (*exit)(void);
-		 int (*power_on)(void);
-		 int (*power_off)(void);
-	 
-	 };
-#endif
 
 #endif /* __KERNEL__ */
 	 

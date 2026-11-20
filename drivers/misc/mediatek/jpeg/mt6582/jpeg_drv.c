@@ -96,15 +96,9 @@
 
 
 //#define USE_SYSRAM
-#if 0
-#define JPEG_MSG(...)   xlog_printk(ANDROID_LOG_DEBUG, "xlog/jpeg", __VA_ARGS__)
-#define JPEG_WRN(...)   xlog_printk(ANDROID_LOG_WARN,  "xlog/jpeg", __VA_ARGS__)
-#define JPEG_ERR(...)   xlog_printk(ANDROID_LOG_ERROR, "xlog/jpeg", __VA_ARGS__)
-#else
  #define JPEG_MSG printk
  #define JPEG_WRN printk
  #define JPEG_ERR printk
-#endif
 #define JPEG_DEVNAME "mtk_jpeg"
 
 #define TABLE_SIZE 4096
@@ -189,12 +183,6 @@ static irqreturn_t jpeg_drv_enc_isr(int irq, void *dev_id)
     {
         //mt65xx_irq_mask(MT6575_JPEG_CODEC_IRQ_ID);
 
-#if 0
-        if(jpeg_isr_dec_lisr() == 0)
-        {
-            wake_up_interruptible(&dec_wait_queue);
-        }
-#endif        
         if(jpeg_isr_enc_lisr() == 0)
         {
             wake_up_interruptible(&enc_wait_queue);
@@ -219,12 +207,6 @@ static irqreturn_t jpeg_drv_dec_isr(int irq, void *dev_id)
         {
             wake_up_interruptible(&dec_wait_queue);
         }
-#if 0        
-        if(jpeg_isr_enc_lisr() == 0)
-        {
-            wake_up_interruptible(&enc_wait_queue);
-        }        
-#endif        
         //mt65xx_irq_unmask(MT6575_JPEG_CODEC_IRQ_ID);        
     }
 
@@ -241,13 +223,6 @@ void jpeg_drv_dec_power_on(void)
    //enable_clock(MT_CG_IMAGE_JPGD_JPG,"JPEG");
 #endif
    
-#if 0
-    //MCI
-    *(volatile kal_uint32 *)(0xF0208100) |= (0x4|0x8|0x10);
-     dsb();
-    *(volatile kal_uint32 *)(0xF0208100)  |= (0x11);
-     dsb();
-#endif  
    
 #ifdef FOR_COMPILE   
     BOOL ret;
@@ -280,13 +255,6 @@ void jpeg_drv_enc_power_on(void)
    enable_clock(MT_CG_DISP0_SMI_COMMON,"JPEG");
 #endif   
 
-#if 0
-    //MCI
-    *(volatile kal_uint32 *)(0xF0208100) |= (0x4|0x8|0x10);
-     dsb();
-    *(volatile kal_uint32 *)(0xF0208100)  |= (0x11);
-     dsb();
-#endif 
    
 #ifdef FOR_COMPILE   
     BOOL ret;

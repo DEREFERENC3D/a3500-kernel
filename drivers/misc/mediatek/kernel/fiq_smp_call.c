@@ -110,9 +110,6 @@ int fiq_smp_call_function(fiq_smp_call_func_t func, void *info, int wait)
     /* poll to install data on current_cfd_data */
     install_csd = 0;
     do {
-#if 0   /* no need to protect due to FIQ-WDT */
-        spin_lock(&fiq_smp_call_lock);
-#endif
 
         if (!current_cfd_data) {
             atomic_set(&data->refs, refs);
@@ -120,9 +117,6 @@ int fiq_smp_call_function(fiq_smp_call_func_t func, void *info, int wait)
             install_csd = 1;
         }
 
-#if 0
-        spin_unlock(&fiq_smp_call_lock);
-#endif
     } while (!install_csd);
 
     smp_mb();

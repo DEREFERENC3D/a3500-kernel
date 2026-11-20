@@ -64,19 +64,6 @@ bool usb_phy_check_in_uart_mode()
 void usb_phy_switch_to_uart(void)
 {
 	int var;
-#if 0
-	//SW disconnect
-	var = USB_PHY_Read_Register8(0x68);
-	printk("[MUSB]addr: 0x68, value: %x\n", var);
-	USB_PHY_Write_Register8(0x15, 0x68);
-	printk("[MUSB]addr: 0x68, value after: %x\n", USB_PHY_Read_Register8(0x68));
-
-	var = USB_PHY_Read_Register8(0x6A);
-	printk("[MUSB]addr: 0x6A, value: %x\n", var);
-	USB_PHY_Write_Register8(0x0, 0x6A);
-	printk("[MUSB]addr: 0x6A, value after: %x\n", USB_PHY_Read_Register8(0x6A));
-	//SW disconnect
-#endif
 	/* Set ru_uart_mode to 2'b01 */
 	var = USB_PHY_Read_Register8(0x6B);
 	printk("[MUSB]addr: 0x6B, value: %x\n", var);
@@ -123,19 +110,6 @@ void usb_phy_switch_to_usb(void)
 	printk("[MUSB]addr: 0x11002090 (UART1), value: %x\n", var);
 	DRV_WriteReg8(UART1_BASE + 0x90, var & ~0x01);
 	printk("[MUSB]addr: 0x11002090 (UART1), value after: %x\n\n", DRV_Reg8(UART1_BASE + 0x90));
-#if 0
-	//SW connect
-	var = USB_PHY_Read_Register8(0x68);
-	printk("[MUSB]addr: 0x68, value: %x\n", var);
-	USB_PHY_Write_Register8(0x0, 0x68);
-	printk("[MUSB]addr: 0x68, value after: %x\n", USB_PHY_Read_Register8(0x68));
-
-	var = USB_PHY_Read_Register8(0x6A);
-	printk("[MUSB]addr: 0x6A, value: %x\n", var);
-	USB_PHY_Write_Register8(0x0, 0x6A);
-	printk("[MUSB]addr: 0x6A, value after: %x\n", USB_PHY_Read_Register8(0x6A));
-	//SW connect
-#endif
 	//SW connect
 	mt_usb_connect();
 }

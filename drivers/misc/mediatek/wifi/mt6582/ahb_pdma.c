@@ -334,21 +334,6 @@ HifPdmaStop(
     HIF_DMAR_WRITEL(HifInfo, AP_DMA_HIF_0_INT_EN, (RegVal & ~(ADH_CR_INTEN_FLAG_0)));
 
 
-#if 0 /* DE says we donot need to do it */
-    /* Stop DMA */
-    RegVal = HIF_DMAR_READL(HifInfo, AP_DMA_HIF_0_STOP);
-    HIF_DMAR_WRITEL(HifInfo, AP_DMA_HIF_0_STOP, (RegVal | ADH_CR_STOP));
-
-
-    /* Polling START bit turn to 0 */
-    pollcnt = 0;
-    do {
-        RegVal = HIF_DMAR_READL(HifInfo, AP_DMA_HIF_0_EN);
-        if (pollcnt++ > 100000) {
-            /* TODO: warm reset PDMA */
-        }
-    } while(RegVal&ADH_CR_EN);
-#endif
 
 } /* End of HifPdmaStop */
 

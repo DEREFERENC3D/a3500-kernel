@@ -1037,9 +1037,6 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
     s32 ret = 0;
     u16 version_info;
     struct task_struct *thread = NULL;
-#if 0 //GTP_HAVE_TOUCH_KEY
-    s32 idx = 0;
-#endif
 #ifdef TPD_PROXIMITY
     struct hwmsen_object obj_ps;
 #endif
@@ -1063,16 +1060,6 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
     thread = NULL;
 #endif
 
-#if 0	//GTP_AUTO_UPDATE
-    ret = gup_init_update_proc(client);
-
-    if (ret < 0)
-    {
-        GTP_ERROR("Create update thread error.");
-        goto out;
-    }
-
-#endif
 
 
 
@@ -1124,14 +1111,6 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
         goto out;
     }
 
-#if 0//GTP_HAVE_TOUCH_KEY
-
-    for (idx = 0; idx < TPD_KEY_COUNT; idx++)
-    {
-        input_set_capability(tpd->dev, EV_KEY, touch_key_array[idx]);
-    }
-
-#endif
 
     /*
     #ifndef TPD_RESET_ISSUE_WORKAROUND

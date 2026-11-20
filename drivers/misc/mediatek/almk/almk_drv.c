@@ -61,41 +61,6 @@ static int almk_status = 0;
 
 
 
-#if 0
-static int check_all_minfree(void *param, void *param2)
-{
-#if 1
-    extern int get_min_free_pages(pid_t pid);
-    struct task_struct *p = 0;
-    int n = 4096 * 170000;
-    int nr_pages = (n / PAGE_SIZE) + ((n % PAGE_SIZE)? 1: 0);
-    int free_pages = global_page_state(NR_FREE_PAGES) +
-        global_page_state(NR_FILE_PAGES) +
-        global_page_state(NR_FILE_DIRTY);
-    printk(KERN_ALERT"%s\n", __FUNCTION__);
-    printk(KERN_ALERT"=====================================\n");
-    for_each_process(p) {
-        //get_min_free_pages(p->pid);
-        printk(KERN_ALERT"trying to alloc %d bytes (%d pages)\n"
-                "(NR_FREE_PAGES) + "
-                "(NR_FILE_PAGES) + "
-                "(NR_FILE_DIRTY) - "
-                "nr_pages = (%d + %d + %d - %d) = %d\n"
-                "target_min_free_pages = %d\n",
-                n, nr_pages, 
-                global_page_state(NR_FREE_PAGES),
-                global_page_state(NR_FILE_PAGES),
-                global_page_state(NR_FILE_DIRTY),
-                nr_pages,
-                free_pages - nr_pages,
-                get_min_free_pages(p->pid));
-        printk(KERN_ALERT"allocation is %s\n", 
-                (free_pages - nr_pages >= get_min_free_pages(p->pid))? 
-                "safe": "not safe");
-    }
-#endif 
-}
-#endif
 
 static unsigned int get_max_safe_size(pid_t pid)
 {

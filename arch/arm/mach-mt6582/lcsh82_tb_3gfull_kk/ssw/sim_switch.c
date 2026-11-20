@@ -178,18 +178,11 @@ static int set_sim_gpio(unsigned int mode)
 			return SSW_INVALID_PARA;
 	}
 
-#if 0
-	SSW_DBG("Current sim mode(%d), GPIO0_MODE(%d, %d), GPIO1_MODE(%d, %d), GPIO2_MODE(%d, %d), GPIO3_MODE(%d, %d), GPIO89_MODE(%d, %d), GPIO90_MODE(%d, %d)\n", \
-		mode, mt_get_gpio_mode(GPIO0), mt_get_gpio_dir(GPIO0), mt_get_gpio_mode(GPIO1), mt_get_gpio_dir(GPIO1), \
-			  mt_get_gpio_mode(GPIO2), mt_get_gpio_dir(GPIO2), mt_get_gpio_mode(GPIO3), mt_get_gpio_dir(GPIO3), \
-			  mt_get_gpio_mode(GPIO89), mt_get_gpio_dir(GPIO89), mt_get_gpio_mode(GPIO90), mt_get_gpio_dir(GPIO90));
-#else
 	#if defined(GPIO_SIM1_SCLK) && defined(GPIO_SIM1_SIO) && defined(GPIO_SIM2_SCLK) && defined(GPIO_SIM2_SIO)
 	SSW_DBG("Current sim mode(%d), GPIO_SIM1_SCLK_MODE(%d, %d), GPIO_SIM1_SIO_MODE(%d, %d), GPIO_SIM2_SCLK_MODE(%d, %d), GPIO_SIM2_SIO_MODE(%d, %d)\n", \
 		mode, mt_get_gpio_mode(GPIO_SIM1_SCLK), mt_get_gpio_dir(GPIO_SIM1_SCLK), mt_get_gpio_mode(GPIO_SIM1_SIO), mt_get_gpio_dir(GPIO_SIM1_SIO), \
 			  mt_get_gpio_mode(GPIO_SIM2_SCLK), mt_get_gpio_dir(GPIO_SIM2_SCLK), mt_get_gpio_mode(GPIO_SIM2_SIO), mt_get_gpio_dir(GPIO_SIM2_SIO));
 	#endif
-#endif
 	
 	return SSW_SUCCESS;
 }

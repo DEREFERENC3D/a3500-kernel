@@ -1124,40 +1124,6 @@ void mt_irq_dump_status(int irq)
     printk("[INT] irq:%d,enable:%x,active:%x,pending:%x,pri:%x,grp:%x,target:%x,sens:%x,pol:%x\n",irq,get_mask(irq),get_active_status(irq),get_pending_status(irq),get_pri(irq),get_grp(irq),get_target(irq),get_sens(irq),get_pol(irq));
 
 }
-# if 0
-//# test code
-int set_mask(int irq)
-{
-   unsigned int bit; 
-   bit = 1 << (irq % 32);
-   writel(bit, IOMEM(GIC_DIST_BASE + GIC_DIST_ENABLE_SET + irq / 32 * 4));
-}
-int set_pending_status(int irq)
-{
-
-   unsigned int bit; 
-   bit = 1 << (irq % 32);
-   writel(bit, IOMEM(GIC_DIST_BASE + GIC_DIST_PENDING_SET + irq / 32 * 4));
-}
-
-int set_active_status(int irq)
-{
-
-   unsigned int bit; 
-   bit = 1 << (irq % 32);
-   writel(bit, IOMEM(GIC_DIST_BASE + GIC_DIST_ACTIVE_SET + irq / 32 * 4));
-}
-
-
-void test_irq_dump_status(int irq)
-{
-    irq_dump_status(irq);
-    set_active_status(irq);
-    set_pending_status(irq);
-    set_mask(irq);
-    irq_dump_status(irq);
-}
-#endif
 EXPORT_SYMBOL(mt_irq_dump_status);
 EXPORT_SYMBOL(mt_irq_set_sens);
 EXPORT_SYMBOL(mt_irq_set_polarity);

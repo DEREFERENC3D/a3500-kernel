@@ -1292,23 +1292,4 @@ void VCodecDrvMemFree_NC(IN HANDLE hDrv, IN VCODEC_BUFFER_T *prBuf);
  *   void
  */
 VCODEC_DEC_ERROR_T VDecCodecQueryInfo(IN HANDLE hDrv, IN VCODEC_DEC_QUERY_INFO_TYPE_T ID, OUT void *pvQueryData);
-#if 0
-// MACRO
-
-#include "mach/sync_write.h"
-
-#define SP5_REGSYNC_WriteB(v, a) \
-                mt65xx_reg_sync_writeb(v, a);
-
-#define SP5_REGSYNC_WriteW(v, a) \
-                mt65xx_reg_sync_writew(v, a);
-
-#define SP5_REGSYNC_WriteL(v, a) \
-                mt65xx_reg_sync_writel(v, a);
-
-
-VAL_VOID_T SP5_RegSyncWriteB(VAL_UINT32_T v, VAL_UINT32_T a);
-VAL_VOID_T SP5_RegSyncWriteW(VAL_UINT32_T v, VAL_UINT32_T a);
-VAL_VOID_T SP5_RegSyncWriteL(VAL_UINT32_T v, VAL_UINT32_T a);
-#endif
 #endif

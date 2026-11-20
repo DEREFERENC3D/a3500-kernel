@@ -51,34 +51,6 @@ enum
 };
 
 
-#if 0
-// defined the enum for enumerating the ISO/Binning information about each ISO mode.
-typedef enum
-{
-  ISO_100_MODE =0,
-  ISO_200_MODE,
-  ISO_400_MODE,
-  ISO_800_MODE,
-  ISO_1600_MODE,
-  ISO_MAX_MODE
-} ACDK_ISP_ISO_ENUM;
-
-typedef struct
-{
-  MUINT32              MaxWidth;
-  MUINT32              MaxHeight;
-  MINT32            ISOSupported;
-  MINT32                BinningEnable;
-} ACDK_ISP_BINNING_INFO_STRUCT, *PACDK_ISP_BINNING_INFO_STRUCT;
-//#endif /* __MSDK_ISP_Feature_H */
-
-
-typedef struct
-{
-    ACDK_ISP_BINNING_INFO_STRUCT    ISOBinningInfo[ISO_MAX_MODE];
-} CAMERA_ISO_BINNING_INFO_STRUCT, *PCAMERA_ISO_BINNING_INFO_STRUCT;
-
-#endif
 
 /*
 typedef enum

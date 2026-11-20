@@ -40,18 +40,8 @@
 #define TPD_WARP_X
 #define TPD_WARP_Y
 
-#if 0 //TPD_WARP_X
-#undef TPD_WARP_X
-#define TPD_WARP_X(x_max, x) ( x_max - 1 - x )
-#else
 #define TPD_WARP_X(x_max, x) x
-#endif
 
-#if 0 //TPD_WARP_Y
-#undef TPD_WARP_Y
-#define TPD_WARP_Y(y_max, y) ( y_max - 1 - y )
-#else
 #define TPD_WARP_Y(y_max, y) y
-#endif
 
 #endif //__TPD_CUSTOM_MMS100S_H__

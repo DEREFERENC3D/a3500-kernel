@@ -1160,12 +1160,6 @@ UINT32 A5142MIPIOpen(void)
     g_iA5142MIPI_Mode = A5142MIPI_MODE_INIT;
     spin_unlock(&a5142mipiraw_drv_lock);
 
-	#if 0//def OTP_SUPPORT
-	SENSORDB("[0x3804]=%x", A5142MIPI_read_cmos_sensor(0x3804));
-	SENSORDB("[0x3816]=%x", A5142MIPI_read_cmos_sensor(0x3816));
-	SENSORDB("[0x3818]=%x", A5142MIPI_read_cmos_sensor(0x3818));
-	SENSORDB("[0x38F2]=%x", A5142MIPI_read_cmos_sensor(0x38F2));
-	#endif
 	
     return ERROR_NONE;
 }
@@ -1486,13 +1480,6 @@ UINT32 A5142MIPIPreview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     A5142_Frame_Length_preview = A5142MIPI_PV_PERIOD_LINE_NUMS;
     spin_unlock(&a5142mipiraw_drv_lock);
 
-    #if 0
-    A5142MIPI_write_cmos_sensor_8(0x0104, 0x01);    // GROUPED_PARAMETER_HOLD
-    A5142MIPI_write_cmos_sensor(0x0202, temp); /* course_integration_time */
-    A5142MIPI_write_cmos_sensor_8(0x0104, 0x00);    // GROUPED_PARAMETER_HOLD
-
-    memcpy(&A5142MIPISensorConfigData, sensor_config_data, sizeof(MSDK_SENSOR_CONFIG_STRUCT));
-    #endif
     
     return ERROR_NONE;
 }   /* A5142MIPIPreview() */
@@ -1523,18 +1510,6 @@ UINT32 A5142MIPICapture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     A5142_Frame_Length_preview = A5142MIPI_FULL_PERIOD_LINE_NUMS;
     spin_unlock(&a5142mipiraw_drv_lock);
     
-    #if 0
-    SENSORDB("preview shutter =%d ",shutter);
-
-    shutter = shutter * (A5142MIPI_PV_PERIOD_PIXEL_NUMS + A5142MIPI_PV_dummy_pixels)/(A5142MIPI_FULL_PERIOD_PIXEL_NUMS +A5142MIPI_dummy_pixels);
-    shutter = shutter * A5142MIPI_sensor.capture_vt_clk / A5142MIPI_sensor.preview_vt_clk;
-
-    SENSORDB("capture  shutter =%d , gain = %d\n",shutter, read_A5142MIPI_gain());
-    
-    A5142MIPI_write_cmos_sensor_8(0x0104, 0x01);    // GROUPED_PARAMETER_HOLD
-    A5142MIPI_write_cmos_sensor(0x0202, shutter);   /* coarse_integration_time */
-    A5142MIPI_write_cmos_sensor_8(0x0104, 0x00);    // GROUPED_PARAMETER_HOLD
-    #endif
     
     return ERROR_NONE;
 }   /* A5142MIPICapture() */

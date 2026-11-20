@@ -156,18 +156,6 @@
 * @{
 * \ingroup Private
 */
-#if 0
-#ifdef WRITE_FULL_DCAC_DATA
-#define DCAC_SZ           ((((1920 / 16) * 4) * ((1088 / 16) * 4)) * 4) // (MBx * 4) * (MBy * 4) = 25920
-#else
-#define DCAC_SZ              ((((1920 / 16) * 4) * (4)) * 4) // (MBx * 4) * (4) = 7680
-#endif
-#define MVEC_SZ           (((1920 / 16) * 4 * (1088 / 16)) * 4) // (MBx * 4) * (MBy) = 6480
-#define BMB1_SZ           (((1920 / 16) * 4 * (1088 / 16)) * 4) // (MBx * 4) * (MBy) = 6480
-#define BMB2_SZ           (((1920 / 16) * 4 * (1088 / 16)) * 4) // (MBx * 4) * (MBy) = 6480
-#define BCODE_SZ          (((1920 / 16) * 2) * 4) // (MBx * 2) = 90
-
-#else
 
 #ifdef WRITE_FULL_DCAC_DATA
 #if (CONFIG_CHIP_VER_CURR < CONFIG_CHIP_VER_MT8580)  
@@ -206,7 +194,6 @@
 #define BCODE_SZ_W        ((4096 / 16) * 8) // (MBx * 8) = 90,is difference with <MT8580 IC
 #define BCODE_SZ_H         (4) // (MBx * 2) = 90
 
-#endif
 #endif
 /*! @} */
 
@@ -314,7 +301,7 @@ typedef struct _MPEG4_VOL_HDR_FIELD_T
 	UINT32                                   : 28;               ///< Reserved
 	UINT32      u4SpriteEnable       :  2;               ///< Define sprite mode
 	UINT32      fgObmcDisable       :  1;               ///< Disables overlapped block motion compensation.
-	UINT32      fgInterlaced           :  1;               ///< When set to ¡§1¡¨ indicates that the VOP may contain interlaced video.
+	UINT32      fgInterlaced           :  1;               ///< When set to 1 indicates that the VOP may contain interlaced video.
 
        /* 14 Bits*/
        UINT32                                    :18;               ///< Reserved
@@ -511,7 +498,7 @@ typedef struct _MEPG4_VISUAL_OBJECT_HDR_T
 typedef struct _MEPG4_VOL_HDR_T
 {    
     BOOL        fgVolHdrValid;           ///< Is Vol header valid or not
-    BOOL        fgRandAccVol;           ///< flag may be set to ¡§1¡¨ to indicate that every VOP in this VOL is individually decodable.
+    BOOL        fgRandAccVol;           ///< flag may be set to 1 to indicate that every VOP in this VOL is individually decodable.
     UCHAR      ucVoTypeInd;            ///< video object type indication
     BOOL 	     fgIsOlId;                   ///< '1' indicates that version id and priority is specified for the vOL
     UCHAR	     ucVolVerid;               ///< Vol version identification
@@ -703,13 +690,6 @@ typedef struct _MEPG4_DEC_PRM_T
     UINT32 u4NonIntraMatrixLen;  ///<  Inter quantizer matrix length
     UINT32 u4MatrixId;                 ///< Quantizer matrix index before matrix updated
     UINT32 u4BitCount;                 ///< Consumed bits counter
-#if 0    
-    UINT32 u4SkipCount;
-    UINT32 u4DummyCount;
-    INT64   u8BasePTS;
-    INT64 i8PredPTS;
-    INT64 i8PTSDuration;
-#endif    
     UCHAR ucDCACFbId;
     UCHAR ucMVECFbId;
     UCHAR ucBMB1FbId;

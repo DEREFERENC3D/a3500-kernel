@@ -587,17 +587,6 @@ static int BMA222_CheckDeviceID(struct i2c_client *client)
 
 	GSE_LOG("BMA222_CheckDeviceID %d done!\n ", databuf[0]);
 
-	#if 0
-	if(databuf[0]!=BMA222_FIXED_DEVID)
-	{
-		GSE_LOG("BMA222_CheckDeviceID %d failt!\n ", databuf[0]);
-		return BMA222_ERR_IDENTIFICATION;
-	}
-	else
-	{
-		GSE_LOG("BMA222_CheckDeviceID %d pass!\n ", databuf[0]);
-	}
-	#endif
 
 	exit_BMA222_CheckDeviceID:
 	if (res < 0)
@@ -838,19 +827,6 @@ static int BMA222_ReadSensorData(struct i2c_client *client, char *buf, int bufsi
 		//GSE_LOG("sensor in suspend read not data!\n");
 		return 0;
 	}
-	#if 0 //wrong operation marked
-	mutex_lock(&bma222_mutex);
-	if(sensor_power == FALSE)
-	{
-		GSE_ERR("BMA222_ReadSensorData bad operation sensor_power = %d!\n", sensor_power);
-		res = BMA222_SetPowerMode(client, true);
-		if(res)
-		{
-			GSE_ERR("Power on bma222 error %d!\n", res);
-		}
-	}
-	mutex_unlock(&bma222_mutex);	
-	#endif
 	if((res = BMA222_ReadData(client, obj->data))!=0)
 	{        
 		GSE_ERR("I2C error: ret value=%d", res);
@@ -935,21 +911,6 @@ static ssize_t show_chipinfo_value(struct device_driver *ddri, char *buf)
 	return snprintf(buf, PAGE_SIZE, "%s\n", strbuf);        
 }
 
-#if 0
-static ssize_t gsensor_init(struct device_driver *ddri, char *buf, size_t count)
-	{
-		struct i2c_client *client = bma222_i2c_client;
-		char strbuf[BMA222_BUFSIZE];
-		
-		if(NULL == client)
-		{
-			GSE_ERR("i2c client is null!!\n");
-			return 0;
-		}
-		bma222_init_client(client, 1);
-		return snprintf(buf, PAGE_SIZE, "%s\n", strbuf);			
-	}
-#endif
 
 
 /*----------------------------------------------------------------------------*/
@@ -968,22 +929,6 @@ static ssize_t show_sensordata_value(struct device_driver *ddri, char *buf)
 	return snprintf(buf, PAGE_SIZE, "%s\n", strbuf);            
 }
 
-#if 0
-static ssize_t show_sensorrawdata_value(struct device_driver *ddri, char *buf, size_t count)
-	{
-		struct i2c_client *client = bma222_i2c_client;
-		char strbuf[BMA222_BUFSIZE];
-		
-		if(NULL == client)
-		{
-			GSE_ERR("i2c client is null!!\n");
-			return 0;
-		}
-		//BMA150_ReadSensorData(client, strbuf, BMA150_BUFSIZE);
-		BMA222_ReadRawData(client, strbuf);
-		return snprintf(buf, PAGE_SIZE, "%s\n", strbuf);			
-	}
-#endif
 
 /*----------------------------------------------------------------------------*/
 #if 1

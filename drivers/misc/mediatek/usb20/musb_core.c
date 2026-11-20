@@ -142,33 +142,6 @@ MODULE_ALIAS("platform:" MUSB_DRIVER_NAME);
 
 void dumpTime(writeFunc_enum func, int epnum)
 {
-#if 0
-	struct timeval tv;
-	int diffWrite = 0;
-	int diffInterrupt = 0;
-
-	if((func == funcWriteb)||(func == funcWritew))
-	{
-		do_gettimeofday(&tv);
-		diffWrite = tv.tv_sec - writeTime.tv_sec;
-		if(diffWrite > 10)
-		{
-			DBG(0,"Write Operation (%d) seconds\n", diffWrite);
-			writeTime = tv;
-		}
-	}
-
-	if(func == funcInterrupt)
-	{
-		do_gettimeofday(&tv);
-		diffInterrupt = tv.tv_sec - interruptTime.tv_sec;
-		if(diffInterrupt > 10)
-		{
-			DBG(0,"Interrupt Operation (%d) seconds\n", diffInterrupt);
-			interruptTime = tv;
-		}
-	}
-#endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -209,92 +182,8 @@ void musb_put_id(struct device *dev, int id)
 }
 EXPORT_SYMBOL_GPL(musb_put_id);
 
-#if 0 // #ifndef CONFIG_BLACKFIN
-static int musb_ulpi_read(struct usb_phy *phy, u32 offset)
-{
-	void __iomem *addr = phy->io_priv;
-	int	i = 0;
-	u8	r;
-	u8	power;
-	int	ret;
-
-	pm_runtime_get_sync(phy->io_dev);
-
-	/* Make sure the transceiver is not in low power mode */
-	power = musb_readb(addr, MUSB_POWER);
-	power &= ~MUSB_POWER_SUSPENDM;
-	musb_writeb(addr, MUSB_POWER, power);
-
-	/* REVISIT: musbhdrc_ulpi_an.pdf recommends setting the
-	 * ULPICarKitControlDisableUTMI after clearing POWER_SUSPENDM.
-	 */
-
-	musb_writeb(addr, MUSB_ULPI_REG_ADDR, (u8)offset);
-	musb_writeb(addr, MUSB_ULPI_REG_CONTROL,
-			MUSB_ULPI_REG_REQ | MUSB_ULPI_RDN_WR);
-
-	while (!(musb_readb(addr, MUSB_ULPI_REG_CONTROL)
-				& MUSB_ULPI_REG_CMPLT)) {
-		i++;
-		if (i == 10000) {
-			ret = -ETIMEDOUT;
-			goto out;
-		}
-
-	}
-	r = musb_readb(addr, MUSB_ULPI_REG_CONTROL);
-	r &= ~MUSB_ULPI_REG_CMPLT;
-	musb_writeb(addr, MUSB_ULPI_REG_CONTROL, r);
-
-	ret = musb_readb(addr, MUSB_ULPI_REG_DATA);
-
-out:
-	pm_runtime_put(phy->io_dev);
-
-	return ret;
-}
-
-static int musb_ulpi_write(struct usb_phy *phy, u32 offset, u32 data)
-{
-	void __iomem *addr = phy->io_priv;
-	int	i = 0;
-	u8	r = 0;
-	u8	power;
-	int	ret = 0;
-
-	pm_runtime_get_sync(phy->io_dev);
-
-	/* Make sure the transceiver is not in low power mode */
-	power = musb_readb(addr, MUSB_POWER);
-	power &= ~MUSB_POWER_SUSPENDM;
-	musb_writeb(addr, MUSB_POWER, power);
-
-	musb_writeb(addr, MUSB_ULPI_REG_ADDR, (u8)offset);
-	musb_writeb(addr, MUSB_ULPI_REG_DATA, (u8)data);
-	musb_writeb(addr, MUSB_ULPI_REG_CONTROL, MUSB_ULPI_REG_REQ);
-
-	while (!(musb_readb(addr, MUSB_ULPI_REG_CONTROL)
-				& MUSB_ULPI_REG_CMPLT)) {
-		i++;
-		if (i == 10000) {
-			ret = -ETIMEDOUT;
-			goto out;
-		}
-	}
-
-	r = musb_readb(addr, MUSB_ULPI_REG_CONTROL);
-	r &= ~MUSB_ULPI_REG_CMPLT;
-	musb_writeb(addr, MUSB_ULPI_REG_CONTROL, r);
-
-out:
-	pm_runtime_put(phy->io_dev);
-
-	return ret;
-}
-#else
 #define musb_ulpi_read		NULL
 #define musb_ulpi_write		NULL
-#endif
 
 static struct usb_phy_io_ops musb_ulpi_access = {
 	.read = musb_ulpi_read,
@@ -672,13 +561,6 @@ static irqreturn_t musb_stage0_irq(struct musb *musb, u8 int_usb,
 
 		/* do nothing when get SESSION_REQUEST */
 		/* turn on VBUS in musb_id_pin_work() */
-		#if 0
-		musb_writeb(mbase, MUSB_DEVCTL, MUSB_DEVCTL_SESSION);
-		musb->ep0_stage = MUSB_EP0_START;
-		musb->xceiv->state = OTG_STATE_A_IDLE;
-		MUSB_HST_MODE(musb);
-		musb_platform_set_vbus(musb, 1);
-		#endif
 
 		handled = IRQ_HANDLED;
 	}
@@ -841,13 +723,6 @@ static irqreturn_t musb_stage0_irq(struct musb *musb, u8 int_usb,
 		if (is_peripheral_active(musb)) {
 			/* REVISIT HNP; just force disconnect */
 		}
-#if 0
-		musb->intrtxe = musb->epmask;
-		musb_writew(musb->mregs, MUSB_INTRTXE, musb->intrtxe);
-		musb->intrrxe = musb->epmask & 0xfffe;
-		musb_writew(musb->mregs, MUSB_INTRRXE, musb->intrrxe);
-		musb_writeb(musb->mregs, MUSB_INTRUSBE, 0xf7);
-#endif
 		musb->port1_status &= ~(USB_PORT_STAT_LOW_SPEED
 					|USB_PORT_STAT_HIGH_SPEED
 					|USB_PORT_STAT_ENABLE
@@ -1010,50 +885,6 @@ b_host:
 		}
 	}
 
-#if 0
-/* REVISIT ... this would be for multiplexing periodic endpoints, or
- * supporting transfer phasing to prevent exceeding ISO bandwidth
- * limits of a given frame or microframe.
- *
- * It's not needed for peripheral side, which dedicates endpoints;
- * though it _might_ use SOF irqs for other purposes.
- *
- * And it's not currently needed for host side, which also dedicates
- * endpoints, relies on TX/RX interval registers, and isn't claimed
- * to support ISO transfers yet.
- */
-	if (int_usb & MUSB_INTR_SOF) {
-		void __iomem *mbase = musb->mregs;
-		struct musb_hw_ep	*ep;
-		u8 epnum;
-		u16 frame;
-
-		DBG(2, "START_OF_FRAME\n");
-		handled = IRQ_HANDLED;
-
-		/* start any periodic Tx transfers waiting for current frame */
-		frame = musb_readw(mbase, MUSB_FRAME);
-		ep = musb->endpoints;
-		for (epnum = 1; (epnum < musb->nr_endpoints)
-					&& (musb->epmask >= (1 << epnum));
-				epnum++, ep++) {
-			/*
-			 * FIXME handle framecounter wraps (12 bits)
-			 * eliminate duplicated StartUrb logic
-			 */
-			if (ep->dwWaitFrame >= frame) {
-				ep->dwWaitFrame = 0;
-				pr_debug("SOF --> periodic TX%s on %d\n",
-					ep->tx_channel ? " DMA" : "",
-					epnum);
-				if (!ep->tx_channel)
-					musb_h_tx_start(musb, epnum);
-				else
-					cppi_hostdma_start(musb, epnum);
-			}
-		}		/* end of for loop */
-	}
-#endif
 
 	schedule_work(&musb->irq_work);
 
@@ -2065,16 +1896,6 @@ musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
 		status = -ENODEV;
 		goto fail3;
 	}
-#if 0
-	musb->nIrq = nIrq;
-	/* FIXME this handles wakeup irqs wrong */
-	if (enable_irq_wake(nIrq) == 0) {
-		musb->irq_wake = 1;
-		device_init_wakeup(dev, 1);
-	} else {
-		musb->irq_wake = 0;
-	}
-#endif
 	/* host side needs more setup */
 	hcd = musb_to_hcd(musb);
 	otg_set_host(musb->xceiv->otg, &hcd->self);
@@ -2170,10 +1991,6 @@ static int musb_probe(struct platform_device *pdev)
 #endif
 	status = musb_init_controller(dev, irq, base);
 
-#if 0
-	if (status < 0)
-		iounmap(base);
-#endif
 
 	return status;
 }

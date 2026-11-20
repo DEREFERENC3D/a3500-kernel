@@ -271,22 +271,6 @@ wmt_core_tx (
     )
 {
     INT32 iRet;
-#if 0 /* Test using direct function call instead of wmt_ctrl() interface */
-    WMT_CTRL_DATA ctrlData;
-    ctrlData.ctrlId = WMT_CTRL_TX;
-    ctrlData.au4CtrlData[0] = (UINT32)pData;
-    ctrlData.au4CtrlData[1] = size;
-    ctrlData.au4CtrlData[2] = (UINT32)writtenSize;
-    ctrlData.au4CtrlData[3] = bRawFlag;
-
-    iRet = wmt_ctrl(&ctrlData);
-    if (iRet) {
-        /* ERROR */
-        WMT_ERR_FUNC("WMT-CORE: wmt_core_ctrl failed: WMT_CTRL_TX, iRet:%d\n", iRet);
-        //(*sys_dbg_assert)(0, __FILE__, __LINE__);
-        osal_assert(0);
-    }
-#endif
     iRet = wmt_ctrl_tx_ex(pData, size, writtenSize, bRawFlag);
 	if (0 == *writtenSize)
 	{
@@ -1239,17 +1223,6 @@ typedef INT32 (*STP_PSM_CB)(INT32);
 			WMT_ERR_FUNC("wmt-core:WAKEUP_CONSYS by BTIF fail(%d)",ret);
 			goto pwr_sv_done;
 		}
-#if 0
-        WMT_DBG_FUNC("**** Send wakeup command\n");
-        ret = wmt_core_tx(WMT_WAKEUP_CMD, sizeof(WMT_WAKEUP_CMD), &u4_result, 1);
-
-        if (ret || (u4_result != sizeof(WMT_WAKEUP_CMD)))
-        {
-            wmt_core_rx_flush(WMT_TASK_INDX);
-            WMT_ERR_FUNC("wmt_core: WAKEUP_CMD ret(%d) cmd len err(%d, %d) ", ret, u4_result, sizeof(WMT_WAKEUP_CMD));
-            goto pwr_sv_done;
-        }
-#endif
         evt_len = sizeof(WMT_WAKEUP_EVT);
         ret = wmt_core_rx(evt_buf, evt_len, &u4_result);
         if (ret || (u4_result != evt_len))
@@ -1434,9 +1407,6 @@ static INT32 opfunc_lpbk(P_WMT_OP pWmtOp)
     pbuffer = (VOID *)pWmtOp->au4OpData[1]; //packet buffer pointer
     WMT_DBG_FUNC("WMT-CORE: -->wmt_do_lpbk \n");
 
-#if 0
-	osal_memcpy(&WMT_TEST_LPBK_EVT[0],&WMT_TEST_LPBK_CMD[0],osal_sizeof(WMT_TEST_LPBK_CMD));
-#endif
 #if !CFG_CORE_INTERNAL_TXRX
     /*check if WMTDRV_TYPE_LPBK function is already on */
     if (DRV_STS_FUNC_ON!= gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_LPBK] || buf_length + osal_sizeof(WMT_TEST_LPBK_CMD) > osal_sizeof(gLpbkBuf)) {
@@ -1730,16 +1700,6 @@ static INT32 opfunc_hw_rst(P_WMT_OP pWmtOp)
         gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_WIFI] = DRV_STS_POWER_OFF;
     }
 
-#if 0
-    /*<4>Power off Combo chip*/
-    ctrlPa1 = 0; ctrlPa2 = 0;
-    iRet = wmt_core_ctrl(WMT_CTRL_HW_RST, &ctrlPa1, &ctrlPa2) ;
-    if (iRet) {
-        WMT_ERR_FUNC("WMT-CORE: [HW RST] WMT_CTRL_POWER_OFF fail (%d)", iRet);
-    } else {
-        WMT_INFO_FUNC("WMT-CORE: [HW RST] WMT_CTRL_POWER_OFF ok (%d)", iRet);
-    }
-#endif
     gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_WMT] = DRV_STS_POWER_OFF;
 
     /*-->PesetCombo chip*/

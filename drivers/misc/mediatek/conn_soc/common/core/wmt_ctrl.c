@@ -68,11 +68,6 @@ static INT32  wmt_ctrl_stp_open(P_WMT_CTRL_DATA);
 static INT32  wmt_ctrl_stp_conf(P_WMT_CTRL_DATA);
 static INT32  wmt_ctrl_free_patch(P_WMT_CTRL_DATA);
 static INT32  wmt_ctrl_get_patch(P_WMT_CTRL_DATA);
-#if 0
-static INT32  wmt_ctrl_host_baudrate_set(P_WMT_CTRL_DATA);
-static INT32  wmt_ctrl_sdio_hw(P_WMT_CTRL_DATA);
-static INT32  wmt_ctrl_sdio_func(P_WMT_CTRL_DATA);
-#endif
 static INT32  wmt_ctrl_hwidver_set (P_WMT_CTRL_DATA);
 static INT32  wmt_ctrl_stp_rst(P_WMT_CTRL_DATA);
 static INT32  wmt_ctrl_get_wmt_conf(P_WMT_CTRL_DATA);
@@ -229,13 +224,6 @@ INT32 wmt_ctrl_rx(P_WMT_CTRL_DATA pWmtCtrlData/*UINT8 *pBuff, UINT32 buffLen, UI
         return 0;
     }
 
-#if 0
-    if (!pDev) {
-        WMT_WARN_FUNC("gpDevWmt = NULL\n");
-        osal_assert(pDev);
-        return -1;
-    }
-#endif
 
 
     if (!osal_test_bit(WMT_STAT_STP_OPEN, &pDev->state)) {
@@ -404,13 +392,6 @@ INT32  wmt_ctrl_ul_cmd (
     }
 
     /* indicate baud rate change to user space app */
-#if 0
-    INIT_COMPLETION(pWmtDev->cmd_comp);
-    pWmtDev->cmd_result = -1;
-    strncpy(pWmtDev->cCmd, pCmdStr, NAME_MAX);
-    pWmtDev->cCmd[NAME_MAX] = '\0';
-    wake_up_interruptible(&pWmtDev->cmd_wq);
-#endif
 
     pCmdSignal = &pWmtDev->cmdResp;
     osal_signal_init(pCmdSignal);
@@ -502,9 +483,6 @@ INT32  wmt_ctrl_stp_open(P_WMT_CTRL_DATA pWmtCtrlData)
 
     osal_set_bit(WMT_STAT_STP_OPEN, &pDev->state);
 
-#if 0
-	iRet = mtk_wcn_stp_lpbk_ctrl(1);
-#endif
 
     return 0;
 }
@@ -760,163 +738,8 @@ INT32  wmt_ctrl_get_patch(P_WMT_CTRL_DATA pWmtCtrlData)
 }
 
 /*do not need contol uart because B/G/F send/receive data by BTIF*/
-#if 0
-INT32  wmt_ctrl_host_baudrate_set(P_WMT_CTRL_DATA pWmtCtrlData)
-{
-    INT32 iRet = -1;
-    char cmdStr[NAME_MAX + 1] = {0};
-    UINT32 u4Baudrate = pWmtCtrlData->au4CtrlData[0];
-    UINT32 u4FlowCtrl = pWmtCtrlData->au4CtrlData[1];
-
-    WMT_DBG_FUNC("baud(%d), flowctrl(%d) \n", u4Baudrate, u4FlowCtrl);
-
-    if (osal_test_bit(WMT_STAT_STP_OPEN, &gDevWmt.state)) {
-        osal_snprintf(cmdStr, NAME_MAX, "baud_%d_%d", u4Baudrate, u4FlowCtrl);
-        iRet = wmt_ctrl_ul_cmd(&gDevWmt, cmdStr);
-    if (iRet) {
-        WMT_WARN_FUNC("CTRL_BAUDRATE baud(%d), flowctrl(%d) fail(%d) \n",
-            u4Baudrate,
-            pWmtCtrlData->au4CtrlData[1],
-            iRet);
-        }
-    else {
-        WMT_DBG_FUNC("CTRL_BAUDRATE baud(%d), flowctrl(%d) ok\n",
-        u4Baudrate,
-        u4FlowCtrl);
-        }
-    }
-    else {
-        WMT_INFO_FUNC("CTRL_BAUDRATE but invalid Handle of WmtStp \n");
-    }
-    return iRet;
-}
-#endif
 /*do not need control SDIO because wifi send/receive data by sdio*/
-#if 0
-INT32  wmt_ctrl_sdio_hw(P_WMT_CTRL_DATA pWmtCtrlData)
-{
-    INT32 iRet = 0;
-    UINT32 statBit = WMT_STAT_SDIO1_ON;
-    P_DEV_WMT pDev = &gDevWmt; /* single instance */
 
-    WMT_SDIO_SLOT_NUM sdioSlotNum = pWmtCtrlData->au4CtrlData[0];
-    ENUM_FUNC_STATE funcState = pWmtCtrlData->au4CtrlData[1];
-
-    if ((WMT_SDIO_SLOT_INVALID == sdioSlotNum)
-        || (WMT_SDIO_SLOT_MAX <= sdioSlotNum)) {
-        WMT_WARN_FUNC("CTRL_SDIO_SLOT(%d) but invalid slot num \n", sdioSlotNum);
-        return -1;
-    }
-
-    WMT_DBG_FUNC("WMT_CTRL_SDIO_HW (0x%x, %d)\n", sdioSlotNum, funcState);
-
-    if (WMT_SDIO_SLOT_SDIO2 == sdioSlotNum) {
-        statBit = WMT_STAT_SDIO2_ON;
-    }
-
-    if (funcState) {
-        if (osal_test_and_set_bit(statBit, &pDev->state)) {
-            WMT_WARN_FUNC("CTRL_SDIO_SLOT slotNum(%d) already ON \n", sdioSlotNum);
-            //still return 0
-            iRet = 0;
-        }
-        else {
-            iRet = wmt_plat_sdio_ctrl(sdioSlotNum, FUNC_ON);
-        }
-    }
-    else  {
-        if (osal_test_and_clear_bit(statBit, &pDev->state)) {
-            iRet = wmt_plat_sdio_ctrl(sdioSlotNum, FUNC_OFF);
-        }
-        else {
-            WMT_WARN_FUNC("CTRL_SDIO_SLOT slotNum(%d) already OFF \n", sdioSlotNum);
-            //still return 0
-            iRet = 0;
-        }
-    }
-
-    return iRet;
-}
-
-INT32  wmt_ctrl_sdio_func(P_WMT_CTRL_DATA pWmtCtrlData)
-{
-    INT32 iRet = -1;
-    UINT32 statBit = WMT_STAT_SDIO_WIFI_ON;
-    INT32 retry = 10;
-    P_DEV_WMT pDev = &gDevWmt; /* single instance */
-    WMT_SDIO_FUNC_TYPE sdioFuncType = pWmtCtrlData->au4CtrlData[0];
-    UINT32 u4On = pWmtCtrlData->au4CtrlData[1];
-
-    if (WMT_SDIO_FUNC_MAX <= sdioFuncType) {
-        WMT_ERR_FUNC("CTRL_SDIO_FUNC, invalid func type (%d) \n", sdioFuncType);
-        return -1;
-    }
-
-    if (WMT_SDIO_FUNC_STP == sdioFuncType) {
-        statBit = WMT_STAT_SDIO_STP_ON;
-    }
-
-    if (u4On) {
-        if (osal_test_bit(statBit, &pDev->state)) {
-            WMT_WARN_FUNC("CTRL_SDIO_FUNC(%d) but already ON \n", sdioFuncType);
-            iRet = 0;
-        }
-        else {
-            while (retry-- > 0 && iRet != 0) {
-                if (iRet) {
-                    /* sleep 150ms before sdio slot ON ready */
-                    osal_sleep_ms(150);
-                }
-                iRet = mtk_wcn_hif_sdio_wmt_control(sdioFuncType, MTK_WCN_BOOL_TRUE);
-                if (HIF_SDIO_ERR_NOT_PROBED == iRet) {
-                    /* not probed case, retry */
-                    continue;
-                }
-                else if (HIF_SDIO_ERR_CLT_NOT_REG == iRet){
-                    /* For WiFi, client not reg yet, no need to retry, WiFi function can work any time when wlan.ko is insert into system*/
-                    iRet = 0;
-                }
-                else
-                {
-                    /* other fail cases, stop */
-                    break;
-                }
-            }
-            if (!retry || iRet) {
-                WMT_ERR_FUNC("mtk_wcn_hif_sdio_wmt_control(%d, TRUE) fail(%d) retry(%d)\n", sdioFuncType, iRet, retry);
-            }
-            else
-            {
-                osal_set_bit(statBit, &pDev->state);
-            }
-        }
-    }
-    else  {
-        if (osal_test_bit(statBit, &pDev->state)) {
-            iRet = mtk_wcn_hif_sdio_wmt_control(sdioFuncType, MTK_WCN_BOOL_FALSE);
-            if (iRet) {
-                WMT_ERR_FUNC("mtk_wcn_hif_sdio_wmt_control(%d, FALSE) fail(%d)\n", sdioFuncType, iRet);
-            }
-            /*any way, set to OFF state*/
-            osal_clear_bit(statBit, &pDev->state);
-        }
-        else {
-            WMT_WARN_FUNC("CTRL_SDIO_FUNC(%d) but already OFF \n", sdioFuncType);
-            iRet = 0;
-        }
-    }
-
-    return iRet;
-}
-#endif
-
-#if 0 // TODO: [FixMe][GeorgeKuo]: remove unused function. get hwver from core is not needed.
-INT32  wmt_ctrl_hwver_get(P_WMT_CTRL_DATA pWmtCtrlData)
-{
-    P_DEV_WMT pDev = &gDevWmt; /* single instance */
-    return 0;
-}
-#endif
 
 INT32 wmt_ctrl_hwidver_set(P_WMT_CTRL_DATA pWmtCtrlData)
 {

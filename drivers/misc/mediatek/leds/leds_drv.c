@@ -610,13 +610,6 @@ static struct platform_driver mt65xx_leds_driver = {
 	.shutdown   = mt65xx_leds_shutdown,
 };
 
-#if 0
-static struct platform_device mt65xx_leds_device = {
-	.name = "leds-mt65xx",
-	.id = -1
-};
-
-#endif
 
 static int __init mt65xx_leds_init(void)
 {
@@ -624,11 +617,6 @@ static int __init mt65xx_leds_init(void)
 
 	LEDS_DRV_DEBUG("[LED]%s\n", __func__);
 
-#if 0
-	ret = platform_device_register(&mt65xx_leds_device);
-	if (ret)
-		printk("[LED]mt65xx_leds_init:dev:E%d\n", ret);
-#endif
 	ret = platform_driver_register(&mt65xx_leds_driver);
 
 	if (ret)

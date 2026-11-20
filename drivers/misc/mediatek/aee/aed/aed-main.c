@@ -1686,54 +1686,6 @@ void aee_kernel_RT_Monitor_api(int lParam)
 	}
 }
 
-#if 0
-static int hd_proc_cmd_read(char *buf, char **start, off_t offset, int count, int *eof, void *data) {
-
-	// with a read of the /proc/hang_detect, we reset the counter.
-	int len = 0 ;
-	printk("[Hang_Detect] read proc	%d\n", count);
-
-	len = sprintf (buf, "%d:%d\n", hang_detect_counter,hd_timeout) ;
-
-	hang_detect_counter = hd_timeout ;
-
-	return len ;
-}
-
-static int hd_proc_cmd_write(struct file *file, const char *buf, unsigned long count, void *data) {
-
-	// with a write function , we set the time out, in seconds.
-	// with a '0' argument, we set it to max int
-	// with negative number, we will triger a timeout, or for extention functions (future use)
-
-	int counter = 0 ;
-	int retval = 0 ;
-
-	retval = sscanf (buf, "%d", &counter) ;
-
-	printk("[Hang_Detect] write	proc %d, original %d: %d\n", counter, hang_detect_counter, hd_timeout);
-
-	if (counter > 0) {
-		if (counter%HD_INTER != 0)
-			hd_timeout = 1 ;
-		else
-			hd_timeout = 0 ;
-
-		counter = counter / HD_INTER ;
-		hd_timeout += counter ;
-	}
-	else if (counter == 0)
-		hd_timeout = 0x7fffffff ;
-	else if (counter == -1)
-		hd_test () ;
-	else 
-		return count ;
-
-	hang_detect_counter = hd_timeout ;
-
-	return count ;
-}
-#endif
 
 int hang_detect_init(void) {
 

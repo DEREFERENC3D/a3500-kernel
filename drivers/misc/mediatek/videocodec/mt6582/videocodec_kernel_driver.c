@@ -402,11 +402,6 @@ static long vcodec_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned 
     VAL_VCODEC_CPU_OPP_LIMIT_T rCpuOppLimit;
     VAL_INT32_T temp_nr_cpu_ids;
     VAL_POWER_T rPowerParam;
-#if 0
-    VCODEC_DRV_CMD_QUEUE_T rDrvCmdQueue;
-    P_VCODEC_DRV_CMD_T cmd_queue = VAL_NULL;
-    VAL_UINT32_T u4Size, uValue, nCount;
-#endif
 
     switch(cmd) {
         case VCODEC_SET_THREAD_ID:
@@ -1152,76 +1147,6 @@ static long vcodec_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned 
         case VCODEC_MB:
             mb();
             break;
-#if 0
-        case MFV_SET_CMD_CMD:
-            MFV_LOGD("[MFV] MFV_SET_CMD_CMD\n");
-            MFV_LOGD("[MFV] Arg = %x\n",arg);
-            user_data_addr = (VAL_UINT8_T *)arg;
-            ret = copy_from_user(&rDrvCmdQueue, user_data_addr, sizeof(VCODEC_DRV_CMD_QUEUE_T));
-            MFV_LOGD("[MFV] CmdNum = %d\n",rDrvCmdQueue.CmdNum);
-            u4Size = (rDrvCmdQueue.CmdNum)*sizeof(VCODEC_DRV_CMD_T);
-
-            cmd_queue = (P_VCODEC_DRV_CMD_T)kmalloc(u4Size,GFP_ATOMIC);
-            if (cmd_queue != VAL_NULL && rDrvCmdQueue.pCmd != VAL_NULL) {
-                ret = copy_from_user(cmd_queue, rDrvCmdQueue.pCmd, u4Size);
-                while (cmd_queue->type != END_CMD) {
-                    switch (cmd_queue->type)
-                    {
-                        case ENABLE_HW_CMD:
-                            break;
-                        case DISABLE_HW_CMD:
-                            break;
-                        case WRITE_REG_CMD:
-                            VDO_HW_WRITE(cmd_queue->address + cmd_queue->offset, cmd_queue->value);
-                            break;
-                        case READ_REG_CMD:
-                            uValue = VDO_HW_READ(cmd_queue->address + cmd_queue->offset);
-                            copy_to_user((void *)cmd_queue->value, &uValue, sizeof(VAL_UINT32_T));
-                            break;
-                        case WRITE_SYSRAM_CMD:
-                            VDO_HW_WRITE(cmd_queue->address + cmd_queue->offset, cmd_queue->value);
-                            break;
-                        case READ_SYSRAM_CMD:
-                            uValue = VDO_HW_READ(cmd_queue->address + cmd_queue->offset);
-                            copy_to_user((void *)cmd_queue->value, &uValue, sizeof(VAL_UINT32_T));
-                            break;
-                        case MASTER_WRITE_CMD:
-                            uValue = VDO_HW_READ(cmd_queue->address + cmd_queue->offset);
-                            VDO_HW_WRITE(cmd_queue->address + cmd_queue->offset, cmd_queue->value | (uValue & cmd_queue->mask));
-                            break;
-                        case SETUP_ISR_CMD:
-                            break;
-                        case WAIT_ISR_CMD:
-                            MFV_LOGD("HAL_CMD_SET_CMD_QUEUE: WAIT_ISR_CMD+\n"); 
-                            
-                            MFV_LOGD("HAL_CMD_SET_CMD_QUEUE: WAIT_ISR_CMD-\n"); 
-                            break;
-                        case TIMEOUT_CMD:
-                            break;
-                        case WRITE_SYSRAM_RANGE_CMD:
-                            break;
-                        case READ_SYSRAM_RANGE_CMD:
-                            break;
-                        case POLL_REG_STATUS_CMD:
-                            uValue = VDO_HW_READ(cmd_queue->address + cmd_queue->offset);
-                            nCount = 0;
-                            while ((uValue & cmd_queue->mask) != 0) {
-                                nCount++;
-                                if (nCount > 1000) {
-                                    break;
-                                }
-                                uValue = VDO_HW_READ(cmd_queue->address + cmd_queue->offset);
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    cmd_queue++;
-                }
-
-            }
-            break;
-#endif
         default:
             MFV_LOGE("========[ERROR] vcodec_ioctl default case======== %u\n", cmd);
         break;

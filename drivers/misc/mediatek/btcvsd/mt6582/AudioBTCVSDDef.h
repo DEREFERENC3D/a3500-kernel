@@ -2,18 +2,6 @@
 #define _AUDIO_BTCVSD_DEF_H_
 
 // BT HW Register address
-#if 0 // use ioremap in kernel
-//#define BTSRAM_BASE                (0xA3000000)
-#define BTPKT_BASE                 (0x18000000)//(0xA3340000)
-#define BT_SCO_HW_REG_PACKET_R     ((volatile kal_uint32*)(BTPKT_BASE+0x0FD0))
-#define BT_SCO_HW_REG_PACKET_W     ((volatile kal_uint32*)(BTPKT_BASE+0x0FD4))
-#define BT_SCO_HW_REG_CONTROL      ((volatile kal_uint32*)(BTPKT_BASE+0x0FD8))
-
-#define BT_LOOPBACK_CTL            ((volatile kal_uint16*)(0x18000000))
-
-//#define BT_POWER_OFF               ((volatile kal_uint16*)(0xA0700170))
-//#define BT_POWER_OFF_MASK          (0x2)
-#endif
 
 #define BT_SCO_PACKET_120 120
 #define BT_SCO_PACKET_180 180

@@ -430,11 +430,7 @@ static unsigned int g_autok_vcore_sel[AUTOK_VCORE_SCAN_NUM] = {
     1150000};
 #elif (AUTOK_VCORE_SCAN_NUM == 3)
 static unsigned int g_autok_vcore_sel[AUTOK_VCORE_SCAN_NUM] = {
-    #if 0
-    1150000, 1212500, 1281250};
-    #else
     1187500, 1237500, 1281250};
-    #endif
 #elif (AUTOK_VCORE_SCAN_NUM == 5)
 static unsigned int g_autok_vcore_sel[AUTOK_VCORE_SCAN_NUM] = {
     1087500, 1150000, 1212500, 1281250, 1343750};
@@ -1282,54 +1278,6 @@ static E_RESULT_TYPE autok_cmd_test(struct msdc_host *host)
     E_RESULT_TYPE res = E_RESULT_PASS;
     unsigned char *data;
 
-#if 0
-    /*use test mode to test read*/
-    for(i=0; i<TUNING_DATA_NO; i++) {
-        data = (unsigned char *)&tuning_data[i];
-        if(msdc_autok_write(host, SDIO_IP_WTMDPCR0, LTE_MODEM_FUNC, (void*)data, 1, CMD_52) != 0) {
-            res = E_RESULT_CMD_CRC;
-            goto end;
-        }
-        if(msdc_autok_write(host, SDIO_IP_WTMDPCR0+1, LTE_MODEM_FUNC, (void*)(data+1), 1, CMD_52) != 0) {
-            res = E_RESULT_CMD_CRC;
-            goto end;
-        }
-        if(msdc_autok_write(host, SDIO_IP_WTMDPCR0+2, LTE_MODEM_FUNC, (void*)(data+2), 1, CMD_52) != 0) {
-            res = E_RESULT_CMD_CRC;
-            goto end;
-        }
-        if(msdc_autok_write(host, SDIO_IP_WTMDPCR0+3, LTE_MODEM_FUNC, (void*)(data+3), 1, CMD_52) != 0) {
-            res = E_RESULT_CMD_CRC;
-            goto end;
-        }
-
-        data = (unsigned char *)g_test_read_pattern;
-        if(msdc_autok_read(host, SDIO_IP_WTMDPCR0, LTE_MODEM_FUNC, (void*)data, 1, CMD_52) != 0) {
-            res = E_RESULT_CMD_CRC;
-            goto end;
-        }
-        if(msdc_autok_read(host, SDIO_IP_WTMDPCR0+1, LTE_MODEM_FUNC, (void*)(data+1), 1, CMD_52) != 0) {
-            res = E_RESULT_CMD_CRC;
-            goto end;
-        }
-        if(msdc_autok_read(host, SDIO_IP_WTMDPCR0+2, LTE_MODEM_FUNC, (void*)(data+2), 1, CMD_52) != 0) {
-            res = E_RESULT_CMD_CRC;
-            goto end;
-        }
-        if(msdc_autok_read(host, SDIO_IP_WTMDPCR0+3, LTE_MODEM_FUNC, (void*)(data+3), 1, CMD_52) != 0) {
-            res = E_RESULT_CMD_CRC;
-            goto end;
-        }
-
-        if(g_test_read_pattern[0] != tuning_data[i]) {
-        #ifdef AUTOK_DEBUG
-            printk("write: 0x%x read: 0x%x\r\n", tuning_data[i], g_test_read_pattern[0]);
-        #endif
-            res = E_RESULT_CMP_ERR;
-            goto end;
-        }
-    }
-#else
     
     /*use test mode to test CMD*/
     for(i=0; i<TUNING_CMD_NO; i+=4) {
@@ -1351,7 +1299,6 @@ static E_RESULT_TYPE autok_cmd_test(struct msdc_host *host)
             goto end;
         }
     }
-#endif
 
 end:
     return res;
@@ -1361,11 +1308,6 @@ static int autok_recovery(struct msdc_host *host)
 {
     /*TODO need to do some SW recovery for next test*/
 
-#if 0
-    MSDC_RESET();
-    MSDC_CLR_FIFO();
-    MSDC_WRITE32(MSDC_INT, MSDC_READ32(MSDC_INT));
-#endif
 
     return 0;
 }
@@ -1424,36 +1366,6 @@ end:
 
 }
 
-#if 0
-static unsigned int autok_accum_score(unsigned int result)
-{
-    unsigned int num = 0;
-
-#if 0    
-    unsigned int bit = 0;
-    
-    // maybe result is 0
-    if (0 == result)
-        return 32;
-
-    if (0xFFFFFFFF == result)
-        return 0;
-
-    /* calc continue zero number */
-    while (bit < 32) {
-        if (result & (1 << bit)) { // failed
-            bit++;
-            continue;
-        }
-        
-        bit++;
-        num++;
-    }
-#endif
-
-    return num;
-}
-#endif
 
 static int autok_simple_score(unsigned int result)
 {
@@ -1849,10 +1761,6 @@ CommonChk:
                     ABS_DIFF((SndMidErrPos0 - FstMidErrPos0), (SndMidErrPos1 - FstMidErrPos1)));
 
             /* Do NOT judge the interval */
-            #if 0
-            if (3 < ABS_DIFF((SndMidErrPos0 - FstMidErrPos0), (SndMidErrPos1 - FstMidErrPos1)))
-                goto exit;
-            #endif
         }
         /* In case of only one have 2 fail region */
         else {
@@ -1866,18 +1774,10 @@ CommonChk:
                          * For MT6582 specific consideration, 
                          * the margin should remain more 
                          */
-                        #if 0
-                        if ((CMDPadScan1.BoundReg2_S - CMDPadScan1.BoundReg1_E) <= 
-                            (AUTOK_TUNING_INACCURACY + 2))
-                            fIdent = CMDPAT_HALF_IDENTICAL;
-                        else
-                            fIdent = CMDPAT_NONE;
-                        #else
 
                         /* Only consider the fisrt fail region */
                         fIdent = CMDPAT_HALF_IDENTICAL;
                         
-                        #endif
                     }
 
                     if (CMDPadScan0.Reg2Cnt) {
@@ -1885,18 +1785,10 @@ CommonChk:
                          * For MT6582 specific consideration, 
                          * the margin should remain more 
                          */
-                        #if 0
-                        if ((CMDPadScan0.BoundReg2_S - CMDPadScan0.BoundReg1_E) <= 
-                            (AUTOK_TUNING_INACCURACY + 2))
-                            fIdent = CMDPAT_HALF_IDENTICAL;
-                        else
-                            fIdent = CMDPAT_NONE;
-                        #else
                         
                         /* Only consider the fisrt fail region */
                         fIdent = CMDPAT_HALF_IDENTICAL;
                         
-                        #endif
                     }
                 }
                     
@@ -3333,12 +3225,6 @@ ReScanCycle:
                 AUTOK_PRINT("%s edge %s score=%d fstPosErr=%d\r\n", sel ? "Falling" : "Rising",
                     g_tune_result_str,data.score,data.fstPosErr);
             sel = AUTOK_CMD_EDGE_MATRIX_SCAN & 0x01;
-        #if 0
-            if(data.fstPosErr < autok_cmd_ckgdly[k].fstPosErr) {
-                sel = ~AUTOK_CMD_EDGE_MATRIX_SCAN & 0x01;
-                autok_cmd_ckgdly[k] = data;
-            }
-        #else
             if(data.score > max_score) {
                 sel = ~AUTOK_CMD_EDGE_MATRIX_SCAN & 0x01;
                 autok_cmd_ckgdly[k] = data;
@@ -3349,7 +3235,6 @@ ReScanCycle:
                     autok_cmd_ckgdly[k] = data;
                 }
             }
-        #endif
 
             if(sel != (AUTOK_CMD_EDGE_MATRIX_SCAN & 0x01))
                 msdc_autok_adjust_param(host, CMD_EDGE, &sel, MSDC_WRITE);
@@ -3415,38 +3300,7 @@ ReScanCycle:
                     if (fIdent == CMDPAT_NONE)
                         continue;
 
-                    #if 0
-                    if (fIdent == CMDPAT_HALF_IDENTICAL) {
-                        rCMDPatChk.cmd_int_shift = 12;
-                    }
-                    else if (fIdent == CMDPAT_IDENTICAL) {
-                        rCMDPatChk.cmd_int_shift = 6;
-                    }
-                    #endif
 
-                    #if 0
-                    /* To filter the CKGEN which may cause mistake judgement */
-                    if (((fIdent == CMDPAT_HALF_IDENTICAL) || (fIdent == CMDPAT_IDENTICAL)) && 
-                          fCMDPatChkMore) {
-
-                        fCMDPatChkMore = 0;
-
-                        /* Skip the mistaken CKGEN and continue */
-                        minClkGenCycleScore = m - x + 1;
-                        AUTOK_PRINT("Find a fake CKGEN(%d) for a cycle, continue to scan...\r\n", 
-                            minClkGenCycleScore - 1);
-
-                        goto CycDoubleChk;
-                    }
-
-                    /* 
-                     * If the interval of external and internal transition is too near
-                     * we might found only 1 region after 1T, in this case, we just
-                     * judge the position only
-                     */
-                    if ((fIdent == CMDPAT_HALF_IDENTICAL) && !fCMDPatNearAtInit)
-                        continue;
-                    #endif
                     
                     clk_gen_delay_period_cycle = m-x;
                     
@@ -3751,25 +3605,12 @@ ReTuneCMDPad:
              * the init gear is too small or too large resulting that the left 
              * range or right range is compressed
              */
-            #if 0
-            if ((PadDlyCMDRef < (AUTOK_CMD_SCAN_RANGE_STG1/2)) ||
-                ((31 - PadDlyCMDRef) < (AUTOK_CMD_SCAN_RANGE_STG1/2))) {
-                CMDDlySel = PadDlyCMDRef;
-                fCMDPadLatchMid = 0;
-            } 
-            else {
-                AUTOK_PRINT("CMD pad tune should NOT goto here!\r\n");
-                AUTOK_ERR();
-            }
-            
-            #else
 
             /* Try again for full range */
             fCMDPadFullRange = 1;
             AUTOK_PRINT("[NOTICE]Try again for full range!\r\n");
             goto ReTuneCMDPad;
             
-            #endif
         }
         /* If still can NOT find fail region after full range scan */
         else if (!CMDPadScan.Reg1Cnt && !CMDPadScan.BoundReg2_S &&
@@ -5865,13 +5706,9 @@ int msdc_autok_stg2_cal(
     autok_tuning_parameter_init(host, TUNING_STG2, pAutok);
     autok_show_parameters(host, pAutok);
 
-    #if 0
-    res = autok_tune_algorithm(host, TUNING_STG2, pAutok);
-    #else
     AUTOK_PRINT("=======autok_stg%d_tune=======\r\n",TUNING_STG2+1);
     AUTOK_PRINT("stg%d is bypassed currently\r\n",TUNING_STG2+1);
     res = E_RESULT_PASS;
-    #endif
     
     if (!res)
         autok_show_parameters(host, pAutok);

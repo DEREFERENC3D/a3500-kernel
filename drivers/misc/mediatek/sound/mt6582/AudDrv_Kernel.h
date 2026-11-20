@@ -264,9 +264,6 @@ AFE_MEM_CONTROL_T    AFE_dL1_Control_context;
 AFE_MEM_CONTROL_T    AFE_dL2_Control_context;
 AFE_MEM_CONTROL_T    AWB_Control_context;
 AFE_MEM_CONTROL_T    VUL_Control_context;
-#if 0 // don't support DAI    
-AFE_MEM_CONTROL_T     DAI_Control_context;
-#endif
 AFE_MEM_CONTROL_T     MODDAI_Control_context;
 
 AudAfe_Suspend_Reg   Suspend_reg;

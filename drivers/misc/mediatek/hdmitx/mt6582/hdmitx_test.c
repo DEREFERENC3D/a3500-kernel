@@ -103,15 +103,6 @@
 #include <mach/m4u.h>
 #include <mach/mt_typedefs.h>
 
-#if defined(CONFIG_ARCH_MT6577) || defined(CONFIG_ARCH_MT6575)
-#include <mach/mt_clock_manager.h>
-#include "dpi_drv.h"
-#elif defined(CONFIG_ARCH_MT6589)
-#include <mach/mt_clkmgr.h>
-#include "dpi1_drv.h"
-#include <ddp_dpfd.h>
-#define NEW_HDMI_ARCH
-#endif
 
 #include <mach/mt_reg_base.h>
 void hdmi_update_impl(void);
@@ -565,10 +556,6 @@ static HDMI_STATUS hdmi_drv_init(void)
     //hdmi_dpi_power_switch(false);   // but dpi power is still off
     //hdmi_drv->suspend();
 
-#if 0
-    LCD_WaitForNotBusy();
-    LCD_SetOutputMode(3); // LCD write to memory and LCM
-#endif
 
     return HDMI_STATUS_OK;
 }

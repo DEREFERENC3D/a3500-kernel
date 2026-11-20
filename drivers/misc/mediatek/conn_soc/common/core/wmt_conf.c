@@ -330,18 +330,6 @@ static INT32 wmt_conf_parse (
     pch = pBuf;
     /* pch is to be updated by strsep(). Keep pBuf unchanged!! */
 
-    #if 0
-    {
-        PCHAR buf_ptr = pBuf;
-        INT32 k=0;
-        WMT_INFO_FUNC("%s len=%d", "wmcfg.content:", size);
-        for(k=0; k < size ; k++){
-            //if(k%16 == 0)  WMT_INFO_FUNC("\n");
-            WMT_INFO_FUNC("%c",  buf_ptr[k]);
-        }
-        WMT_INFO_FUNC("--end\n");
-    }
-    #endif
 
     while ((pLine = osal_strsep(&pch, "\r\n")) != NULL) {
         /* pch is updated to the end of pLine by strsep() and updated to '\0' */

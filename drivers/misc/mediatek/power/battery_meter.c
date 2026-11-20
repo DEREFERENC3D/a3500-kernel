@@ -1429,16 +1429,6 @@ void fgauge_construct_battery_profile(kal_int32 temperature, BATTERY_PROFILE_STR
         }
     
         (temp_profile_p + i)->percentage = (high_profile_p + i)->percentage;
-#if 0        
-        (temp_profile_p + i)->voltage = temp_v_2 +
-            (
-                (
-                    (temperature - low_temperature) * 
-                    (temp_v_1 - temp_v_2)
-                ) / 
-                (high_temperature - low_temperature)                
-            );
-#endif
     }
 
     
@@ -1530,18 +1520,6 @@ void fgauge_construct_r_table_profile(kal_int32 temperature, R_PROFILE_STRUC_P t
             );
         }
 
-#if 0    
-        //(temp_profile_p + i)->resistance = (high_profile_p + i)->resistance;
-        
-        (temp_profile_p + i)->voltage = temp_v_2 +
-            (
-                (
-                    (temperature - low_temperature) * 
-                    (temp_v_1 - temp_v_2)
-                ) / 
-                (high_temperature - low_temperature)                
-            );
-#endif
     }
 
     /* Interpolation for R_BAT */
@@ -1576,18 +1554,6 @@ void fgauge_construct_r_table_profile(kal_int32 temperature, R_PROFILE_STRUC_P t
             );
         }
 
-#if 0    
-        //(temp_profile_p + i)->voltage = (high_profile_p + i)->voltage;
-        
-        (temp_profile_p + i)->resistance = temp_r_2 +
-            (
-                (
-                    (temperature - low_temperature) * 
-                    (temp_r_1 - temp_r_2)
-                ) / 
-                (high_temperature - low_temperature)                
-            );
-#endif
     }
 
     // Dumpt new r-table profile
@@ -1931,11 +1897,7 @@ void oam_run(void)
     oam_v_ocv_2 = fgauge_read_v_by_d(oam_d_2);
     oam_r_2 = fgauge_read_r_bat_by_v(oam_v_ocv_2);    
 
-#if 0
-    oam_d_4 = (oam_d_2+oam_d_3)/2;
-#else
     oam_d_4 = oam_d_3;
-#endif
 
 	gFG_columb = oam_car_2/10;	//mAh
 
@@ -1944,25 +1906,7 @@ void oam_run(void)
     else
         gFG_Is_Charging = KAL_FALSE;
 
-#if 0
-    if(gFG_Is_Charging == KAL_FALSE)
-    {
-        d5_count_time = 60;         
-    }
-    else
-    {
-        charging_current = get_charging_setting_current();    
-        charging_current = charging_current / 100;
-        d5_count_time_rate = (((gFG_BATT_CAPACITY_aging*60*60/100/(charging_current-50))*10)+5)/10;
-        
-        if(d5_count_time_rate < 1)
-            d5_count_time_rate = 1;
-
-        d5_count_time = d5_count_time_rate;
-    }
-#else
     d5_count_time = 60;
-#endif    
 
     if(d5_count >= d5_count_time)
     {
@@ -2361,14 +2305,6 @@ kal_int32 fgauge_read_capacity(kal_int32 type)
     //----------------------------------------------------------------------------
 #endif /* CUST_DISABLE_CAPACITY_OCV2CV_TRANSFORM */
 
-    #if 0
-    //Battery Aging update ----------------------------------------------------------
-    dvalue_new = dvalue;
-    dvalue = ( (dvalue_new * gFG_BATT_CAPACITY_init_high_current * 100) / gFG_BATT_CAPACITY_aging ) / 100;
-    bm_print(BM_LOG_FULL, "[fgauge_read_capacity] dvalue=%d, dvalue_new=%d, gFG_BATT_CAPACITY_init_high_current=%d, gFG_BATT_CAPACITY_aging=%d\r\n", 
-            dvalue, dvalue_new, gFG_BATT_CAPACITY_init_high_current, gFG_BATT_CAPACITY_aging);
-    //----------------------------------------------------------------------------
-    #endif
 
     temp_val = dvalue;
     dvalue = 100 - temp_val;
@@ -3478,21 +3414,6 @@ static int battery_meter_resume(struct platform_device *dev)
 	}
 	bat_spm_timeout = true;
 	battery_meter_ctrl(BATTERY_METER_CMD_GET_HW_OCV, &hw_ocv_after_sleep);    
-#if 0    
-    sw_vbat = battery_meter_get_battery_voltage();
-    
-    bm_print(BM_LOG_CRTI, "HW_OCV=%d, SW_VBAT=%d\n", hw_ocv_after_sleep, sw_vbat);
-    
-    if(hw_ocv_after_sleep < sw_vbat)
-    {
-        bm_print(BM_LOG_CRTI, "Ignore HW_OCV : small than SW_VBAT\n");
-    }
-    else if( (hw_ocv_after_sleep - sw_vbat) > vbat_diff )
-    {
-        bm_print(BM_LOG_CRTI, "Ignore HW_OCV : diff > %d\n", vbat_diff);
-    }
-    else
-#endif        
     {    
         
         

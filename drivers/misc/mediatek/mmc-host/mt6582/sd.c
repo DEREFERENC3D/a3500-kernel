@@ -988,35 +988,6 @@ u32 g_msdc4_io     = 0;
 u32 g_msdc4_flash  = 0;
 
 #ifdef FPGA_PLATFORM
-#if 0
-static u32 msdc_ldo_power(u32 on, int powerId, int powerVolt, u32 *status){
-    if (on) { // want to power on
-        if (*status == 0) {  // can power on
-            printk(KERN_ERR "msdc LDO<%d> power on<%d>\n", powerId, powerVolt);
-            hwPowerOn_fpga(); //powerId, powerVolt, "msdc");
-            *status = powerVolt;
-        } else if (*status == powerVolt) {
-            printk(KERN_ERR "LDO<%d><%d> power on again!\n", powerId, powerVolt);
-        } else { // for sd3.0 later
-            printk(KERN_ERR "LDO<%d> change<%d> to <%d>\n", powerId, *status, powerVolt);
-            hwPowerDown_fpga(); //(powerId, "msdc");
-            hwPowerOn_fpga(); //powerId, powerVolt, "msdc");
-            *status = powerVolt;
-        }
-    } else {  // want to power off
-        if (*status != 0) {  // has been powerred on
-            printk(KERN_ERR "msdc LDO<%d> power off\n", powerId);
-            hwPowerDown_fpga(); //powerId, "msdc");
-            *status = 0;
-        } else {
-            printk(KERN_ERR "LDO<%d> not power on\n", powerId);
-        }
-    }
-
-    return 0;
-
-}
-#endif
 #else
 
 static u32 msdc_ldo_power(u32 on, MT65XX_POWER powerId, MT65XX_POWER_VOLTAGE powerVolt, u32 *status)
@@ -1582,14 +1553,8 @@ static void msdc_sdio_power(struct msdc_host *host,u32 on)
         case 2:
             if(MSDC_VIO18_MC2 == host->power_domain) {
                 if(on) {
-#if 0 //CHECK ME
-                    msdc_ldo_power(on, MT65XX_POWER_LDO_VGP6, VOL_1800, &g_msdc2_io); // Bus & device keeps 1.8v
-#endif
                     //msdc_set_enio18(host,1);
                 } else {
-#if 0 //CHECK ME
-                    msdc_ldo_power(on, MT65XX_POWER_LDO_VGP6, VOL_3300, &g_msdc2_io); // Bus & device keeps 3.3v
-#endif
                     //msdc_set_enio18(host,0);
                 }
 
@@ -1833,75 +1798,6 @@ void msdc_clk_status(int * status)
     *status = g_clk_gate;
 }
 
-#if 0
-static void msdc_dump_card_status(struct msdc_host *host, u32 status)
-{
-    static char *state[] = {
-        "Idle",        /* 0 */
-        "Ready",       /* 1 */
-        "Ident",       /* 2 */
-        "Stby",        /* 3 */
-        "Tran",        /* 4 */
-        "Data",        /* 5 */
-        "Rcv",         /* 6 */
-        "Prg",         /* 7 */
-        "Dis",         /* 8 */
-        "Reserved",    /* 9 */
-        "Reserved",    /* 10 */
-        "Reserved",    /* 11 */
-        "Reserved",    /* 12 */
-        "Reserved",    /* 13 */
-        "Reserved",    /* 14 */
-        "I/O mode",    /* 15 */
-    };
-    if (status & R1_OUT_OF_RANGE)
-        N_MSG(RSP, "[CARD_STATUS] Out of Range");
-    if (status & R1_ADDRESS_ERROR)
-        N_MSG(RSP, "[CARD_STATUS] Address Error");
-    if (status & R1_BLOCK_LEN_ERROR)
-        N_MSG(RSP, "[CARD_STATUS] Block Len Error");
-    if (status & R1_ERASE_SEQ_ERROR)
-        N_MSG(RSP, "[CARD_STATUS] Erase Seq Error");
-    if (status & R1_ERASE_PARAM)
-        N_MSG(RSP, "[CARD_STATUS] Erase Param");
-    if (status & R1_WP_VIOLATION)
-        N_MSG(RSP, "[CARD_STATUS] WP Violation");
-    if (status & R1_CARD_IS_LOCKED)
-        N_MSG(RSP, "[CARD_STATUS] Card is Locked");
-    if (status & R1_LOCK_UNLOCK_FAILED)
-        N_MSG(RSP, "[CARD_STATUS] Lock/Unlock Failed");
-    if (status & R1_COM_CRC_ERROR)
-        N_MSG(RSP, "[CARD_STATUS] Command CRC Error");
-    if (status & R1_ILLEGAL_COMMAND)
-        N_MSG(RSP, "[CARD_STATUS] Illegal Command");
-    if (status & R1_CARD_ECC_FAILED)
-        N_MSG(RSP, "[CARD_STATUS] Card ECC Failed");
-    if (status & R1_CC_ERROR)
-        N_MSG(RSP, "[CARD_STATUS] CC Error");
-    if (status & R1_ERROR)
-        N_MSG(RSP, "[CARD_STATUS] Error");
-    if (status & R1_UNDERRUN)
-        N_MSG(RSP, "[CARD_STATUS] Underrun");
-    if (status & R1_OVERRUN)
-        N_MSG(RSP, "[CARD_STATUS] Overrun");
-    if (status & R1_CID_CSD_OVERWRITE)
-        N_MSG(RSP, "[CARD_STATUS] CID/CSD Overwrite");
-    if (status & R1_WP_ERASE_SKIP)
-        N_MSG(RSP, "[CARD_STATUS] WP Eraser Skip");
-    if (status & R1_CARD_ECC_DISABLED)
-        N_MSG(RSP, "[CARD_STATUS] Card ECC Disabled");
-    if (status & R1_ERASE_RESET)
-        N_MSG(RSP, "[CARD_STATUS] Erase Reset");
-    if ((status & R1_READY_FOR_DATA) == 0)
-        N_MSG(RSP, "[CARD_STATUS] Not Ready for Data");
-    if (status & R1_SWITCH_ERROR)
-        N_MSG(RSP, "[CARD_STATUS] Switch error");
-    if (status & R1_APP_CMD)
-        N_MSG(RSP, "[CARD_STATUS] App Command");
-
-    N_MSG(RSP, "[CARD_STATUS] '%s' State", state[R1_CURRENT_STATE(status)]);
-}
-#endif
 
 static void msdc_set_timeout(struct msdc_host *host, u32 ns, u32 clks)
 {
@@ -2169,31 +2065,9 @@ static void start_online_tuning(unsigned long data)
 
 #endif // MTK_SDIO30_ONLINE_TUNING_SUPPORT
 
-#if 0 //No need in MT6588 MSDC
-
-static u8 clk_src_bit[4] = {
-    0, 3, 5, 7
-};
-#endif
 
 static void msdc_select_clksrc(struct msdc_host* host, int clksrc)
 {
-#if 0 //No need in MT6588 MSDC
-    u32 val;
-    u32 base = host->base;
-
-    BUG_ON(clksrc > 3);
-    INIT_MSG("set clock source to <%d>", clksrc);
-
-    val = sdr_read32(MSDC_CLKSRC_REG);
-    if (sdr_read32(MSDC_ECO_VER) >= 4) {
-        val &= ~(0x3  << clk_src_bit[host->id]);
-        val |= clksrc << clk_src_bit[host->id];
-    } else {
-        val &= ~0x3; val |= clksrc;
-    }
-    sdr_write32(MSDC_CLKSRC_REG, val);
-#endif
     host->hclk = hclks[clksrc];
     host->hw->clk_src = clksrc;
 }
@@ -2267,13 +2141,6 @@ static void msdc_set_mclk(struct msdc_host *host, int ddr, u32 hz)
     host->sclk = sclk;
     host->mclk = hz;
     host->ddr = ddr;
-#if 0
-    if (host->sclk > 100000000) {
-        sdr_clr_bits(MSDC_PATCH_BIT0, CKGEN_RX_SDClKO_SEL);
-    } else {
-        sdr_set_bits(MSDC_PATCH_BIT0, CKGEN_RX_SDClKO_SEL);
-    }
-#endif
 
     msdc_set_timeout(host, host->timeout_ns, host->timeout_clks); // need because clk changed.
 
@@ -2830,171 +2697,6 @@ typedef enum EMMC_CHIP_TAG{
     SANDISK_EMMC_CHIP = 0x45,
     HYNIX_EMMC_CHIP   = 0x90,
 } EMMC_VENDOR_T;
-#if 0
-#ifdef MTK_EMMC_SUPPORT
-unsigned int sg_emmc_sleep = 0;
-static void msdc_config_emmc_pad(int padEmmc)
-{
-    static int sg_gpio164_mode;
-    static int sg_gpio165_mode;
-    static int sg_gpio166_mode;
-    static int sg_gpio168_mode;
-    static int sg_gpio169_mode;
-    static int sg_gpio170_mode;
-    static int sg_gpio171_mode;
-    static int sg_gpio173_mode;
-    static int sg_gpio175_mode;
-
-    if (padEmmc == 0){
-        sg_gpio164_mode = mt_get_gpio_mode(GPIO164);
-        sg_gpio165_mode = mt_get_gpio_mode(GPIO165);
-        sg_gpio166_mode = mt_get_gpio_mode(GPIO166);
-        sg_gpio168_mode = mt_get_gpio_mode(GPIO168);
-        sg_gpio169_mode = mt_get_gpio_mode(GPIO169);
-        sg_gpio170_mode = mt_get_gpio_mode(GPIO170);
-        sg_gpio171_mode = mt_get_gpio_mode(GPIO171);
-        sg_gpio173_mode = mt_get_gpio_mode(GPIO173);
-        sg_gpio175_mode = mt_get_gpio_mode(GPIO175);
-
-        mt_set_gpio_mode(GPIO164, GPIO_MODE_GPIO);
-        mt_set_gpio_mode(GPIO165, GPIO_MODE_GPIO);
-        mt_set_gpio_mode(GPIO166, GPIO_MODE_GPIO);
-        mt_set_gpio_mode(GPIO168, GPIO_MODE_GPIO);
-        mt_set_gpio_mode(GPIO169, GPIO_MODE_GPIO);
-        mt_set_gpio_mode(GPIO170, GPIO_MODE_GPIO);
-        mt_set_gpio_mode(GPIO171, GPIO_MODE_GPIO);
-        mt_set_gpio_mode(GPIO173, GPIO_MODE_GPIO);
-        mt_set_gpio_mode(GPIO175, GPIO_MODE_GPIO);
-
-        mt_set_gpio_dir(GPIO164, GPIO_DIR_IN);
-        mt_set_gpio_dir(GPIO165, GPIO_DIR_IN);
-        mt_set_gpio_dir(GPIO166, GPIO_DIR_IN);
-        mt_set_gpio_dir(GPIO168, GPIO_DIR_IN);
-        mt_set_gpio_dir(GPIO169, GPIO_DIR_IN);
-        mt_set_gpio_dir(GPIO170, GPIO_DIR_IN);
-        mt_set_gpio_dir(GPIO171, GPIO_DIR_IN);
-        mt_set_gpio_dir(GPIO173, GPIO_DIR_IN);
-        mt_set_gpio_dir(GPIO175, GPIO_DIR_IN);
-
-        mt_set_gpio_pull_enable(GPIO164, GPIO_PULL_DISABLE);
-        mt_set_gpio_pull_enable(GPIO165, GPIO_PULL_DISABLE);
-        mt_set_gpio_pull_enable(GPIO166, GPIO_PULL_DISABLE);
-        mt_set_gpio_pull_enable(GPIO168, GPIO_PULL_DISABLE);
-        mt_set_gpio_pull_enable(GPIO169, GPIO_PULL_DISABLE);
-        mt_set_gpio_pull_enable(GPIO170, GPIO_PULL_DISABLE);
-        mt_set_gpio_pull_enable(GPIO171, GPIO_PULL_DISABLE);
-        mt_set_gpio_pull_enable(GPIO173, GPIO_PULL_DISABLE);
-        mt_set_gpio_pull_enable(GPIO175, GPIO_PULL_DISABLE);
-    } else {
-        mt_set_gpio_mode(GPIO164, sg_gpio164_mode);
-        mt_set_gpio_mode(GPIO165, sg_gpio165_mode);
-        mt_set_gpio_mode(GPIO166, sg_gpio166_mode);
-        mt_set_gpio_mode(GPIO168, sg_gpio168_mode);
-        mt_set_gpio_mode(GPIO169, sg_gpio169_mode);
-        mt_set_gpio_mode(GPIO170, sg_gpio170_mode);
-        mt_set_gpio_mode(GPIO171, sg_gpio171_mode);
-        mt_set_gpio_mode(GPIO173, sg_gpio173_mode);
-        mt_set_gpio_mode(GPIO175, sg_gpio175_mode);
-    }
-}
-
-static void msdc_sleep_enter(struct msdc_host *host)
-{
-    //u32 l_status = MMC_IDLE_STATE;
-    //unsigned long tmo;
-    struct mmc_host *mmc;
-    struct mmc_card *card;
-
-    BUG_ON(!host->mmc);
-    BUG_ON(!host->mmc->card);
-
-    mmc = host->mmc;
-    card = host->mmc->card;
-
-    /* check card type */
-    if (MMC_TYPE_MMC != card->type) {
-        printk(KERN_WARNING"[EMMC] not a mmc card, pls check it before sleep\n");
-        return ;
-    }
-
-    mmc_claim_host(mmc);
-    mmc_go_idle(mmc); // Infinity: Ask eMMC into open-drain mode
-
-    // add for hynix emcp chip
-    if (host->mmc->card->cid.manfid == HYNIX_EMMC_CHIP){
-        u32 l_ocr = mmc->ocr;
-        u32 l_cid[4];
-        u32 l_rocr;
-        u32 l_ret;
-
-        // clk freq down, 26kHz for emmc card init
-        msdc_set_mclk(host, 0, 400000);
-
-        //send CMD1, will loop for card's busy state
-        l_ret = mmc_send_op_cond(mmc, l_ocr | (1 << 30), &l_rocr);
-        if (l_ret != 0){
-            ERR_MSG("send cmd1 error while emmc card enter low power state\n");       /* won't happen. */
-        }
-
-        //send CMD2
-        l_cid[0] = 0;
-        l_cid[1] = 0;
-        l_cid[2] = 0;
-        l_cid[3] = 0;
-        l_ret = mmc_all_send_cid(mmc, l_cid);
-        if (l_ret != 0){
-            ERR_MSG("send cmd2 error while emmc card enter low power state\n");       /* won't happen. */
-        }
-    }
-
-    msdc_config_emmc_pad(0);
-
-    mmc_release_host(mmc);
-}
-
-static void msdc_sleep_out(struct msdc_host *host)
-{
-    struct mmc_host *mmc;
-    struct mmc_card *card;
-
-    BUG_ON(!host->mmc);
-    BUG_ON(!host->mmc->card);
-
-    mmc = host->mmc;
-    card = host->mmc->card;
-
-
-    /* check card type */
-    if (MMC_TYPE_MMC != card->type) {
-        printk(KERN_WARNING"[EMMC] not a mmc card, pls check it before sleep\n");
-        return ;
-    }
-
-    mmc_claim_host(mmc);
-    msdc_config_emmc_pad(1);
-    mmc_release_host(mmc);
-}
-
-static void msdc_emmc_sleepawake(struct msdc_host *host, u32 awake)
-{
-    /* slot0 for emmc, sd/sdio do not support sleep state */
-    if (host->id != EMMC_HOST_ID) {
-        return;
-    }
-
-    /* for emmc card need to go sleep state, while suspend.
-     * because we need emmc power always on to guarantee brom can
-     * boot from emmc */
-    if ((awake == 1) && (sg_emmc_sleep == 1)) {
-        msdc_sleep_out(host);
-        sg_emmc_sleep = 0;
-    } else if((awake == 0) && (sg_emmc_sleep == 0)) {
-        msdc_sleep_enter(host);
-        sg_emmc_sleep = 1;
-    }
-}
-#endif
-#endif
 static void msdc_clksrc_onoff(struct msdc_host *host, u32 on)
 {
     u32 base = host->base;
@@ -3717,37 +3419,6 @@ out:
 
     return cmd->error;
 }
-#if 0
-static unsigned int msdc_command_resp(struct msdc_host   *host,
-                                      struct mmc_command *cmd,
-                                      int                 tune,
-                                      unsigned long       timeout)
-{
-    u32 base = host->base;
-    u32 opcode = cmd->opcode;
-    //u32 resp = host->cmd_rsp;
-    //u32 tmo;
-    //u32 intsts;
-
-    spin_unlock(&host->lock);
-    if(!wait_for_completion_timeout(&host->cmd_done, 10*timeout)){
-        ERR_MSG("XXX CMD<%d> wait_for_completion timeout ARG<0x%.8x>", opcode, cmd->arg);
-        host->sw_timeout++;
-        msdc_dump_info(host->id);
-        cmd->error = (unsigned int)-ETIMEDOUT;
-        msdc_reset_hw(host->id);
-    }
-    spin_lock(&host->lock);
-
-    sdr_clr_bits(MSDC_INTEN, wints_cmd);
-    host->cmd = NULL;
-    /* if (resp == RESP_R1B) {
-        while ((sdr_read32(MSDC_PS) & 0x10000) != 0x10000);
-    } */
-
-    return cmd->error;
-}
-#endif
 unsigned int msdc_do_command(struct msdc_host   *host,
                                       struct mmc_command *cmd,
                                       int                 tune,
@@ -4241,17 +3912,6 @@ end:
     return data->error;
 }
 
-#if 0
-// DMA resume / start / stop
-static void msdc_dma_resume(struct msdc_host *host)
-{
-    u32 base = host->base;
-
-    sdr_set_field(MSDC_DMA_CTRL, MSDC_DMA_CTRL_RESUME, 1);
-
-    N_MSG(DMA, "DMA resume");
-}
-#endif
 
 static void msdc_dma_start(struct msdc_host *host)
 {
@@ -4303,64 +3963,6 @@ static void msdc_dma_stop(struct msdc_host *host)
     N_MSG(DMA, "DMA stop");
 }
 
-#if 0
-/* dump a gpd list */
-static void msdc_dma_dump(struct msdc_host *host, struct msdc_dma *dma)
-{
-    gpd_t *gpd = dma->gpd;
-    bd_t   *bd = dma->bd;
-    bd_t   *ptr;
-    int i = 0;
-    int p_to_v;
-
-    if (dma->mode != MSDC_MODE_DMA_DESC) {
-        return;
-    }
-
-    ERR_MSG("try to dump gpd and bd");
-
-    /* dump gpd */
-    ERR_MSG(".gpd<0x%.8x> gpd_phy<0x%.8x>", (int)gpd, (int)dma->gpd_addr);
-    ERR_MSG("...hwo   <%d>", gpd->hwo );
-    ERR_MSG("...bdp   <%d>", gpd->bdp );
-    ERR_MSG("...chksum<0x%.8x>", gpd->chksum );
-    //ERR_MSG("...intr  <0x%.8x>", gpd->intr );
-    ERR_MSG("...next  <0x%.8x>", (int)gpd->next );
-    ERR_MSG("...ptr   <0x%.8x>", (int)gpd->ptr );
-    ERR_MSG("...buflen<0x%.8x>", gpd->buflen );
-    //ERR_MSG("...extlen<0x%.8x>", gpd->extlen );
-    //ERR_MSG("...arg   <0x%.8x>", gpd->arg );
-    //ERR_MSG("...blknum<0x%.8x>", gpd->blknum );
-    //ERR_MSG("...cmd   <0x%.8x>", gpd->cmd );
-
-    /* dump bd */
-    ERR_MSG(".bd<0x%.8x> bd_phy<0x%.8x> gpd_ptr<0x%.8x>", (int)bd, (int)dma->bd_addr, (int)gpd->ptr);
-    ptr = bd;
-    p_to_v = ((u32)bd - (u32)dma->bd_addr);
-    while (1) {
-        ERR_MSG(".bd[%d]", i); i++;
-        ERR_MSG("...eol   <%d>", ptr->eol );
-        ERR_MSG("...chksum<0x%.8x>", ptr->chksum );
-        //ERR_MSG("...blkpad<0x%.8x>", ptr->blkpad );
-        //ERR_MSG("...dwpad <0x%.8x>", ptr->dwpad );
-        ERR_MSG("...next  <0x%.8x>", (int)ptr->next );
-        ERR_MSG("...ptr   <0x%.8x>", (int)ptr->ptr );
-        ERR_MSG("...buflen<0x%.8x>", (int)ptr->buflen );
-
-        if (ptr->eol == 1) {
-            break;
-        }
-
-        /* find the next bd, virtual address of ptr->next */
-        /* don't need to enable when use malloc */
-        //BUG_ON( (ptr->next + p_to_v)!=(ptr+1) );
-        //ERR_MSG(".next bd<0x%.8x><0x%.8x>", (ptr->next + p_to_v), (ptr+1));
-        ptr++;
-    }
-
-    ERR_MSG("dump gpd and bd finished");
-}
-#endif
 
 /* calc checksum */
 static u8 msdc_dma_calcs(u8 *buf, u32 len)
@@ -4709,18 +4311,6 @@ static int ot_do_command(struct msdc_host *host, u32 rawcmd, u32 rawarg, u32 *pi
 
 static int ot_recover_device(struct msdc_host *host, unsigned fn, unsigned addr)
 {
-#if 0
-    u32 base = host->base;
-
-    xlog_printk(ANDROID_LOG_DEBUG, "SDIO_TEST_MODE", "Enter [%s]\n", __func__);
-
-    sdr_set_field(MSDC_CFG, MSDC_CFG_CKPDN, 1); // Clock is free running
-
-    msleep(1);
-
-    sdr_set_field(MSDC_CFG, MSDC_CFG_CKPDN, 0); // Clock is gated to 0 if no command or data is transmitted.
-    msdc_reset_hw(host->id);
-#endif
     return 0;
 }
 
@@ -5358,18 +4948,6 @@ _retry:
         goto _retry;
     }
 
-#if 0
-    // Process write
-    ret = ot_process(host, &otData, rawcmd, rawarg, CRCPass, 1);
-
-    if(ret < 0)
-        goto out;
-
-    if(otData.retry == 1)
-    {
-        goto _retry;
-    }
-#endif
 
 out:
 
@@ -5768,24 +5346,6 @@ done:
         host->data = NULL;
         host->dma_xfer = 0;
 
-#if 0   //read MBR
-#ifdef MTK_EMMC_SUPPORT
-        {
-            char *ptr = sg_virt(data->sg);
-            int i;
-            if (cmd->arg == 0x0 && (cmd->opcode == MMC_READ_SINGLE_BLOCK || cmd->opcode == MMC_READ_MULTIPLE_BLOCK)){
-                printk("XXXX CMD<%d> ARG<%X> offset = <%d> data<%s %s> sg <%p> ptr <%p> blksz<%d> block<%d> error<%d>\n",cmd->opcode, cmd->arg, offset, (dma? "dma":"pio"),
-                       (read ? "read ":"write"), data->sg, ptr, data->blksz, data->blocks, data->error);
-
-                for(i = 0; i < 512; i ++){
-                    if (i%32 == 0)
-                        printk("\n");
-                    printk(" %2x ", ptr[i]);
-                }
-            }
-        }
-#endif
-#endif   //end read MBR
         if (dma != 0) {
             msdc_dma_off();
             host->dma.used_bd = 0;
@@ -6720,12 +6280,6 @@ static int msdc_tune_write(struct msdc_host *host)
     sdr_set_field(MSDC_IOCON, MSDC_IOCON_DDLSEL, 1);
     cur_dsmpl = (orig_dsmpl + 1);
     sdr_set_field(MSDC_IOCON, MSDC_IOCON_W_DSPL, cur_dsmpl % 2);
-#if 0
-    if(cur_dsmpl >= 2){
-        cur_wrrdly = (orig_wrrdly+1);
-        sdr_set_field(MSDC_PAD_TUNE, MSDC_PAD_TUNE_DATWRDLY, cur_wrrdly % 32);
-    }
-#endif
     if(cur_dsmpl >= 2){
         cur_rxdly0 = sdr_read32(MSDC_DAT_RDDLY0);
 
@@ -7728,11 +7282,6 @@ static void msdc_ops_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
         msdc_set_mclk(host, ddr, ios->clock);
     }
 
-#if 0  // PM Resume -> set 0 -> 260KHz
-    if (ios->clock == 0) { // only gate clock when set 0Hz
-        msdc_gate_clock(host, 1);
-    }
-#endif
     msdc_gate_clock(host, 1);
     spin_unlock(&host->lock);
 }
@@ -7794,13 +7343,6 @@ static int msdc_ops_get_cd(struct mmc_host *mmc)
     }
 //#endif
     //host->card_inserted = 1;
-#if 0
-    if (host->card_inserted == 0) {
-        msdc_gate_clock(host, 0);
-    }else {
-        msdc_gate_clock(host, 1);
-    }
-#endif
     if(host->hw->host_function == MSDC_SD && host->block_bad_card)
         host->card_inserted = 0;
     INIT_MSG("Card insert<%d> Block bad card<%d>", host->card_inserted,host->block_bad_card);
@@ -8131,15 +7673,6 @@ static irqreturn_t msdc_irq(int irq, void *dev_id)
         host->core_clkon = 1;
         sdr_set_field(MSDC_CFG, MSDC_CFG_MODE, MSDC_SDMMC);
         intsts = sdr_read32(MSDC_INT);
-#if 0
-        if (sdr_read32(MSDC_ECO_VER) >= 4) {
-            sdr_set_field(MSDC_CFG, MSDC_CFG_MODE, MSDC_SDMMC);  /* E2 */
-            intsts = sdr_read32(MSDC_INT);
-            sdr_set_field(MSDC_CLKSRC_REG, MSDC1_IRQ_SEL, 0);
-        } else {
-            intsts = sdr_read32(MSDC_INT);
-        }
-#endif
     } else {
         intsts = sdr_read32(MSDC_INT);
     }
@@ -8162,14 +7695,6 @@ static irqreturn_t msdc_irq(int irq, void *dev_id)
 
 
     /* MSG will cause fatal error */
-#if 0
-    /* card change interrupt */
-    if (intsts & MSDC_INT_CDSC){
-        IRQ_MSG("MSDC_INT_CDSC irq<0x%.8x>", intsts);
-        tasklet_hi_schedule(&host->card_tasklet);
-        /* tuning when plug card ? */
-    }
-#endif
     /* sdio interrupt */
     if (intsts & MSDC_INT_SDIOIRQ){
         IRQ_MSG("XXX MSDC_INT_SDIOIRQ");  /* seems not sdio irq */
@@ -9223,13 +8748,6 @@ static int msdc_drv_probe(struct platform_device *pdev)
     /* Allocate MMC host for this device */
     mmc = mmc_alloc_host(sizeof(struct msdc_host), &pdev->dev);
     if (!mmc) return -ENOMEM;
-#if 0
-    workqueue = alloc_ordered_workqueue("kmmrmcd", 0);
-    if (!workqueue){
-        mmc_remove_host(mmc);
-        return -ENOMEM;
-    }
-#endif
     hw   = (struct msdc_hw*)pdev->dev.platform_data;
     mem  = platform_get_resource(pdev, IORESOURCE_MEM, 0);
     irq  = platform_get_irq(pdev, 0);

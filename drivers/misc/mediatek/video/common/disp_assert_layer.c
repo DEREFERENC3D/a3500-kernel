@@ -299,13 +299,6 @@ DAL_STATUS DAL_Clean(void)
         goto End;
     }
     //xuecheng, for debug
-#if 0
-    if(is_early_suspended){
-        up(&sem_early_suspend);
-        DISP_LOG_PRINT(ANDROID_LOG_INFO, "DAL", "dal_clean in power off\n");
-        goto End;
-    }
-#endif
     up(&sem_early_suspend);
 
     mutex_lock(&OverlaySettingMutex);
@@ -418,13 +411,6 @@ DAL_STATUS DAL_Printf(const char *fmt, ...)
         goto End;
     }
 
-#if 0
-    if(is_early_suspended){
-        up(&sem_early_suspend);
-        DISP_LOG_PRINT(ANDROID_LOG_INFO, "DAL", "DAL_Printf in power off\n");
-        goto End;
-    }
-#endif
     up(&sem_early_suspend);
 
     mutex_lock(&OverlaySettingMutex);

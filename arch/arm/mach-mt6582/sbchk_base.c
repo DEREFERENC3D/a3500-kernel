@@ -327,18 +327,6 @@ void sbchk_base(void)
             ASSERT(0);
         }
 
-	#if 0
-        /* --------------------------------- */   
-        /* verify init rc                    */
-        /* --------------------------------- */       
-        if(SEC_OK != (ret = sbchk_verify(INIT_RC_PATH,INIT_RC_HASH)))
-        {            
-            msleep(20000);
-            printk("[%s] Verify '%s' fail. ret '%x'\n",MOD,INIT_RC_PATH,ret);
-            /* punishment can be customized */
-            ASSERT(0);
-        }        
-	#endif
     }
     
 #endif

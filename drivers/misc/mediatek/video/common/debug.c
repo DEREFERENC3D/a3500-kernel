@@ -356,20 +356,6 @@ void DBG_OnLcdDone(void)
     time = get_current_time_us();
     fps.current_lcd_time_us = (time - fps.trigger_lcd_time_us);
 
-#if 0   // FIXME
-    if (dbg_opt.en_touch_latency_log && tpd_start_profiling) {
-
-        DISP_LOG_PRINT(ANDROID_LOG_INFO, "DBG", "Touch Latency: %ld ms\n", 
-               (time - tpd_last_down_time) / 1000);
-
-        DISP_LOG_PRINT(ANDROID_LOG_INFO, "DBG", "LCD update time %ld ms (TE delay %ld ms + LCD %ld ms)\n",
-               fps.current_lcd_time_us / 1000,
-               fps.current_te_delay_time_us / 1000,
-               (fps.current_lcd_time_us - fps.current_te_delay_time_us) / 1000);
-        
-        tpd_start_profiling = 0;
-    }
-#endif
 
     if (!dbg_opt.en_fps_log) return;
 

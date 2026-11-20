@@ -263,14 +263,7 @@ void get_ext_md_post_fix(int md_id, char buf[], char buf_ex[])
 #endif
 
 	// [_Ex] Get chip version
-#if 0
-	if(get_chip_version() == CHIP_SW_VER_01)
-		Ex = 1;
-	else if(get_chip_version() == CHIP_SW_VER_02)
-		Ex = 2;
-#else
 	Ex = 1;
-#endif
 
 	// Gen post fix
 	if(buf) {
@@ -792,18 +785,6 @@ int eemcs_helper_pm_restore_noirq(struct device *device)
 {
     pr_debug("calling %s()\n", __func__);
 /*Not ready, need to check more details*/
-#if 0
-    // CCIF AP0
-    mt_irq_set_sens(CCIF0_AP_IRQ_ID, MT_LEVEL_SENSITIVE);
-    mt_irq_set_polarity(CCIF0_AP_IRQ_ID, MT_POLARITY_LOW);
-
-    // MD1 WDT
-    mt_irq_set_sens(MD_WDT_IRQ_ID, MT_EDGE_SENSITIVE);
-    mt_irq_set_polarity(MD_WDT_IRQ_ID, MT_POLARITY_LOW);
-
-    // MD1
-    exec_ccci_kern_func_by_md_id(0, ID_IPO_H_RESTORE_CB, NULL, 0);
-#endif
     return 0;
 
 }
@@ -854,11 +835,6 @@ static int __init eemcs_helper_init(void)
 
 
 /* Not ready, need check*/
-#if 0
-	// Init ccci helper sys fs
-	memset( (void*)cmd_map_table, 0, sizeof(cmd_map_table) );
-	mtk_ccci_sysfs();
-#endif
 	// init ccci kernel API register table
 	memset((void*)eemcs_func_table, 0, sizeof(eemcs_func_table));
 	memset((void*)eemcs_kern_func_err_num, 0, sizeof(eemcs_kern_func_err_num));

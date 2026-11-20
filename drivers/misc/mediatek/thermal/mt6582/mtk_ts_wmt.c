@@ -42,11 +42,6 @@ struct linux_thermal_ctrl_if {
     struct thermal_cooling_device *cl_pa3_dev;
 };
 
-#if 0
-struct wmt_thermal_ctrl_if {
-    struct wmt_thermal_ctrl_ops ops;
-};
-#endif
 
 typedef struct wmt_tm {
    struct linux_thermal_ctrl_if linux_if;
@@ -321,18 +316,6 @@ static int wmt_thz_unbind(struct thermal_zone_device *thz_dev,
     } else {
        return -EINVAL;
     }
-#if 0
-    /* cooling devices */
-    if (cool_dev == p_linux_if->cl_dev)
-    {
-        table_val= 0;
-    }
-    else
-    {
-        wmt_tm_dprintk("[wmt_thz_unbind] unbind device fail..!\n");
-        return -EINVAL;
-    }
-#endif
 
     if(!strcmp(cool_dev->type, g_bind0)) {
         table_val = 0;
@@ -1273,49 +1256,6 @@ static int wmt_tm_thz_cl_unregister(void)
     return 0;
 }
 
-#if 0
-static int wmt_tm_ops_register(struct wmt_thermal_ctrl_ops *ops)
-{
-    struct wmt_thermal_ctrl_ops *p_des;
-
-   wmt_tm_printk("[%s]\n", __func__);
-
-    if (pg_wmt_tm) {
-#if 1
-        p_des = &pg_wmt_tm->wmt_if.ops;
-        if (ops!=NULL) {
-            wmt_tm_printk("[wmt_tm_ops_register] reg start ...\n");
-            p_des->query_temp = ops->query_temp;
-            p_des->set_temp = ops->set_temp;
-            wmt_tm_printk("[wmt_tm_ops_register] reg end ...\n");
-        } else {
-            p_des->query_temp =  0;
-            p_des->set_temp = 0;
-        }
-#endif
-        return 0;
-    } else {
-        return -1;
-    }
-}
-
-static int wmt_tm_ops_unregister(void)
-{
-    struct wmt_thermal_ctrl_ops *p_des;
-
-   wmt_tm_printk("[%s]\n", __func__);
-
-    if (pg_wmt_tm) {
-        p_des = &pg_wmt_tm->wmt_if.ops;
-        p_des->query_temp = 0;
-        p_des->set_temp = 0;
-
-        return 0;
-    } else {
-        return -1;
-    }
-}
-#endif
 
 static int __init wmt_tm_init(void)
 {
@@ -1323,11 +1263,6 @@ static int __init wmt_tm_init(void)
 
     wmt_tm_printk("[wmt_tm_init] start -->\n");
 
-#if 0
-    err = wmt_tm_ops_register(ops);
-    if(err)
-        return err;
-#endif
 
     err = wmt_tm_proc_register();
     if(err)
@@ -1353,37 +1288,6 @@ static int __init wmt_tm_init(void)
     return 0;
 }
 
-#if 0
-int wmt_tm_init_rt()
-{
-    int err = 0;
-
-    wmt_tm_printk("[wmt_tm_init_rt] start -->\n");
-
-    err = wmt_tm_thz_cl_register();
-    if(err)
-        return err;
-
-    wmt_tm_printk("[wmt_tm_init_rt] end <--\n");
-
-    return 0;
-}
-
-int wmt_tm_deinit_rt()
-{
-    int err = 0;
-
-    wmt_tm_printk("[wmt_tm_deinit_rt] start -->\n");
-
-    err = wmt_tm_thz_cl_unregister();
-    if(err)
-        return err;
-
-    wmt_tm_printk("[wmt_tm_deinit_rt] end <--\n");
-
-    return 0;
-}
-#endif
 
 static void __exit wmt_tm_deinit(void)
 {
@@ -1399,11 +1303,6 @@ static void __exit wmt_tm_deinit(void)
     if(err)
         return;
 
-#if 0
-    err = wmt_tm_ops_unregister();
-    if(err)
-        return;
-#endif
 
     del_timer(&wmt_stats_timer);
 

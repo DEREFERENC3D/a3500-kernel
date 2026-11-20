@@ -123,13 +123,8 @@ typedef struct
 //#define AR0833_PV_PERIOD_LINE_NUMS                  0x51E   //1310
 
 
-#if 0  ///kk test default:0
-#define AR0833_IMAGE_SENSOR_PV_HACTIVE      3264
-#define AR0833_IMAGE_SENSOR_PV_VACTIVE      2448
-#else
 #define AR0833_IMAGE_SENSOR_PV_HACTIVE      1616
 #define AR0833_IMAGE_SENSOR_PV_VACTIVE      1212
-#endif
 
 #define AR0833_FULL_START_X                 2
 #define AR0833_FULL_START_Y                 2

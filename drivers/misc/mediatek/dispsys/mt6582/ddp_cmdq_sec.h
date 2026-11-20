@@ -22,15 +22,4 @@ void cmdq_debug_set_sw_copy(int32_t value);
 int32_t cmdq_debug_get_sw_copy(void);
 
 // TODO: move cmdqSubmitTaskSecure to ddp_cmdq_sec
-#if 0
-int32_t cmdqSubmitTaskSecure(int32_t  scenario,
-                       int32_t  priority,
-                       uint32_t engineFlag,
-                       void     *pCMDBlock,
-                       int32_t  blockSize, 
-                       uint32_t  *pSecureFdIndex,
-                       uint32_t  *pSecurePortList,
-                       uint32_t *pSecureSizeList,
-                       uint32_t  totalSecurFd);
-#endif
 #endif //__DDP_CMDQ_SEC_H__

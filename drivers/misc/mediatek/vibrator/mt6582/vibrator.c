@@ -20,24 +20,6 @@
 
 extern S32 pwrap_read( U32  adr, U32 *rdata );
 extern S32 pwrap_write( U32  adr, U32  wdata );
-#if 0
-// pmic wrap read and write func
-static unsigned int vibr_pmic_pwrap_read(U32 addr)
-{
-
-	U32 val =0;
-	pwrap_read(addr, &val);
-	return val;
-	
-}
-
-static void vibr_pmic_pwrap_write(unsigned int addr, unsigned int wdata)
-
-{
-	//unsigned int val =0;
-    pwrap_write(addr, wdata);
-}
-#endif
 extern void dct_pmic_VIBR_enable(kal_bool dctEnable);
 
 void vibr_Enable_HW(void)

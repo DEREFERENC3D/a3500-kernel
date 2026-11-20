@@ -20,11 +20,7 @@ extern "C" {
 #define NEW_PAUSE_MODE 1
 
 // For FLV media use sorenson H263 codec @2009/06/26
-#if 0//CONFIG_DRV_SUPPORT_SORENSON_H263
-#define DRV_SUPPORT_SORENSON_H263  (1)
-#else
 #define DRV_SUPPORT_SORENSON_H263  (0)
-#endif
 
 #if DRV_SUPPORT_SORENSON_H263
 #define DRV_SORENSON_H263_HW_HDR_DETECTION 1
@@ -365,15 +361,6 @@ typedef enum
 
 #define fgIsBType_MP2(arg)   ((arg&0xFF) == B_TYPE)
 
-#if 0
-#define fgIsPType_MP4(arg)   (((arg&0xFF) == P_VOP) || \
-                                                ((arg&0xFF) == S_VOP) || \
-                                                ((arg&0xFF) == SH_P_VOP) || \
-                                                ((arg&0xFF) == DX3_P_FRM) || \
-                                                ((arg&0xFF) == DUMMY_FRM))
-#define fgIsBType_MP4(arg)   ((arg&0xFF) == B_VOP)
-
-#else
 #define fgIsPType_MP4(arg)   (((arg&0xFF) == P_VOP) || \
                                                 ((arg&0xFF) == S_VOP) || \
                                                 ((arg&0xFF) == SH_P_VOP) || \
@@ -381,7 +368,6 @@ typedef enum
 
 #define fgIsBType_MP4(arg)   ((arg&0xFF) == B_VOP || \
                              ((arg&0xFF) == DUMMY_FRM))
-#endif
 
 #define fgIsBType_AVC(arg)   (((arg&0xFF) == B_SLICE) || \
                                                 ((arg&0xFF) == SP_SLICE) || \
@@ -417,28 +403,6 @@ typedef enum
                                          ((arg&0xFF) == FORCED_INTRAPIC) || \
                                          ((arg&0xFF) == VP6_I_FRM)   )
                                          
-#if 0
-#define fgIsPType(arg)   (((arg&0xFF) == P_TYPE) || \
-                                         ((arg&0xFF) == P_VOP) || \
-                                         ((arg&0xFF) == S_VOP) || \
-                                         ((arg&0xFF) == SH_P_VOP) || \
-                                         ((arg&0xFF) == DX3_P_FRM) || \
-                                         ((arg&0xFF) == DUMMY_TYPE) || \
-                                         ((arg&0xFF) == DUMMY_FRM) || \
-                                         ((arg&0xFF) == PVOP) || \
-                                         ((arg&0xFF) == P_SLICE) || \
-                                         ((arg&0xFF) == SP_SLICE) || \
-                                         ((arg&0xFF) == P_ALL_SLICE) || \
-                                         ((arg&0xFF) == SP_ALL_SLICE) || \
-                                         ((arg&0xFF) == SKIPFRAME))
-#define fgIsBType(arg)   (((arg&0xFF) == B_TYPE) || \
-                                         ((arg&0xFF) == B_VOP) || \
-                                         ((arg&0xFF) == BVOP) || \
-                                         ((arg&0xFF) == B_SLICE) || \
-                                         ((arg&0xFF) == SP_SLICE) || \
-                                         ((arg&0xFF) == B_ALL_SLICE) || \
-                                         ((arg&0xFF) == BIVOP))
-#else
 #define fgIsPType(arg)   (((arg&0xFF) == P_TYPE) || \
                                          ((arg&0xFF) == P_VOP) || \
                                          ((arg&0xFF) == S_VOP) || \
@@ -465,7 +429,6 @@ typedef enum
                                          ((arg&0xFF) == BIVOP) || \
                                          ((arg&0xFF) == TRUEBPIC))
                                          //((arg&0xFF) == BIVOP))
-#endif
 
 #define fgIsM4vPic(arg)  (((arg&0xFF) & 0x80) > 0)
 #define fgIsRefType(arg)  ((arg & REF_PIC) || \

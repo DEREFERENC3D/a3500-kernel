@@ -80,13 +80,6 @@ static int mtd_ipanic_block_scan(struct mtd_ipanic_data *ctx)
 
     IPANIC_OOPS_BLOCK_COUNT = index;
 
-#if 0
-	xlog_printk(ANDROID_LOG_INFO, IPANIC_LOG_TAG, "aee-ipanic: blocks: ");
-	for (index = 0; index < IPANIC_OOPS_BLOCK_COUNT; index++) {
-		xlog_printk(ANDROID_LOG_INFO, IPANIC_LOG_TAG, " %d", ctx->blk_offset[index]);
-	}
-	xlog_printk(ANDROID_LOG_INFO, IPANIC_LOG_TAG, "\n");
-#endif
 	return 1;
 }
 
@@ -101,12 +94,6 @@ static int mtd_ipanic_block_read_single(struct mtd_ipanic_data *ctx, loff_t offs
 
 	rc = ctx->mtd->_read(ctx->mtd, ctx->blk_offset[index], ctx->mtd->writesize, &len, ctx->bounce);
 	ipanic_block_scramble(ctx->bounce, ctx->mtd->writesize);
-#if 0
-	if (rc == -EBADMSG) {
-		xlog_printk(ANDROID_LOG_WARN, IPANIC_LOG_TAG, "Check sum error (ignore)\n");
-		rc = 0;
-	}
-#endif
 	if (rc == -EUCLEAN) {
 		xlog_printk(ANDROID_LOG_WARN, IPANIC_LOG_TAG, "ECC Check sum error corrected %lld\n", offset);
 		rc = 0;
@@ -162,9 +149,6 @@ int mtd_ipanic_block_write(struct mtd_ipanic_data *ctx, loff_t to, int bounce_le
 
 static int mtd_ipanic_block_read(struct mtd_ipanic_data *ctx, off_t file_offset, int file_length, void *buf)
 {
-#if 0
-	xlog_printk(ANDROID_LOG_INFO, IPANIC_LOG_TAG, "%s: ctx:%p file_offset:%d file_length:%lu\n", __func__, ctx, file_offset, file_length);
-#endif
 	while (file_length > 0) {
 		unsigned int page_no;
 		off_t page_offset;
@@ -545,10 +529,6 @@ static struct aee_oops *mtd_ipanic_oops_copy(void)
 			return NULL;
 		}
 
-#if 0		
-		xlog_printk(ANDROID_LOG_INFO, IPANIC_LOG_TAG, "android log length, 0x%x, 0x%x, 0x%x, 0x%x\n",
-			    oops->android_main_len,oops->android_event_len,oops->android_radio_len,oops->android_system_len);
-#endif
 		/* Process dump */
 		oops->userspace_info = kmalloc(ctx->curr.userspace_info_length, GFP_KERNEL);
 		oops->userspace_info_len = ctx->curr.userspace_info_length;
@@ -656,18 +636,6 @@ static int ipanic_write_all_android_buf(struct mtd_ipanic_data *ctx, int offset,
 	hdr->android_main_length = rc;
 	offset += rc;
 
-#if 0
-	// event buffer:
-	offset = ALIGN(offset, ctx->mtd->writesize);
-	rc = ipanic_write_android_buf(ctx->mtd, offset, 2);
-	if (rc < 0) {
-		xlog_printk(ANDROID_LOG_ERROR, IPANIC_LOG_TAG, "Error writing android log(2) to panic log (%d)\n", rc);
-		rc = 0;
-	}
-	hdr->android_event_offset = offset;
-	hdr->android_event_length = rc;
-	offset += rc;
-#endif
 
 	// radio buffer:
 	offset = ALIGN(offset, ctx->mtd->writesize);

@@ -86,8 +86,4 @@ typedef struct fm_pub {
 } fm_pub_t;
 
 
-#if 0//(!defined(MT6620_FM)&&!defined(MT6628_FM))
-extern fm_s32 fm_priv_register(struct fm_priv *pri, struct fm_pub *pub);
-extern fm_s32 fm_priv_unregister(struct fm_priv *pri, struct fm_pub *pub);
-#endif
 #endif //__FM_PRIVATE_H__

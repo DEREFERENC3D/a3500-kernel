@@ -230,15 +230,6 @@ u32 pinSet[2][8] = {
         }
         mdelay(5);
 
-		#if 0
-       // AF_VCC
-        if(TRUE != hwPowerOn(CAMERA_POWER_VCAM_A2, VOL_2800,mode_name))
-       {
-             PK_DBG("[CAMERA SENSOR] Fail to enable analog power\n");
-             //return -EIO;
-             goto _kdCISModulePowerOn_exit_;
-        }
-        #endif     
 
 		//enable active sensor
 		if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
@@ -960,13 +951,6 @@ u32 pinSet[2][8] = {
 	}
 	else
 	{
-#if 0 //TODO: depends on HW layout. Should be notified by SA.
-        PK_DBG("Set GPIO 94 for power OFF\n");
-        if (mt_set_gpio_pull_enable(GPIO_CAMERA_LDO_EN_PIN, GPIO_PULL_DISABLE)) {PK_DBG("[CAMERA SENSOR] Set GPIO94 PULL DISABLE ! \n"); }
-        if(mt_set_gpio_mode(GPIO_CAMERA_LDO_EN_PIN, GPIO_CAMERA_LDO_EN_PIN_M_GPIO)){PK_DBG("[CAMERA SENSOR] set gpio mode failed!! \n");}
-        if(mt_set_gpio_dir(GPIO_CAMERA_LDO_EN_PIN,GPIO_DIR_OUT)){PK_DBG("[CAMERA SENSOR] set gpio dir failed!! \n");}
-        if(mt_set_gpio_out(GPIO_CAMERA_LDO_EN_PIN,GPIO_OUT_ZERO)){PK_DBG("[CAMERA SENSOR] set gpio failed!! \n");}
-#endif
 
         //PK_DBG("[OFF]sensorIdx:%d \n",SensorIdx);
         if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {

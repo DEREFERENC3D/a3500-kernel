@@ -37,11 +37,7 @@
 #define MT6626_DEEMPHASIS_50us TRUE
 
 //customer need customize the I2C port
-#if 0//def MT6516
-#define MT6626_I2C_PORT   2
-#else 
 #define MT6626_I2C_PORT   0
-#endif
 
 #define MT6626_SLAVE_ADDR    0xE0	//0x70 7-bit address
 #define MT6626_MAX_COUNT     100

@@ -660,23 +660,6 @@ INT32 wmt_func_fm_off(P_WMT_IC_OPS pOps, P_WMT_GEN_CONF pConf)
 #if CFG_FUNC_WIFI_SUPPORT
 
 /*in soc, wmt turn on wifi directly, no not need operate SDIO*/
-#if 0 
-INT32
-wmt_func_wifi_ctrl (
-    ENUM_FUNC_STATE funcState
-    )
-{
-    INT32 iRet = 0;
-    UINT32 ctrlPa1 = WMT_SDIO_FUNC_WIFI;
-    UINT32 ctrlPa2 = (FUNC_ON == funcState) ? 1 : 0; /* turn on Wi-Fi driver */
-    iRet = wmt_core_ctrl(WMT_CTRL_SDIO_FUNC, &ctrlPa1, &ctrlPa2) ;
-    if (iRet) {
-        WMT_ERR_FUNC("WMT-FUNC: turn on WIFI function fail (%d)", iRet);
-        return -1;
-    }
-    return 0;
-}
-#endif
 
 INT32 wmt_func_wifi_on(P_WMT_IC_OPS pOps, P_WMT_GEN_CONF pConf)
 {
@@ -712,9 +695,6 @@ INT32 wmt_func_wifi_on(P_WMT_IC_OPS pOps, P_WMT_GEN_CONF pConf)
 		}
 	}
 	return iRet;
-#if 0
-	return wmt_func_wifi_ctrl(FUNC_ON);
-#endif
 }
 
 INT32 wmt_func_wifi_off(P_WMT_IC_OPS pOps, P_WMT_GEN_CONF pConf)
@@ -751,9 +731,6 @@ INT32 wmt_func_wifi_off(P_WMT_IC_OPS pOps, P_WMT_GEN_CONF pConf)
 		}
 	}
 	return iRet; 
-#if 0
-    return wmt_func_wifi_ctrl(FUNC_OFF);
-#endif
 }
 #endif
 

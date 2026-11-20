@@ -1017,9 +1017,6 @@ unsigned int btif_dma_rx_data_receiver(P_MTK_DMA_INFO_STR p_dma_info,
 	unsigned int index = 0;
 	p_mtk_btif p_btif = &(g_btif[index]);
 
-#if 0
-	_btif_dump_memory("<DMA Rx>", p_buf, buf_len);
-#endif
 
 	btif_bbs_write(&p_btif->btif_buf, p_buf, buf_len);
 /*save DMA Rx packet here*/
@@ -1036,9 +1033,6 @@ unsigned int btif_pio_rx_data_receiver(P_MTK_BTIF_INFO_STR p_btif_info,
 	unsigned int index = 0;
 	p_mtk_btif p_btif = &(g_btif[index]);
 
-#if 0
-	_btif_dump_memory("<PIO Rx>", p_buf, buf_len);
-#endif
 	btif_bbs_write(&p_btif->btif_buf, p_buf, buf_len);
 
 /*save PIO Rx packet here*/
@@ -1190,10 +1184,6 @@ int _btif_rx_dma_setup(p_mtk_btif p_btif)
 
 /*DMA Rx IRQ register*/
 		_btif_irq_reg(p_btif_irq, btif_rx_dma_irq_handler, p_btif);
-#if 0
-/*Enable DMA Rx IRQ*/
-		_btif_irq_ctrl(p_btif_irq, true);
-#endif
 		BTIF_INFO_FUNC("succeed\n");
 	}
 	return i_ret;
@@ -1248,10 +1238,6 @@ int _btif_tx_dma_setup(p_mtk_btif p_btif)
 		hal_btif_tx_mode_ctrl(p_btif_info, BTIF_MODE_DMA);
 /*DMA Tx IRQ register*/
 		_btif_irq_reg(p_btif_irq, btif_tx_dma_irq_handler, p_btif);
-#if 0
-/*disable DMA Tx IRQ*/
-		_btif_irq_ctrl(p_btif_irq, false);
-#endif
 
 		BTIF_INFO_FUNC("succeed\n");
 	}
@@ -1276,13 +1262,6 @@ int btif_lpbk_ctrl(p_mtk_btif p_btif, bool flag)
 
 /*hold state mechine lock*/
 	BTIF_STATE_HOLD(p_btif);
-#if 0
-	state = _btif_state_get(p_btif);
-	if (p_btif->enable && B_S_ON == state)
-		i_ret = _btif_lpbk_ctrl(p_btif, flag);
-	else
-		i_ret = E_BTIF_INVAL_STATE;
-#endif
 	i_ret = _btif_exit_dpidle(p_btif);
 	if (0 == i_ret)
 		i_ret = _btif_lpbk_ctrl(p_btif, flag);
@@ -2769,10 +2748,6 @@ int btif_log_buf_dmp_out(P_BTIF_LOG_QUEUE_T p_log_que)
 	struct timeval *p_timer = NULL;
 	unsigned long flags;
 
-#if 0				/* no matter enable or not, we allowed output */
-	if (!(p_log_que->enable))
-		return;
-#endif
 	BTIF_DBG_FUNC("++\n");
 
 	spin_lock_irqsave(&p_log_que->lock, flags);

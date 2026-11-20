@@ -27,13 +27,6 @@ UINT32 u4VDEC_HAL_WMV_ShiftGetBitStream(
 
 /// Read Barrel Shifter before shifting
 /// \return Value of barrel shifter input window before shifting
-#if 0   //VDEC_REMOVE_UNUSED_FUNC
-UINT32 u4VDEC_HAL_WMV_GetBitStreamShift(
-    UINT32 u4BSID,                                      ///< [IN] Barrel shifter hardware ID of one video decoder
-    UINT32 u4VDecID,                                    ///< [IN] Video decoder hardware ID
-    UINT32 u4ShiftBits                                 ///< [IN] Shift bits number
-);
-#endif
 
 /// Read Barrel Shifter before shifting
 /// \return  Most significant (32 - u4ShiftBits) bits of barrel shifter input window before shifting
@@ -85,12 +78,6 @@ INT32 i4VDEC_HAL_WMV_HWDecBP(
 
 /// Read barrel shifter bitcount after initializing 
 /// \return Bitcount counted by HAL
-#if 0   //VDEC_REMOVE_UNUSED_FUNC
-UINT32 u4VDEC_HAL_WMV_GetBitcount(
-    UINT32 u4BSID,                                        ///< [IN] Barrel shifter ID
-    UINT32 u4VDecID                                    ///< [IN] Video decoder hardware ID
-);
-#endif
 
 /// Set video decoder hardware registers to decode
 /// \return If return value < 0, it's failed. Please reference hal_vdec_errcode.h.

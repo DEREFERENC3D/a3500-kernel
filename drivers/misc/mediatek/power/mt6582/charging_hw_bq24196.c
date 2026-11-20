@@ -483,19 +483,8 @@ static void hw_bc11_dump_register(void)
 	upmu_set_rg_bc11_bb_ctrl(1);    //BC11_BB_CTRL    
     upmu_set_rg_bc11_rst(1);        //BC11_RST
 	
-#if 0 //no use
-    //pull PSEL low
-    mt_set_gpio_mode(GPIO_CHR_PSEL_PIN,GPIO_MODE_GPIO);  
-    mt_set_gpio_dir(GPIO_CHR_PSEL_PIN,GPIO_DIR_OUT);
-    mt_set_gpio_out(GPIO_CHR_PSEL_PIN,GPIO_OUT_ZERO);
-#endif    
     
     //pull CE low
-#if 0 //no use
-    mt_set_gpio_mode(GPIO_CHR_CE_PIN,GPIO_MODE_GPIO);  
-    mt_set_gpio_dir(GPIO_CHR_CE_PIN,GPIO_DIR_OUT);
-    mt_set_gpio_out(GPIO_CHR_CE_PIN,GPIO_OUT_ZERO);    
-#endif
 
     //battery_xlog_printk(BAT_LOG_FULL, "gpio_number=0x%x,gpio_on_mode=%d,gpio_off_mode=%d\n", gpio_number, gpio_on_mode, gpio_off_mode);	
 
@@ -785,12 +774,6 @@ kal_bool charging_type_detection_done(void)
 
 	charging_type_det_done = KAL_FALSE;
     
-#if 0
-    charger_type = hw_charger_type_detection();
-    battery_xlog_printk(BAT_LOG_CRTI, "charging_get_charger_type = %d\r\n", charger_type);
-        
-    *(CHARGER_TYPE*)(data) = charger_type;
-#endif
 
 #if 1
 	/********* Step initial  ***************/		 

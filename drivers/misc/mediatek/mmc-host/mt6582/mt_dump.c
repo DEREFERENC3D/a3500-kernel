@@ -306,19 +306,6 @@ static unsigned int simp_mmc_hw_reset_for_init(struct simp_mmc_host *host)
     return SIMP_SUCCESS;
 }
 
-#if 0
-enum {
-    RESP_NONE = 0,
-    RESP_R1   = 1,
-    RESP_R2   = 2,
-    RESP_R3   = 3,
-    RESP_R4   = 4,
-    RESP_R5   = 5,
-    RESP_R6   = 6,
-    RESP_R7   = 7,
-    RESP_R1B  = 8
-};
-#endif
 
 static int msdc_rsp[] = {
     0,  /* RESP_NONE */
@@ -510,17 +497,6 @@ static unsigned int simp_msdc_init(struct simp_mmc_host *mmc_host)
     
     /* check write protection [Fix me] */
 
-#if 0
-    /* simple test for clk output */
-    sdr_write32(MSDC_PATCH_BIT, 0xF3F);
-    sdr_write32(MSDC_CFG, 0x10001013);
-    sdr_write32(SDC_CFG, 0x0);
-    sdr_write32(SDC_CMD, 0x0);
-    sdr_write32(SDC_ARG, 0x0);
-    
-    /* dump register for debug */
-    simp_msdc_dump_register(host);
-#endif
 
     
     return ret;                                          
@@ -834,29 +810,6 @@ static int simp_mmc_select_card(struct simp_mmc_host *host, struct simp_mmc_card
  */
 static unsigned int simp_mmc_select_voltage(struct simp_mmc_host *host, unsigned int ocr)
 {
-#if 0
-
-    int bit;
-
-
-    ocr &= host->ocr_avail;
-
-    bit = ffs(ocr);
-    if (bit) {
-        bit -= 1;
-
-        ocr &= 3 << bit;
-
-        mmc_host_clk_hold(host);
-        host->ios.vdd = bit;
-        mmc_set_ios(host);
-        mmc_host_clk_release(host);
-    } else {
-        pr_warning("%s: host doesn't support card's voltages\n",
-                mmc_hostname(host));
-        ocr = 0;
-    }
-#endif
 
     return ocr;
 }
@@ -1024,14 +977,6 @@ static int simp_mmc_init_card(struct simp_mmc_host *host, unsigned int ocr,
     if (err)
         goto err;
 
-#if 0
-    err = mmc_decode_csd(card);
-    if (err)
-        goto err;
-    err = mmc_decode_cid(card);
-    if (err)
-        goto err;
-#endif
 
     err = simp_mmc_select_card(host, card);
     if (err)
@@ -1698,14 +1643,6 @@ static int simp_emmc_dump_write(unsigned char* buf, unsigned int len, unsigned i
         return ret;
     }
 	
-#if 0
-    printk("write data:");
-    for (i = 0; i < 32; i++) {
-        printk("0x%x", buf[i]);
-        if (0 == (i+1)%32)
-            printk("\n");
-    }
-#endif
 
     /* find the offset in emmc */
     for (i = 0; i < PART_NUM; i++) {
@@ -1790,14 +1727,6 @@ static int simp_sd_dump_write(unsigned char* buf, unsigned int len, unsigned int
 			printk("debug: parameter error!\n");
 			return ret;
 		}
-#if 0
-		printk("write data:");
-		for (i = 0; i < 32; i++) {
-			printk("0x%x", buf[i]);
-			if (0 == (i+1)%32)
-				printk("\n");
-		}
-#endif
  //l_start_offset = offset;
  l_buf  = buf;
 		if(pmsdc_extend_host->card->card_cap == standard_capacity) {
@@ -1858,14 +1787,6 @@ if (sd_init == 0) {
         	err = simp_mmc_single_read(pmmc_extend_host, l_addr, l_buf, 512);
 		else
     		err = simp_mmc_multi_read(pmmc_extend_host, l_addr, l_buf, len/512);
-#if 0
-		printk("read data:");
-		for (i = 0; i < 32; i++) {
-			printk("0x%x", buf[i]);
-			if (0 == (i+1)%32)
-				printk("\n");
-		}
-#endif
 	if(err == 0)
 		ret = SIMP_SUCCESS;
 	return ret;

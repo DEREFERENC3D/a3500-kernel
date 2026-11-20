@@ -39,28 +39,6 @@ void mt_##name##_switch(int on);
 
 /*************/
 //sample code 
-#if 0
-static DEFINE_SPINLOCK(mt_spin_lock);
-static DEFINE_SEMAPHORE(mtprof_sem_static);
-static struct semaphore* mtprof_sem_dyn;
-static void sem_down()
-{
-    mtprof_sem_dyn = mt_sema_init(1);
-    printk("down mtprof sem static...\n");
-    down(&mtprof_sem_static);
-    printk("down mtprof sem dyn..\n");
-    down(mtprof_sem_dyn);
-}
-static void sem_up(){
-    printk("up mtprof sem dyn..\n");
-    up(mtprof_sem_dyn);
-    printk("up mtprof sem static...\n");
-    up(&mtprof_sem_static);
-}
-static DEFINE_SPINLOCK(spin_a);
-static DEFINE_SPINLOCK(spin_b);
-static DEFINE_SPINLOCK(spin_c);
-#endif
 
 
 static DEFINE_MUTEX(mtx_a);

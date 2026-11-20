@@ -28,15 +28,9 @@
 
 #define JPEG_ENC_DEBUG_INFO0_GMC_IDLE_MASK      (1 << 13)
 
-#if 0
-#define JPEG_MSG(...)   xlog_printk(ANDROID_LOG_DEBUG, "xlog/jpeg", __VA_ARGS__)
-#define JPEG_WRN(...)   xlog_printk(ANDROID_LOG_WARN,  "xlog/jpeg", __VA_ARGS__)
-#define JPEG_ERR(...)   xlog_printk(ANDROID_LOG_ERROR, "xlog/jpeg", __VA_ARGS__)
-#else
 #define JPEG_MSG printk
 #define JPEG_WRN printk
 #define JPEG_ERR printk
-#endif
 kal_uint32 _jpeg_enc_int_status = 0; 
 
 
@@ -212,11 +206,6 @@ kal_uint32 jpeg_drv_enc_set_encFormat(kal_uint32 encFormat)
    }
          
    val = (encFormat & 3) << 3;
-#if 0
-//   REG_JPEG_ENC_CTRL &= ~JPEG_ENC_CTRL_YUV_BIT;   
-//   
-//   REG_JPEG_ENC_CTRL |= val;
-#else
 
    u4Value = REG_JPEG_ENC_CTRL ;
    
@@ -226,7 +215,6 @@ kal_uint32 jpeg_drv_enc_set_encFormat(kal_uint32 encFormat)
    
    IMG_REG_WRITE( (u4Value), REG_ADDR_JPEG_ENC_CTRL);  
 
-#endif   
    
    return 1;
       

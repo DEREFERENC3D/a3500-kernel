@@ -126,16 +126,6 @@ static INT32 mtk_wcn_consys_jtag_set_for_mcu(VOID)
 	tmp |= 0x7f;
 	JTAG1_REG_WRITE(0x1020A040, tmp);
 
-#if 0
-                /*0x1020A060[6:0]=0x31*/
-                tmp = JTAG1_REG_READ(0x1020A060);
-                tmp &= 0xffffff80;
-                tmp |= 0x31;
-    JTAG1_REG_WRITE(0x1020A060, tmp);
-                /*set CONSYS JTAG mode 0x10005300=0x07777777*/
-                //DRV_WriteReg32(0x10005300, 0x07777777); /*remove JTAG mode1*/
-                JTAG2_REG_WRITE(0x10005300, 0x00000000);
-#endif
 
 #if 1 // Chaozhong modified
     /*0x1020A060[6:0]=0x31*/
@@ -228,20 +218,7 @@ INT32 mtk_wcn_consys_hw_reg_ctrl(UINT32 on,UINT32 co_clock_en)
 #endif
 
 		/*mask this action and put it into FW patch for resolve ALPS00544691*/
-#if 0
-		/*1.assert CONSYS CPU SW reset, <CONSYS_CPU_SW_RST_REG>, [12] = 1'b1, [31:24]=8'h88(key)--> CONSYS_CPU_SW_RST_BIT | CONSYS_CPU_SW_RST_CTRL_KEY*/
-		CONSYS_SET_BIT(CONSYS_CPU_SW_RST_REG, CONSYS_CPU_SW_RST_BIT | CONSYS_CPU_SW_RST_CTRL_KEY);
-		WMT_PLAT_DBG_FUNC("reg uump:CONSYS_CPU_SW_RST_REG(0x%x)\n",CONSYS_REG_READ(CONSYS_CPU_SW_RST_REG));
-#endif
 
-#if 0
-		/*turn on top clock gating enable*/
-		CONSYS_REG_WRITE(CONSYS_TOP_CLKCG_CLR_REG,CONSYS_REG_READ(CONSYS_TOP_CLKCG_CLR_REG) | CONSYS_TOP_CLKCG_BIT);
-		WMT_PLAT_DBG_FUNC("reg dump:CONSYS_TOP_CLKCG_CLR_REG(0x%x)\n",CONSYS_REG_READ(CONSYS_TOP_CLKCG_CLR_REG));
-		/*turn on SPM clock gating enable*/
-		CONSYS_REG_WRITE(CONSYS_PWRON_CONFG_EN_REG, CONSYS_PWRON_CONFG_EN_VALUE);
-		WMT_PLAT_DBG_FUNC("reg dump:CONSYS_PWRON_CONFG_EN_REG(0x%x)\n",CONSYS_REG_READ(CONSYS_PWRON_CONFG_EN_REG));
-#endif
 
 		/*use colck manger API to control MTCMOS*/
 		conn_power_on();
@@ -268,21 +245,6 @@ INT32 mtk_wcn_consys_hw_reg_ctrl(UINT32 on,UINT32 co_clock_en)
 			msleep(20);
 		}
 		/*mask this action and put it into FW patch for resolve ALPS00544691*/
-#if 0
-		/*13.{default no need}update ROMDEL/PATCH RAM DELSEL if needed, <CONSYS_ROM_RAM_DELSEL_REG>*/
-		
-		/*14.write 1 to conn_mcu_config ACR[1] if real speed MBIST (default write "1"), <CONSYS_MCU_CFG_ACR_REG>,[18]1'b1-->CONSYS_MCU_CFG_ACR_MBIST_BIT*/
-		/*if this bit is 0, HW will do memory auto test under low CPU frequence (26M Hz)*/
-		/*if this bit is 0, HW will do memory auto test under high CPU frequence(138M Hz) inclulding low CPU frequence*/
-		CONSYS_SET_BIT(CONSYS_MCU_CFG_ACR_REG, CONSYS_MCU_CFG_ACR_MBIST_BIT);
-		/*15.{default no need, Analog HW will inform if this need to be update or not 1 week after IC sample back}
-		update ANA_WBG(AFE) CR if needed, CONSYS_AFE_REG */
-		CONSYS_REG_WRITE(CONSYS_AFE_REG_DIG_RCK_01,CONSYS_AFE_REG_DIG_RCK_01_VALUE);
-		CONSYS_REG_WRITE(CONSYS_AFE_REG_WBG_PLL_02,CONSYS_AFE_REG_WBG_PLL_02_VALUE);
-		CONSYS_REG_WRITE(CONSYS_AFE_REG_WBG_WB_TX_01,CONSYS_AFE_REG_WBG_WB_TX_01_VALUE);
-		/*16.deassert CONSYS CPU SW reset, <CONSYS_CPU_SW_RST_REG>, [12] = 1'b0, [31:24]=8'h88(key)*/
-		CONSYS_CLR_BIT_WITH_KEY(CONSYS_CPU_SW_RST_REG, CONSYS_CPU_SW_RST_BIT , CONSYS_CPU_SW_RST_CTRL_KEY);
-#endif
 		msleep(5);
 		iRet = 0;
 	}else{

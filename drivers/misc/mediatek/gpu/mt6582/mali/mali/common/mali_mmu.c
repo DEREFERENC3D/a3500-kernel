@@ -422,9 +422,3 @@ static _mali_osk_errcode_t mali_mmu_probe_ack(void *data)
 	return _MALI_OSK_ERR_FAULT;
 }
 
-#if 0
-void mali_mmu_print_state(struct mali_mmu_core *mmu)
-{
-	MALI_DEBUG_PRINT(2, ("MMU: State of %s is 0x%08x\n", mmu->hw_core.description, mali_hw_core_register_read(&mmu->hw_core, MALI_MMU_REGISTER_STATUS)));
-}
-#endif
