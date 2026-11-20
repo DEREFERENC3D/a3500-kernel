@@ -931,9 +931,6 @@ rlmRecIeInfoForClient (
     P_IE_HT_OP_T            prHtOp;
     P_IE_OBSS_SCAN_PARAM_T  prObssScnParam;
     UINT_8                  ucERP, ucPrimaryChannel;
-#if CFG_SUPPORT_QUIET && 0
-    BOOLEAN                 fgHasQuietIE = FALSE;
-#endif
 
     ASSERT(prAdapter);
     ASSERT(prBssInfo);
@@ -1070,16 +1067,6 @@ rlmRecIeInfoForClient (
               rlmProcessChannelSwitchIE(prAdapter, (P_IE_CHANNEL_SWITCH_T)pucIE);
           }
           break;
-
-    #if CFG_SUPPORT_QUIET && 0
-        /* Note: RRM code should be moved to independent RRM function by
-         *       component design rule. But we attach it to RLM temporarily
-         */
-        case ELEM_ID_QUIET:
-            rrmQuietHandleQuietIE(prBssInfo, (P_IE_QUIET_T) pucIE);
-            fgHasQuietIE = TRUE;
-            break;
-    #endif
 #endif
 
         default:
@@ -1095,12 +1082,6 @@ rlmRecIeInfoForClient (
          ucPrimaryChannel <= 14))) {
         ucPrimaryChannel = 0;
     }
-
-#if CFG_SUPPORT_QUIET && 0
-    if (!fgHasQuietIE) {
-        rrmQuietIeNotExist(prAdapter, prBssInfo);
-    }
-#endif
 
     /* Check if OBSS scan process will launch */
     if (!prAdapter->fgEnOnlineScan || !prObssScnParam ||

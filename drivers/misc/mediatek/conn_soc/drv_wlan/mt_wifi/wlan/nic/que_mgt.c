@@ -1758,28 +1758,6 @@ qmDequeueTxPacketsFromPerStaQueues(
         else{
 
             QUEUE_REMOVE_HEAD(prCurrQueue, prDequeuedPkt, P_MSDU_INFO_T);
-#if DBG && 0
-            LOG_FUNC("Deq0 TC %d queued %u net %u mac len %u len %u Type %u 1x %u 11 %u\n",
-                    prDequeuedPkt->ucTC,
-                    prCurrQueue->u4NumElem,
-                    prDequeuedPkt->ucNetworkType,
-                    prDequeuedPkt->ucMacHeaderLength,
-                    prDequeuedPkt->u2FrameLength,
-                    prDequeuedPkt->ucPacketType,
-                    prDequeuedPkt->fgIs802_1x,
-                    prDequeuedPkt->fgIs802_11 );
-
-            LOG_FUNC("Dest Mac: " MACSTR "\n",
-                    MAC2STR(prDequeuedPkt->aucEthDestAddr));
-
-#if LINUX
-            {
-                struct sk_buff *prSkb = (struct sk_buff *) prDequeuedPkt->prPacket;
-                dumpMemory8((PUINT_8)prSkb->data,prSkb->len);
-            }
-#endif
-
-#endif
 
             ASSERT(prDequeuedPkt->ucTC == ucTC);
 
@@ -1906,30 +1884,6 @@ qmDequeueTxPacketsFromPerStaQueues(
             else{
 
                 QUEUE_REMOVE_HEAD(prCurrQueue, prDequeuedPkt, P_MSDU_INFO_T);
-
-#if DBG && 0
-                DBGLOG(QM, LOUD, ("Deq0 TC %d queued %u net %u mac len %u len %u Type %u 1x %u 11 %u\n",
-                    prDequeuedPkt->ucTC,
-                    prCurrQueue->u4NumElem,
-                        prDequeuedPkt->ucNetworkType,
-                        prDequeuedPkt->ucMacHeaderLength,
-                    prDequeuedPkt->u2FrameLength,
-                    prDequeuedPkt->ucPacketType,
-                    prDequeuedPkt->fgIs802_1x,
-                    prDequeuedPkt->fgIs802_11 ));
-
-                DBGLOG(QM, LOUD,("Dest Mac: " MACSTR "\n",
-                        MAC2STR(prDequeuedPkt->aucEthDestAddr)));
-
-#if LINUX
-                {
-                    struct sk_buff *prSkb = (struct sk_buff *) prDequeuedPkt->prPacket;
-                    dumpMemory8((PUINT_8)prSkb->data,prSkb->len);
-                }
-#endif
-
-#endif
-
 
                 ASSERT(prDequeuedPkt->ucTC == ucTC);
 
@@ -2125,28 +2079,6 @@ qmDequeueTxPacketsFromPerTypeQueues(
                     prBurstEndPkt = prDequeuedPkt;
                     ucPktCount--;
                     QM_DBG_CNT_INC(prQM, QM_DBG_CNT_26);
-#if DBG && 0
-                    LOG_FUNC("DeqType TC %d queued %u net %u mac len %u len %u Type %u 1x %u 11 %u\n",
-                        prDequeuedPkt->ucTC,
-                        prCurrQueue->u4NumElem,
-                            prDequeuedPkt->ucNetworkType,
-                            prDequeuedPkt->ucMacHeaderLength,
-                        prDequeuedPkt->u2FrameLength,
-                        prDequeuedPkt->ucPacketType,
-                        prDequeuedPkt->fgIs802_1x,
-                        prDequeuedPkt->fgIs802_11 );
-
-                    LOG_FUNC("Dest Mac: " MACSTR "\n",
-                            MAC2STR(prDequeuedPkt->aucEthDestAddr));
-
-#if LINUX
-                    {
-                        struct sk_buff *prSkb = (struct sk_buff *) prDequeuedPkt->prPacket;
-                        dumpMemory8((PUINT_8)prSkb->data,prSkb->len);
-                    }
-#endif
-
-#endif
                 }
                 else {
                     QUEUE_INSERT_TAIL(prMergeQue,(P_QUE_ENTRY_T)prDequeuedPkt);
@@ -4998,11 +4930,6 @@ qmGetRxReorderQueuedBufferCount(
     /* XXX The summation may impact the performance */
     for(i =0; i<CFG_NUM_OF_RX_BA_AGREEMENTS; i++){
         u4Total += prQM->arRxBaTable[i].rReOrderQue.u4NumElem;
-#if DBG && 0
-        if(QUEUE_IS_EMPTY(&(prQM->arRxBaTable[i].rReOrderQue))){
-            ASSERT(prQM->arRxBaTable[i].rReOrderQue == 0);
-        }
-#endif
     }
     ASSERT(u4Total <=( CFG_NUM_OF_QM_RX_PKT_NUM*2));
    return u4Total;
