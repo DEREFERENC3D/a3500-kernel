@@ -141,7 +141,6 @@ kalFirmwareOpen (
 
 
     /* open the fw file */
-#if defined(MT6628)
 //    filp = filp_open("/etc/firmware/"CFG_FW_FILENAME"_MT6628", O_RDONLY, 0);
 //    filp = filp_open("/etc/firmware/"CFG_FW_FILENAME"_MT6582", O_RDONLY, 0);
 	kalMemZero(aucFilePath, sizeof(aucFilePath));
@@ -152,9 +151,6 @@ kalFirmwareOpen (
 	DBGLOG(INIT, TRACE, ("open file: %s\n", aucFilePath));
 
     filp = filp_open(aucFilePath, O_RDONLY, 0);
-#else
-    filp = filp_open("/etc/firmware/"CFG_FW_FILENAME, O_RDONLY, 0);
-#endif
     if (IS_ERR(filp)) {
         DBGLOG(INIT, INFO, ("Open FW image: %s failed\n", CFG_FW_FILENAME));
         goto error_open;
