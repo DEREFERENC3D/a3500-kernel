@@ -268,12 +268,6 @@ typedef struct _QUE_MGT_T{      /* Queue Management Control Info */
     /* Per-Type Queues: [0] BMCAST or UNKNOWN-STA packets */
     QUE_T arTxQueue[NUM_OF_PER_TYPE_TX_QUEUES];
 
-#if 0
-    /* For TX Scheduling */
-    UINT_8  arRemainingTxOppt[NUM_OF_PER_STA_TX_QUEUES];
-    UINT_8  arCurrentTxStaIndex[NUM_OF_PER_STA_TX_QUEUES];
-
-#endif
 
     /* Reordering Queue Parameters */
     RX_BA_ENTRY_T  arRxBaTable[CFG_NUM_OF_RX_BA_AGREEMENTS];
@@ -571,11 +565,6 @@ typedef struct _CMD_ADDBA_REJECT {
 #define QM_RX_GET_NEXT_SW_RFB(_prSwRfb) \
     ((P_SW_RFB_T)(((_prSwRfb)->rQueEntry).prNext))
 
-#if 0
-#define QM_GET_STA_REC_PTR_FROM_INDEX(_prAdapter, _ucIndex) \
-    ((((_ucIndex) != STA_REC_INDEX_BMCAST) && ((_ucIndex)!= STA_REC_INDEX_NOT_FOUND)) ?\
-    &(_prAdapter->arStaRec[_ucIndex]): NULL)
-#endif
 
 #define QM_GET_STA_REC_PTR_FROM_INDEX(_prAdapter, _ucIndex) \
     cnmGetStaRecByIndex(_prAdapter,_ucIndex)

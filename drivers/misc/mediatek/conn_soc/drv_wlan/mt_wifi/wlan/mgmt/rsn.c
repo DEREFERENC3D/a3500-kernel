@@ -1829,21 +1829,6 @@ rsnSelectPmkidCandidateList (
         return;
     }
 
-#if 0
-    if ((prBssDesc->u2BSSBasicRateSet &
-         ~(rPhyAttributes[prAisBssInfo->ePhyType].u2SupportedRateSet)) ||
-        prBssDesc->fgIsUnknownBssBasicRate) {
-        DBGLOG(RSN, TRACE, ("-- Rate set not matched\n"));
-        return;
-    }
-
-    if (/* prBssDesc->u4RsnSelectedPairwiseCipher != prAisBssInfo->u4RsnSelectedPairwiseCipher ||*/
-        prBssDesc->u4RsnSelectedGroupCipher != prAisBssInfo->u4RsnSelectedGroupCipher /*||
-        prBssDesc->u4RsnSelectedAKMSuite != prAisBssInfo->u4RsnSelectedAKMSuite */) {
-        DBGLOG(RSN, TRACE, ("-- Encrypt status not matched for PMKID \n"));
-        return;
-    }
-#endif
 
     rsnUpdatePmkidCandidateList(prAdapter, prBssDesc);
 
@@ -2670,17 +2655,6 @@ rsnCheckRxMgmt (
                 return TRUE;
             }
         }
-#if 0
-        else {
-            if (fgUnicast && ((ucSubtype == MAC_FRAME_DISASSOC) || (ucSubtype == MAC_FRAME_DEAUTH))) {
-                /* This done by function handler */
-                //kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
-                //      WLAN_STATUS_MEDIA_DISCONNECT,
-                //      NULL,
-                //      0);
-            }
-        }
-#endif
     }
     return FALSE;
 }

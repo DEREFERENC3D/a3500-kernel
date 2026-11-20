@@ -318,16 +318,6 @@ glRegisterAmpc (
         return FALSE;
     }
     else {
-#if 0
-        // 1. allocate major number dynamically
-
-    if(alloc_chrdev_region(&(prGlueInfo->rBowInfo.u4DeviceNumber),
-                    0,  // first minor number
-                    1,  // number
-                    GLUE_BOW_DEVICE_NAME) !=0)
-
-            return FALSE;
-#endif
 
 #if 1
 
@@ -1027,9 +1017,6 @@ kalGetBowAvailablePhysicalLinkCount(
         }
     }
 
-#if 0//CFG_BOW_TEST
-    DBGLOG(BOW, EVENT, ("kalGetBowAvailablePhysicalLinkCount, ucLinkCount, %c.\n", ucLinkCount));
-#endif
 
     return ucLinkCount;
 }

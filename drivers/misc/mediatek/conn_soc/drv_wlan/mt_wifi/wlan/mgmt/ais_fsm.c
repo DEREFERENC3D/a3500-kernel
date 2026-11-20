@@ -1214,11 +1214,6 @@ aisFsmInit (
         ASSERT(0);
     }
 
-#if 0
-    prAisBssInfo->rPmProfSetupInfo.ucBmpDeliveryAC = PM_UAPSD_ALL;
-    prAisBssInfo->rPmProfSetupInfo.ucBmpTriggerAC = PM_UAPSD_ALL;
-    prAisBssInfo->rPmProfSetupInfo.ucUapsdSp = WMM_MAX_SP_LENGTH_2;
-#else
     if (prAdapter->u4UapsdAcBmp == 0) {
         prAdapter->u4UapsdAcBmp = CFG_INIT_UAPSD_AC_BMP;
         //ASSERT(prAdapter->u4UapsdAcBmp);
@@ -1226,7 +1221,6 @@ aisFsmInit (
     prAisBssInfo->rPmProfSetupInfo.ucBmpDeliveryAC = (UINT_8)prAdapter->u4UapsdAcBmp;
     prAisBssInfo->rPmProfSetupInfo.ucBmpTriggerAC =(UINT_8) prAdapter->u4UapsdAcBmp;
     prAisBssInfo->rPmProfSetupInfo.ucUapsdSp = (UINT_8)prAdapter->u4MaxSpLen;
-#endif
 
     /* request list initialization */
     LINK_INITIALIZE(&prAisFsmInfo->rPendingReqList);
@@ -4247,16 +4241,6 @@ aisFsmRunEventJoinTimeout (
         /* 2. Increase Join Failure Count */
         prAisFsmInfo->prTargetStaRec->ucJoinFailureCount++;
 // For JB nl802.11
-#if 0
-        if(prAisFsmInfo->prTargetStaRec->ucJoinFailureCount < JOIN_MAX_RETRY_FAILURE_COUNT) {
-            /* 3.1 Retreat to AIS_STATE_SEARCH state for next try */
-            eNextState = AIS_STATE_SEARCH;
-        }
-        else {
-            /* 3.2 Retreat to AIS_STATE_WAIT_FOR_NEXT_SCAN state for next try */
-            eNextState = AIS_STATE_WAIT_FOR_NEXT_SCAN;
-        }
-#endif
         eNextState = AIS_STATE_IDLE;
         break;
 
@@ -4597,11 +4581,6 @@ aisBssBeaconTimeout (
 
     //4 <2> invoke abort handler
     if (fgDoAbortIndication) {
-#if 0
-		P_CONNECTION_SETTINGS_T prConnSettings;
-		prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
-		prConnSettings->fgIsDisconnectedByNonRequest = TRUE;
-#endif
 
 		DBGLOG(AIS, INFO, ("Remove BSS entry ["MACSTR"]\n",
 			MAC2STR(prAisBssInfo->aucBSSID)));

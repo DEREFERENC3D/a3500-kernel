@@ -125,13 +125,6 @@ Add per station flow control when STA is in PS
 *                            P U B L I C   D A T A
 ********************************************************************************
 */
-#if 0
-extern SWCR_MAP_ENTRY_T g_arRlmArSwCrMap[];
-SWCR_MOD_MAP_ENTRY_T g_arSwCrAllMaps[] = {
-    { SWCR_MAP_NUM(g_arRlmArSwCrMap), g_arRlmArSwCrMap},  /* 0x00nn */
-    {0,NULL}
-};
-#endif
 
 VOID swCtrlCmdCategory0(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0,UINT_8 ucOpt1);
 VOID swCtrlCmdCategory1(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0,UINT_8 ucOpt1);
@@ -379,14 +372,6 @@ void dumpSTA(P_ADAPTER_T prAdapter, P_STA_RECORD_T prStaRec)
     DBGLOG(SW4, INFO, ("ucFreeQuotaForNonDelivery %u\n",prStaRec->ucFreeQuotaForNonDelivery));
 
 
-#if 0
-    DBGLOG(SW4, INFO, ("IsQmmSup  %u\n",prStaRec->fgIsWmmSupported));
-    DBGLOG(SW4, INFO, ("IsUapsdSup  %u\n",prStaRec->fgIsUapsdSupported));
-    DBGLOG(SW4, INFO, ("AvailabaleDeliverPkts  %u\n",prStaRec->ucAvailableDeliverPkts));
-    DBGLOG(SW4, INFO, ("BmpDeliverPktsAC  %u\n",prStaRec->u4BmpDeliverPktsAC));
-    DBGLOG(SW4, INFO, ("BmpBufferAC  %u\n",prStaRec->u4BmpBufferAC));
-    DBGLOG(SW4, INFO, ("BmpNonDeliverPktsAC  %u\n",prStaRec->u4BmpNonDeliverPktsAC));
-#endif
 
     for(i=0;i<CFG_RX_MAX_BA_TID_NUM;i++) {
         if(prStaRec->aprRxReorderParamRefTbl[i]){
@@ -821,33 +806,10 @@ testPsSetupBss(
         DBGLOG(SW4, INFO, ("prBeacon allocation fail\n"));
     }
 
-#if 0
-    prBssInfo->rPmProfSetupInfo.ucBmpDeliveryAC = PM_UAPSD_ALL;
-    prBssInfo->rPmProfSetupInfo.ucBmpTriggerAC = PM_UAPSD_ALL;
-    prBssInfo->rPmProfSetupInfo.ucUapsdSp = WMM_MAX_SP_LENGTH_2;
-#else
     prBssInfo->rPmProfSetupInfo.ucBmpDeliveryAC = (UINT_8)prAdapter->u4UapsdAcBmp;
     prBssInfo->rPmProfSetupInfo.ucBmpTriggerAC =(UINT_8) prAdapter->u4UapsdAcBmp;
     prBssInfo->rPmProfSetupInfo.ucUapsdSp = (UINT_8)prAdapter->u4MaxSpLen;
-#endif
 
-#if 0
-    for(eAci = 0; eAci < WMM_AC_INDEX_NUM; eAci++){
-
-        prBssInfo->arACQueParms[eAci].fgIsACMSet = FALSE;
-        prBssInfo->arACQueParms[eAci].u2Aifsn = (UINT_16) eAci;
-        prBssInfo->arACQueParms[eAci].u2CWmin = 7;
-        prBssInfo->arACQueParms[eAci].u2CWmax = 31;
-        prBssInfo->arACQueParms[eAci].u2TxopLimit = eAci+1;
-        DBGLOG(SW4, INFO, ("MQM: eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
-                   eAci,prBssInfo->arACQueParms[eAci].fgIsACMSet ,
-                   prBssInfo->arACQueParms[eAci].u2Aifsn,
-                   prBssInfo->arACQueParms[eAci].u2CWmin,
-                   prBssInfo->arACQueParms[eAci].u2CWmax,
-                   prBssInfo->arACQueParms[eAci].u2TxopLimit));
-
-    }
-#endif
 
 
     DBGLOG(SW4, INFO, ("[2] ucBmpDeliveryAC:0x%x, ucBmpTriggerAC:0x%x, ucUapsdSp:0x%x",

@@ -1592,24 +1592,6 @@ nicCmdEventQueryMemDump (
         prMemDumpInfo->u4RemainLength = prEventDumpMem->u4RemainLength;
         prMemDumpInfo->ucFragNum = prEventDumpMem->ucFragNum;
 
-#if 0
-        do{
-            UINT_32 i = 0;
-            printk("Rx dump address 0x%X, Length %d, FragNum %d, remain %d\n",
-                prEventDumpMem->u4Address,
-                prEventDumpMem->u4Length,
-                prEventDumpMem->ucFragNum,
-                prEventDumpMem->u4RemainLength);
-#if 0
-            for(i = 0; i < prEventDumpMem->u4Length; i++) {
-                printk("%02X ", prEventDumpMem->aucBuffer[i]);
-                if(i % 32 == 31) {
-                    printk("\n");
-                }
-            }
-#endif
-        }while(FALSE);
-#endif
 
         if(prEventDumpMem->ucFragNum == 1) {
         /* Store memory dump into sdcard,

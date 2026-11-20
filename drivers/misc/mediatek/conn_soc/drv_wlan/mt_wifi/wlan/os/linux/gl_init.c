@@ -686,11 +686,7 @@ MODULE_AUTHOR(NIC_AUTHOR);
 MODULE_DESCRIPTION(NIC_DESC);
 MODULE_SUPPORTED_DEVICE(NIC_NAME);
 
-#if 0
-    MODULE_LICENSE("MTK Propietary");
-#else
     MODULE_LICENSE("GPL");
-#endif
 
 #define NIC_INF_NAME    "wlan%d" /* interface name */
 
@@ -1173,11 +1169,6 @@ wlanSubModInit(
     /* wait main thread  finish sub module INIT*/
     wait_for_completion_interruptible(&prGlueInfo->rSubModComp);
 
-#if 0
-    if(prGlueInfo->prAdapter->fgIsP2PRegistered) {
-        p2pNetRegister(prGlueInfo);
-    }
-#endif
 
     return TRUE;
 }
@@ -1196,11 +1187,6 @@ wlanSubModExit(
     P_GLUE_INFO_T prGlueInfo
     )
 {
-#if 0
-    if(prGlueInfo->prAdapter->fgIsP2PRegistered) {
-        p2pNetUnregister(prGlueInfo);
-    }
-#endif
 
     //4  Mark HALT, notify main thread to finish current job
     prGlueInfo->u4Flag |= GLUE_FLAG_SUB_MOD_EXIT;
@@ -1236,48 +1222,6 @@ wlanSubModRegisterInitExit(
     rSubModHandler[eSubModIdx].fgIsInited = FALSE;
 }
 
-#if 0
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief check wlan is launched or not
-*
-* \param[in]  (none)
-*
-* \return TRUE, wlan is already started
-*             FALSE, wlan is not started yet
-*/
-/*----------------------------------------------------------------------------*/
-BOOLEAN
-wlanIsLaunched(
-    VOID
-    )
-{
-    struct net_device *prDev = NULL;
-    P_GLUE_INFO_T prGlueInfo = NULL;
-
-    //4 <0> Sanity check
-    ASSERT(u4WlanDevNum <= CFG_MAX_WLAN_DEVICES);
-    if (0 == u4WlanDevNum) {
-        return FALSE;
-    }
-
-    prDev = arWlanDevInfo[u4WlanDevNum-1].prDev;
-
-    ASSERT(prDev);
-    if (NULL == prDev) {
-        return FALSE;
-    }
-
-    prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
-    ASSERT(prGlueInfo);
-    if (NULL == prGlueInfo) {
-        return FALSE;
-    }
-
-    return prGlueInfo->prAdapter->fgIsWlanLaunched;
-}
-
-#endif
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1794,61 +1738,6 @@ wlanGetStats (
 {
     P_GLUE_INFO_T prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 
-    #if 0
-    WLAN_STATUS rStatus;
-    UINT_32 u4XmitError = 0;
-    UINT_32 u4XmitOk = 0;
-    UINT_32 u4RecvError = 0;
-    UINT_32 u4RecvOk = 0;
-    UINT_32 u4BufLen;
-
-    ASSERT(prDev);
-
-    /* @FIX ME: need a more clear way to do this */
-
-
-    rStatus = kalIoctl(prGlueInfo,
-            wlanoidQueryXmitError,
-            &u4XmitError,
-            sizeof(UINT_32),
-            TRUE,
-            TRUE,
-            TRUE,
-                         &u4BufLen);
-
-    rStatus = kalIoctl(prGlueInfo,
-            wlanoidQueryXmitOk,
-            &u4XmitOk,
-            sizeof(UINT_32),
-            TRUE,
-            TRUE,
-            TRUE,
-            &u4BufLen);
-    rStatus = kalIoctl(prGlueInfo,
-            wlanoidQueryRcvOk,
-            &u4RecvOk,
-            sizeof(UINT_32),
-            TRUE,
-            TRUE,
-            TRUE,
-            &u4BufLen);
-    rStatus = kalIoctl(prGlueInfo,
-            wlanoidQueryRcvError,
-            &u4RecvError,
-            sizeof(UINT_32),
-            TRUE,
-            TRUE,
-            TRUE,
-            &u4BufLen);
-    prGlueInfo->rNetDevStats.rx_packets = u4RecvOk;
-    prGlueInfo->rNetDevStats.tx_packets = u4XmitOk;
-    prGlueInfo->rNetDevStats.tx_errors  = u4XmitError;
-    prGlueInfo->rNetDevStats.rx_errors  = u4RecvError;
-    //prGlueInfo->rNetDevStats.rx_bytes   = rCustomNetDevStats.u4RxBytes;
-    //prGlueInfo->rNetDevStats.tx_bytes   = rCustomNetDevStats.u4TxBytes;
-    //prGlueInfo->rNetDevStats.rx_errors  = rCustomNetDevStats.u4RxErrors;
-    //prGlueInfo->rNetDevStats.multicast  = rCustomNetDevStats.u4Multicast;
-    #endif
     //prGlueInfo->rNetDevStats.rx_packets = 0;
     //prGlueInfo->rNetDevStats.tx_packets = 0;
     prGlueInfo->rNetDevStats.tx_errors  = 0;
@@ -2500,16 +2389,10 @@ fgIsUnderEarlierSuspend = true;
         for (i = 0; i < u4NumIPv4; i++) {
             prParamNetAddr->u2AddressLength = sizeof(PARAM_NETWORK_ADDRESS_IP);//4;;
             prParamNetAddr->u2AddressType = PARAM_PROTOCOL_ID_TCP_IP;;
-#if 0
-            kalMemCopy(prParamNetAddr->aucAddress, ip, sizeof(ip));
-            prParamNetAddr = (P_PARAM_NETWORK_ADDRESS)((UINT_32)prParamNetAddr + sizeof(ip));
-            u4Len += OFFSET_OF(PARAM_NETWORK_ADDRESS, aucAddress) + sizeof(ip);
-#else
             prParamIpAddr = (P_PARAM_NETWORK_ADDRESS_IP)prParamNetAddr->aucAddress;
             kalMemCopy(&prParamIpAddr->in_addr, ip, sizeof(ip));
             prParamNetAddr = (P_PARAM_NETWORK_ADDRESS)((UINT_32)prParamNetAddr + sizeof(PARAM_NETWORK_ADDRESS));
             u4Len += OFFSET_OF(PARAM_NETWORK_ADDRESS, aucAddress) + sizeof(PARAM_NETWORK_ADDRESS);
-#endif
         }
 #ifdef  CONFIG_IPV6
         for (i = 0; i < u4NumIPv6; i++) {
@@ -2691,36 +2574,6 @@ set_p2p_mode_handler(
     PARAM_CUSTOM_P2P_SET_STRUC_T p2pmode
 )
 {
-#if 0
-    P_GLUE_INFO_T prGlueInfo  = *((P_GLUE_INFO_T *)netdev_priv(netdev));
-    PARAM_CUSTOM_P2P_SET_STRUC_T rSetP2P;
-    WLAN_STATUS rWlanStatus = WLAN_STATUS_SUCCESS;
-    UINT_32 u4BufLen = 0;
-
-    rSetP2P.u4Enable = p2pmode.u4Enable;
-    rSetP2P.u4Mode = p2pmode.u4Mode;
-
-    if(!rSetP2P.u4Enable) {
-        p2pNetUnregister(prGlueInfo, TRUE);
-    }
-
-    rWlanStatus = kalIoctl(prGlueInfo,
-                        wlanoidSetP2pMode,
-                        (PVOID)&rSetP2P,
-                        sizeof(PARAM_CUSTOM_P2P_SET_STRUC_T),
-                        FALSE,
-                        FALSE,
-                        TRUE,
-                        FALSE,
-                        &u4BufLen);
-    printk("set_p2p_mode_handler ret = %d\n", rWlanStatus);
-    if(rSetP2P.u4Enable) {
-        p2pNetRegister(prGlueInfo, TRUE);
-    }
-
-    return 0;
-
-#else
 
     P_GLUE_INFO_T prGlueInfo  = *((P_GLUE_INFO_T *)netdev_priv(netdev));
 	extern BOOLEAN fgIsResetting;
@@ -2815,7 +2668,6 @@ set_p2p_mode_handler(
 	g_u4P2POnOffing = 0;
 	GLUE_RELEASE_THE_SPIN_LOCK(&g_p2p_lock);
 	return 0;
-#endif
 }
 
 static void 
@@ -3219,25 +3071,6 @@ wlanRemove(
     }
 */
 
-#if 0
-    prGlueInfo->prAdapter->fgIsWlanLaunched = FALSE;
-    //if(prGlueInfo->prAdapter->fgIsP2PRegistered) {
-    if (prGlueInfo->prP2PInfo) {
-        //p2pRemove(prGlueInfo);
-        if (prGlueInfo->prP2PInfo->prDevHandler) {
-            free_netdev(prGlueInfo->prP2PInfo->prDevHandler);
-            prGlueInfo->prP2PInfo->prDevHandler = NULL;
-
-        }
-
-
-        if(!p2PFreeInfo(prGlueInfo)) {
-           printk(KERN_ALERT DRV_NAME "Free memory for p2p FAILED\n");
-           ASSERT(0);
-           return;
-        }
-    }
-#endif
 #endif
 
 #if CFG_ENABLE_BT_OVER_WIFI

@@ -504,12 +504,8 @@ APPEND_VAR_IE_ENTRY_T txBcnIETable[] = {
 #if CFG_ENABLE_WIFI_DIRECT
    ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_WPA),                    NULL,                           rsnGenerateWPAIE            }   /* 221 */
    ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_RSN),                    NULL,                           rsnGenerateRSNIE            }   /* 48 */
-#if 0 //LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-   ,{ 0,                                                    p2pFuncCalculateExtra_IELenForBeacon, p2pFuncGenerateExtra_IEForBeacon  }   /* 221 */
-#else
    ,{ 0,                                                    p2pFuncCalculateP2p_IELenForBeacon, p2pFuncGenerateP2p_IEForBeacon  }   /* 221 */
    ,{ 0,                                                    p2pFuncCalculateWSC_IELenForBeacon, p2pFuncGenerateWSC_IEForBeacon      }   /* 221 */
-#endif
 #endif /* CFG_ENABLE_WIFI_DIRECT */
 };
 
@@ -909,41 +905,6 @@ bssSendNullFrame (
     bssComposeNullFrame(prAdapter,
             (PUINT_8)((UINT_32)prMsduInfo->prPacket + MAC_TX_RESERVED_FIELD),
             prStaRec);
-#if 0
-    //4 <3> Update information of MSDU_INFO_T
-    TXM_SET_DATA_PACKET( \
-    /* STA_REC ptr */       prStaRec, \
-    /* MSDU_INFO ptr */     prMsduInfo, \
-    /* MAC HDR ptr */       (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD), \
-    /* MAC HDR length */    WLAN_MAC_HEADER_LEN, \
-    /* PAYLOAD ptr */       (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_LEN), \
-    /* PAYLOAD length */    0, \
-    /* Network Type Index */(UINT_8)prStaRec->ucNetTypeIndex, \
-    /* TID */               0 /* BE: AC1 */, \
-    /* Flag 802.11 */       TRUE,\
-    /* Pkt arrival time */  0 /* TODO: Obtain the system time */, \
-    /* Resource TC */       0 /* Irrelevant */, \
-    /* Flag 802.1x */       FALSE,\
-    /* TX-done callback */  pfTxDoneHandler, \
-    /* PS forwarding type*/ PS_FORWARDING_TYPE_NON_PS, \
-    /* PS Session ID */     0           /* Irrelevant */, \
-    /* Flag fixed rate */   TRUE, \
-    /* Fixed tx rate */     g_aprBssInfo[prStaRec->ucNetTypeIndex]->ucHwDefaultFixedRateCode, \
-    /* Fixed-rate retry */  BSS_DEFAULT_CONN_TEST_NULL_FRAME_RETRY_LIMIT, \
-    /* PAL LLH */           0 /* Irrelevant */,\
-    /* ACL SN */            0 /* Irrelevant */,\
-    /* Flag No Ack */       FALSE \
-    );
-
-    /* Terminate with a NULL pointer */
-    NIC_HIF_TX_SET_NEXT_MSDU_INFO(prMsduInfo,NULL);
-
-    /* TODO(Kevin): Also release the unused tail room of the composed MMPDU */
-
-    /* Indicate the packet to TXM */
-    //4 <4> Inform TXM to send this Null frame.
-    txmSendFwDataPackets(prMsduInfo);
-#endif
 
     prMsduInfo->eSrc = TX_PACKET_MGMT;
     prMsduInfo->ucPacketType = HIF_TX_PACKET_TYPE_DATA;
@@ -1006,41 +967,6 @@ bssSendQoSNullFrame (
             prStaRec,
             ucUP,
             FALSE);
-#if 0
-    //4 <3> Update information of MSDU_INFO_T
-    TXM_SET_DATA_PACKET( \
-    /* STA_REC ptr */       prStaRec, \
-    /* MSDU_INFO ptr */     prMsduInfo, \
-    /* MAC HDR ptr */       (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD), \
-    /* MAC HDR length */    WLAN_MAC_HEADER_QOS_LEN, \
-    /* PAYLOAD ptr */       (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_QOS_LEN), \
-    /* PAYLOAD length */    0, \
-    /* Network Type Index */(UINT_8)prStaRec->ucNetTypeIndex, \
-    /* TID */               0 /* BE: AC1 */, \
-    /* Flag 802.11 */       TRUE,\
-    /* Pkt arrival time */  0 /* TODO: Obtain the system time */, \
-    /* Resource TC */       0 /* Irrelevant */, \
-    /* Flag 802.1x */       FALSE,\
-    /* TX-done callback */  pfTxDoneHandler, \
-    /* PS forwarding type*/ PS_FORWARDING_TYPE_NON_PS, \
-    /* PS Session ID */     0           /* Irrelevant */, \
-    /* Flag fixed rate */   TRUE, \
-    /* Fixed tx rate */     g_aprBssInfo[prStaRec->ucNetTypeIndex]->ucHwDefaultFixedRateCode, \
-    /* Fixed-rate retry */  TXM_DEFAULT_DATA_FRAME_RETRY_LIMIT, \
-    /* PAL LLH */           0 /* Irrelevant */,\
-    /* ACL SN */            0 /* Irrelevant */,\
-    /* Flag No Ack */       FALSE \
-    );
-
-    /* Terminate with a NULL pointer */
-    NIC_HIF_TX_SET_NEXT_MSDU_INFO(prMsduInfo,NULL);
-
-    /* TODO(Kevin): Also release the unused tail room of the composed MMPDU */
-
-    /* Indicate the packet to TXM */
-    //4 <4> Inform TXM to send this Null frame.
-    txmSendFwDataPackets(prMsduInfo);
-#endif
 
     prMsduInfo->eSrc = TX_PACKET_MGMT;
     prMsduInfo->ucPacketType = HIF_TX_PACKET_TYPE_MGMT;
@@ -1214,56 +1140,6 @@ bssBuildBeaconProbeRespFrameCommonIEs (
 #if CFG_ENABLE_WIFI_DIRECT
         /*no fgIsP2PRegistered protect*/
         if (prBssInfo->ucNetTypeIndex == NETWORK_TYPE_P2P_INDEX) {
-#if 0
-            P_P2P_SPECIFIC_BSS_INFO_T prP2pSpecificBssInfo;
-            UINT_8 ucBitmapControl = 0;
-            UINT_32 u4N1, u4N2;
-
-
-            prP2pSpecificBssInfo = &(prAdapter->rWifiVar.rP2pSpecificBssInfo);
-
-            // Clear existing value.
-            prP2pSpecificBssInfo->ucBitmapCtrl = 0;
-            kalMemZero(prP2pSpecificBssInfo->aucPartialVirtualBitmap,
-                       sizeof(prP2pSpecificBssInfo->aucPartialVirtualBitmap));
-
-
-            // IEEE 802.11 2007 - 7.3.2.6
-            TIM_IE(pucBuffer)->ucId = ELEM_ID_TIM;
-            TIM_IE(pucBuffer)->ucDTIMCount = prBssInfo->ucDTIMCount;
-            TIM_IE(pucBuffer)->ucDTIMPeriod = prBssInfo->ucDTIMPeriod;
-
-            // Setup DTIM Count for next TBTT.
-            if (prBssInfo->ucDTIMCount == 0) {
-                //3 *** pmQueryBufferedBCAST();
-            }
-
-            //3 *** pmQueryBufferedPSNode();
-            /* TODO(Kevin): Call PM Module here to loop all STA_RECORD_Ts and it
-             * will call bssSetTIMBitmap to toggle the Bitmap.
-             */
-
-            // Set Virtual Bitmap for UCAST
-            u4N1 = (prP2pSpecificBssInfo->u2SmallestAID >> 4) << 1; // Find the largest even number.
-            u4N2 = prP2pSpecificBssInfo->u2LargestAID >> 3; // Find the smallest number.
-
-            ASSERT(u4N2 >= u4N1);
-
-            kalMemCopy(TIM_IE(pucBuffer)->aucPartialVirtualMap,
-                       &prP2pSpecificBssInfo->aucPartialVirtualBitmap[u4N1],
-                       ((u4N2 - u4N1) + 1));
-
-            // Set Virtual Bitmap for BMCAST
-            // BMC bit only indicated when DTIM count == 0.
-            if (prBssInfo->ucDTIMCount == 0) {
-                ucBitmapControl = prP2pSpecificBssInfo->ucBitmapCtrl;
-            }
-            TIM_IE(pucBuffer)->ucBitmapControl = ucBitmapControl | (UINT_8)u4N1;
-
-            TIM_IE(pucBuffer)->ucLength = ((u4N2 - u4N1) + 4);
-
-            prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
-#else
 
             // IEEE 802.11 2007 - 7.3.2.6
             TIM_IE(pucBuffer)->ucId = ELEM_ID_TIM;
@@ -1274,7 +1150,6 @@ bssBuildBeaconProbeRespFrameCommonIEs (
 
             prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
 
-#endif
 
         }
         else
@@ -1706,246 +1581,6 @@ bssProcessProbeRequest (
 } /* end of bssProcessProbeRequest() */
 
 
-#if 0 // NOTE(Kevin): condition check should move to P2P_FSM.c
-/*----------------------------------------------------------------------------*/
-/*!
-* @brief This function will process the Rx Probe Request Frame and then send
-*        back the corresponding Probe Response Frame if the specified conditions
-*        were matched.
-*
-* @param[in] prSwRfb            Pointer to SW RFB data structure.
-*
-* @retval WLAN_STATUS_SUCCESS   Always return success
-*/
-/*----------------------------------------------------------------------------*/
-WLAN_STATUS
-bssProcessProbeRequest (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_SW_RFB_T   prSwRfb
-    )
-{
-    P_WLAN_MAC_MGMT_HEADER_T prMgtHdr;
-    P_BSS_INFO_T prBssInfo;
-    P_IE_SSID_T prIeSsid = (P_IE_SSID_T)NULL;
-    P_IE_SUPPORTED_RATE_T prIeSupportedRate = (P_IE_SUPPORTED_RATE_T)NULL;
-    P_IE_EXT_SUPPORTED_RATE_T prIeExtSupportedRate = (P_IE_EXT_SUPPORTED_RATE_T)NULL;
-    PUINT_8 pucIE;
-    UINT_16 u2IELength;
-    UINT_16 u2Offset = 0;
-    UINT_8 aucBCBSSID[] = BC_BSSID;
-    ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex;
-    BOOLEAN fgReplyProbeResp;
-#if CFG_ENABLE_WIFI_DIRECT
-    BOOLEAN fgP2PTargetDeviceFound;
-    UINT_8 aucP2PWildcardSSID[] = P2P_WILDCARD_SSID;
-#endif
-
-    ASSERT(prSwRfb);
-
-    //4 <1> Parse Probe Req and Get SSID IE ptr
-    prMgtHdr = (P_WLAN_MAC_MGMT_HEADER_T)prSwRfb->pvHeader;
-
-    u2IELength = prSwRfb->u2PacketLen - prSwRfb->u2HeaderLen;
-    pucIE = (PUINT_8)((UINT_32)prSwRfb->pvHeader + prSwRfb->u2HeaderLen);
-
-    prIeSsid = (P_IE_SSID_T)NULL;
-
-    IE_FOR_EACH(pucIE, u2IELength, u2Offset) {
-        switch (IE_ID(pucIE)) {
-        case ELEM_ID_SSID:
-            if ((!prIeSsid) &&
-                (IE_LEN(pucIE) <= ELEM_MAX_LEN_SSID)) {
-                prIeSsid = (P_IE_SSID_T)pucIE;
-            }
-            break;
-
-        case ELEM_ID_SUP_RATES:
-            /* NOTE(Kevin): Buffalo WHR-G54S's supported rate set IE exceed 8.
-             * IE_LEN(pucIE) == 12, "1(B), 2(B), 5.5(B), 6(B), 9(B), 11(B),
-             * 12(B), 18(B), 24(B), 36(B), 48(B), 54(B)"
-             */
-            // if (IE_LEN(pucIE) <= ELEM_MAX_LEN_SUP_RATES) {
-            if (IE_LEN(pucIE) <= RATE_NUM) {
-                prIeSupportedRate = SUP_RATES_IE(pucIE);
-            }
-            break;
-
-        case ELEM_ID_EXTENDED_SUP_RATES:
-            prIeExtSupportedRate = EXT_SUP_RATES_IE(pucIE);
-            break;
-
-#if CFG_ENABLE_WIFI_DIRECT
-        // TODO: P2P IE & WCS IE parsing for P2P.
-        case ELEM_ID_P2P:
-
-            break;
-#endif
-
-        /* no default */
-        }
-    } /* end of IE_FOR_EACH */
-
-    //4 <2> Check network conditions before reply Probe Response Frame (Consider Concurrent)
-    for (eNetTypeIndex = NETWORK_TYPE_AIS_INDEX; eNetTypeIndex < NETWORK_TYPE_INDEX_NUM; eNetTypeIndex++) {
-
-        if (!IS_NET_ACTIVE(prAdapter, eNetTypeIndex)) {
-            continue;
-        }
-
-        prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
-
-        if (UNEQUAL_MAC_ADDR(aucBCBSSID, prMgtHdr->aucBSSID) &&
-            UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prMgtHdr->aucBSSID)) {
-            /* BSSID not Wildcard BSSID. */
-            continue;
-        }
-
-        fgReplyProbeResp = FALSE;
-
-        if (NETWORK_TYPE_AIS_INDEX == eNetTypeIndex) {
-
-            if (prBssInfo->eCurrentOPMode == OP_MODE_IBSS) {
-
-                /* TODO(Kevin): Check if we are IBSS Master. */
-                if (TRUE) {
-
-                    if (prIeSsid) {
-                        if ((prIeSsid->ucLength == BC_SSID_LEN) || /* WILDCARD SSID */
-                            EQUAL_SSID(prBssInfo->aucSSID, prBssInfo->ucSSIDLen,
-                                       prIeSsid->aucSSID, prIeSsid->ucLength)) {
-                            fgReplyProbeResp = TRUE;
-                        }
-                    }
-                }
-            }
-        }
-#if CFG_ENABLE_WIFI_DIRECT
-        else if (NETWORK_TYPE_P2P_INDEX == eNetTypeIndex) {
-
-            // TODO(Kevin): Move following lines to p2p_fsm.c
-
-            if ((prIeSsid) &&
-                    ((prIeSsid->ucLength == BC_SSID_LEN) ||
-                    (EQUAL_SSID(aucP2PWildcardSSID,
-                        P2P_WILDCARD_SSID_LEN,
-                        prIeSsid->aucSSID,
-                        prIeSsid->ucLength)))) {
-//                if (p2pFsmRunEventRxProbeRequestFrame(prAdapter, prMgtHdr->aucSrcAddr, pucIE, u2IELength)) {
-                if (p2pFsmRunEventRxProbeRequestFrame(prAdapter, prSwRfb)) {
-                    /* Extand channel request time & cancel scan request. */
-                    P_P2P_FSM_INFO_T prP2pFsmInfo = (P_P2P_FSM_INFO_T)NULL;
-
-                    // TODO: RX probe request may not caused by LISTEN state.
-                    // TODO: It can be GO.
-                    /* Generally speaking, cancel a non-exist scan request is fine.
-                      * We can check P2P FSM here for only LISTEN state.
-                      */
-
-                    P_MSG_SCN_SCAN_CANCEL prScanCancelMsg;
-
-                    prP2pFsmInfo = prAdapter->rWifiVar.prP2pFsmInfo;
-
-                    /* Abort JOIN process. */
-                    prScanCancelMsg = (P_MSG_SCN_SCAN_CANCEL)cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_SCN_SCAN_CANCEL));
-                    if (!prScanCancelMsg) {
-                        ASSERT(0); // Can't abort SCN FSM
-                        continue;
-                    }
-
-                    prScanCancelMsg->rMsgHdr.eMsgId = MID_P2P_SCN_SCAN_CANCEL;
-                    prScanCancelMsg->ucSeqNum = prP2pFsmInfo->ucSeqNumOfScnMsg;
-                    prScanCancelMsg->ucNetTypeIndex = (UINT_8)NETWORK_TYPE_P2P_INDEX;
-                    prScanCancelMsg->fgIsChannelExt = TRUE;
-
-                    mboxSendMsg(prAdapter,
-                            MBOX_ID_0,
-                            (P_MSG_HDR_T) prScanCancelMsg,
-                            MSG_SEND_METHOD_BUF);
-              }
-            }
-            else {
-                /* 1. Probe Request without SSID.
-                  * 2. Probe Request with SSID not Wildcard SSID & not P2P Wildcard SSID.
-                  */
-                continue;
-            }
-
-#if 0 // Frog
-            if (prAdapter->rWifiVar.prP2pFsmInfo->eCurrentState == P2P_STATE_LISTEN) {
-                // P2P 2.4.1 - P2P Devices shall not respond to Probe Request frames which only contain 11b rates only.
-                if (prIeSupportedRate || prIeExtSupportedRate) {
-                    UINT_16 u2OperationalRateSet, u2BSSBasicRateSet;
-                    BOOLEAN fgIsUnknownBssBasicRate;
-
-                    rateGetRateSetFromIEs(prIeSupportedRate,
-                                          prIeExtSupportedRate,
-                                          &u2OperationalRateSet,
-                                          &u2BSSBasicRateSet, /* Ignore any Basic Bit */
-                                          &fgIsUnknownBssBasicRate);
-
-                    if (u2OperationalRateSet & ~RATE_SET_HR_DSSS) {
-                        continue;
-                    }
-                }
-            }
-
-            // TODO: Check channel time before first check point to:
-            /* If Target device is selected:
-              *     1. Send XXXX request frame.
-              * else
-              *     1. Send Probe Response frame.
-              */
-
-            if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
-                /* TODO(Kevin): During PROVISION state, can we reply Probe Response ? */
-
-                /* TODO(Kevin):
-                           * If we are GO, accept legacy client --> accept Wildcard SSID
-                           * If we are in Listen State, accept only P2P Device --> check P2P IE and WPS IE
-                           */
-                if (TRUE /* We are GO */) {
-                    if (prIeSsid) {
-                        UINT_8 aucSSID[]=P2P_WILDCARD_SSID;
-
-                        if ((prIeSsid->ucLength == BC_SSID_LEN) || /* WILDCARD SSID */
-                            EQUAL_SSID(prBssInfo->aucSSID, prBssInfo->ucSSIDLen,
-                                       prIeSsid->aucSSID, prIeSsid->ucLength) ||
-                            EQUAL_SSID(aucSSID, P2P_WILDCARD_SSID_LEN,
-                                       prIeSsid->aucSSID, prIeSsid->ucLength)) {
-                            fgReplyProbeResp = TRUE;
-                        }
-                    }
-                }
-//                else if (FALSE /* We are in Listen State */) {
-//                }
-
-                /* TODO(Kevin): Check P2P IE and WPS IE */
-            }
-#endif
-        }
-#endif
-#if CFG_ENABLE_BT_OVER_WIFI
-        else if (NETWORK_TYPE_BOW_INDEX == eNetTypeIndex) {
-
-            if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
-                /* TODO(Kevin): TBD */
-            }
-        }
-#endif
-        else {
-            ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
-        }
-
-        if (fgReplyProbeResp) {
-            bssSendBeaconProbeResponse(prAdapter, eNetTypeIndex, prMgtHdr->aucSrcAddr);
-        }
-
-    }
-
-    return WLAN_STATUS_SUCCESS;
-
-} /* end of bssProcessProbeRequest() */
-#endif
 
 
 /*----------------------------------------------------------------------------*/
@@ -2054,21 +1689,6 @@ bssRemoveStaRecFromClientList (
 
     prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
 
-#if 0
-    if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
-        P_STA_RECORD_T prCurrStaRec;
-
-        LINK_FOR_EACH_ENTRY(prCurrStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
-
-            if (prCurrStaRec == prStaRec) {
-
-                LINK_REMOVE_KNOWN_ENTRY(prStaRecOfClientList, &prStaRec->rLinkEntry);
-
-                return;
-            }
-        }
-    }
-#endif
     if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
            
            P_LINK_ENTRY_T prLinkEntry = (P_LINK_ENTRY_T)NULL;
@@ -2374,16 +1994,6 @@ ibssCheckCapabilityForAdHocMode (
         }
 
         //4 <2> Check the Short Slot Time.
-#if 0 // Do not check ShortSlotTime until Wi-Fi define such policy
-        if (prConnSettings->eAdHocMode == AD_HOC_MODE_11G) {
-            if (((prConnSettings->fgIsShortSlotTimeOptionEnable) &&
-                 !(prBssDesc->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME)) ||
-                (!(prConnSettings->fgIsShortSlotTimeOptionEnable) &&
-                 (prBssDesc->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME))) {
-                break;
-            }
-        }
-#endif
 
         //4 <3> Check the ATIM window setting.
         if (prBssDesc->u2ATIMWindow) {
@@ -2552,11 +2162,6 @@ bssInitForAP (
     ASSERT(prBssInfo);
     ASSERT((prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) || (prBssInfo->eCurrentOPMode == OP_MODE_BOW));
 
-#if 0
-    prAdapter->rWifiVar.rConnSettings.fgRxShortGIDisabled = TRUE;
-    prAdapter->rWifiVar.rConnSettings.uc2G4BandwidthMode = CONFIG_BW_20M;
-    prAdapter->rWifiVar.rConnSettings.uc5GBandwidthMode = CONFIG_BW_20M;
-#endif
 
 
     //4 <1> Setup PHY Attributes and Basic Rate Set/Operational Rate Set
@@ -2670,109 +2275,6 @@ bssInitForAP (
     return;
 } /* end of bssInitForAP() */
 
-#if 0
-/*----------------------------------------------------------------------------*/
-/*!
-* @brief Update DTIM Count
-*
-* @param[in] eNetTypeIndex      Specify which network to update
-*
-* @return (none)
-*/
-/*----------------------------------------------------------------------------*/
-VOID
-bssUpdateDTIMCount (
-    IN P_ADAPTER_T  prAdapter,
-    IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex
-    )
-{
-    P_BSS_INFO_T prBssInfo;
-
-
-    ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
-
-    prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
-
-    if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
-
-        // Setup DTIM Count for next TBTT.
-        if (prBssInfo->ucDTIMCount > 0) {
-            prBssInfo->ucDTIMCount--;
-        }
-        else {
-
-            ASSERT(prBssInfo->ucDTIMPeriod > 0);
-
-            prBssInfo->ucDTIMCount = prBssInfo->ucDTIMPeriod - 1;
-        }
-    }
-
-    return;
-} /* end of bssUpdateDTIMIE() */
-
-
-/*----------------------------------------------------------------------------*/
-/*!
-* @brief This function is used to set the Virtual Bitmap in TIM Information Elements
-*
-* @param[in] prBssInfo      Pointer to the BSS_INFO_T.
-* @param[in] u2AssocId      The association id to set in Virtual Bitmap.
-*
-* @return (none)
-*/
-/*----------------------------------------------------------------------------*/
-VOID
-bssSetTIMBitmap (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_INFO_T prBssInfo,
-    IN UINT_16 u2AssocId
-    )
-{
-
-    ASSERT(prBssInfo);
-
-    if (prBssInfo->ucNetTypeIndex == NETWORK_TYPE_P2P_INDEX) {
-        P_P2P_SPECIFIC_BSS_INFO_T prP2pSpecificBssInfo;
-
-
-        prP2pSpecificBssInfo = &(prAdapter->rWifiVar.rP2pSpecificBssInfo);
-
-        /* Use Association ID == 0 for BMCAST indication */
-        if (u2AssocId == 0) {
-
-            prP2pSpecificBssInfo->ucBitmapCtrl |= (UINT_8)BIT(0);
-        }
-        else {
-            PUINT_8 pucPartialVirtualBitmap;
-            UINT_8 ucBitmapToSet;
-
-
-            pucPartialVirtualBitmap = &prP2pSpecificBssInfo->aucPartialVirtualBitmap[(u2AssocId >> 3)]; // (u2AssocId / 8)
-            ucBitmapToSet = (UINT_8) BIT((u2AssocId % 8));
-
-            if (*pucPartialVirtualBitmap & ucBitmapToSet) {
-                /* The virtual bitmap has been set */
-                return;
-            }
-
-            *pucPartialVirtualBitmap |= ucBitmapToSet;
-
-            // Update u2SmallestAID and u2LargestAID
-            if ((u2AssocId < prP2pSpecificBssInfo->u2SmallestAID) ||
-                (prP2pSpecificBssInfo->u2SmallestAID == 0)) {
-                prP2pSpecificBssInfo->u2SmallestAID = u2AssocId;
-            }
-
-            if ((u2AssocId > prP2pSpecificBssInfo->u2LargestAID) ||
-                (prP2pSpecificBssInfo->u2LargestAID == 0)) {
-                prP2pSpecificBssInfo->u2LargestAID = u2AssocId;
-            }
-        }
-    }
-
-    return;
-} /* end of bssSetTIMBitmap() */
-#endif
 
 #endif /* CFG_SUPPORT_AAA */
 

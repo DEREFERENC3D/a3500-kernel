@@ -803,12 +803,6 @@ qmActivateStaRec(
     prStaRec->fgIsAp         = (IS_AP_STA(prStaRec)) ? TRUE : FALSE;;
 
     /* Done in qmInit() or qmDeactivateStaRec() */
-#if 0
-    /* At the beginning, no RX BA agreements have been established */
-    for(i =0; i<CFG_RX_MAX_BA_TID_NUM; i++){
-        (prStaRec->aprRxReorderParamRefTbl)[i] = NULL;
-    }
-#endif
 
     DBGLOG(QM, INFO, ("QM: +STA[%ld]\n", prStaRec->ucIndex));
 }
@@ -947,11 +941,6 @@ qmFlushTxQueues(
     for(ucStaArrayIdx = 0; ucStaArrayIdx < CFG_NUM_OF_STA_RECORD; ucStaArrayIdx++){
 
         /* Always check each STA_REC when flushing packets no matter it is inactive or active */
-        #if 0
-        if(!prAdapter->arStaRec[ucStaArrayIdx].fgIsValid){
-            continue; /* Continue to check the next STA_REC */
-        }
-        #endif
 
         for(ucQueArrayIdx = 0; ucQueArrayIdx < NUM_OF_PER_STA_TX_QUEUES; ucQueArrayIdx++){
             if(QUEUE_IS_EMPTY(&(prAdapter->arStaRec[ucStaArrayIdx].arTxQueue[ucQueArrayIdx]))){
@@ -1048,11 +1037,6 @@ qmFlushStaTxQueues(
     ASSERT(prStaRec);
 
     /* No matter whether this is an activated STA_REC, do flush */
-#if 0
-    if(!prStaRec->fgIsValid){
-        return NULL;
-    }
-#endif
 
     /* Concatenate all MSDU_INFOs in TX queues of this STA_REC */
     for(ucQueArrayIdx = 0; ucQueArrayIdx < NUM_OF_PER_STA_TX_QUEUES; ucQueArrayIdx++){
@@ -1079,15 +1063,6 @@ qmFlushStaTxQueues(
 
     }
 
-#if 0
-    if(prMsduInfoListTail){
-        /* Terminate the MSDU_INFO list with a NULL pointer */
-        QM_TX_SET_NEXT_MSDU_INFO(prMsduInfoListTail, nicGetPendingStaMMPDU(prAdapter, (UINT_8)u4StaRecIdx));
-    }
-    else {
-        prMsduInfoListHead = nicGetPendingStaMMPDU(prAdapter, (UINT_8)u4StaRecIdx);
-    }
-#endif
 
     return prMsduInfoListHead;
 
@@ -1183,11 +1158,6 @@ qmFlushStaRxQueue(
     ASSERT(prStaRec);
 
     /* No matter whether this is an activated STA_REC, do flush */
-#if 0
-    if(!prStaRec->fgIsValid){
-        return NULL;
-    }
-#endif
 
     /* Obtain the RX BA Entry pointer */
     prReorderQueParm = ((prStaRec->aprRxReorderParamRefTbl)[u4Tid]);
@@ -1303,16 +1273,6 @@ qmEnqueueTxPackets(
                 case STA_REC_INDEX_BMCAST:
                     prTxQue = &prQM->arTxQueue[TX_QUEUE_INDEX_BMCAST];
                     ucTC = TC5_INDEX;
-#if 0
-                    if(prCurrentMsduInfo->ucNetworkType == NETWORK_TYPE_P2P_INDEX
-                            && prCurrentMsduInfo->eSrc != TX_PACKET_MGMT
-                            ) {
-                        if(LINK_IS_EMPTY(&prAdapter->rWifiVar.arBssInfo[NETWORK_TYPE_P2P_INDEX].rStaRecOfClientList)) {
-                            prTxQue = &rNotEnqueuedQue;
-                            TX_INC_CNT(&prAdapter->rTxCtrl,TX_AP_BORADCAST_DROP);
-                        }
-                    }
-#endif
 
                     QM_DBG_CNT_INC(prQM, QM_DBG_CNT_23);
                     break;
@@ -2825,21 +2785,6 @@ qmHandleRxPackets(
         }
         /* Reordering is not required for this packet, return it without buffering */
         else if(!HIF_RX_HDR_GET_REORDER_FLAG(prHifRxHdr) || fgIsBMC){
-#if 0
-            if (!HIF_RX_HDR_GET_80211_FLAG(prHifRxHdr)){
-                UINT_8 ucNetTypeIdx;
-                P_BSS_INFO_T prBssInfo;
-
-                pucEthDestAddr = prCurrSwRfb->pvHeader;
-                ucNetTypeIdx = HIF_RX_HDR_GET_NETWORK_IDX(prHifRxHdr);
-
-                prBssInfo = &(prAdapter->rWifiVar.arBssInfo[ucNetTypeIdx]);
-
-                if (IS_BMCAST_MAC_ADDR(pucEthDestAddr) && (OP_MODE_ACCESS_POINT == prBssInfo->eCurrentOPMode)){
-                    prCurrSwRfb->eDst = RX_PKT_DESTINATION_HOST_WITH_FORWARD;
-                }
-            }
-#endif
             QUEUE_INSERT_TAIL(&rReturnedQue, (P_QUE_ENTRY_T)prCurrSwRfb);
         }
         /* Reordering is required for this packet */
@@ -2928,16 +2873,6 @@ qmProcessPktWithReordering(
     prStaRec = &(prAdapter->arStaRec[prSwRfb->ucStaRecIdx]);
     ASSERT(prStaRec);
 
-#if 0
-    if(!(prStaRec->fgIsValid)){
-        /* TODO: (Tehuang) Handle the Host-FW sync issue. */
-        prSwRfb->eDst = RX_PKT_DESTINATION_NULL;
-        QUEUE_INSERT_TAIL(prReturnedQue,(P_QUE_ENTRY_T)prSwRfb);
-        DBGLOG(QM, WARN, ("Reordering for an invalid STA_REC \n"));
-        //ASSERT(0);
-        return;
-    }
-#endif
 
     /* Check whether the BA agreement exists */
     prReorderQueParm = ((prStaRec->aprRxReorderParamRefTbl)[prSwRfb->ucTid]);
@@ -3087,14 +3022,6 @@ qmProcessBarFrame(
     prStaRec = &(prAdapter->arStaRec[prSwRfb->ucStaRecIdx]);
     ASSERT(prStaRec);
 
-#if 0
-    if(!(prStaRec->fgIsValid)){
-        /* TODO: (Tehuang) Handle the Host-FW sync issue. */
-        DbgPrint("QM: (Warning) BAR for an invalid STA_REC \n");
-        //ASSERT(0);
-        return;
-    }
-#endif
 
     /* Check whether the BA agreement exists */
     prReorderQueParm = ((prStaRec->aprRxReorderParamRefTbl)[prSwRfb->ucTid]);
@@ -3462,14 +3389,6 @@ qmHandleEventRxAddBa(
         return;
     }
 
-#if 0
-    if(!(prStaRec->fgIsValid)){
-        /* TODO: (Tehuang) Handle the Host-FW synchronization issue */
-        DBGLOG(QM, WARN, ("QM: (Warning) RX ADDBA Event for an invalid STA_REC\n"));
-        //ASSERT(0);
-        //return;
-    }
-#endif
 
     u4Tid = (((prEventRxAddBa->u2BAParameterSet)& BA_PARAM_SET_TID_MASK)
             >> BA_PARAM_SET_TID_MASK_OFFSET);
@@ -3521,13 +3440,6 @@ qmHandleEventRxDelBa(
         return;
     }
 
-#if 0
-    if(!(prStaRec->fgIsValid)){
-        /* TODO: (Tehuang) Handle the Host-FW synchronization issue */
-        //ASSERT(0);
-        return;
-    }
-#endif
 
     qmDelRxBaEntry(prAdapter, prStaRec->ucIndex, prEventRxDelBa->ucTid, TRUE);
 
@@ -3656,12 +3568,6 @@ qmDelRxBaEntry(
     prStaRec = &prAdapter->arStaRec[ucStaRecIdx];
     ASSERT(prStaRec);
 
-#if 0
-    if(!(prStaRec->fgIsValid)){
-        DbgPrint("QM: (WARNING) Invalid STA when deleting an RX BA \n");
-        return;
-    }
-#endif
 
     /* Remove the BA entry for the same (STA, TID) tuple if it exists */
     prRxBaEntry = prStaRec->aprRxReorderParamRefTbl[ucTid];
@@ -3697,9 +3603,6 @@ qmDelRxBaEntry(
         prQM->ucRxBaCount--;
 
 		/* Debug */
-		#if 0
-        DbgPrint("QM: ucRxBaCount=%d\n", prQM->ucRxBaCount);
-		#endif
 
         /* Update STA RX BA table */
         prStaRec->aprRxReorderParamRefTbl[ucTid] = NULL;
@@ -4354,28 +4257,6 @@ mqmGenerateWmmInfoIE (
 }
 
 
-#if 0
-/*----------------------------------------------------------------------------*/
-/*!
-* @brief log2 calculation for CW
-*
-* @param[in] val value
-*
-* @return log2(val)
-*/
-/*----------------------------------------------------------------------------*/
-
-UINT_32 cwlog2(UINT_32 val) {
-
-     UINT_32 n;
-     n=0;
-
-     while (val >= 512) {  n+= 9; val = val >> 9; }
-     while (val >= 16) { n+= 4; val >>= 4; }
-     while (val >= 2) { n+= 1; val >>= 1; }
-     return n;
-}
-#endif
 
 
 /*----------------------------------------------------------------------------*/
@@ -4431,13 +4312,6 @@ mqmGenerateWmmParamIE (
 
     if(!prBssInfo->fgIsQBSS) { return; }
 
-#if 0  // 20120220 frog: update beacon content & change OP mode is a separate event for P2P network.
-    if( prBssInfo->eCurrentOPMode != OP_MODE_ACCESS_POINT &&
-         prBssInfo->eCurrentOPMode != OP_MODE_BOW)
-    {
-        return;
-    }
-#endif
 
     prIeWmmParam = (P_IE_WMM_PARAM_T)
             ((PUINT_8) prMsduInfo->prPacket + prMsduInfo->u2FrameLength);
@@ -4787,12 +4661,6 @@ qmHandleEventStaUpdateFreeQuota(
 
             kalSetEvent(prAdapter->prGlueInfo);
         }
-#if 0
-        DBGLOG(QM, TRACE, ("qmHandleEventStaUpdateFreeQuota (ucStaRecIdx=%d, ucUpdateMode=%d, ucFreeQuota=%d)\n",
-            prEventStaUpdateFreeQuota->ucStaRecIdx,
-            prEventStaUpdateFreeQuota->ucUpdateMode,
-            prEventStaUpdateFreeQuota->ucFreeQuota));
-#endif
 
         DBGLOG(QM, TRACE, ("UFQ=%d,%d,%d\n",
             prEventStaUpdateFreeQuota->ucStaRecIdx,

@@ -1310,19 +1310,6 @@ rlmRecBcnInfoForClient (
     ASSERT(prBssInfo && prSwRfb);
     ASSERT(pucIE);
 
-#if 0 /* SW migration 2010/8/20 */
-    /* Note: we shall not update parameters when scanning, otherwise
-     *       channel and bandwidth will not be correct or asserted failure
-     *       during scanning.
-     * Note: remove channel checking. All received Beacons should be processed
-     *       if measurement or other actions are executed in adjacent channels
-     *       and Beacon content checking mechanism is not disabled.
-     */
-    if (IS_SCAN_ACTIVE()
-        /* || prBssInfo->ucPrimaryChannel != CHNL_NUM_BY_SWRFB(prSwRfb) */) {
-        return FALSE;
-    }
-#endif
 
     /* Handle change of slot time */
     prBssInfo->u2CapInfo =

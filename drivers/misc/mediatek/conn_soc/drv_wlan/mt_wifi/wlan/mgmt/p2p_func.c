@@ -431,26 +431,6 @@ p2pFuncStartGO (
         //4 <3.3> Update Beacon again for network phy type confirmed.
         bssUpdateBeaconContent(prAdapter, NETWORK_TYPE_P2P_INDEX);
 
-#if 0 // CFG_SUPPORT_HOTSPOT_OPTIMIZATION
-        {
-            CMD_HOTSPOT_OPTIMIZATION_CONFIG arHotspotOptimizationCfg;
-        
-            arHotspotOptimizationCfg.fgHotspotOptimizationEn = TRUE;
-            arHotspotOptimizationCfg.u4Level = (0x3)<<8 | 0x5;
-            wlanoidSendSetQueryP2PCmd(prAdapter,
-                    CMD_ID_SET_HOTSPOT_OPTIMIZATION,
-                    TRUE,
-                    FALSE,
-                    TRUE,
-                    NULL,
-                    NULL,
-                    sizeof(CMD_HOTSPOT_OPTIMIZATION_CONFIG),
-                    (PUINT_8)&arHotspotOptimizationCfg,
-                    NULL,
-                    0
-                    );
-        }
-#endif
 
         //4 <3.4> Setup BSSID
         nicPmIndicateBssCreated(prAdapter, NETWORK_TYPE_P2P_INDEX);
@@ -572,123 +552,6 @@ p2pFuncAcquireCh (
     return;
 } /* p2pFuncAcquireCh */
 
-#if 0
-WLAN_STATUS
-p2pFuncBeaconUpdate(
-    IN P_ADAPTER_T prAdapter,
-    IN PUINT_8 pucBcnHdr,
-    IN UINT_32 u4HdrLen,
-    IN PUINT_8 pucBcnBody,
-    IN UINT_32 u4BodyLen,
-    IN UINT_32 u4DtimPeriod,
-    IN UINT_32 u4BcnInterval)
-{
-    WLAN_STATUS rResultStatus = WLAN_STATUS_INVALID_DATA;
-    P_WLAN_BEACON_FRAME_T prBcnFrame = (P_WLAN_BEACON_FRAME_T)NULL;
-    P_BSS_INFO_T prP2pBssInfo = (P_BSS_INFO_T)NULL;
-    P_MSDU_INFO_T prBcnMsduInfo = (P_MSDU_INFO_T)NULL;
-    PUINT_8 pucTIMBody = (PUINT_8)NULL;
-    UINT_16 u2FrameLength = 0, UINT_16 u2OldBodyLen = 0;
-    UINT_8 aucIEBuf[MAX_IE_LENGTH];
-
-    do {
-        ASSERT_BREAK(prAdapter != NULL);
-
-        prP2pBssInfo = &(prAdapter->rWifiVar.arBssInfo[NETWORK_TYPE_P2P_INDEX]);
-        prBcnMsduInfo = prP2pBssInfo->prBeacon
-
-        ASSERT_BREAK(prBcnMsduInfo != NULL);
-
-        /* TODO: Find TIM IE pointer. */
-        prBcnFrame = prBcnMsduInfo->prPacket;
-
-        ASSERT_BREAK(prBcnFrame != NULL);
-
-        do {
-            /* Ori header. */
-            UINT_16 u2IELength = 0, u2Offset = 0;
-            PUINT_8 pucIEBuf = prBcnFrame->aucInfoElem;
-
-            u2IELength = prBcnMsduInfo->u2FrameLength - prBcnMsduInfo->ucMacHeaderLength;
-
-            IE_FOR_EACH(pucIEBuf, u2IELength, u2Offset) {
-                if ((IE_ID(pucIEBuf) == ELEM_ID_TIM) ||
-                        ((IE_ID(pucIEBuf) > ELEM_ID_IBSS_PARAM_SET))  {
-                    pucTIMBody = pucIEBuf;
-                    break
-                }
-                u2FrameLength += IE_SIZE(pucIEBuf);
-            }
-
-            if (pucTIMBody == NULL) {
-                pucTIMBody = pucIEBuf;
-            }
-
-             /* Body not change. */
-            u2OldBodyLen = (UINT_16)((UINT_32)pucTIMBody - (UINT_32)prBcnFrame->aucInfoElem);
-
-            // Move body.
-            kalMemCmp(aucIEBuf, pucTIMBody, u2OldBodyLen);
-        } while (FALSE);
-
-
-        if (pucBcnHdr) {
-            kalMemCopy(prBcnMsduInfo->prPacket, pucBcnHdr, u4HdrLen);
-
-            pucTIMBody = (PUINT_8)((UINT_32)prBcnMsduInfo->prPacket + u4HdrLen);
-
-            prBcnMsduInfo->ucMacHeaderLength = (WLAN_MAC_MGMT_HEADER_LEN +
-                (TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN + CAP_INFO_FIELD_LEN));
-
-            u2FrameLength = u4HdrLen; /* Header + Partial Body. */
-
-        }
-        else {
-            /* Header not change. */
-            u2FrameLength += prBcnMsduInfo->ucMacHeaderLength;
-        }
-
-
-        if (pucBcnBody) {
-            kalMemCopy(pucTIMBody, pucBcnBody, u4BodyLen);
-            u2FrameLength += (UINT_16)u4BodyLen;
-        }
-        else {
-            kalMemCopy(pucTIMBody, aucIEBuf, u2OldBodyLen);
-            u2FrameLength += u2OldBodyLen;
-        }
-
-        /* Frame Length */
-        prBcnMsduInfo->u2FrameLength = u2FrameLength;
-
-        prBcnMsduInfo->fgIs802_11 = TRUE;
-        prBcnMsduInfo->ucNetworkType = NETWORK_TYPE_P2P_INDEX;
-
-        prP2pBssInfo->u2BeaconInterval = (UINT_16)u4BcnInterval;
-        prP2pBssInfo->ucDTIMPeriod = (UINT_8)u4DtimPeriod;
-        prP2pBssInfo->u2CapInfo = prBcnFrame->u2CapInfo;
-        prBcnMsduInfo->ucPacketType = 3;
-
-        rResultStatus = nicUpdateBeaconIETemplate(prAdapter,
-                                        IE_UPD_METHOD_UPDATE_ALL,
-                                        NETWORK_TYPE_P2P_INDEX,
-                                        prP2pBssInfo->u2CapInfo,
-                                        (PUINT_8)prBcnFrame->aucInfoElem,
-                                        prBcnMsduInfo->u2FrameLength - OFFSET_OF(WLAN_BEACON_FRAME_T, aucInfoElem));
-
-        if (prP2pBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
-            /* AP is created, Beacon Update. */
-            nicPmIndicateBssAbort(prAdapter, NETWORK_TYPE_P2P_INDEX);
-
-            nicPmIndicateBssCreated(prAdapter, NETWORK_TYPE_P2P_INDEX);
-        }
-
-    } while (FALSE);
-
-    return rResultStatus;
-} /* p2pFuncBeaconUpdate */
-
-#else
 WLAN_STATUS
 p2pFuncBeaconUpdate (
     IN P_ADAPTER_T prAdapter,
@@ -780,7 +643,6 @@ p2pFuncBeaconUpdate (
     return rWlanStatus;
 } /* p2pFuncBeaconUpdate */
 
-#endif
 
 // TODO: We do not apply IE in deauth frame set from upper layer now.
 WLAN_STATUS
@@ -3047,66 +2909,6 @@ p2pFuncProcessP2pProbeRsp (
 } /* p2pFuncProcessP2pProbeRsp */
 
 
-#if 0 //LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-UINT_32
-p2pFuncCalculateExtra_IELenForBeacon (
-    IN P_ADAPTER_T prAdapter,
-    IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex,
-    IN P_STA_RECORD_T prStaRec
-    )
-{
-
-    P_P2P_SPECIFIC_BSS_INFO_T prP2pSpeBssInfo = (P_P2P_SPECIFIC_BSS_INFO_T)NULL;
-    UINT_32 u4IELen = 0;
-
-    do {
-        ASSERT_BREAK((prAdapter != NULL) && (eNetTypeIndex == NETWORK_TYPE_P2P_INDEX));
-
-        if (p2pFuncIsAPMode(prAdapter->rWifiVar.prP2pFsmInfo)) {
-            break;
-        }
-
-        prP2pSpeBssInfo = prAdapter->rWifiVar.prP2pSpecificBssInfo;
-
-        u4IELen = prP2pSpeBssInfo->u2IELenForBCN;
-
-    } while (FALSE);
-
-    return u4IELen;
-} /* p2pFuncCalculateP2p_IELenForBeacon */
-
-VOID
-p2pFuncGenerateExtra_IEForBeacon (
-    IN P_ADAPTER_T prAdapter,
-    IN P_MSDU_INFO_T prMsduInfo
-    )
-{
-    P_P2P_SPECIFIC_BSS_INFO_T prP2pSpeBssInfo = (P_P2P_SPECIFIC_BSS_INFO_T)NULL;
-    PUINT_8 pucIEBuf = (PUINT_8)NULL;
-
-    do {
-        ASSERT_BREAK((prAdapter != NULL) && (prMsduInfo != NULL));
-
-        prP2pSpeBssInfo = prAdapter->rWifiVar.prP2pSpecificBssInfo;
-
-        if (p2pFuncIsAPMode(prAdapter->rWifiVar.prP2pFsmInfo)) {
-
-            break;
-        }
-
-        pucIEBuf = (PUINT_8)((UINT_32)prMsduInfo->prPacket + (UINT_32)prMsduInfo->u2FrameLength);
-
-        kalMemCopy(pucIEBuf, prP2pSpeBssInfo->aucBeaconIECache, prP2pSpeBssInfo->u2IELenForBCN);
-
-        prMsduInfo->u2FrameLength += prP2pSpeBssInfo->u2IELenForBCN;
-
-    } while (FALSE);
-
-    return;
-} /* p2pFuncGenerateExtra_IEForBeacon */
-
-
-#else
 UINT_32
 p2pFuncCalculateP2p_IELenForBeacon (
     IN P_ADAPTER_T prAdapter,
@@ -3224,7 +3026,6 @@ p2pFuncGenerateWSC_IEForBeacon (
     return;
 } /* p2pFuncGenerateP2p_IEForBeacon */
 
-#endif
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function is used to calculate P2P IE length for Beacon frame.

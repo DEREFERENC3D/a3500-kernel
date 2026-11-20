@@ -1034,33 +1034,6 @@ cnmStaRecResetStatus (
 {
     cnmStaFreeAllStaByNetType(prAdapter, eNetTypeIndex, FALSE);
 
-#if 0
-    P_STA_RECORD_T  prStaRec;
-    UINT_16         i;
-
-    ASSERT(prAdapter);
-
-    for (i = 0; i < CFG_STA_REC_NUM; i++) {
-        prStaRec = &prAdapter->arStaRec[i];
-
-        if (prStaRec->fgIsInUse) {
-            if ((NETWORK_TYPE_AIS_INDEX == eNetTypeIndex) &&
-                IS_STA_IN_AIS(prStaRec->eStaType)) {
-
-                prStaRec->u2StatusCode = STATUS_CODE_SUCCESSFUL;
-                prStaRec->u2ReasonCode = REASON_CODE_RESERVED;
-                prStaRec->ucJoinFailureCount = 0;
-                prStaRec->fgTransmitKeyExist = FALSE;
-
-                prStaRec->fgSetPwrMgtBit = FALSE;
-            }
-
-            /* TODO(Kevin): For P2P and BOW */
-        }
-    }
-
-    return;
-#endif
 }
 
 /*----------------------------------------------------------------------------*/

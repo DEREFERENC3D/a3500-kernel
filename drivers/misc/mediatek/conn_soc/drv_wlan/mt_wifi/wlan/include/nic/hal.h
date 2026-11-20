@@ -203,26 +203,6 @@
         } \
     }
 
-#if 0 //only for SDIO
-#define HAL_BYTE_WR(_prAdapter, _u4Port, _ucBuf) \
-    { \
-        if (_prAdapter->rAcpiState == ACPI_STATE_D3) { \
-            ASSERT(0); \
-        } \
-        if (HAL_TEST_FLAG(_prAdapter, ADAPTER_FLAG_HW_ERR) == FALSE) { \
-            if (kalDevWriteWithSdioCmd52(_prAdapter->prGlueInfo, _u4Port, _ucBuf) == FALSE) {\
-                HAL_SET_FLAG(_prAdapter, ADAPTER_FLAG_HW_ERR); \
-                fgIsBusAccessFailed = TRUE; \
-                DBGLOG(HAL, ERROR, ("HAL_BYTE_WR access fail! 0x%x\n", _u4Port)); \
-            } \
-            else { \
-            } \
-        } \
-        else { \
-            DBGLOG(HAL, WARN, ("ignore HAL_BYTE_WR access! 0x%x\n", _u4Port)); \
-        } \
-    }
-#endif
 
 
 #define HAL_DRIVER_OWN_BY_SDIO_CMD52(_prAdapter, _pfgDriverIsOwnReady) \
@@ -278,15 +258,6 @@
         kalDevPortWrite(_prAdapter->prGlueInfo, _u4Port, _u4Len, _pucBuf, _u4ValidBufSize); \
     }
 
-#if 0 //only for SDIO
-#define HAL_BYTE_WR(_prAdapter, _u4Port, _ucBuf) \
-    { \
-        if (_prAdapter->rAcpiState == ACPI_STATE_D3) { \
-            ASSERT(0); \
-        } \
-        kalDevWriteWithSdioCmd52(_prAdapter->prGlueInfo, _u4Port, _ucBuf); \
-    }
-#endif
 
 #endif /* #if defined(_HIF_SDIO) */
 

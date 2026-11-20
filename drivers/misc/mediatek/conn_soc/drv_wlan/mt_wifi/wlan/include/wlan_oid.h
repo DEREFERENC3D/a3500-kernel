@@ -1155,24 +1155,6 @@ wlanoidSetAuthMode(
     OUT PUINT_32          pu4SetInfoLen
     );
 
-#if 0
-WLAN_STATUS
-wlanoidQueryPrivacyFilter (
-    IN  P_ADAPTER_T       prAdapter,
-    OUT PVOID             pvQueryBuffer,
-    IN  UINT_32           u4QueryBufferLen,
-    OUT PUINT_32          pu4QueryInfoLen
-    );
-
-
-WLAN_STATUS
-wlanoidSetPrivacyFilter (
-    IN  P_ADAPTER_T       prAdapter,
-    IN  PVOID             pvSetBuffer,
-    IN  UINT_32           u4SetBufferLen,
-    OUT PUINT_32          pu4SetInfoLen
-    );
-#endif
 
 WLAN_STATUS
 wlanoidSetEncryptionStatus(
@@ -1975,31 +1957,6 @@ wlanoidUpdateSLTMode(
 
 #endif
 
-#if 0
-WLAN_STATUS
-wlanoidSetNoaParam (
-    IN  P_ADAPTER_T       prAdapter,
-    IN  PVOID             pvSetBuffer,
-    IN  UINT_32           u4SetBufferLen,
-    OUT PUINT_32          pu4SetInfoLen
-    );
-
-WLAN_STATUS
-wlanoidSetOppPsParam (
-    IN  P_ADAPTER_T       prAdapter,
-    IN  PVOID             pvSetBuffer,
-    IN  UINT_32           u4SetBufferLen,
-    OUT PUINT_32          pu4SetInfoLen
-    );
-
-WLAN_STATUS
-wlanoidSetUApsdParam (
-    IN  P_ADAPTER_T       prAdapter,
-    IN  PVOID             pvSetBuffer,
-    IN  UINT_32           u4SetBufferLen,
-    OUT PUINT_32          pu4SetInfoLen
-    );
-#endif
 
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS

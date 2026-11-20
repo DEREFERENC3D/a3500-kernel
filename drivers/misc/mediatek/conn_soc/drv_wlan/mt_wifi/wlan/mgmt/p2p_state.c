@@ -27,22 +27,6 @@ p2pStateInit_IDLE (
 
         }
         else {
-#if 0        
-        else if (IS_NET_PWR_STATE_ACTIVE(prAdapter, NETWORK_TYPE_P2P_INDEX)) {
-
-            ASSERT((prP2pBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) || 
-                    (prP2pBssInfo->eCurrentOPMode == OP_MODE_INFRASTRUCTURE));
-            
-            prChnlReqInfo = &prP2pFsmInfo->rChnlReqInfo;
-
-            if (prChnlReqInfo->fgIsChannelRequested) {
-                /* Start a timer for return channel. */
-                DBGLOG(P2P, TRACE, ("start a GO channel timer.\n"));
-            }
-
-        }
-        
-#endif
             cnmTimerStartTimer(prAdapter, &(prAdapter->rP2pFsmTimeoutTimer), 5000);
         }
 

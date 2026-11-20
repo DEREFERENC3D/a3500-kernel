@@ -381,15 +381,6 @@ secInit (
     prAisSpecBssInfo->ucWEPDefaultKeyID = 0;
 
 
-    #if 0
-    for (i=0;i<WTBL_SIZE;i++) {
-        g_prWifiVar->arWtbl[i].fgUsed = FALSE;
-        g_prWifiVar->arWtbl[i].prSta = NULL;
-        g_prWifiVar->arWtbl[i].ucNetTypeIdx =  NETWORK_TYPE_INDEX_NUM;
-
-    }
-    nicPrivacyInitialize((UINT_8)NETWORK_TYPE_INDEX_NUM);
-    #endif
 }   /* secInit */
 
 
@@ -429,15 +420,6 @@ secCheckClassError (
             	   prBssInfo->fgIsNetAbsent == FALSE) {
                 /*(IS_AP_STA(prStaRec) || IS_CLIENT_STA(prStaRec))) {*/                
 
-#if 0 /* by scott's suggestions, do not put work-around in JB2, we need to find the root cause */
-				/* work-around for CR ALPS00816361 */
-				if (eNetTypeIndex == NETWORK_TYPE_P2P_INDEX)
-				{
-                    DBGLOG(RSN, INFO, ("p2p> skip to send Deauth to MAC:["MACSTR"] for Rx Class 3.\n",
-                                      MAC2STR(prStaRec->aucMacAddr)));
-					return TRUE;
-				}
-#endif
 				
                 if (WLAN_STATUS_SUCCESS == authSendDeauthFrame(prAdapter,
                                                                prStaRec,
@@ -588,24 +570,6 @@ secRxPortControlCheck (
 {
     ASSERT(prSWRfb);
 
-#if 0
-    /* whsu:Todo: Process MGMT and DATA */
-    if (prSWRfb->prStaRec) {
-        if (prSWRfb->prStaRec->fgPortBlock == TRUE) {
-            if (1 /* prSWRfb->fgIsDataFrame and not 1x*/ &&
-                (g_prWifiVar->rConnSettings.eAuthMode >= AUTH_MODE_WPA)){
-                //DBGLOG(SEC, WARN, ("Drop Rx data due port control !\r\n"));
-                return TRUE; /* Todo: whsu FALSE; */
-            }
-            //if (!RX_STATUS_IS_PROTECT(prSWRfb->prRxStatus)) {
-            //  DBGLOG(RSN, WARN, ("Drop rcv non-encrypted data frame!\n"));
-            //  return FALSE;
-            //}
-        }
-    }
-    else {
-    }
-#endif
     return TRUE;
 }
 

@@ -206,22 +206,6 @@ p2pFuncProcessP2pProbeRsp(
     IN P_MSDU_INFO_T prMgmtTxMsdu
     );
 
-#if 0 //LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-UINT_32
-p2pFuncCalculateExtra_IELenForBeacon(
-    IN P_ADAPTER_T prAdapter,
-    IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex,
-    IN P_STA_RECORD_T prStaRec
-    );
-
-VOID
-p2pFuncGenerateExtra_IEForBeacon(
-    IN P_ADAPTER_T prAdapter,
-    IN P_MSDU_INFO_T prMsduInfo
-    );
-
-
-#else
 UINT_32
 p2pFuncCalculateP2p_IELenForBeacon(
     IN P_ADAPTER_T prAdapter,
@@ -249,7 +233,6 @@ p2pFuncGenerateWSC_IEForBeacon(
     IN P_ADAPTER_T prAdapter,
     IN P_MSDU_INFO_T prMsduInfo
     );
-#endif
 UINT_32
 p2pFuncCalculateP2p_IELenForAssocRsp(
     IN P_ADAPTER_T prAdapter,

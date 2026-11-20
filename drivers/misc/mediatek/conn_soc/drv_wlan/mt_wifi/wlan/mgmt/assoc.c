@@ -1732,44 +1732,17 @@ assocProcessRxAssocReqFrame (
             prStaRec->u2DesiredNonHTRateSet = (prStaRec->u2OperationalRateSet & RATE_SET_ALL_ABG);
 
             if (BAND_2G4 == HIF_RX_HDR_GET_RF_BAND(prSwRfb->prHifRxHdr)) {
-            #if 0 /* Marked by CMC 20111024 */
-                /* check if support 11n */
-                if (!(u2BSSBasicRateSet & RATE_SET_BIT_HT_PHY)) {
-
-                    if (prStaRec->u2OperationalRateSet & RATE_SET_OFDM) {
-                        prStaRec->ucPhyTypeSet |= PHY_TYPE_BIT_ERP;
-                    }
-
-
-                    if (!(u2BSSBasicRateSet & RATE_SET_OFDM)) {
-                        if (prStaRec->u2OperationalRateSet & RATE_SET_HR_DSSS) {
-                            prStaRec->ucPhyTypeSet |= PHY_TYPE_BIT_HR_DSSS;
-                        }
-
-                    }
-
-                }
-            #else
                 if (prStaRec->u2OperationalRateSet & RATE_SET_OFDM) {
                     prStaRec->ucPhyTypeSet |= PHY_TYPE_BIT_ERP;
                 }
                 if (prStaRec->u2OperationalRateSet & RATE_SET_HR_DSSS) {
                     prStaRec->ucPhyTypeSet |= PHY_TYPE_BIT_HR_DSSS;
                 }
-            #endif
             }
             else { /* (BAND_5G == prBssDesc->eBande) */
-            #if 0 /* Marked by CMC 20111024 */
-                if (!(u2BSSBasicRateSet & RATE_SET_BIT_HT_PHY)) {
-
-                    prStaRec->ucPhyTypeSet |= PHY_TYPE_BIT_OFDM;
-                }
-                ASSERT((prStaRec->u2OperationalRateSet & RATE_SET_HR_DSSS) == 0);
-            #else
                 if (prStaRec->u2OperationalRateSet & RATE_SET_OFDM) {
                     prStaRec->ucPhyTypeSet |= PHY_TYPE_BIT_OFDM;
                 }
-            #endif
             }
 
         }

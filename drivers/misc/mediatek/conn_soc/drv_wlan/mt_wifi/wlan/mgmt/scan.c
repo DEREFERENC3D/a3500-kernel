@@ -1867,21 +1867,6 @@ scanAddToBssDesc (
                               SSID_IE(pucIE)->aucSSID,
                               SSID_IE(pucIE)->ucLength);
                 }
-#if 0
-				/*
-					After we connect to a hidden SSID, prBssDesc->aucSSID[] will
-					not be empty and prBssDesc->ucSSIDLen will not be 0,
-					so maybe we need to empty prBssDesc->aucSSID[] and set
-					prBssDesc->ucSSIDLen to 0 in prBssDesc to avoid that
-					UI still displays hidden SSID AP in scan list after
-					we disconnect the hidden SSID AP.
-				*/
-				else
-				{
-					prBssDesc->aucSSID[0] = '\0';
-					prBssDesc->ucSSIDLen = 0;
-				}
-#endif
 
             }
             break;
@@ -1915,11 +1900,6 @@ scanAddToBssDesc (
             }
             break;
 
-#if 0 //CFG_SUPPORT_802_11D
-        case ELEM_ID_COUNTRY_INFO:
-            prBssDesc->prIECountry = (P_IE_COUNTRY_T)pucIE;
-            break;
-#endif
 
         case ELEM_ID_ERP_INFO:
             if (IE_LEN(pucIE) == ELEM_MAX_LEN_ERP) {
@@ -2711,14 +2691,6 @@ scanSearchBssDescByPolicy (
              * The Reason Code is an indication of the reason why AP reject us, we use this Code for "Reject"
              * a SCAN result to become our candidate(Like a blacklist).
              */
-#if 0 /* TODO(Kevin): */
-            if (prStaRec->u2ReasonCode != REASON_CODE_RESERVED) {
-                DBGLOG(SCN, INFO, ("SEARCH: Ignore BSS with previous Reason Code = %d\n",
-                    prStaRec->u2ReasonCode));
-                continue;
-            }
-            else
-#endif
             if (prStaRec->u2StatusCode != STATUS_CODE_SUCCESSFUL) {
                 /* NOTE(Kevin): greedy association - after timeout, we'll still
                  * try to associate to the AP whose STATUS of conection attempt
@@ -2829,109 +2801,6 @@ scanSearchBssDescByPolicy (
 
 
 
-#if 0 /* TODO(Kevin): For IBSS */
-        //4 <2.c> Check if this SCAN record has been updated recently for IBSS.
-        /* NOTE(Kevin): Because some STA may change its BSSID frequently after it
-         * create the IBSS, so we need to make sure we get the new one.
-         * For BSS, if the old record was matched, however it won't be able to pass
-         * the Join Process later.
-         */
-        if (prBssDesc->eBSSType == BSS_TYPE_IBSS) {
-            OS_SYSTIME rCurrentTime;
-
-            GET_CURRENT_SYSTIME(&rCurrentTime);
-            if (CHECK_FOR_TIMEOUT(rCurrentTime, prBssDesc->rUpdateTime,
-                                  SEC_TO_SYSTIME(BSS_DESC_TIMEOUT_SEC))) {
-                DBGLOG(SCAN, TRACE, ("Skip old record of BSS Descriptor - BSSID:["MACSTR"]\n\n",
-                          MAC2STR(prBssDesc->aucBSSID)));
-                continue;
-            }
-        }
-
-        if ((prBssDesc->eBSSType == BSS_TYPE_INFRASTRUCTURE) &&
-            (prAdapter->eConnectionState == MEDIA_STATE_CONNECTED)) {
-            OS_SYSTIME rCurrentTime;
-
-            GET_CURRENT_SYSTIME(&rCurrentTime);
-            if (CHECK_FOR_TIMEOUT(rCurrentTime, prBssDesc->rUpdateTime,
-                                  SEC_TO_SYSTIME(BSS_DESC_TIMEOUT_SEC))) {
-                DBGLOG(SCAN, TRACE, ("Skip old record of BSS Descriptor - BSSID:["MACSTR"]\n\n",
-                          MAC2STR(prBssDesc->aucBSSID)));
-                continue;
-            }
-        }
-
-
-        //4 <4B> Check for IBSS AdHoc Mode.
-        /* Skip if one or more BSS Basic Rate are not supported by current AdHocMode */
-        if (prPrimaryBssDesc->eBSSType == BSS_TYPE_IBSS) {
-            //4 <4B.1> Check if match the Capability of current IBSS AdHoc Mode.
-            if (ibssCheckCapabilityForAdHocMode(prAdapter, prPrimaryBssDesc) == WLAN_STATUS_FAILURE) {
-
-                DBGLOG(SCAN, TRACE,
-                    ("Ignore BSS DESC MAC: "MACSTR", Capability is not supported for current AdHoc Mode.\n",
-                    MAC2STR(prPrimaryBssDesc->aucBSSID)));
-
-                continue;
-            }
-
-
-            //4 <4B.2> IBSS Merge Decision Flow for SEARCH STATE.
-            if (prAdapter->fgIsIBSSActive &&
-                UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prPrimaryBssDesc->aucBSSID)) {
-
-                if (!fgIsLocalTSFRead) {
-                    NIC_GET_CURRENT_TSF(prAdapter, &rCurrentTsf);
-
-                    DBGLOG(SCAN, TRACE,
-                        ("\n\nCurrent TSF : %08lx-%08lx\n\n",
-                            rCurrentTsf.u.HighPart, rCurrentTsf.u.LowPart));
-                }
-
-                if (rCurrentTsf.QuadPart > prPrimaryBssDesc->u8TimeStamp.QuadPart) {
-                    DBGLOG(SCAN, TRACE,
-                        ("Ignore BSS DESC MAC: ["MACSTR"], Current BSSID: ["MACSTR"].\n",
-                            MAC2STR(prPrimaryBssDesc->aucBSSID), MAC2STR(prBssInfo->aucBSSID)));
-
-                    DBGLOG(SCAN, TRACE,
-                        ("\n\nBSS's TSF : %08lx-%08lx\n\n",
-                            prPrimaryBssDesc->u8TimeStamp.u.HighPart, prPrimaryBssDesc->u8TimeStamp.u.LowPart));
-
-                    prPrimaryBssDesc->fgIsLargerTSF = FALSE;
-                    continue;
-                }
-                else {
-                    prPrimaryBssDesc->fgIsLargerTSF = TRUE;
-                }
-
-            }
-        }
-
-        //4 <5> Check the Encryption Status.
-        if (rsnPerformPolicySelection(prPrimaryBssDesc)) {
-
-            if (prPrimaryBssDesc->ucEncLevel > 0) {
-                fgIsFindBestEncryptionLevel = TRUE;
-
-                fgIsFindFirst = FALSE;
-            }
-        }
-        else {
-            /* Can't pass the Encryption Status Check, get next one */
-            continue;
-        }
-
-        /* For RSN Pre-authentication, update the PMKID canidate list for
-           same SSID and encrypt status */
-        /* Update PMKID candicate list. */
-        if (prAdapter->rWifiVar.rConnSettings.eAuthMode == AUTH_MODE_WPA2) {
-            rsnUpdatePmkidCandidateList(prPrimaryBssDesc);
-            if (prAdapter->rWifiVar.rAisBssInfo.u4PmkidCandicateCount) {
-                prAdapter->rWifiVar.rAisBssInfo.fgIndicatePMKID = rsnCheckPmkidCandicate();
-            }
-        }
-
-#endif
 
 
         prPrimaryBssDesc = (P_BSS_DESC_T)NULL;
@@ -3050,21 +2919,6 @@ scanSearchBssDescByPolicy (
                     fgIsFindFirst = FALSE;
                 }
 
-#if 0
-                /* Update PMKID candicate list. */
-                if (prAdapter->rWifiVar.rConnSettings.eAuthMode == AUTH_MODE_WPA2) {
-                    rsnUpdatePmkidCandidateList(prPrimaryBssDesc);
-                    if (prAisSpecBssInfo->u4PmkidCandicateCount) {
-                        if (rsnCheckPmkidCandicate()) {
-                            DBGLOG(RSN, WARN, ("Prepare a timer to indicate candidate "MACSTR"\n",
-                                MAC2STR(prAisSpecBssInfo->arPmkidCache[prAisSpecBssInfo->u4PmkidCacheCount].rBssidInfo.aucBssid)));
-                            cnmTimerStopTimer(&prAisSpecBssInfo->rPreauthenticationTimer);
-                            cnmTimerStartTimer(&prAisSpecBssInfo->rPreauthenticationTimer,
-                                    SEC_TO_MSEC(WAIT_TIME_IND_PMKID_CANDICATE_SEC));
-                        }
-                    }
-                }
-#endif
             }
             else {
                 /* Can't pass the Encryption Status Check, get next one */
@@ -3089,67 +2943,6 @@ scanSearchBssDescByPolicy (
             }
         }
         else {
-#if 0 /* TODO(Kevin): For security(TBD) */
-            //4 <6B> Condition - Choose the one with best Encryption Score.
-            if (fgIsFindBestEncryptionLevel) {
-                if (prCandidateBssDesc->ucEncLevel <
-                    prPrimaryBssDesc->ucEncLevel) {
-
-                    prCandidateBssDesc = prPrimaryBssDesc;
-                    prCandidateStaRec = prPrimaryStaRec;
-                    continue;
-                }
-            }
-
-            /* If reach here, that means they have the same Encryption Score.
-             */
-
-            //4 <6C> Condition - Give opportunity to the one we didn't connect before.
-            // For roaming, only compare the candidates other than current associated BSSID.
-            if (!prCandidateBssDesc->fgIsConnected && !prPrimaryBssDesc->fgIsConnected) {
-                if ((prCandidateStaRec != (P_STA_RECORD_T)NULL) &&
-                    (prCandidateStaRec->u2StatusCode != STATUS_CODE_SUCCESSFUL)) {
-
-                    DBGLOG(SCAN, TRACE, ("So far -BSS DESC MAC: "MACSTR" has nonzero Status Code = %d\n",
-                        MAC2STR(prCandidateBssDesc->aucBSSID), prCandidateStaRec->u2StatusCode));
-
-                    if (prPrimaryStaRec != (P_STA_RECORD_T)NULL) {
-                        if (prPrimaryStaRec->u2StatusCode != STATUS_CODE_SUCCESSFUL) {
-
-                            /* Give opportunity to the one with smaller rLastJoinTime */
-                            if (TIME_BEFORE(prCandidateStaRec->rLastJoinTime,
-                                                        prPrimaryStaRec->rLastJoinTime)) {
-                                continue;
-                            }
-                            /* We've connect to CANDIDATE recently, let us try PRIMARY now */
-                            else {
-                                prCandidateBssDesc = prPrimaryBssDesc;
-                                prCandidateStaRec = prPrimaryStaRec;
-                                continue;
-                            }
-                        }
-                        /* PRIMARY's u2StatusCode = 0 */
-                        else {
-                            prCandidateBssDesc = prPrimaryBssDesc;
-                            prCandidateStaRec = prPrimaryStaRec;
-                            continue;
-                        }
-                    }
-                    /* PRIMARY has no StaRec - We didn't connet to PRIMARY before */
-                    else {
-                        prCandidateBssDesc = prPrimaryBssDesc;
-                        prCandidateStaRec = prPrimaryStaRec;
-                        continue;
-                    }
-                }
-                else {
-                    if ((prPrimaryStaRec != (P_STA_RECORD_T)NULL) &&
-                        (prPrimaryStaRec->u2StatusCode != STATUS_CODE_SUCCESSFUL)) {
-                        continue;
-                    }
-                }
-            }
-#endif
 
 
             //4 <6D> Condition - Visible SSID win Hidden SSID.
@@ -3203,16 +2996,6 @@ scanSearchBssDescByPolicy (
                 }
             }
 
-#if 0
-            /* If reach here, that means they have the same Encryption Score, and
-             * both RSSI value are close too.
-             */
-            //4 <6F> Seek the minimum Channel Load for less interference.
-            if (fgIsFindMinChannelLoad) {
-
-                /* TODO(Kevin): Check which one has minimum channel load in its channel */
-            }
-#endif
         }
     }
 

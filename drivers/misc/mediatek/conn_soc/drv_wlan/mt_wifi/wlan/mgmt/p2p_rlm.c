@@ -507,12 +507,12 @@ rlmUpdateParamsForAP (
 				/*
 					The HT Protection field may be set to 20 MHz protection
 					mode only if the following are true:
-					¡X All STAs detected (by any means) in the primary channel
+					X All STAs detected (by any means) in the primary channel
 						and all STAs detected (by any means) in	the secondary
 						channel are HT STAs and all STAs that are members of
 						this BSS are HT STAs, and
-					¡X This BSS is a 20/40 MHz BSS, and
-					¡X There is at least one 20 MHz HT STA associated with this BSS.
+					X This BSS is a 20/40 MHz BSS, and
+					X There is at least one 20 MHz HT STA associated with this BSS.
 				*/
 				if (eHtProtectMode == HT_PROTECT_MODE_NONE &&
 					prBssInfo->fgAssoc40mBwAllowed) {
@@ -610,17 +610,11 @@ rlmFuncInitialChannelList (
     P_CHANNEL_ENTRY_FIELD_T prChannelEntryField = (P_CHANNEL_ENTRY_FIELD_T)NULL;
     UINT_32 u4Idx = 0, u4IdxII = 0;
     UINT_8 ucBufferSize = P2P_MAX_SUPPORTED_CHANNEL_LIST_SIZE;
-#if 0
-    UINT_8 ucSocialChnlSupport = 0, ucAutoChnl = 0;
-#endif
 
     do {
         ASSERT_BREAK(prAdapter != NULL);
 
         prP2pConnSetting = prAdapter->rWifiVar.prP2PConnSettings;
-#if 0
-        ucAutoChnl = prP2pConnSetting->ucOperatingChnl;
-#endif
 
         prDomainInfoEntry = rlmDomainGetDomainInfo(prAdapter);
 
@@ -650,22 +644,6 @@ rlmFuncInitialChannelList (
                 prChannelEntryField->aucChannelList[u4IdxII] = prDomainSubBand->ucFirstChannelNum +
                             (u4IdxII * prDomainSubBand->ucChannelSpan);
 
-#if 0
-                switch (prChannelEntryField->aucChannelList[u4IdxII]) {
-                    case 1:
-                        ucSocialChnlSupport = 1;
-                        break;
-                    case 6:
-                        ucSocialChnlSupport = 6;
-                        break;
-                    case 11:
-                        ucSocialChnlSupport = 11;
-                        break;
-                    default:
-                        break;
-                }
-
-#endif
             }
 
             if (ucBufferSize >= (P2P_ATTRI_LEN_CHANNEL_ENTRY + prChannelEntryField->ucNumberOfChannels)) {
@@ -682,19 +660,6 @@ rlmFuncInitialChannelList (
 
         }
 
-#if 0
-        if (prP2pConnSetting->ucListenChnl == 0) {
-            prP2pConnSetting->ucListenChnl = P2P_DEFAULT_LISTEN_CHANNEL;
-
-            if (ucSocialChnlSupport != 0) {
-                /* 1. User Not Set LISTEN channel.
-                  * 2. Social channel is not empty.
-                  */
-                prP2pConnSetting->ucListenChnl = ucSocialChnlSupport;
-            }
-        }
-
-#endif
 
         // TODO: 20110921 frog -
         /* If LISTEN channel is not set,
@@ -704,38 +669,6 @@ rlmFuncInitialChannelList (
 
         prP2pConnSetting->ucRfChannelListSize = P2P_MAX_SUPPORTED_CHANNEL_LIST_SIZE - ucBufferSize;
 
-#if 0
-        if (prP2pConnSetting->ucOperatingChnl == 0) {  /* User not set OPERATE channel. */
-
-            if (scnQuerySparseChannel(prAdapter, NULL, &ucAutoChnl)) {
-                break; // while
-            }
-
-            ucBufferSize = prP2pConnSetting->ucRfChannelListSize;
-
-            prChannelEntryField = (P_CHANNEL_ENTRY_FIELD_T)prP2pConnSetting->aucChannelEntriesField;
-
-            while (ucBufferSize != 0) {
-                if (prChannelEntryField->ucNumberOfChannels != 0) {
-                    ucAutoChnl = prChannelEntryField->aucChannelList[0];
-                    break; // while
-                }
-
-                else {
-                    prChannelEntryField = (P_CHANNEL_ENTRY_FIELD_T)((UINT_32)prChannelEntryField +
-                                                                                    P2P_ATTRI_LEN_CHANNEL_ENTRY +
-                                                                                    (UINT_32)prChannelEntryField->ucNumberOfChannels);
-
-                    ucBufferSize -= (P2P_ATTRI_LEN_CHANNEL_ENTRY + prChannelEntryField->ucNumberOfChannels);
-                }
-
-            }
-
-
-
-        }
-
-#endif
         /* We assume user would not set a channel not in the channel list.
           * If so, the operating channel still depends on target deivce supporting capability.
           */
@@ -747,9 +680,6 @@ rlmFuncInitialChannelList (
 
     } while (FALSE);
 
-#if 0
-    prP2pConnSetting->ucOperatingChnl = ucAutoChnl;
-#endif
     return;
 } /* rlmFuncInitialChannelList */
 

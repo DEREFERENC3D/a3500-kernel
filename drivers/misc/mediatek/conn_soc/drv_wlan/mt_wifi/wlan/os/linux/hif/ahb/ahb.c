@@ -262,152 +262,6 @@ static struct platform_device *HifAhbPDev;
 ********************************************************************************
 */
 
-#if 0
-/*set JTAG Mode for MCU*/
-#define JTAG_ADDR1_BASE 0x10208000
-#define JTAG_ADDR2_BASE 0x10005300
-char *jtag_addr1 = (char *)JTAG_ADDR1_BASE;
-char *jtag_addr2 = (char *)JTAG_ADDR2_BASE;
-
-#define JTAG1_REG_WRITE(addr, value)    \
-    writel(value, ((volatile UINT32 *)(jtag_addr1+(addr-JTAG_ADDR1_BASE))))
-#define JTAG1_REG_READ(addr)            \
-    readl(((volatile UINT32 *)(jtag_addr1+(addr-JTAG_ADDR1_BASE))))
-#define JTAG2_REG_WRITE(addr, value)    \
-    writel(value, ((volatile UINT32 *)(jtag_addr2+(addr-JTAG_ADDR2_BASE))))
-#define JTAG2_REG_READ(addr)            \
-    readl(((volatile UINT32 *)(jtag_addr2+(addr-JTAG_ADDR2_BASE))))
-
-static int wmt_set_jtag_for_mcu(void)
-{
-    int iRet = 0;
-	unsigned int tmp = 0;
-
-    jtag_addr1 = ioremap(JTAG_ADDR1_BASE, 0x5000);
-    if (jtag_addr1 == 0) {
-        printk("remap jtag_addr1 fail!\n");
-        return -1;
-    }
-    printk("jtag_addr1 = 0x%p\n", jtag_addr1);
-    jtag_addr2 = ioremap(JTAG_ADDR2_BASE, 0x1000);
-    if (jtag_addr2 == 0) {
-        printk("remap jtag_addr2 fail!\n");
-        return -1;
-    }
-    printk("jtag_addr2 = 0x%p\n", jtag_addr2);
-
-	/*Enable IES of all pins*/
-    JTAG1_REG_WRITE(0x10208004, 0xffffffff);
-	JTAG1_REG_WRITE(0x10208014, 0xffffffff);
-	JTAG1_REG_WRITE(0x10209004, 0xffffffff);
-	JTAG1_REG_WRITE(0x1020A004, 0xffffffff);
-	JTAG1_REG_WRITE(0x1020B004, 0xffffffff);
-
-/*JTAG1 mode setting*/
-	/*set GPIO pull mode*/
-	/*0x1020A040[6:0]=0x7f*/
-	tmp = JTAG1_REG_READ(0x1020A040);
-	tmp &= 0xffffff80;
-	tmp |= 0x7f;
-	JTAG1_REG_WRITE(0x1020A040, tmp);
-
-#if 0
-	/*0x1020A060[6:0]=0x31*/
-	tmp = JTAG1_REG_READ(0x1020A060);
-	tmp &= 0xffffff80;
-	tmp |= 0x31;
-    JTAG1_REG_WRITE(0x1020A060, tmp);
-	/*set CONSYS JTAG mode 0x10005300=0x07777777*/
-	//DRV_WriteReg32(0x10005300, 0x07777777); /*remove JTAG mode1*/
-	JTAG2_REG_WRITE(0x10005300, 0x00000000);
-#endif
-
-#if 1 // Chaozhong modified
-    /*0x1020A060[6:0]=0x31*/
-    tmp = JTAG1_REG_READ(0x1020A060);
-    tmp &= 0xffffff80;
-    tmp |= 0x31;
-    JTAG1_REG_WRITE(0x1020A060, tmp);
-    /*set CONSYS JTAG mode 0x10005300=0x07777777*/
-    //DRV_WriteReg32(0x10005300, 0x07777777); /*remove JTAG mode1*/
-    JTAG2_REG_WRITE(0x1000530C, 0x08888888);// Chaozhong modified
-#endif
-
-
-/*JTAG1 mode setting*/
-    
- 	/*set GPIO pull mode*/
-	/*0x1020A050[6:0]=0x7f*/
-	tmp = JTAG1_REG_READ(0x1020A050);
-	tmp &= 0xffffff80;
-	tmp |= 0x7f;
-	JTAG1_REG_WRITE(0x1020A050, tmp);
-	/*0x1020A070[6:0]=0x31*/
-	tmp = JTAG1_REG_READ(0x1020A070);
-	tmp &= 0xffffff80;
-	tmp |= 0x31;
-	JTAG1_REG_WRITE(0x1020A070, tmp);
-	/*set CONSYS JTAG mode
-	0x10005310=0x77111111
-	0x10005320=0x00077777*/
-	JTAG2_REG_WRITE(0x1000531C, 0xff111111);
-	JTAG2_REG_WRITE(0x1000532C, 0x000fffff);
-
-#if 0
-    JTAG2_REG_WRITE(0x10005410, 0x77700000); /* GPIO141 ~ GPIO143 */
-    JTAG2_REG_WRITE(0x10005420, 0x00000077); /* GPIO144 ~ GPIO145 */
-    JTAG2_REG_WRITE(0x10005370, 0x70000000); /* GPIO63 */
-    JTAG2_REG_WRITE(0x10005380, 0x00000777); /* GPIO64 ~ GPIO66 */
-    JTAG2_REG_WRITE(0x100053a0, 0x70000000); /* GPIO87 */
-    JTAG2_REG_WRITE(0x100053b0, 0x00000777); /* GPIO88 ~ GPIO90 */
-    JTAG2_REG_WRITE(0x100053d0, 0x00777000); /* GPIO107 ~ GPIO109 */
-#endif
-
-#if 0
-	/*set CONSYS debug flag mode*/
-	JTAG2_REG_WRITE(0x1000540C, 0xffffffff);
-	JTAG2_REG_WRITE(0x1000541C, 0xffffffff);
-	JTAG2_REG_WRITE(0x1000538C, 0x11111fff);
-	JTAG2_REG_WRITE(0x100053AC, 0xf1111111);
-    JTAG2_REG_WRITE(0x100053BC, 0x00000fff);
-    JTAG2_REG_WRITE(0x100053DC, 0xfffff001);
-    JTAG2_REG_WRITE(0x100053EC, 0x1111100f);
-	JTAG2_REG_WRITE(0x1000533C, 0x00ffffff);
-	JTAG2_REG_WRITE(0x1000532C, 0xff000000);
-#endif
-	
-	return iRet;
-}
-
-
-static int wmt_set_jtag_for_gps(void)
-{
-    int iRet = 0;
-	unsigned int tmp = 0;
-    /*JTAG1 mode setting*/
-	/*set GPIO pull mode*/
-	/*0x1020B040[21:16]=0x37, leave bit19 alone*/
-	tmp = JTAG1_REG_READ(0x1020B040);
-	tmp &= 0xffC8ffff;
-	tmp |= (0x37 << 16);
-	JTAG1_REG_WRITE(0x1020B040, tmp);
-	
-	/*0x1020B050[21:16]=0x20, leave bit19 alone*/
-	tmp = JTAG1_REG_READ(0x1020B050);
-	tmp &= 0xffC8ffff;
-	tmp |= (0x20 << 16);
-	JTAG1_REG_WRITE(0x1020B050, tmp);
-
-	/*set CONSYS JTAG mode 0x100053B0=0x70777000*/
-	/*set CONSYS JTAG mode 0x100053C0=0x00000007*/
-	JTAG2_REG_WRITE(0x100053BC, 0xf0fff000);
-	JTAG2_REG_WRITE(0x100053CC, 0x0000000F);
-
-    /*CONSYS debug flag mode is already done in MCU jtag mode setting*/
-	
-    return iRet;
-}
-#endif /* 0 */
 
 
 /*----------------------------------------------------------------------------*/
@@ -1066,14 +920,10 @@ kalDevPortRead (
         PollTimeout = jiffies + HZ*5;
 
         do {
-#if 0
-            if (LoopCnt++ > 100000) {
-#else
             if (time_before(jiffies, PollTimeout))
                 ; /* not timeout, continue to poll */
             else
             {
-#endif
 
 #if (CONF_HIF_CONNSYS_DBG == 0)
                 /* TODO: impossible! reset DMA */
@@ -1120,32 +970,6 @@ LabelErr:
                     *(volatile unsigned int *)0xF0000024,
                     (UINT32)RegValChip, (UINT32)RegValLP);
 
-#if 0
-                mtk_wcn_wmt_assert();
-                sprintf(AeeBuffer, "<WLANRXERR><vend_samp.lin> 0x%x 0x%x 0x%x",
-                        *(volatile unsigned int *)0xF0000024,
-                        (UINT32)RegValChip, (UINT32)RegValLP);
-                kalSendAeeWarning(AeeBuffer, "", "");
-
-				msleep(5000);
-                /* try to use PIO mode to read */
-                MaxLoop = Size >> 2;
-                if (Size & 0x3)
-                    MaxLoop ++;
-                LoopBuf = (UINT32 *)Buf;
-
-                printk("PIO content =\n");
-                for(IdLoop=0; IdLoop<MaxLoop; IdLoop++) {
-
-                    *LoopBuf = HIF_REG_READL(HifInfo, Port);
-                    printk("0x%0x ", *LoopBuf);
-                    LoopBuf ++;
-                }
-                printk("\n\n");
-
-                /* re-dump HIF registers */
-                HifRegDump(GlueInfo->prAdapter);
-#endif
                 return TRUE;
 }
 #endif /* CONF_HIF_DMA_DBG */
@@ -1341,18 +1165,6 @@ kalDevPortWrite (
         if (pfWlanDmaOps != NULL)
             pfWlanDmaOps->DmaClockCtrl(TRUE);
 
-#if 0 // GDMA clock on/off test
-{
-extern int testgdmaclock;
-if (testgdmaclock == 1)
-{
-    *(volatile unsigned int *)0xF0000084 |= 4; /* for 72 */
-    *(volatile unsigned int *)0xF0003010 |= 0x800; /* for 82 */
-    printk("enable GDMA clock...\n");
-    testgdmaclock = 0;
-}
-}
-#endif
 
         HifInfo->DmaOps->DmaConfig(HifInfo, &DmaConf);
         HifInfo->DmaOps->DmaStart(HifInfo);
@@ -1379,14 +1191,10 @@ if (testgdmaclock == 1)
         PollTimeout = jiffies + HZ*5;
 
         do {
-#if 0
-            if (LoopCnt++ > 10000) {
-#else
             if (time_before(jiffies, PollTimeout))
                 ; /* not timeout, continue to poll */
             else
             {
-#endif
 
 #if (CONF_HIF_CONNSYS_DBG == 0)
                 /* TODO: impossible! reset DMA */
@@ -1426,13 +1234,6 @@ LabelErr:
                 printk("<WLANTXERR><vend_samp.lin> 0x%x 0x%x 0x%x\n",
                     *(volatile unsigned int *)0xF0000024,
                     (UINT32)RegValChip, (UINT32)RegValLP);
-#if 0
-                mtk_wcn_wmt_assert();
-                sprintf(AeeBuffer, "<WLANTXERR><vend_samp.lin> 0x%x 0x%x 0x%x",
-                        *(volatile unsigned int *)0xF0000024,
-                        (UINT32)RegValChip, (UINT32)RegValLP);
-                kalSendAeeWarning(AeeBuffer, "", "");
-#endif
                 return TRUE;
 }
 #endif /* CONF_HIF_DMA_DBG */
@@ -1487,23 +1288,6 @@ LabelErr:
 
         /* TODO: check with DE if we "must" pad 0x00? */
         /* write the last 4B with padding 0x00 */
-#if 0
-        if (Size & 0x3) {
-            /* need to use another 4B buffer to write */
-            *((UINT32 *)Last4B) = 0;
-            BufLast = Last4B;
-            BufSrc = ((UINT8 *)LoopBuf);
-
-            for(IdLoop=0; IdLoop<(Size & 0x3); IdLoop++) {
-                *BufLast = *BufSrc;
-                BufLast ++;
-                BufSrc ++;
-            }
-
-            HIF_DBG_TX(("0x%08x ", *((UINT32 *)Last4B)));
-            HIF_REG_WRITEL(HifInfo, Port, *((UINT32 *)Last4B));
-        }
-#endif
 
         HIF_DBG_TX(("\n\n"));
     }
@@ -1513,41 +1297,6 @@ LabelErr:
 } /* end of kalDevPortWrite() */
 
 
-#if 0 /* only for SDIO HIF */
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief Write device I/O port in byte with CMD52
-*
-* \param[in] GlueInfo         Pointer to the GLUE_INFO_T structure.
-* \param[in] RegOffset             I/O port offset
-* \param[in] RegData             Single byte of data to be written
-*
-* \retval TRUE          operation success
-* \retval FALSE         operation fail
-*/
-/*----------------------------------------------------------------------------*/
-BOOL
-kalDevWriteWithSdioCmd52 (
-    IN GLUE_INFO_T      *GlueInfo,
-    IN UINT_32          RegOffset,
-    IN UINT_8           RegData
-    )
-{
-    GL_HIF_INFO_T *HifInfo;
-
-
-    printk("kalDevWriteWithSdioCmd52\n");
-
-    ASSERT(GlueInfo);
-    HifInfo = &GlueInfo->rHifInfo;
-
-    /* Write by using PIO mode */
-    HIF_REG_WRITEB(HifInfo, RegOffset, RegData);
-
-    return TRUE;
-
-} /* end of kalDevWriteWithSdioCmd52() */
-#endif
 
 
 /*******************************************************************************
@@ -1596,17 +1345,6 @@ HifAhbISR(
 
     HIF_REG_WRITEL(HifInfo, MCR_WHLPCR, WHLPCR_INT_EN_CLR);
 
-#if 0
-    wlanISR(GlueInfo->prAdapter, TRUE);
-
-    if (GlueInfo->u4Flag & GLUE_FLAG_HALT) {
-        /* Should stop now... skip pending interrupt */
-        //printk(KERN_INFO DRV_NAME"ignore pending interrupt\n");
-    }
-    else {
-        wlanIST(GlueInfo->prAdapter);
-    }
-#endif
 
     /* lock 100ms to avoid suspend */
     kalHifAhbKalWakeLockTimeout(GlueInfo);

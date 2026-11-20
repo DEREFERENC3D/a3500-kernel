@@ -489,59 +489,6 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
     }
 };
 
-#if 0
-COUNTRY_CH_SET_T arCountryChSets[] = {
-    /* idx=0: US, Bahamas, Barbados, Bolivia(Voluntary), Dominica (the Commonwealth of Dominica),
-       The Dominican Republic, Haiti */
-    {CH_SET_2G4_1_11,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_140,    CH_SET_UNII_UPPER_149_165},
-    /* idx=1: Brazil, Ecuador, Hong Kong, Mexico, Peru */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_140,    CH_SET_UNII_UPPER_149_165},
-    /* idx=2: JP1, Colombia(Voluntary), Paraguay */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_140,    CH_SET_UNII_UPPER_NA},
-    /* idx=3: JP2 */
-    {CH_SET_2G4_1_14,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_140,    CH_SET_UNII_UPPER_NA},
-    /* idx=4: CN, Uruguay, Morocco */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_NA,             CH_SET_UNII_MID_NA,
-     CH_SET_UNII_WW_NA,         CH_SET_UNII_UPPER_149_165},
-    /* idx=5: Argentina */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_NA,             CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_NA,         CH_SET_UNII_UPPER_149_165},
-    /* idx=6: Australia, New Zealand */
-    {CH_SET_2G4_1_11,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_140,    CH_SET_UNII_UPPER_149_161},
-    /* idx=7: Russia */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_140,    CH_SET_UNII_UPPER_149_161},
-    /* idx=8: Indonesia */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_NA,             CH_SET_UNII_MID_NA,
-     CH_SET_UNII_WW_NA,         CH_SET_UNII_UPPER_149_161},
-    /* idx=9: Canada */
-    {CH_SET_2G4_1_11,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_116_132_140,    CH_SET_UNII_UPPER_149_165},
-    /* idx=10: Chile, India, Saudi Arabia, Singapore */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_NA,         CH_SET_UNII_UPPER_149_165},
-    /* idx=11: Israel, Ukraine */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_NA,         CH_SET_UNII_UPPER_NA},
-    /* idx=12: Jordan, Kuwait */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_NA,
-     CH_SET_UNII_WW_NA,         CH_SET_UNII_UPPER_NA},
-    /* idx=13: South Korea */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_128,    CH_SET_UNII_UPPER_149_165},
-    /* idx=14: Taiwan */
-    {CH_SET_2G4_1_11,           CH_SET_UNII_LOW_NA,             CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_140,    CH_SET_UNII_UPPER_149_165},
-    /* idx=15: EU all countries */
-    {CH_SET_2G4_1_13,           CH_SET_UNII_LOW_36_48,          CH_SET_UNII_MID_52_64,
-     CH_SET_UNII_WW_100_140,    CH_SET_UNII_UPPER_149_173}
-};
-#endif
 
 
 /*******************************************************************************

@@ -2,27 +2,6 @@
 
 #if CFG_SUPPORT_WFD
 #if CFG_SUPPORT_WFD_COMPOSE_IE
-#if 0
-APPEND_VAR_ATTRI_ENTRY_T txProbeRspWFDAttributesTable[] = {
-     { (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_DEV_INFO)   ,    NULL,                           wfdFuncAppendAttriDevInfo        }  /* 0 */
-    ,{ (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_ASSOC_BSSID),    NULL,                           wfdFuncAppendAttriAssocBssid   }  /* 1 */
-    ,{ (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_COUPLED_SINK_INFO),    NULL,                           wfdFuncAppendAttriCoupledSinkInfo   }  /* 6 */
-    ,{ (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_EXT_CAPABILITY),    NULL,                           wfdFuncAppendAttriExtCapability   }  /* 7 */
-    ,{ 0,                                                            wfdFuncCalculateAttriLenSessionInfo,                           wfdFuncAppendAttriSessionInfo   }  /* 9 */
-};
-
-APPEND_VAR_ATTRI_ENTRY_T txBeaconWFDAttributesTable[] = {
-     { (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_DEV_INFO)   ,    NULL,                           wfdFuncAppendAttriDevInfo        }  /* 0 */
-    ,{ (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_ASSOC_BSSID),    NULL,                           wfdFuncAppendAttriAssocBssid   }  /* 1 */
-    ,{ (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_COUPLED_SINK_INFO),    NULL,                           wfdFuncAppendAttriCoupledSinkInfo   }  /* 6 */
-};
-
-APPEND_VAR_ATTRI_ENTRY_T txAssocReqWFDAttributesTable[] = {
-     { (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_DEV_INFO)   ,    NULL,                           wfdFuncAppendAttriDevInfo        }  /* 0 */
-    ,{ (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_ASSOC_BSSID),    NULL,                           wfdFuncAppendAttriAssocBssid   }  /* 1 */
-    ,{ (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_COUPLED_SINK_INFO),    NULL,                           wfdFuncAppendAttriCoupledSinkInfo   }  /* 6 */
-};
-#endif
 
 APPEND_VAR_ATTRI_ENTRY_T txAssocRspWFDAttributesTable[] = {
      { (WFD_ATTRI_HDR_LEN + WFD_ATTRI_MAX_LEN_DEV_INFO)   ,    NULL,                           wfdFuncAppendAttriDevInfo        }  /* 0 */

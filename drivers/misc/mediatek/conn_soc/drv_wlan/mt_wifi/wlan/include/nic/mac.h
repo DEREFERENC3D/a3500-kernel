@@ -498,12 +498,6 @@
 #define TKIP_MIC_LEN                            8
 
 /* 2009.11.30 mtk02468: Moved these definitions to the right place */
-#if 0
-/* Block Ack Parameter Set field */
-#define BA_PARM_BA_POLICY                       BIT(1)
-#define BA_PARM_TID                             BITS(2,5)
-#define BA_PARM_BUFFER_SIZE                     BITS(6,15)
-#endif
 
 #define BA_POLICY_IMMEDIATE                     BIT(1)
 

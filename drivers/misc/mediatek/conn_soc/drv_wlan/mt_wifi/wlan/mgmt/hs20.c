@@ -303,23 +303,6 @@ hs20GenerateHS20RelatedIEForProbeReq (
 {
     if (0) /* Todo:: Not HS20 STA */
 	    return 0;
-#if 0
-    P_HS20_INFO_T prHS20Info;
-
-    prHS20Info = &(prAdapter->rWifiVar.rHS20Info);
-
-
-    /*
-        * Generate 802.11u Interworking IE (107)
-        */
-    hs20FillInterworkingIE(prAdapter,
-                            prHS20Info->ucAccessNetworkOptions,
-                            prHS20Info->ucVenueGroup,
-                            prHS20Info->ucVenueType,
-                            pucTargetBSSID,
-                            prIE);
-    prIE += IE_SIZE(prIE);
-#endif
     /*
         * Generate Ext Cap IE (127)
         */
@@ -539,9 +522,6 @@ hs20SetBssidPool (
     prHS20Info->fgIsHS2SigmaMode = prParamBssidPool->fgIsEnable;
     prHS20Info->ucNumBssidPoolEntry = prParamBssidPool->ucNumBssidPool;
 
-#if 0
-	wlanClearScanningResult(prAdapter);
-#endif
 
     return WLAN_STATUS_SUCCESS;
 }

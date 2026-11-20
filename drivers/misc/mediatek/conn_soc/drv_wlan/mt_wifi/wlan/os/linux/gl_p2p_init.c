@@ -105,22 +105,6 @@ p2pCheckInterfaceName(
         mode = RUNNING_AP_MODE;
         ifname = AP_MODE_INF_NAME;
     }
-#if 0
-    UINT_32 ifLen = 0;
-
-    if(ifname) {
-        ifLen = strlen(ifname);
-
-        if(ifLen > MAX_INF_NAME_LEN) {
-            ifname[MAX_INF_NAME_LEN] = '\0';
-        }
-        else if( ifLen < MIN_INF_NAME_LEN  ) {
-            ifname = P2P_MODE_INF_NAME;
-        }
-    } else {
-        ifname = P2P_MODE_INF_NAME;
-    }
-#endif
 }
 
 
@@ -215,11 +199,6 @@ static void wlanP2PEarlySuspend(void)
         for (i = 0; i < u4NumIPv4; i++) {
             prParamNetAddr->u2AddressLength = sizeof(PARAM_NETWORK_ADDRESS_IP);//4;;
             prParamNetAddr->u2AddressType = PARAM_PROTOCOL_ID_TCP_IP;;
-#if 0
-            kalMemCopy(prParamNetAddr->aucAddress, ip, sizeof(ip));
-            prParamNetAddr = (P_PARAM_NETWORK_ADDRESS)((UINT_32)prParamNetAddr + sizeof(ip));
-            u4Len += OFFSET_OF(PARAM_NETWORK_ADDRESS, aucAddress) + sizeof(ip);
-#else
             prParamIpAddr = (P_PARAM_NETWORK_ADDRESS_IP)prParamNetAddr->aucAddress;
             kalMemCopy(&prParamIpAddr->in_addr, ip, sizeof(ip));
 
@@ -229,7 +208,6 @@ static void wlanP2PEarlySuspend(void)
             (UINT_32) (prParamNetAddr->u2AddressLength + OFFSET_OF(PARAM_NETWORK_ADDRESS, aucAddress)));
 
             u4Len += OFFSET_OF(PARAM_NETWORK_ADDRESS, aucAddress) + sizeof(PARAM_NETWORK_ADDRESS_IP);
-#endif
         }
 #ifdef  CONFIG_IPV6
         for (i = 0; i < u4NumIPv6; i++) {
@@ -387,12 +365,6 @@ p2pLaunch(
 
         printk("Launch success, fgIsP2PRegistered TRUE.\n");
 
-#if 0 /* move out to caller to avoid kalIoctrl & suspend/resume deadlock problem ALPS00844864 */
-#if defined(CONFIG_HAS_EARLYSUSPEND)
-        /* Here, we register the early suspend and resume callback  */
-        glRegisterEarlySuspend(&mt6620_p2p_early_suspend_desc, p2p_early_suspend, p2p_late_resume);
-#endif
-#endif
 
         return TRUE;
     }
@@ -443,11 +415,6 @@ p2pRemove(
     }
     else {
 
-#if 0 /* move out to caller to avoid kalIoctrl & suspend/resume deadlock problem ALPS00844864 */
-#if defined(CONFIG_HAS_EARLYSUSPEND)
-        glUnregisterEarlySuspend(&mt6620_p2p_early_suspend_desc);
-#endif
-#endif
         /*Check p2p fsm is stop or not. If not then stop now*/
         if(IS_P2P_ACTIVE(prGlueInfo->prAdapter)) {
             p2pStopImmediate(prGlueInfo);
@@ -483,63 +450,4 @@ p2pEalySuspendReg (
 }
 
 
-#if 0
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief Driver entry point when the driver is configured as a Linux Module, and
-*        is called once at module load time, by the user-level modutils
-*        application: insmod or modprobe.
-*
-* \retval 0     Success
-*/
-/*----------------------------------------------------------------------------*/
-static int initP2P(void)
-{
-    P_GLUE_INFO_T prGlueInfo;
-
-    /*check interface name validation*/
-    p2pCheckInterfaceName();
-
-    printk( KERN_INFO DRV_NAME "InitP2P, Ifname: %s, Mode: %s\n", ifname, mode ? "AP":"P2P");
-
-    /*register p2p init & exit function to wlan sub module handler*/
-    wlanSubModRegisterInitExit(p2pLaunch, p2pRemove, P2P_MODULE);
-
-    /*if wlan is not start yet, do nothing
-        * p2pLaunch will be called by txthread while wlan start
-        */
-    /*if wlan is not started yet, return FALSE*/
-    if(wlanExportGlueInfo(&prGlueInfo)) {
-        wlanSubModInit(prGlueInfo);
-        return ( prGlueInfo->prAdapter->fgIsP2PRegistered? 0: -EIO);
-    }
-
-    return 0;
-} /* end of initP2P() */
-
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief Driver exit point when the driver as a Linux Module is removed. Called
-*        at module unload time, by the user level modutils application: rmmod.
-*        This is our last chance to clean up after ourselves.
-*
-* \return (none)
-*/
-/*----------------------------------------------------------------------------*/
-//1 Module Leave Point
-static VOID __exit exitP2P(void)
-{
-    P_GLUE_INFO_T prGlueInfo;
-
-    printk( KERN_INFO DRV_NAME "ExitP2P\n");
-
-    /*if wlan is not started yet, return FALSE*/
-    if(wlanExportGlueInfo(&prGlueInfo)) {
-        wlanSubModExit(prGlueInfo);
-    }
-    /*UNregister p2p init & exit function to wlan sub module handler*/
-    wlanSubModRegisterInitExit(NULL, NULL, P2P_MODULE);
-} /* end of exitP2P() */
-#endif
 

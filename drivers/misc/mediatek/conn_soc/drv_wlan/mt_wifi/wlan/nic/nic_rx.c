@@ -1085,34 +1085,6 @@ nicRxFillRFB (
     //DBGLOG(RX, TRACE, ("Dump Rx packet, u2PacketLen = %d\n", prSwRfb->u2PacketLen));
     //DBGLOG_MEM8(RX, TRACE, prSwRfb->pvHeader, prSwRfb->u2PacketLen);
 
-#if 0
-    if (prHifRxHdr->ucReorder & HIF_RX_HDR_80211_HEADER_FORMAT){
-        prSwRfb->u4HifRxHdrFlag |= HIF_RX_HDR_FLAG_802_11_FORMAT;
-        DBGLOG(RX, TRACE, ("HIF_RX_HDR_FLAG_802_11_FORMAT\n"));
-    }
-
-    if (prHifRxHdr->ucReorder & HIF_RX_HDR_DO_REORDER){
-        prSwRfb->u4HifRxHdrFlag |= HIF_RX_HDR_FLAG_DO_REORDERING;
-        DBGLOG(RX, TRACE, ("HIF_RX_HDR_FLAG_DO_REORDERING\n"));
-
-        /* Get Seq. No and TID, Wlan Index info */
-        if (prHifRxHdr->u2SeqNoTid & HIF_RX_HDR_BAR_FRAME){
-            prSwRfb->u4HifRxHdrFlag |= HIF_RX_HDR_FLAG_BAR_FRAME;
-            DBGLOG(RX, TRACE, ("HIF_RX_HDR_FLAG_BAR_FRAME\n"));
-        }
-
-        prSwRfb->u2SSN = prHifRxHdr->u2SeqNoTid & HIF_RX_HDR_SEQ_NO_MASK;
-        prSwRfb->ucTid = (UINT_8)((prHifRxHdr->u2SeqNoTid & HIF_RX_HDR_TID_MASK)
-                        >> HIF_RX_HDR_TID_OFFSET);
-        DBGLOG(RX, TRACE, ("u2SSN = %d, ucTid = %d\n",
-            prSwRfb->u2SSN, prSwRfb->ucTid));
-    }
-
-    if (prHifRxHdr->ucReorder & HIF_RX_HDR_WDS){
-        prSwRfb->u4HifRxHdrFlag |= HIF_RX_HDR_FLAG_AMP_WDS;
-        DBGLOG(RX, TRACE, ("HIF_RX_HDR_FLAG_AMP_WDS\n"));
-    }
-#endif
 }
 
 
@@ -1638,79 +1610,6 @@ nicRxProcessEventPacket (
 
         break;
 
-#if 0
-    case EVENT_ID_CONNECTION_STATUS:
-        /* OBSELETE */
-        {
-            P_EVENT_CONNECTION_STATUS prConnectionStatus;
-            prConnectionStatus = (P_EVENT_CONNECTION_STATUS) (prEvent->aucBuffer);
-
-            DbgPrint("RX EVENT: EVENT_ID_CONNECTION_STATUS = %d\n", prConnectionStatus->ucMediaStatus);
-            if (prConnectionStatus->ucMediaStatus == PARAM_MEDIA_STATE_DISCONNECTED) { // disconnected
-                if(kalGetMediaStateIndicated(prGlueInfo) != PARAM_MEDIA_STATE_DISCONNECTED) {
-
-                    kalIndicateStatusAndComplete(prGlueInfo,
-                            WLAN_STATUS_MEDIA_DISCONNECT,
-                            NULL,
-                            0);
-
-                    prAdapter->rWlanInfo.u4SysTime = kalGetTimeTick();
-                }
-            }
-            else if(prConnectionStatus->ucMediaStatus == PARAM_MEDIA_STATE_CONNECTED) { // connected
-                prAdapter->rWlanInfo.u4SysTime = kalGetTimeTick();
-
-                // fill information for association result
-                prAdapter->rWlanInfo.rCurrBssId.rSsid.u4SsidLen
-                    = prConnectionStatus->ucSsidLen;
-                kalMemCopy(prAdapter->rWlanInfo.rCurrBssId.rSsid.aucSsid,
-                        prConnectionStatus->aucSsid,
-                        prConnectionStatus->ucSsidLen);
-
-                kalMemCopy(prAdapter->rWlanInfo.rCurrBssId.arMacAddress,
-                        prConnectionStatus->aucBssid,
-                        MAC_ADDR_LEN);
-
-                prAdapter->rWlanInfo.rCurrBssId.u4Privacy
-                    = prConnectionStatus->ucEncryptStatus; // @FIXME
-                prAdapter->rWlanInfo.rCurrBssId.rRssi
-                    = 0; //@FIXME
-                prAdapter->rWlanInfo.rCurrBssId.eNetworkTypeInUse
-                    = PARAM_NETWORK_TYPE_AUTOMODE; //@FIXME
-                prAdapter->rWlanInfo.rCurrBssId.rConfiguration.u4BeaconPeriod
-                    = prConnectionStatus->u2BeaconPeriod;
-                prAdapter->rWlanInfo.rCurrBssId.rConfiguration.u4ATIMWindow
-                    = prConnectionStatus->u2ATIMWindow;
-                prAdapter->rWlanInfo.rCurrBssId.rConfiguration.u4DSConfig
-                    = prConnectionStatus->u4FreqInKHz;
-                prAdapter->rWlanInfo.ucNetworkType
-                    = prConnectionStatus->ucNetworkType;
-
-                switch(prConnectionStatus->ucInfraMode) {
-                case 0:
-                    prAdapter->rWlanInfo.rCurrBssId.eOpMode = NET_TYPE_IBSS;
-                    break;
-                case 1:
-                    prAdapter->rWlanInfo.rCurrBssId.eOpMode = NET_TYPE_INFRA;
-                    break;
-                case 2:
-                default:
-                    prAdapter->rWlanInfo.rCurrBssId.eOpMode = NET_TYPE_AUTO_SWITCH;
-                    break;
-                }
-                // always indicate to OS according to MSDN (re-association/roaming)
-                kalIndicateStatusAndComplete(prGlueInfo,
-                        WLAN_STATUS_MEDIA_CONNECT,
-                        NULL,
-                        0);
-            }
-        }
-        break;
-
-    case EVENT_ID_SCAN_RESULT:
-        /* OBSELETE */
-        break;
-#endif
 
     case EVENT_ID_RX_ADDBA:
         /* The FW indicates that an RX BA agreement will be established */
@@ -1801,30 +1700,6 @@ nicRxProcessEventPacket (
             else {
                 DBGLOG(RSN, INFO, ("No STA rec!!\n"));
             }
-#if 0
-            prAuthEvent = (P_PARAM_AUTH_EVENT_T)prAdapter->aucIndicationEventBuffer;
-
-            /* Status type: Authentication Event */
-            prAuthEvent->rStatus.eStatusType = ENUM_STATUS_TYPE_AUTHENTICATION;
-
-            /* Authentication request */
-            prAuthEvent->arRequest[0].u4Length = sizeof(PARAM_AUTH_REQUEST_T);
-            kalMemCopy((PVOID)prAuthEvent->arRequest[0].arBssid,
-                (PVOID)prAdapter->rWlanInfo.rCurrBssId.arMacAddress, /* whsu:Todo? */
-                PARAM_MAC_ADDR_LEN);
-
-            if (prMicError->u4Flags != 0) {
-                prAuthEvent->arRequest[0].u4Flags = PARAM_AUTH_REQUEST_GROUP_ERROR;
-            }
-            else {
-                prAuthEvent->arRequest[0].u4Flags = PARAM_AUTH_REQUEST_PAIRWISE_ERROR;
-            }
-
-            kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
-                WLAN_STATUS_MEDIA_SPECIFIC_INDICATION,
-                (PVOID)prAuthEvent,
-                sizeof(PARAM_STATUS_INDICATION_T) + sizeof(PARAM_AUTH_REQUEST_T));
-#endif
         }
         break;
 
@@ -1863,39 +1738,6 @@ nicRxProcessEventPacket (
         }
         break;
 
-#if 0
-    case EVENT_ID_ACTIVATE_STA_REC_T:
-        {
-            P_EVENT_ACTIVATE_STA_REC_T prActivateStaRec;
-            prActivateStaRec = (P_EVENT_ACTIVATE_STA_REC_T)(prEvent->aucBuffer);
-
-            DbgPrint("RX EVENT: EVENT_ID_ACTIVATE_STA_REC_T Index:%d, MAC:["MACSTR"]\n",
-                prActivateStaRec->ucStaRecIdx,
-                MAC2STR(prActivateStaRec->aucMacAddr));
-
-            qmActivateStaRec(prAdapter,
-                             (UINT_32)prActivateStaRec->ucStaRecIdx,
-                             ((prActivateStaRec->fgIsQoS) ? TRUE: FALSE),
-                             prActivateStaRec->ucNetworkTypeIndex,
-                             ((prActivateStaRec->fgIsAP) ? TRUE: FALSE),
-                             prActivateStaRec->aucMacAddr);
-
-        }
-        break;
-
-    case EVENT_ID_DEACTIVATE_STA_REC_T:
-        {
-            P_EVENT_DEACTIVATE_STA_REC_T prDeactivateStaRec;
-            prDeactivateStaRec = (P_EVENT_DEACTIVATE_STA_REC_T)(prEvent->aucBuffer);
-
-            DbgPrint("RX EVENT: EVENT_ID_DEACTIVATE_STA_REC_T Index:%d, MAC:["MACSTR"]\n",
-                prDeactivateStaRec->ucStaRecIdx);
-
-            qmDeactivateStaRec(prAdapter,
-                               prDeactivateStaRec->ucStaRecIdx);
-        }
-        break;
-#endif
 
     case EVENT_ID_SCAN_DONE:
         scnEventScanDone(prAdapter, (P_EVENT_SCAN_DONE)(prEvent->aucBuffer));

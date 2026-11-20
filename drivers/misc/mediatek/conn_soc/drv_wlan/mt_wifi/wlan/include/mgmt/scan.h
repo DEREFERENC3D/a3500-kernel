@@ -718,15 +718,6 @@ scanRemoveConnFlagOfBssDescByBssid (
     IN UINT_8 aucBSSID[]
     );
 
-#if 0
-/* BSS-DESC Insertion */
-P_BSS_DESC_T
-scanAddToInternalScanResult (
-    IN P_ADAPTER_T prAdapter,
-    IN P_SW_RFB_T prSWRfb,
-    IN P_BSS_DESC_T prBssDesc
-    );
-#endif
 
 /* BSS-DESC Insertion - ALTERNATIVE */
 P_BSS_DESC_T

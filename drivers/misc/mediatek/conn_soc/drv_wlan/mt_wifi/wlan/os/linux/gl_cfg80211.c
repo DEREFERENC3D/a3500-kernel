@@ -1365,9 +1365,6 @@ mtk_cfg80211_mgmt_frame_register (
     IN bool reg
     )
 {
-#if 0
-    P_MSG_P2P_MGMT_FRAME_REGISTER_T prMgmtFrameRegister = (P_MSG_P2P_MGMT_FRAME_REGISTER_T)NULL;
-#endif
     P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T)NULL;
 
     do {
@@ -1414,29 +1411,6 @@ mtk_cfg80211_mgmt_frame_register (
            }
         }
 
-#if 0
-
-
-        prMgmtFrameRegister = (P_MSG_P2P_MGMT_FRAME_REGISTER_T)cnmMemAlloc(prGlueInfo->prAdapter, 
-                                                                    RAM_TYPE_MSG, 
-                                                                    sizeof(MSG_P2P_MGMT_FRAME_REGISTER_T));
-
-        if (prMgmtFrameRegister == NULL) {
-            ASSERT(FALSE);
-            break;
-        }
-
-        prMgmtFrameRegister->rMsgHdr.eMsgId = MID_MNY_P2P_MGMT_FRAME_REGISTER;
-
-        prMgmtFrameRegister->u2FrameType = frame_type;
-        prMgmtFrameRegister->fgIsRegister = reg;
-
-        mboxSendMsg(prGlueInfo->prAdapter,
-                                    MBOX_ID_0,
-                                    (P_MSG_HDR_T)prMgmtFrameRegister,
-                                    MSG_SEND_METHOD_BUF);
-
-#endif
 
     } while (FALSE);
 

@@ -493,10 +493,6 @@ static const struct iw_priv_args rIwPrivTable[] = {
     {IOCTL_GET_STRUCT,          0,                                      256, ""},
 
     /* sub-ioctl definitions */
-#if 0
-    {PRIV_CMD_REG_DOMAIN,       IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,   "set_reg_domain" },
-    {PRIV_CMD_REG_DOMAIN,       0, IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1,   "get_reg_domain" },
-#endif
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
     {PRIV_CMD_CSUM_OFFLOAD,     IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 1, 0,   "set_tcp_csum" },
@@ -1176,72 +1172,6 @@ wext_set_freq (
     )
 {
 
-#if 0
-    UINT_32 u4ChnlFreq; /* Store channel or frequency information */
-
-    P_GLUE_INFO_T prGlueInfo = NULL;
-    WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
-    UINT_32 u4BufLen = 0;
-
-    ASSERT(prNetDev);
-    ASSERT(prIwFreq);
-    if (FALSE == GLUE_CHK_PR2(prNetDev, prIwFreq)) {
-        return -EINVAL;
-    }
-    prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
-
-    /*
-    printk("set m:%d, e:%d, i:%d, flags:%d\n",
-        prIwFreq->m, prIwFreq->e, prIwFreq->i, prIwFreq->flags);
-    */
-
-    /* If setting by frequency, convert to a channel */
-    if ((prIwFreq->e == 1) &&
-        (prIwFreq->m >= (int) 2.412e8) &&
-        (prIwFreq->m <= (int) 2.484e8)) {
-
-        /* Change to KHz format */
-        u4ChnlFreq = (UINT_32)(prIwFreq->m / (KILO / 10));
-
-        rStatus = kalIoctl(prGlueInfo,
-                           wlanoidSetFrequency,
-                           &u4ChnlFreq,
-                           sizeof(u4ChnlFreq),
-                           FALSE,
-                           FALSE,
-                           FALSE,
-                           &u4BufLen);
-
-        if (WLAN_STATUS_SUCCESS != rStatus) {
-            return -EINVAL;
-        }
-    }
-    /* Setting by channel number */
-    else if ((prIwFreq->m > KILO) || (prIwFreq->e > 0)) {
-        return -EOPNOTSUPP;
-    }
-    else {
-        /* Change to channel number format */
-        u4ChnlFreq = (UINT_32)prIwFreq->m;
-
-        rStatus = kalIoctl(prGlueInfo,
-                           wlanoidSetChannel,
-                           &u4ChnlFreq,
-                           sizeof(u4ChnlFreq),
-                           FALSE,
-                           FALSE,
-                           FALSE,
-                           &u4BufLen);
-
-
-
-
-        if (WLAN_STATUS_SUCCESS != rStatus) {
-            return -EINVAL;
-        }
-    }
-
-#endif
 
     return 0;
 
@@ -2238,24 +2168,6 @@ wext_get_scan (
                 prBss->u4IELength -sizeof(PARAM_FIXED_IEs),
                 (PUINT_8 *)&prDesiredIE)) {
 
-#if 0
-                iwEvent.cmd = IWEVGENIE;
-                iwEvent.u.data.flags = 1;
-                iwEvent.u.data.length = 2 + (__u16)prDesiredIE->ucLength;
-                iwEvent.len = IW_EV_POINT_LEN + iwEvent.u.data.length;
-            if ((pcCur + iwEvent.len) > pcEnd)
-                break;
-#if WIRELESS_EXT <= 18
-            memcpy(pcCur, &iwEvent, IW_EV_POINT_LEN);
-#else
-            memcpy(pcCur, &iwEvent, IW_EV_LCP_LEN);
-            memcpy(pcCur + IW_EV_LCP_LEN,
-                &iwEvent.u.data.length,
-                sizeof(struct  iw_point) - IW_EV_POINT_OFF);
-#endif
-            memcpy(pcCur + IW_EV_POINT_LEN, prDesiredIE, 2 + prDesiredIE->ucLength);
-            pcCur += iwEvent.len;
-#else
            iwEvent.cmd = IWEVCUSTOM;
            iwEvent.u.data.length = (2 + prDesiredIE->ucLength) * 2 + 8 /* wapi_ie= */;
            iwEvent.len = IW_EV_POINT_LEN + iwEvent.u.data.length;
@@ -2275,7 +2187,6 @@ wext_get_scan (
            snprintf_hex(pcCur, pcEnd - pcCur, (UINT_8 *)prDesiredIE, prDesiredIE->ucLength + 2);
 
            pcCur += (2 + prDesiredIE->ucLength) * 2 /* iwEvent.len */;
-#endif
         }
 #endif
         /* Complete an entry. Update end of valid entry */
@@ -2553,127 +2464,6 @@ wext_get_essid (
 } /* wext_get_essid */
 
 
-#if 0
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief To set tx desired bit rate. Three cases here
-*        iwconfig wlan0 auto -> Set to origianl supported rate set.
-*        iwconfig wlan0 18M -> Imply "fixed" case, set to 18Mbps as desired rate.
-*        iwconfig wlan0 18M auto -> Set to auto rate lower and equal to 18Mbps
-*
-* \param[in] prNetDev       Pointer to the net_device handler.
-* \param[in] prIwReqInfo    Pointer to the Request Info.
-* \param[in] prRate         Pointer to the Rate Parameter.
-* \param[in] pcExtra        Pointer to the extra buffer.
-*
-* \retval 0         Update desired rate.
-* \retval -EINVAL   Wrong parameter
-*/
-/*----------------------------------------------------------------------------*/
-int
-wext_set_rate (
-    IN struct net_device *prNetDev,
-    IN struct iw_request_info *prIwReqInfo,
-    IN struct iw_param *prRate,
-    IN char *pcExtra
-    )
-{
-    PARAM_RATES_EX aucSuppRate = {0};
-    PARAM_RATES_EX aucNewRate = {0};
-    UINT_32 u4NewRateLen = 0;
-    UINT_32 i;
-
-    P_GLUE_INFO_T prGlueInfo = NULL;
-    WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
-    UINT_32 u4BufLen = 0;
-
-    ASSERT(prNetDev);
-    ASSERT(prRate);
-    if (FALSE == GLUE_CHK_PR2(prNetDev, prRate)) {
-        return -EINVAL;
-    }
-    prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
-
-    /*
-    printk("value = %d, fixed = %d, disable = %d, flags = %d\n",
-        prRate->value, prRate->fixed, prRate->disabled, prRate->flags);
-    */
-
-    rStatus = wlanQueryInformation(
-        prGlueInfo->prAdapter,
-        wlanoidQuerySupportedRates,
-        &aucSuppRate,
-        sizeof(aucSuppRate),
-        &u4BufLen);
-
-    /* Case: AUTO */
-    if (prRate->value < 0)  {
-        if (prRate->fixed == 0) {
-            /* iwconfig wlan0 rate auto */
-
-            /* set full supported rate to device */
-            /* printk("wlanoidQuerySupportedRates():u4BufLen = %ld\n", u4BufLen); */
-            rStatus = wlanSetInformation(
-                prGlueInfo->prAdapter,
-                wlanoidSetDesiredRates,
-                &aucSuppRate,
-                sizeof(aucSuppRate),
-                &u4BufLen);
-            return 0;
-        }
-        else {
-            /* iwconfig wlan0 rate fixed */
-
-            /* fix rate to what? DO NOTHING */
-            return -EINVAL;
-        }
-    }
-
-
-    aucNewRate[0] = prRate->value / 500000; /* In unit of 500k */
-
-    for (i = 0; i < PARAM_MAX_LEN_RATES_EX; i++) {
-        /* check the given value is supported */
-        if (aucSuppRate[i] == 0) {
-            break;
-        }
-
-        if (aucNewRate[0] == aucSuppRate[i]) {
-            u4NewRateLen = 1;
-            break;
-        }
-    }
-
-    if (u4NewRateLen == 0) {
-        /* the given value is not supported */
-        /* return error or use given rate as upper bound? */
-        return -EINVAL;
-    }
-
-    if (prRate->fixed == 0) {
-        /* add all rates lower than desired rate */
-        for (i = 0; i < PARAM_MAX_LEN_RATES_EX; ++i) {
-            if (aucSuppRate[i] == 0) {
-                break;
-            }
-
-            if (aucSuppRate[i] < aucNewRate[0]) {
-                aucNewRate[u4NewRateLen++] = aucSuppRate[i];
-            }
-        }
-    }
-
-    rStatus = wlanSetInformation(
-        prGlueInfo->prAdapter,
-        wlanoidSetDesiredRates,
-        &aucNewRate,
-        sizeof(aucNewRate),
-        &u4BufLen);
-    return 0;
-} /* wext_set_rate */
-
-#endif
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3377,29 +3167,11 @@ wext_get_power (
     }
     prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
 
-#if 0
-#if defined(_HIF_SDIO)
-    rStatus = sdio_io_ctrl(prGlueInfo,
-        wlanoidQuery802dot11PowerSaveProfile,
-        &ePowerMode,
-        sizeof(ePowerMode),
-        TRUE,
-        TRUE,
-        &u4BufLen);
-#else
     rStatus = wlanQueryInformation(prGlueInfo->prAdapter,
         wlanoidQuery802dot11PowerSaveProfile,
         &ePowerMode,
         sizeof(ePowerMode),
         &u4BufLen);
-#endif
-#else
-    rStatus = wlanQueryInformation(prGlueInfo->prAdapter,
-        wlanoidQuery802dot11PowerSaveProfile,
-        &ePowerMode,
-        sizeof(ePowerMode),
-        &u4BufLen);
-#endif
 
     if (rStatus != WLAN_STATUS_SUCCESS) {
         return -EFAULT;
@@ -4645,11 +4417,6 @@ wext_indicate_wext_event (
         if (wextSrchDesiredWPAIE(pucData, u4dataLen, 0x30, &pucDesiredIE)) {
             /* RSN IE found */
         }
-#if 0
-        else if (wextSrchDesiredWPSIE(pucData, u4dataLen, 0xDD, &pucDesiredIE)) {
-            /* WPS IE found */
-        }
-#endif
         else if (wextSrchDesiredWPAIE(pucData, u4dataLen, 0xDD, &pucDesiredIE)) {
             /* WPA IE found */
         }

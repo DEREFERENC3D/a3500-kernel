@@ -159,13 +159,6 @@
 
 typedef UINT_32             SEC_STATUS, *P_SEC_STATUS;
 
-#if 0
-/* WPA2 PMKID candicate structure */
-typedef struct _PMKID_CANDICATE_T {
-    UINT_8              aucBssid[MAC_ADDR_LEN];    /* MAC address */
-    UINT_32             u4PreAuthFlags;
-} PMKID_CANDICATE_T, *P_PMKID_CANDICATE_T;
-#endif
 
 typedef SEC_STATUS (*PFN_SEC_FSM_STATE_HANDLER)(VOID);
 

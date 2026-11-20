@@ -1093,36 +1093,8 @@ wlanoidGetP2PSDRequest(
     }
 
     DBGLOG(P2P, TRACE, ("Get Service Discovery Request\n"));
-#if 0
-    if ((ucVersionNum = p2pFuncGetVersionNumOfSD(prAdapter)) == 0) {
-        P_PARAM_P2P_GET_SD_REQUEST prP2pGetSdReq = (P_PARAM_P2P_GET_SD_REQUEST)pvQueryBuffer;
-
-        pucPacketBuffer = prP2pGetSdReq->aucPacketContent;
-        pu2PacketLength = &prP2pGetSdReq->u2PacketLength;
-        pucTA = &prP2pGetSdReq->rTransmitterAddr;
-    }
-    else {
-        P_PARAM_P2P_GET_SD_REQUEST_EX prP2pGetSdReqEx = (P_PARAM_P2P_GET_SD_REQUEST_EX)NULL;
-
-        prP2pGetSdReqEx = (P_PARAM_P2P_GET_SD_REQUEST)pvQueryBuffer;
-        pucPacketBuffer = prP2pGetSdReqEx->aucPacketContent;
-        pu2PacketLength = &prP2pGetSdReqEx->u2PacketLength;
-        pucTA = &prP2pGetSdReqEx->rTransmitterAddr;
-        pucChannelNum = &prP2pGetSdReqEx->ucChannelNum;
-        ucSeqNum = prP2pGetSdReqEx->ucSeqNum;
-    }
-
-
-    rWlanStatus = p2pFuncGetServiceDiscoveryFrame(prAdapter,
-                                            pucPacketBuffer,
-                                            (u4QueryBufferLen - sizeof(PARAM_P2P_GET_SD_REQUEST)),
-                                            (PUINT_32)pu2PacketLength,
-                                            pucChannelNum,
-                                            ucSeqNum);
-#else
     *pu4QueryInfoLen = 0;
     return rWlanStatus;
-#endif
 
     prWlanHdr = (P_WLAN_MAC_HEADER_T)pucPacketBuffer;
 
@@ -1190,36 +1162,8 @@ wlanoidGetP2PSDResponse(
 
     DBGLOG(P2P, TRACE, ("Get Service Discovery Response\n"));
 
-#if 0
-    if ((ucVersionNum = p2pFuncGetVersionNumOfSD(prAdapter)) == 0) {
-        P_PARAM_P2P_GET_SD_RESPONSE prP2pGetSdRsp = (P_PARAM_P2P_GET_SD_RESPONSE)NULL;
-
-        prP2pGetSdRsp = (P_PARAM_P2P_GET_SD_REQUEST)pvQueryBuffer;
-        pucPacketContent = prP2pGetSdRsp->aucPacketContent;
-        pucTA = &prP2pGetSdRsp->rTransmitterAddr;
-        pu2PacketLength = &prP2pGetSdRsp->u2PacketLength;
-    }
-    else {
-        P_PARAM_P2P_GET_SD_RESPONSE_EX prP2pGetSdRspEx = (P_PARAM_P2P_GET_SD_RESPONSE_EX)NULL;
-
-        prP2pGetSdRspEx = (P_PARAM_P2P_GET_SD_RESPONSE_EX)pvQueryBuffer;
-        pucPacketContent = prP2pGetSdRspEx->aucPacketContent;
-        pucTA = &prP2pGetSdRspEx->rTransmitterAddr;
-        pu2PacketLength = &prP2pGetSdRspEx->u2PacketLength;
-        ucSeqNum = prP2pGetSdRspEx->ucSeqNum;
-    }
-
-
-//    rWlanStatus = p2pFuncGetServiceDiscoveryFrame(prAdapter,
-//                    pucPacketContent,
-//                    (u4QueryBufferLen - sizeof(PARAM_P2P_GET_SD_RESPONSE)),
-//                    (PUINT_32)pu2PacketLength,
-//                    NULL,
-//                    ucSeqNum);
-#else
     *pu4QueryInfoLen = 0;
     return rWlanStatus;
-#endif
     prWlanHdr = (P_WLAN_MAC_HEADER_T)pucPacketContent;
 
     kalMemCopy(pucTA, prWlanHdr->aucAddr2, MAC_ADDR_LEN);
@@ -1440,20 +1384,6 @@ wlanoidSetNoaParam (
     rCmdNoaParam.u4NoaIntervalMs = prNoaParam->u4NoaIntervalMs;
     rCmdNoaParam.u4NoaCount = prNoaParam->u4NoaCount;
 
-#if 0
-    return wlanSendSetQueryCmd(prAdapter,
-            CMD_ID_SET_NOA_PARAM,
-            TRUE,
-            FALSE,
-            TRUE,
-            nicCmdEventSetCommon,
-            nicOidCmdTimeoutCommon,
-            sizeof(CMD_CUSTOM_NOA_PARAM_STRUC_T),
-            (PUINT_8)&rCmdNoaParam,
-            pvSetBuffer,
-            u4SetBufferLen
-            );
-#else
     return wlanoidSendSetQueryP2PCmd(prAdapter,
             CMD_ID_SET_NOA_PARAM,
             TRUE,
@@ -1467,7 +1397,6 @@ wlanoidSetNoaParam (
             u4SetBufferLen
             );
 
-#endif
 
 }
 
@@ -1501,20 +1430,6 @@ wlanoidSetOppPsParam (
     kalMemZero(&rCmdOppPsParam, sizeof(CMD_CUSTOM_OPPPS_PARAM_STRUC_T));
     rCmdOppPsParam.u4CTwindowMs = prOppPsParam->u4CTwindowMs;
 
-#if 0
-    return wlanSendSetQueryCmd(prAdapter,
-            CMD_ID_SET_OPPPS_PARAM,
-            TRUE,
-            FALSE,
-            TRUE,
-            nicCmdEventSetCommon,
-            nicOidCmdTimeoutCommon,
-            sizeof(CMD_CUSTOM_OPPPS_PARAM_STRUC_T),
-            (PUINT_8)&rCmdOppPsParam,
-            pvSetBuffer,
-            u4SetBufferLen
-            );
-#else
     return wlanoidSendSetQueryP2PCmd(prAdapter,
             CMD_ID_SET_NOA_PARAM,
             TRUE,
@@ -1528,7 +1443,6 @@ wlanoidSetOppPsParam (
             u4SetBufferLen
             );
 
-#endif
 
 }
 
@@ -1587,20 +1501,6 @@ wlanoidSetUApsdParam (
     rCmdUapsdParam.ucMaxSpLen = prUapsdParam->ucMaxSpLen;
     prPmProfSetupInfo->ucUapsdSp  = prUapsdParam->ucMaxSpLen;
 
-#if 0
-    return wlanSendSetQueryCmd(prAdapter,
-            CMD_ID_SET_UAPSD_PARAM,
-            TRUE,
-            FALSE,
-            TRUE,
-            nicCmdEventSetCommon,
-            nicOidCmdTimeoutCommon,
-            sizeof(CMD_CUSTOM_OPPPS_PARAM_STRUC_T),
-            (PUINT_8)&rCmdUapsdParam,
-            pvSetBuffer,
-            u4SetBufferLen
-            );
- #else
     return wlanoidSendSetQueryP2PCmd(prAdapter,
             CMD_ID_SET_UAPSD_PARAM,
             TRUE,
@@ -1614,7 +1514,6 @@ wlanoidSetUApsdParam (
             u4SetBufferLen
             );
 
-#endif
 }
 
 
@@ -1647,15 +1546,8 @@ wlanoidQueryP2pOpChannel (
             break;
         }
 
-#if 0
-        if (!p2pFuncGetCurrentOpChnl(prAdapter, pucOpChnl)) {
-            rResult = WLAN_STATUS_INVALID_DATA;
-            break;
-        }
-#else
         rResult = WLAN_STATUS_INVALID_DATA;
         break;
-#endif
 
         *pu4QueryInfoLen = sizeof(UINT_8);
         rResult = WLAN_STATUS_SUCCESS;

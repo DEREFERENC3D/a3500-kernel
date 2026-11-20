@@ -1557,10 +1557,6 @@ wlanbowCmdEventLinkDisconnected(
 #endif
 
     /*Indicate BoW event to PAL*/
-#if 0
-    kalIndicateBOWEvent(prAdapter->prGlueInfo, prEvent);
-    kalMemFree(prEvent, VIR_MEM_TYPE, (sizeof(AMPC_EVENT) + sizeof(BOW_LINK_DISCONNECTED)));
-#endif
 
     // set to disconnected status
     prBowFsmInfo->prTargetStaRec = cnmGetStaRecByAddress(prAdapter, NETWORK_TYPE_BOW_INDEX, prBowLinkDisconnected->aucPeerAddress);
@@ -1592,17 +1588,6 @@ wlanbowCmdEventLinkDisconnected(
     }
 #endif
 
-#if 0
-    //3 <3>Stop this link; flush Tx; send deAuthentication -> abort. SAA, AAA. need to check BOW table state == Connected.
-    if (prAdapter->prGlueInfo->i4TxPendingFrameNum > 0) {
-        kalFlushPendingTxPackets(prAdapter->prGlueInfo);
-    }
-
-    /* flush pending security frames */
-    if (prAdapter->prGlueInfo->i4TxPendingSecurityFrameNum > 0) {
-        kalClearSecurityFrames(prAdapter->prGlueInfo);
-    }
-#endif
 
     /*Update BoW table*/
     bowGetBowTableEntryByPeerAddress(prAdapter, prBowLinkDisconnected->aucPeerAddress, &ucBowTableIdx);
@@ -1894,12 +1879,6 @@ bowStarting(
         DBGLOG(BOW, EVENT, ("BoW channel granted.\n"));
 #endif
 
-#if 0
-        /*Active BoW Network*/
-        SET_NET_ACTIVE(prAdapter, NETWORK_TYPE_BOW_INDEX);
-        SET_NET_PWR_STATE_ACTIVE(prAdapter, NETWORK_TYPE_BOW_INDEX);
-        nicActivateNetwork(prAdapter, NETWORK_TYPE_BOW_INDEX);
-#endif
 
     //3 <1> Update BSS_INFO_T per Network Basis
     //4 <1.1> Setup Operation Mode
@@ -2048,17 +2027,6 @@ bowStarting(
     //4 <3.3> Setup RX Filter to accept Probe Request
     // TODO: f get/set RX filter.
 
-#if 0
-    {
-        UINT_32 u4RxFilter;
-        if (halMacRxGetRxFilters(&u4RxFilter)== HAL_STATUS_SUCCESS) {
-
-                u4RxFilter &= ~BIT(RXFILTER_DROP_PROBE_REQ);
-
-            halMacRxSetRxFilters(u4RxFilter);
-        }
-    }
-#endif
     }
 
     /*Update BoW Table*/
@@ -2077,22 +2045,6 @@ bowStarting(
         cnmTimerStartTimer(prAdapter, &prBowFsmInfo->rStartingBeaconTimer, prBowFsmInfo->u2BeaconInterval);
     }
 
-#if 0
-    /*Responder: Start to scan Initiator*/
-    if (prBowFsmInfo->ucRole == BOW_RESPONDER)
-    {
-#if CFG_BOW_TEST
-        DBGLOG(BOW, EVENT, ("bowStarting responder, start scan result searching.\n"));
-#endif
-        cnmTimerStopTimer(prAdapter, &prBowFsmInfo->rChGrantedTimer);
-        bowReleaseCh(prAdapter);
-        bowResponderScan(prAdapter);
-    }
-    /*Initiator: Request channel, wait for responder*/
-    else {
-        //bowRequestCh(prAdapter);
-    }
-#endif
     return;
 }
 
@@ -2170,9 +2122,6 @@ bowValidateProbeReq(
     prBowFsmInfo = &(prAdapter->rWifiVar.rBowFsmInfo);
 
 
-#if 0//CFG_BOW_TEST
-    DBGLOG(BOW, EVENT, ("bowValidateProbeReq.\n"));
-#endif
 
     //4 <1> Parse Probe Req IE and Get IE ptr (SSID, Supported Rate IE, ...)
     prMgtHdr = (P_WLAN_MAC_MGMT_HEADER_T)prSwRfb->pvHeader;
@@ -2431,18 +2380,6 @@ bowResponderScanDone(
         {
             /*Scan again, until PAL timeout*/
             bowResponderScan(prAdapter);
-#if 0
-            wlanoidSendSetQueryBowCmd(prAdapter,
-                CMD_ID_CMD_BT_OVER_WIFI,
-                TRUE,
-                FALSE,
-                wlanbowCmdEventLinkDisconnected,
-                wlanbowCmdTimeoutHandler,
-                0,
-                NULL,
-                0
-                );
-#endif
         }
     }
 
@@ -2736,18 +2673,6 @@ bowFsmRunEventJoinComplete(
         {
             /*Retry*/
             bowResponderJoin(prAdapter, prBowFsmInfo->prTargetBssDesc);
-#if 0
-            wlanoidSendSetQueryBowCmd(prAdapter,
-                CMD_ID_CMD_BT_OVER_WIFI,
-                TRUE,
-                FALSE,
-                wlanbowCmdEventLinkDisconnected,
-                wlanbowCmdTimeoutHandler,
-                0,
-                NULL,
-                0
-                );
-#endif
 #if CFG_BOW_TEST
             DBGLOG(BOW, EVENT, ("Start bowfsmRunEventJoinComplete -- Join failed.\n"));
             printk("BoW trigger SAA REJOIN\n");
@@ -3382,15 +3307,9 @@ bowRunEventChGrant (
     /* 2. channel privilege has been approved */
     prBowFsmInfo->u4ChGrantedInterval = u4GrantInterval;
 
-#if 0
-    cnmTimerStartTimer(prAdapter,
-                &prBowFsmInfo->rChGrantedTimer,
-                prBowFsmInfo->u4ChGrantedInterval - BOW_JOIN_CH_GRANT_THRESHOLD);
-#else
     cnmTimerStartTimer(prAdapter,
                 &prBowFsmInfo->rChGrantedTimer,
                 BOW_JOIN_CH_REQUEST_INTERVAL - BOW_JOIN_CH_GRANT_THRESHOLD);
-#endif
 
     /* 3.2 set local variable to indicate join timer is ticking */
     prBowFsmInfo->fgIsInfraChannelFinished = FALSE;
@@ -3455,11 +3374,7 @@ bowRequestCh (
         prMsgChReq->ucNetTypeIndex = NETWORK_TYPE_BOW_INDEX;
         prMsgChReq->ucTokenID = ++prBowFsmInfo->ucSeqNumOfChReq;
         prMsgChReq->eReqType = CH_REQ_TYPE_JOIN;
-#if 0
-        prMsgChReq->u4MaxInterval = BOW_JOIN_CH_REQUEST_INTERVAL;
-#else
         prMsgChReq->u4MaxInterval = 1;
-#endif
         prMsgChReq->ucPrimaryChannel  = prBowFsmInfo->ucPrimaryChannel;  //prBowFsmInfo->prTargetBssDesc->ucChannelNum;
         prMsgChReq->eRfSco = CHNL_EXT_SCN; //prBowFsmInfo->prTargetBssDesc->eSco;
         prMsgChReq->eRfBand = prBowFsmInfo->eBand;  //prBowFsmInfo->prTargetBssDesc->eBand;

@@ -661,19 +661,6 @@ static struct ieee80211_rate mtk_rates[] = {
         .tx_params      = IEEE80211_HT_MCS_TX_DEFINED,      \
 }
 
-#if 0
-/*Bandwidth 20Mhz Only*/
-#define MT6620_HT_CAP                                       \
-{                                                           \
-        .ht_supported   = true,                             \
-        .cap            = IEEE80211_HT_CAP_SM_PS            \
-                        | IEEE80211_HT_CAP_GRN_FLD          \
-                        | IEEE80211_HT_CAP_SGI_20,          \
-        .ampdu_factor   = IEEE80211_HT_MAX_AMPDU_64K,       \
-        .ampdu_density  = IEEE80211_HT_MPDU_DENSITY_NONE,   \
-        .mcs            = MT6620_MCS_INFO,                  \
-}
-#else
 /*Bandwidth 20/40Mhz*/
 #define MT6620_HT_CAP                                       \
 {                                                           \
@@ -687,7 +674,6 @@ static struct ieee80211_rate mtk_rates[] = {
         .ampdu_density  = IEEE80211_HT_MPDU_DENSITY_NONE,   \
         .mcs            = MT6620_MCS_INFO,                  \
 }
-#endif
 
 static struct ieee80211_supported_band mtk_band_2ghz = {
     .band       = IEEE80211_BAND_2GHZ,
@@ -1538,14 +1524,6 @@ glRegisterP2P(
     prGlueInfo->prP2PInfo->wdev.wiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
 #endif
 
-#if 0
-    /* 2. Register WIPHY */
-    if(wiphy_register(prGlueInfo->prP2PInfo->wdev.wiphy) < 0) {
-        printk(KERN_ALERT DRV_NAME "Couldn't register wiphy device for p2p\n");
-
-        goto err_reg_wiphy;
-    }
-#endif
 
     /* 2.1 set priv as pointer to glue structure */
     *((P_GLUE_INFO_T *) wiphy_priv(prGlueInfo->prP2PInfo->wdev.wiphy)) = prGlueInfo;
@@ -1608,18 +1586,6 @@ glRegisterP2P(
     prGlueInfo->prP2PInfo->prDevHandler->features = NETIF_F_IP_CSUM;
 #endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
-#if 0
-    /* 7. net device initialize */
-    netif_carrier_off(prGlueInfo->prP2PInfo->prDevHandler);
-    netif_tx_stop_all_queues(prGlueInfo->prP2PInfo->prDevHandler);
-
-    /* 8. register for net device */
-    if (register_netdev(prGlueInfo->prP2PInfo->prDevHandler) < 0) {
-        printk(KERN_ALERT DRV_NAME "unable to register netdevice for p2p\n");
-
-        goto err_reg_netdev;
-    }
-#endif
 
     /* 8. set p2p net device register state */
     prGlueInfo->prAdapter->rP2PNetRegState = ENUM_NET_REG_STATE_UNREGISTERED;
@@ -1638,10 +1604,6 @@ glRegisterP2P(
 //    nicActivateNetwork(prAdapter, NETWORK_TYPE_P2P_INDEX);
 
     return TRUE;
-#if 0
-err_reg_netdev:
-    free_netdev(prGlueInfo->prP2PInfo->prDevHandler);
-#endif
 err_alloc_netdev:
 #if CFG_ENABLE_WIFI_DIRECT_CFG_80211
 //    wiphy_unregister(prGlueInfo->prP2PInfo->wdev.wiphy);
@@ -1682,41 +1644,11 @@ glUnregisterP2P(
 
     nicDeactivateNetwork(prGlueInfo->prAdapter, NETWORK_TYPE_P2P_INDEX);
 	}
-#if 0
-    /* Release command, mgmt and security frame belong to P2P network in
-         *   prGlueInfo->prCmdQue
-         *   prAdapter->rPendingCmdQueue
-         *   prAdapter->rTxCtrl.rTxMgmtTxingQueue
-         *  To ensure there is no pending CmdDone/TxDone handler to be executed after p2p module is removed.
-         */
 
-    /* Clear CmdQue*/
-    kalClearMgmtFramesByNetType(prGlueInfo, NETWORK_TYPE_P2P_INDEX);
-    kalClearSecurityFramesByNetType(prGlueInfo, NETWORK_TYPE_P2P_INDEX);
-    /* Clear PendingCmdQue*/
-    wlanReleasePendingCMDbyNetwork(prGlueInfo->prAdapter, NETWORK_TYPE_P2P_INDEX);
-    /* Clear PendingTxMsdu */
-    nicFreePendingTxMsduInfoByNetwork(prGlueInfo->prAdapter, NETWORK_TYPE_P2P_INDEX);
-#endif
-
-#if 0
-    /* prepare for removal */
-    if(netif_carrier_ok(prGlueInfo->prP2PInfo->prDevHandler)) {
-        netif_carrier_off(prGlueInfo->prP2PInfo->prDevHandler);
-    }
-
-    netif_tx_stop_all_queues(prGlueInfo->prP2PInfo->prDevHandler);
-
-    /* netdevice unregistration & free */
-    unregister_netdev(prGlueInfo->prP2PInfo->prDevHandler);
-#endif
     free_netdev(prGlueInfo->prP2PInfo->prDevHandler);
     prGlueInfo->prP2PInfo->prDevHandler = NULL;
 
 #if CFG_ENABLE_WIFI_DIRECT_CFG_80211
-#if 0
-    wiphy_unregister(prGlueInfo->prP2PInfo->wdev.wiphy);
-#endif
     wiphy_free(prGlueInfo->prP2PInfo->wdev.wiphy);
     prGlueInfo->prP2PInfo->wdev.wiphy = NULL;
 #endif
@@ -1761,31 +1693,6 @@ p2pStopImmediate(
     netif_tx_stop_all_queues(prGlueInfo->prP2PInfo->prDevHandler);
 
 
-#if 0
-    /* 2. switch P2P-FSM off */
-    /* 2.1 allocate for message */
-    prFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T) cnmMemAlloc(
-            prAdapter,
-            RAM_TYPE_MSG,
-            sizeof(MSG_P2P_FUNCTION_SWITCH_T));
-
-    if (!prFuncSwitch) {
-        ASSERT(0); // Can't trigger P2P FSM
-        printk(KERN_ALERT DRV_NAME "Allocate for p2p mesasage FAILED\n");
-        //return -ENOMEM;
-    }
-
-    /* 2.2 fill message */
-    prFuncSwitch->rMsgHdr.eMsgId = MID_MNY_P2P_FUN_SWITCH;
-    prFuncSwitch->fgIsFuncOn = FALSE;
-
-    /* 2.3 send message */
-    mboxSendMsg(prAdapter,
-            MBOX_ID_0,
-            (P_MSG_HDR_T) prFuncSwitch,
-            MSG_SEND_METHOD_UNBUF);
-
-#endif
 
     /* 3. stop queue and turn off carrier */
     prGlueInfo->prP2PInfo->eState = PARAM_MEDIA_STATE_DISCONNECTED;
@@ -1816,34 +1723,6 @@ p2pOpen(
 
     ASSERT(prDev);
 
-#if 0   // Move after device name set. (mtk_p2p_set_local_dev_info)
-    prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
-    ASSERT(prGlueInfo);
-
-    prAdapter = prGlueInfo->prAdapter;
-    ASSERT(prAdapter);
-
-    /* 1. switch P2P-FSM on */
-    /* 1.1 allocate for message */
-    prFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T) cnmMemAlloc(prAdapter,
-            RAM_TYPE_MSG,
-            sizeof(MSG_P2P_FUNCTION_SWITCH_T));
-
-    if (!prFuncSwitch) {
-        ASSERT(0); // Can't trigger P2P FSM
-        return -ENOMEM;
-    }
-
-    /* 1.2 fill message */
-    prFuncSwitch->rMsgHdr.eMsgId = MID_MNY_P2P_FUN_SWITCH;
-    prFuncSwitch->fgIsFuncOn = TRUE;
-
-    /* 1.3 send message */
-    mboxSendMsg(prAdapter,
-            MBOX_ID_0,
-            (P_MSG_HDR_T) prFuncSwitch,
-            MSG_SEND_METHOD_BUF);
-#endif
 
     /* 2. carrier on & start TX queue */
     netif_carrier_on(prDev);
@@ -1895,32 +1774,6 @@ p2pStop(
 			cfg80211_scan_done(prScanRequest, TRUE);
 		}
 	
-#if 0
-
-    /* 1. stop TX queue */
-    netif_tx_stop_all_queues(prDev);
-
-    /* 2. switch P2P-FSM off */
-    /* 2.1 allocate for message */
-    prFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T) cnmMemAlloc(prAdapter,
-            RAM_TYPE_MSG,
-            sizeof(MSG_P2P_FUNCTION_SWITCH_T));
-
-    if (!prFuncSwitch) {
-        ASSERT(0); // Can't trigger P2P FSM
-        return -ENOMEM;
-    }
-
-    /* 2.2 fill message */
-    prFuncSwitch->rMsgHdr.eMsgId = MID_MNY_P2P_FUN_SWITCH;
-    prFuncSwitch->fgIsFuncOn = FALSE;
-
-    /* 2.3 send message */
-    mboxSendMsg(prAdapter,
-            MBOX_ID_0,
-            (P_MSG_HDR_T) prFuncSwitch,
-            MSG_SEND_METHOD_BUF);
-#endif
     /* 3. stop queue and turn off carrier */
     prGlueInfo->prP2PInfo->eState = PARAM_MEDIA_STATE_DISCONNECTED;
 
@@ -1956,19 +1809,6 @@ p2pGetStats (
 
     prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 
-#if 0 // frog temp fix
-    //@FIXME
-    //prDev->stats.rx_packets = 0;
-    //prDev->stats.tx_packets = 0;
-    prDev->stats.tx_errors = 0;
-    prDev->stats.rx_errors = 0;
-    //prDev->stats.rx_bytes = 0;
-    //prDev->stats.tx_bytes = 0;
-    prDev->stats.multicast = 0;
-
-    return &prDev->stats;
-
-#else
     //prGlueInfo->prP2PInfo->rNetDevStats.rx_packets = 0;
     //prGlueInfo->prP2PInfo->rNetDevStats.tx_packets = 0;
     prGlueInfo->prP2PInfo->rNetDevStats.tx_errors  = 0;
@@ -1979,7 +1819,6 @@ p2pGetStats (
     prGlueInfo->prP2PInfo->rNetDevStats.multicast  = 0;
 
     return &prGlueInfo->prP2PInfo->rNetDevStats;
-#endif
 } /* end of p2pGetStats() */
 
 
@@ -2391,35 +2230,6 @@ mtk_p2p_wext_reconnect (
     IN OUT char *extra
     )
 {
-#if 0
-    P_ADAPTER_T prAdapter = NULL;
-    P_GLUE_INFO_T prGlueInfo = NULL;
-    P_MSG_HDR_T prMsgHdr;
-
-    ASSERT(prDev);
-
-    prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
-    ASSERT(prGlueInfo);
-
-    prAdapter = prGlueInfo->prAdapter;
-    ASSERT(prAdapter);
-
-    prMsgHdr = (P_MSG_HDR_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_HDR_T));
-    if (!prMsgHdr) {
-        ASSERT(0); // Can't trigger P2P FSM
-        return -ENOMEM;
-    }
-
-    /* 1.2 fill message */
-
-    DBGLOG(P2P, TRACE, ("mtk_p2p_wext_reconnect: P2P Reconnect\n"));
-
-    /* 1.3 send message */
-    mboxSendMsg(prAdapter,
-            MBOX_ID_0,
-            (P_MSG_HDR_T) prMsgHdr,
-            MSG_SEND_METHOD_BUF);
-#endif
     return 0;
 } /* end of mtk_p2p_wext_reconnect() */
 
@@ -2448,62 +2258,6 @@ mtk_p2p_wext_mlme_handler(
     IN OUT char *extra
     )
 {
-#if 0
-    P_ADAPTER_T prAdapter = NULL;
-    P_GLUE_INFO_T prGlueInfo = NULL;
-    struct iw_mlme *mlme = (struct iw_mlme *)extra;
-    P_MSG_P2P_CONNECTION_ABORT_T prMsgP2PConnAbt = (P_MSG_P2P_CONNECTION_ABORT_T)NULL;
-    P_BSS_INFO_T prP2pBssInfo = (P_BSS_INFO_T)NULL;
-
-    ASSERT(prDev);
-
-    prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
-    ASSERT(prGlueInfo);
-
-    prAdapter = prGlueInfo->prAdapter;
-    ASSERT(prAdapter);
-
-    prP2pBssInfo = &(prAdapter->rWifiVar.arBssInfo[NETWORK_TYPE_P2P_INDEX]);
-
-    DBGLOG(P2P, TRACE, ("mtk_p2p_wext_mlme_handler:\n"));
-
-    switch (mlme->cmd) {
-    case IW_MLME_DISASSOC:
-        prMsgP2PConnAbt = (P_MSG_HDR_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_P2P_CONNECTION_ABORT_T));
-        if (!prMsgP2PConnAbt) {
-            ASSERT(0); // Can't trigger P2P FSM
-            return -ENOMEM;
-        }
-
-        COPY_MAC_ADDR(prMsgP2PConnAbt->aucTargetID, mlme->addr.sa_data);
-
-        prMsgP2PConnAbt->u2ReasonCode = mlme->reason_code;
-
-
-        if (EQUAL_MAC_ADDR(prMsgP2PConnAbt->aucTargetID, prP2pBssInfo->aucOwnMacAddr)) {
-            DBGLOG(P2P, TRACE, ("P2P Connection Abort:\n"));
-
-            /* 1.2 fill message */
-            prMsgP2PConnAbt->rMsgHdr.eMsgId = MID_MNY_P2P_CONNECTION_ABORT;
-        }
-        else {
-            DBGLOG(P2P, TRACE, ("P2P Connection Pause:\n"));
-
-            /* 1.2 fill message */
-        }
-
-        /* 1.3 send message */
-        mboxSendMsg(prAdapter,
-            MBOX_ID_0,
-            (P_MSG_HDR_T) prMsgP2PConnAbt,
-            MSG_SEND_METHOD_BUF);
-
-        break;
-
-    default:
-        return -EOPNOTSUPP;
-    }
-#endif
     return 0;
 } /* end of mtk_p2p_wext_mlme_handler() */
 
@@ -2530,48 +2284,6 @@ mtk_p2p_wext_set_provision_complete(
     IN OUT char *extra
     )
 {
-#if 0
-    P_ADAPTER_T prAdapter = NULL;
-    P_GLUE_INFO_T prGlueInfo = NULL;
-    struct iw_point *prData= (struct iw_point *)&wrqu->data;
-    P_MSG_HDR_T prMsgHdr;
-
-    ASSERT(prDev);
-
-    prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
-    ASSERT(prGlueInfo);
-
-    prAdapter = prGlueInfo->prAdapter;
-    ASSERT(prAdapter);
-
-    switch(prData->flags) {
-    case P2P_PROVISIONING_SUCCESS:
-        prMsgHdr = (P_MSG_HDR_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_HDR_T));
-        if (!prMsgHdr) {
-            ASSERT(0); // Can't trigger P2P FSM
-            return -ENOMEM;
-        }
-
-        /* 1.2 fill message */
-
-        prGlueInfo->prP2PInfo->u4CipherPairwise = IW_AUTH_CIPHER_CCMP;
-
-        /* 1.3 send message */
-        mboxSendMsg(prAdapter,
-            MBOX_ID_0,
-            (P_MSG_HDR_T) prMsgHdr,
-            MSG_SEND_METHOD_BUF);
-
-        break;
-
-    case P2P_PROVISIONING_FAIL:
-
-        break;
-
-    default:
-        return -EOPNOTSUPP;
-    }
-#endif
 
     return 0;
 } /* end of mtk_p2p_wext_set_provision_complete() */
@@ -2600,106 +2312,6 @@ mtk_p2p_wext_start_stop_discovery(
     IN OUT char *extra
     )
 {
-#if 0
-    P_ADAPTER_T prAdapter = NULL;
-    P_GLUE_INFO_T prGlueInfo = NULL;
-    struct iw_point *prData= (struct iw_point *)&wrqu->data;
-    P_IW_P2P_REQ_DEVICE_TYPE prReqDeviceType = (P_IW_P2P_REQ_DEVICE_TYPE) extra;
-    UINT_8 au4IeBuf[MAX_IE_LENGTH];
-    P_MSG_HDR_T prMsgHdr;
-    P_MSG_P2P_DEVICE_DISCOVER_T prDiscoverMsg;
-    P_P2P_CONNECTION_SETTINGS_T prConnSettings;
-    UINT_8 aucNullAddr[] = NULL_MAC_ADDR;
-
-    ASSERT(prDev);
-
-    prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
-    ASSERT(prGlueInfo);
-
-    prAdapter = prGlueInfo->prAdapter;
-    ASSERT(prAdapter);
-
-    prConnSettings = prAdapter->rWifiVar.prP2PConnSettings;
-
-    if(prData->flags == P2P_STOP_DISCOVERY) {
-        prMsgHdr = (P_MSG_HDR_T) cnmMemAlloc(prAdapter,
-            RAM_TYPE_MSG,
-            sizeof(MSG_HDR_T));
-
-        if (!prMsgHdr) {
-            ASSERT(0); // Can't trigger P2P FSM
-            return -ENOMEM;
-        }
-
-
-        mboxSendMsg(prAdapter,
-                MBOX_ID_0,
-                (P_MSG_HDR_T) prMsgHdr,
-                MSG_SEND_METHOD_BUF);
-    }
-    else if(prData->flags == P2P_START_DISCOVERY) {
-
-        /* retrieve IE for Probe Response */
-        if(prReqDeviceType->probe_rsp_len > 0) {
-            if(prReqDeviceType->probe_rsp_len <= MAX_IE_LENGTH) {
-                if(copy_from_user(prGlueInfo->prP2PInfo->aucWSCIE[2], prReqDeviceType->probe_rsp_ie, prReqDeviceType->probe_rsp_len)) {
-                    return -EFAULT;
-                }
-                prGlueInfo->prP2PInfo->u2WSCIELen[2] = prReqDeviceType->probe_rsp_len;
-            }
-            else {
-                return -E2BIG;
-            }
-        }
-
-        /* retrieve IE for Probe Request */
-        if(prReqDeviceType->probe_req_len > 0) {
-            if(prReqDeviceType->probe_req_len <= MAX_IE_LENGTH) {
-                if(copy_from_user(prGlueInfo->prP2PInfo->aucWSCIE[1], prReqDeviceType->probe_req_ie, prReqDeviceType->probe_req_len)) {
-                    return -EFAULT;
-                }
-                prGlueInfo->prP2PInfo->u2WSCIELen[1] = prReqDeviceType->probe_req_len;
-            }
-            else {
-                return -E2BIG;
-            }
-        }
-        /* update IE for Probe Request */
-
-        if(prReqDeviceType->scan_type == P2P_LISTEN) {
-            /* update listening parameter */
-
-            /* @TODO: update prConnSettings for Probe Response IE */
-        }
-        else {
-            // indicate P2P-FSM with MID_MNY_P2P_DEVICE_DISCOVERY
-            prDiscoverMsg = (P_MSG_P2P_DEVICE_DISCOVER_T) cnmMemAlloc(prAdapter,
-                    RAM_TYPE_MSG,
-                    sizeof(MSG_P2P_DEVICE_DISCOVER_T));
-
-            if (!prDiscoverMsg) {
-                ASSERT(0); // Can't trigger P2P FSM
-                return -ENOMEM;
-            }
-
-            prDiscoverMsg->rMsgHdr.eMsgId = MID_MNY_P2P_DEVICE_DISCOVERY;
-            prDiscoverMsg->u4DevDiscoverTime = 0; // unlimited
-            prDiscoverMsg->fgIsSpecificType = TRUE;
-            prDiscoverMsg->rTargetDeviceType.u2CategoryID = *(PUINT_16)(&(prReqDeviceType->pri_device_type[0]));
-            prDiscoverMsg->rTargetDeviceType.u2SubCategoryID = *(PUINT_16)(&(prReqDeviceType->pri_device_type[6]));;
-            COPY_MAC_ADDR(prDiscoverMsg->aucTargetDeviceID, aucNullAddr);
-
-            /* @FIXME: parameter to be refined, where to pass IE buffer ? */
-            mboxSendMsg(prAdapter,
-                    MBOX_ID_0,
-                    (P_MSG_HDR_T) prDiscoverMsg,
-                    MSG_SEND_METHOD_BUF);
-        }
-    }
-    else {
-        return -EINVAL;
-    }
-#endif
 
     return 0;
 } /* end of mtk_p2p_wext_start_stop_discovery() */
@@ -2729,70 +2341,6 @@ mtk_p2p_wext_invitation_request (
     )
 {
     int i4Status = 0;
-#if 0
-    P_ADAPTER_T prAdapter = (P_ADAPTER_T)NULL;
-    P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T)NULL;
-    struct iw_point *prData = (struct iw_point*)&wrqu->data;
-    P_IW_P2P_IOCTL_INVITATION_STRUCT prIoctlInvitation = (P_IW_P2P_IOCTL_INVITATION_STRUCT)NULL;
-
-    do {
-        if ((prDev == NULL) || (extra == NULL)) {
-            ASSERT(FALSE);
-            i4Status = -EINVAL;
-            break;
-        }
-
-
-        prGlueInfo = *((P_GLUE_INFO_T *)netdev_priv(prDev));
-        prIoctlInvitation = (P_IW_P2P_IOCTL_INVITATION_STRUCT)extra;
-
-        if (prGlueInfo == NULL) {
-            i4Status = -EINVAL;
-            break;
-        }
-
-
-        prAdapter = prGlueInfo->prAdapter;
-
-        if (prAdapter == NULL) {
-            i4Status = -EINVAL;
-            break;
-        }
-
-
-        if (prIoctlInvitation->ucReinvoke == 1) {
-            // TODO: Set Group ID
-            p2pFuncSetGroupID(prAdapter, prIoctlInvitation->aucGroupID, prIoctlInvitation->aucSsid, prIoctlInvitation->u4SsidLen);
-        }
-
-        else {
-            P_MSG_P2P_INVITATION_REQUEST_T prMsgP2PInvitationReq = (P_MSG_P2P_INVITATION_REQUEST_T)NULL;
-
-            // TODO: Do Invitation.
-            prMsgP2PInvitationReq = (P_MSG_P2P_INVITATION_REQUEST_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_P2P_INVITATION_REQUEST_T));
-            if (!prMsgP2PInvitationReq) {
-                ASSERT(0); // Can't trigger P2P FSM
-                i4Status = -ENOMEM;
-                break;
-            }
-
-            /* 1.2 fill message */
-            kalMemCopy(prMsgP2PInvitationReq->aucDeviceID, prIoctlInvitation->aucDeviceID, MAC_ADDR_LEN);
-
-            DBGLOG(P2P, TRACE, ("mtk_p2p_wext_invitation_request: P2P Invitation Req\n"));
-
-            /* 1.3 send message */
-            mboxSendMsg(prAdapter,
-                    MBOX_ID_0,
-                    (P_MSG_HDR_T)prMsgP2PInvitationReq,
-                    MSG_SEND_METHOD_BUF);
-
-        }
-
-
-
-    } while (FALSE);
-#endif
 
     return i4Status;
 
@@ -2823,65 +2371,6 @@ mtk_p2p_wext_invitation_abort (
     )
 {
     int i4Status = 0;
-#if 0
-    P_ADAPTER_T prAdapter = (P_ADAPTER_T)NULL;
-    P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T)NULL;
-    struct iw_point *prData = (struct iw_point*)&wrqu->data;
-    P_IW_P2P_IOCTL_ABORT_INVITATION prIoctlInvitationAbort = (P_IW_P2P_IOCTL_ABORT_INVITATION)NULL;
-
-    UINT_8 bssid[MAC_ADDR_LEN];
-
-    do {
-        if ((prDev == NULL) || (extra == NULL)) {
-            ASSERT(FALSE);
-            i4Status = -EINVAL;
-            break;
-        }
-
-
-        prGlueInfo = *((P_GLUE_INFO_T *)netdev_priv(prDev));
-        prIoctlInvitationAbort = (P_IW_P2P_IOCTL_ABORT_INVITATION)extra;
-
-        if (prGlueInfo == NULL) {
-            i4Status = -EINVAL;
-            break;
-        }
-
-
-        prAdapter = prGlueInfo->prAdapter;
-
-        if (prAdapter == NULL) {
-            i4Status = -EINVAL;
-            break;
-        }
-        else {
-            P_MSG_P2P_INVITATION_REQUEST_T prMsgP2PInvitationAbort = (P_MSG_P2P_INVITATION_REQUEST_T)NULL;
-
-            prMsgP2PInvitationAbort = (P_MSG_P2P_INVITATION_REQUEST_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_P2P_INVITATION_REQUEST_T));
-
-            if (!prMsgP2PInvitationAbort) {
-                ASSERT(0); // Can't trigger P2P FSM
-                i4Status = -ENOMEM;
-                break;
-            }
-
-
-            /* 1.2 fill message */
-            kalMemCopy(prMsgP2PInvitationAbort->aucDeviceID, prIoctlInvitationAbort->dev_addr, MAC_ADDR_LEN);
-
-            DBGLOG(P2P, TRACE, ("mtk_p2p_wext_invitation_request: P2P Invitation Req\n"));
-
-            /* 1.3 send message */
-            mboxSendMsg(prAdapter,
-                            MBOX_ID_0,
-                            (P_MSG_HDR_T)prMsgP2PInvitationAbort,
-                            MSG_SEND_METHOD_BUF);
-
-        }
-
-
-    } while (FALSE);
-#endif
 
     return i4Status;
 
@@ -3398,28 +2887,6 @@ mtk_p2p_wext_set_local_dev_info(
     prAdapter->rWifiVar.rConnSettings.uc5GBandwidthMode =
         prDeviceCfg->ch_width ? CONFIG_BW_20_40M : CONFIG_BW_20M;
 
-#if 0
-    /* 1. switch P2P-FSM on */
-    /* 1.1 allocate for message */
-    prFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T) cnmMemAlloc(prAdapter,
-            RAM_TYPE_MSG,
-            sizeof(MSG_P2P_FUNCTION_SWITCH_T));
-
-    if (!prFuncSwitch) {
-        ASSERT(0); // Can't trigger P2P FSM
-        return -ENOMEM;
-    }
-
-    /* 1.2 fill message */
-    prFuncSwitch->rMsgHdr.eMsgId = MID_MNY_P2P_FUN_SWITCH;
-    prFuncSwitch->fgIsFuncOn = TRUE;
-
-    /* 1.3 send message */
-    mboxSendMsg(prAdapter,
-                MBOX_ID_0,
-                (P_MSG_HDR_T) prFuncSwitch,
-                MSG_SEND_METHOD_BUF);
-#endif
     return 0;
 } /* end of mtk_p2p_wext_set_local_dev_info() */
 
@@ -3707,45 +3174,8 @@ mtk_p2p_wext_connect_disconnect(
     ASSERT(prAdapter);
 
     if (prData->flags == P2P_CONNECT) {
-#if 0
-        // indicate P2P-FSM with MID_MNY_P2P_CONNECTION_REQ
-        prMsgP2PConnReq = (P_MSG_P2P_CONNECTION_REQUEST_T) cnmMemAlloc(prAdapter,
-            RAM_TYPE_MSG,
-            sizeof(MSG_P2P_CONNECTION_REQUEST_T));
-
-        if (!prMsgP2PConnReq) {
-            ASSERT(0); // Can't trigger P2P FSM
-            return -ENOMEM;
-        }
-
-
-        mboxSendMsg(prAdapter,
-                MBOX_ID_0,
-                (P_MSG_HDR_T) prMsgP2PConnReq,
-                MSG_SEND_METHOD_BUF);
-#endif
     }
     else if(prData->flags == P2P_DISCONNECT) {
-#if 0
-        // indicate P2P-FSM with MID_MNY_P2P_CONNECTION_ABORT
-        prMsgP2PConnAbt = (P_MSG_HDR_T) cnmMemAlloc(prAdapter,
-            RAM_TYPE_MSG,
-            sizeof(MSG_P2P_CONNECTION_ABORT_T));
-
-        if (!prMsgP2PConnAbt) {
-            ASSERT(0); // Can't trigger P2P FSM
-            return -ENOMEM;
-        }
-
-        COPY_MAC_ADDR(prMsgP2PConnAbt->aucTargetID, prConnectDevice->sta_addr);
-
-        prMsgP2PConnAbt->rMsgHdr.eMsgId = MID_MNY_P2P_CONNECTION_ABORT;
-
-        mboxSendMsg(prAdapter,
-                MBOX_ID_0,
-                (P_MSG_HDR_T) prMsgP2PConnAbt,
-                MSG_SEND_METHOD_BUF);
-#endif
     }
     else {
         return -EINVAL;
@@ -4038,16 +3468,6 @@ mtk_p2p_wext_set_network_address (
     ASSERT(prAdapter);
 
     //@TODO: invoke wlan_p2p functions
-#if 0
-                        rStatus = kalIoctl(prGlueInfo,
-                                (PFN_OID_HANDLER_FUNC_REQ)wlanoidSetP2pNetworkAddress,
-                                prKey,
-                                prKey->u4Length,
-                                FALSE,
-                                FALSE,
-                                TRUE,
-                                &u4BufLen);
-#endif
 
     return 0;
 
@@ -4073,16 +3493,6 @@ mtk_p2p_wext_set_ps_profile (
     ASSERT(prAdapter);
 
     //@TODO: invoke wlan_p2p functions
-#if 0
-                        rStatus = kalIoctl(prGlueInfo,
-                                (PFN_OID_HANDLER_FUNC_REQ)wlanoidSetP2pPowerSaveProfile,
-                                prKey,
-                                prKey->u4Length,
-                                FALSE,
-                                FALSE,
-                                TRUE,
-                                &u4BufLen);
-#endif
 
     return 0;
 
@@ -4108,16 +3518,6 @@ mtk_p2p_wext_set_pm_param (
     ASSERT(prAdapter);
 
     //@TODO: invoke wlan_p2p functions
-#if 0
-                        rStatus = kalIoctl(prGlueInfo,
-                                (PFN_OID_HANDLER_FUNC_REQ)wlanoidSetP2pPowerSaveProfile,
-                                prKey,
-                                prKey->u4Length,
-                                FALSE,
-                                FALSE,
-                                TRUE,
-                                &u4BufLen);
-#endif
 
     return 0;
 
@@ -4604,13 +4004,8 @@ mtk_p2p_wext_get_struct (
             prP2PReq->outBufferLength = NumOfChannel;
 
             for (i=0; i<NumOfChannel; i++) {
-#if 0
-                // 20120208 frog: modify to avoid clockwork warning.
-                prP2PReq->aucBuffer[i] = aucChannelList[i].ucChannelNum;
-#else
                 *pucChnlList = aucChannelList[i].ucChannelNum;
                 pucChnlList++;
-#endif
             }
             if(copy_to_user(wrqu->data.pointer,
                         &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
@@ -5420,9 +4815,6 @@ mtk_p2p_wext_set_txpow (
 {
     P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T)NULL;
     P_ADAPTER_T prAdapter = (P_ADAPTER_T)NULL;
-#if 0
-    P_MSG_P2P_FUNCTION_SWITCH_T prMsgFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T)NULL;
-#endif
     int i4Ret = 0;
 
     ASSERT(prDev);
@@ -5444,31 +4836,6 @@ mtk_p2p_wext_set_txpow (
 
 
         prAdapter = prGlueInfo->prAdapter;
-#if 0
-        prMsgFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T)cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_P2P_FUNCTION_SWITCH_T));
-        if (!prMsgFuncSwitch) {
-            ASSERT(0);
-            return -ENOMEM;
-        }
-
-        prMsgFuncSwitch->rMsgHdr.eMsgId = MID_MNY_P2P_FUN_SWITCH;
-
-        if (prTxPow->disabled) {
-            /* Dissolve. */
-            prMsgFuncSwitch->fgIsFuncOn = FALSE;
-        }
-        else {
-
-            /* Re-enable function. */
-            prMsgFuncSwitch->fgIsFuncOn = TRUE;
-        }
-
-        /* 1.3 send message */
-        mboxSendMsg(prAdapter,
-            MBOX_ID_0,
-            (P_MSG_HDR_T) prMsgFuncSwitch,
-            MSG_SEND_METHOD_BUF);
-#endif
 
     } while (FALSE);
 

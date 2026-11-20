@@ -1092,20 +1092,6 @@ mtk_p2p_cfg80211_add_set_beacon (
         /* Copy NO SSID. */
         prP2pStartAPMsg->ucHiddenSsidType = ENUM_HIDDEN_SSID_NONE;
 
-#if 0
-        if (info->head_len > OFFSET_OF(WLAN_BEACON_FRAME_T, aucInfoElem)) {
-            P_WLAN_BEACON_FRAME_T prWlanBcnFrame = info->head;
-
-            prSsidIE = (P_IE_HDR_T)p2pFuncGetSpecIE(prGlueInfo->prAdapter,
-                                    (PUINT_8)prWlanBcnFrame->aucInfoElem,
-                                    (info->head_len - OFFSET_OF(WLAN_BEACON_FRAME_T, aucInfoElem)),
-                                    ELEM_ID_SSID,
-                                    NULL);
-
-            kalMemCopy(prP2pStartAPMsg->aucSsid, SSID_IE(prSsidIE)->aucSSID, IE_LEN(prSsidIE));
-
-        }
-#endif
 
         mboxSendMsg(prGlueInfo->prAdapter,
                             MBOX_ID_0,
@@ -1505,20 +1491,7 @@ mtk_p2p_cfg80211_change_bss (
 
 
 
-#if 0
-    // not implemented yet
-    p2pFuncChangeBssParam(prGlueInfo->prAdapter,
-                        prBssInfo->fgIsProtection,
-                        prBssInfo->fgIsShortPreambleAllowed,
-                        prBssInfo->fgUseShortSlotTime,
-                        // Basic rates
-                        // basic rates len
-                        // ap isolate
-                        // ht opmode.
-                        );
-#else
     i4Rslt = 0;
-#endif
 
     return i4Rslt;
 } /* mtk_p2p_cfg80211_change_bss */
@@ -1862,9 +1835,6 @@ mtk_p2p_cfg80211_mgmt_frame_register (
     IN bool reg
     )
 {
-#if 0
-    P_MSG_P2P_MGMT_FRAME_REGISTER_T prMgmtFrameRegister = (P_MSG_P2P_MGMT_FRAME_REGISTER_T)NULL;
-#endif
     P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T)NULL;
 
     do {
@@ -1924,29 +1894,6 @@ mtk_p2p_cfg80211_mgmt_frame_register (
         }
 
 
-#if 0
-
-
-        prMgmtFrameRegister = (P_MSG_P2P_MGMT_FRAME_REGISTER_T)cnmMemAlloc(prGlueInfo->prAdapter, 
-                                                                    RAM_TYPE_MSG, 
-                                                                    sizeof(MSG_P2P_MGMT_FRAME_REGISTER_T));
-
-        if (prMgmtFrameRegister == NULL) {
-            ASSERT(FALSE);
-            break;
-        }
-
-        prMgmtFrameRegister->rMsgHdr.eMsgId = MID_MNY_P2P_MGMT_FRAME_REGISTER;
-
-        prMgmtFrameRegister->u2FrameType = frame_type;
-        prMgmtFrameRegister->fgIsRegister = reg;
-
-        mboxSendMsg(prGlueInfo->prAdapter,
-                                    MBOX_ID_0,
-                                    (P_MSG_HDR_T)prMgmtFrameRegister,
-                                    MSG_SEND_METHOD_BUF);
-
-#endif
 
     } while (FALSE);
 
@@ -2420,26 +2367,6 @@ mtk_p2p_cfg80211_testmode_wfd_update_cmd(
                         MBOX_ID_0,
                         (P_MSG_HDR_T)prMsgWfdCfgUpdate,
                         MSG_SEND_METHOD_BUF);
-#if 0 // Test Only
-//    prWfdCfgSettings->ucWfdEnable = 1;
-//    prWfdCfgSettings->u4WfdFlag |= WFD_FLAGS_DEV_INFO_VALID;
-    prWfdCfgSettings->u4WfdFlag |= WFD_FLAGS_DEV_INFO_VALID;
-    prWfdCfgSettings->u2WfdDevInfo = 123;
-    prWfdCfgSettings->u2WfdControlPort = 456;
-    prWfdCfgSettings->u2WfdMaximumTp = 789;
-
-
-    prWfdCfgSettings->u4WfdFlag |= WFD_FLAGS_SINK_INFO_VALID;
-    prWfdCfgSettings->ucWfdCoupleSinkStatus = 0xAB;
-    {
-        UINT_8 aucTestAddr[MAC_ADDR_LEN] = {0x77, 0x66, 0x55, 0x44, 0x33, 0x22};
-        COPY_MAC_ADDR(prWfdCfgSettings->aucWfdCoupleSinkAddress, aucTestAddr);
-    }
-
-    prWfdCfgSettings->u4WfdFlag |= WFD_FLAGS_EXT_CAPABILITY_VALID;
-    prWfdCfgSettings->u2WfdExtendCap = 0xCDE;
-
-#endif
 
     return status;
 

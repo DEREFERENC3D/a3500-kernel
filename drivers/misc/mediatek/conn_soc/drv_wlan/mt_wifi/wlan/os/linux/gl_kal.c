@@ -384,84 +384,6 @@ kalFirmwareImageUnmapping (
 
 #endif
 
-#if 0
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This routine is used to load firmware image
-*
-* \param pvGlueInfo     Pointer of GLUE Data Structure
-* \param ppvMapFileBuf  Pointer of pointer to memory-mapped firmware image
-* \param pu4FileLength  File length and memory mapped length as well
-
-* \retval Map File Handle, used for unammping
-*/
-/*----------------------------------------------------------------------------*/
-
-PVOID
-kalFirmwareImageMapping (
-    IN P_GLUE_INFO_T    prGlueInfo,
-    OUT PPVOID          ppvMapFileBuf,
-    OUT PUINT_32        pu4FileLength
-    )
-{
-    INT_32 i4Ret = 0;
-
-    DEBUGFUNC("kalFirmwareImageMapping");
-
-    ASSERT(prGlueInfo);
-    ASSERT(ppvMapFileBuf);
-    ASSERT(pu4FileLength);
-
-    do {
-        GL_HIF_INFO_T *prHifInfo = &prGlueInfo->rHifInfo;
-        prGlueInfo->prFw = NULL;
-
-        /* <1> Open firmware */
-        i4Ret = request_firmware(&prGlueInfo->prFw, CFG_FW_FILENAME, prHifInfo->Dev);
-
-        if (i4Ret) {
-            printk (KERN_INFO DRV_NAME"fw %s:request failed %d\n", CFG_FW_FILENAME, i4Ret);
-            break;
-        } else {
-            *pu4FileLength = prGlueInfo->prFw->size;
-            *ppvMapFileBuf = prGlueInfo->prFw->data;
-            return prGlueInfo->prFw->data;
-        }
-
-    } while (FALSE);
-
-    return NULL;
-}
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This routine is used to unload firmware image mapped memory
-*
-* \param pvGlueInfo     Pointer of GLUE Data Structure
-* \param pvFwHandle     Pointer to mapping handle
-* \param pvMapFileBuf   Pointer to memory-mapped firmware image
-*
-* \retval none
-*/
-/*----------------------------------------------------------------------------*/
-
-VOID
-kalFirmwareImageUnmapping (
-    IN P_GLUE_INFO_T    prGlueInfo,
-    IN PVOID            prFwHandle,
-    IN PVOID            pvMapFileBuf
-    )
-{
-    DEBUGFUNC("kalFirmwareImageUnmapping");
-
-    ASSERT(prGlueInfo);
-    ASSERT(pvMapFileBuf);
-
-    release_firmware(prGlueInfo->prFw);
-
-}
-#endif
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -845,11 +767,6 @@ kalDevLoopbkAuto(
     /* Simulate OS to send the packet */
     wlanHardStartXmit(MsduInfo, MsduInfo->dev);
 
-#if 0
-    PktLen += 4;
-    if (PktLen >= 1600)
-        PktLen = 16;
-#endif
 
     /* Note: in FPGA, clock is not accuracy so 3000 here, not 10000 */
 //    HifInfo->HifTmrLoopbkFn.expires = jiffies + MSEC_TO_SYSTIME(1000);
@@ -881,17 +798,6 @@ kalDevLoopbkThread(
         while (TRUE)
         {
 
-#if 0 // GDMA clock on/off test
-{
-    static int test = 0;
-    if (++test == 5)
-    {
-        *(volatile unsigned int *)0xF0000054 |= 4;
-        printk("disable GDMA clock...\n");
-        testgdmaclock = 1;
-    }
-}
-#endif
 
 //            if ((HifInfo->HifLoopbkFlg & 0x01) == 0)
             if (GlueInfo->i4TxPendingFrameNum < 64)
@@ -1284,13 +1190,6 @@ kalIndicateStatusAndComplete (
                 }
             break;
 
-    #if 0
-    case WLAN_STATUS_MSDU_OK:
-        if (netif_running(prGlueInfo->prDevHandler)) {
-            netif_wake_queue(prGlueInfo->prDevHandler);
-        }
-        break;
-    #endif
 
     case WLAN_STATUS_MEDIA_SPECIFIC_INDICATION:
         if (pStatus) {
@@ -1939,17 +1838,6 @@ kalIoctl (IN P_GLUE_INFO_T    prGlueInfo,
             ret = prIoReq->rStatus;
         }
     }
-    #if 0
-        else {
-        /* Case 2: timeout */
-        /* clear pending OID's cmd in CMD queue */
-        if (fgCmd) {
-            prGlueInfo->u4TimeoutFlag = 1;
-            wlanReleasePendingOid(prGlueInfo->prAdapter, 0);
-        }
-        ret = WLAN_STATUS_FAILURE;
-    }
-    #endif
 
     up(&prGlueInfo->ioctl_sem);
     up(&g_halt_sem);
@@ -2303,12 +2191,6 @@ int tx_thread(void *data)
         }
 
         /* transfer ioctl to OID request */
-        #if 0
-        if (prGlueInfo->u4Flag & GLUE_FLAG_HALT) {
-            printk(KERN_INFO DRV_NAME"<2>tx_thread should stop now...\n");
-            break;
-        }
-        #endif
 
         do {
             if (test_and_clear_bit(GLUE_FLAG_OID_BIT, &prGlueInfo->u4Flag)) {
@@ -2360,12 +2242,6 @@ int tx_thread(void *data)
          * indicates the following requests occur
          *
          */
-        #if 0
-        if (prGlueInfo->u4Flag & GLUE_FLAG_HALT) {
-            printk(KERN_INFO DRV_NAME"<3>tx_thread should stop now...\n");
-            break;
-        }
-        #endif
 
         if (test_and_clear_bit(GLUE_FLAG_TXREQ_BIT, &prGlueInfo->u4Flag))
         {
@@ -2445,11 +2321,6 @@ int tx_thread(void *data)
     }
 
 
-    #if 0
-    if (fgNeedHwAccess == TRUE) {
-        wlanReleasePowerControl(prGlueInfo->prAdapter);
-    }
-    #endif
 
     /* exit while loop, tx thread is closed so we flush all pending packets */
     /* flush the pending TX packets */

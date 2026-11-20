@@ -583,28 +583,6 @@ secFsmSteps (
         prSecInfo->eCurrentState = eNextState;
 
         fgIsTransition = (BOOLEAN)FALSE;
-#if 0
-        /* Do tasks of the State that we just entered */
-        switch (prSecInfo->eCurrentState) {
-        case SEC_STATE_INIT:
-        break;
-        case SEC_STATE_INITIATOR_PORT_BLOCKED:
-        break;
-        case SEC_STATE_RESPONDER_PORT_BLOCKED:
-        break;
-        case SEC_STATE_CHECK_OK:
-        break;
-        case SEC_STATE_SEND_EAPOL:
-        break;
-        case SEC_STATE_SEND_DEAUTH:
-        break;
-        case SEC_STATE_COUNTERMEASURE:
-        break;
-        default:
-            ASSERT(0); /* Make sure we have handle all STATEs */
-        break;
-        }
-#endif
     }
     while (fgIsTransition);
 

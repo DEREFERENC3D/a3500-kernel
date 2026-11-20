@@ -938,14 +938,6 @@ p2pFsmRunEventWfdSettingUpdate(
 #endif
 
 
-#if 0
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#endif
 
 //3 /* --------------- WFA P2P DEFAULT PARAMETERS --------------- */
 #define P2P_WILDCARD_SSID                           "DIRECT-"
@@ -1548,17 +1540,9 @@ struct _P2P_CONNECTION_SETTINGS_T {
 #endif
 
 
-#if 0
-    UINT_8 ucRfChannelListCount;
-#if P2P_MAX_SUPPORTED_CHANNEL_LIST_COUNT
-    UINT_8            aucChannelList[P2P_MAX_SUPPORTED_CHANNEL_LIST_COUNT];      /* Channel Numbering depends on 802.11mb Annex J. */
-
-#endif
-#else
     UINT_8 ucRfChannelListSize;
 #if P2P_MAX_SUPPORTED_CHANNEL_LIST_SIZE
     UINT_8 aucChannelEntriesField[P2P_MAX_SUPPORTED_CHANNEL_LIST_SIZE];
-#endif
 #endif
 
     /* Go Intent */
@@ -1625,12 +1609,6 @@ struct _P2P_CONNECTION_SETTINGS_T {
     UINT_8 aucIndicateDevAddr[MAC_ADDR_LEN];
 #endif
 
-#if 0
-    UINT_8 ucTargetRfChannelListCount;
-#if P2P_MAX_SUPPORTED_CHANNEL_LIST_COUNT
-    UINT_8            aucTargetChannelList[P2P_MAX_SUPPORTED_CHANNEL_LIST_COUNT];      /* Channel Numbering depends on 802.11mb Annex J. */
-#endif
-#endif
 
 };
 
@@ -1799,23 +1777,11 @@ struct _P2P_SPECIFIC_BSS_INFO_T {
     UINT_16 u2AvailabilityInterval;
 
 
-#if 0 //LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-    UINT_16                 u2IELenForBCN;
-    UINT_8                  aucBeaconIECache[P2P_MAXIMUM_ATTRIBUTES_CACHE_SIZE + WPS_MAXIMUM_ATTRIBUTES_CACHE_SIZE];
-
-//    UINT_16                 u2IELenForProbeRsp;
-//    UINT_8                  aucProbeRspIECache[P2P_MAXIMUM_ATTRIBUTES_CACHE_SIZE + WPS_MAXIMUM_ATTRIBUTES_CACHE_SIZE];
-
-    UINT_16                 u2IELenForAssocRsp;
-    UINT_8                  aucAssocRspIECache[P2P_MAXIMUM_ATTRIBUTES_CACHE_SIZE + WPS_MAXIMUM_ATTRIBUTES_CACHE_SIZE];
-    
-#else
     UINT_16                 u2AttributeLen;
     UINT_8                  aucAttributesCache[P2P_MAXIMUM_ATTRIBUTES_CACHE_SIZE];
 
     UINT_16                 u2WscAttributeLen;
     UINT_8                  aucWscAttributesCache[WPS_MAXIMUM_ATTRIBUTES_CACHE_SIZE];
-#endif
     UINT_8 aucGroupID[MAC_ADDR_LEN];
     UINT_16 u2GroupSsidLen;
     UINT_8 aucGroupSsid[ELEM_MAX_LEN_SSID];
@@ -2704,13 +2670,6 @@ p2pFsmRunEventRxGroupNegotiationCfmFrame(
     );
 
 
-#if 0 // frog
-BOOLEAN
-scanMatchFilterOfP2P (
-    IN P_SW_RFB_T prSWRfb,
-    IN PP_BSS_DESC_T pprBssDesc
-    );
-#endif // frog
 
 VOID
 p2pProcessEvent_UpdateNOAParam (
