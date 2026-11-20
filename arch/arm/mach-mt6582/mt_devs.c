@@ -1388,31 +1388,6 @@ static struct platform_device mt_isp_dev = {
 	}
 };
 
-#if 0
-/*=======================================================================*/
-/* MT6575 EIS                                                            */
-/*=======================================================================*/
-static struct resource mt_resource_eis[] = {
-    [0] = { // EIS configuration
-        .start = EIS_BASE,
-        .end   = EIS_BASE + 0x2C,
-        .flags = IORESOURCE_MEM,
-    }
-};
-static u64 mt_eis_dmamask = ~(u32) 0;
-//
-static struct platform_device mt_eis_dev = {
-	.name		   = "camera-eis",
-	.id		       = 0,
-	.num_resources = ARRAY_SIZE(mt_resource_eis),
-	.resource	   = mt_resource_eis,
-	.dev           = {
-		.dma_mask  = &mt_eis_dmamask,
-		.coherent_dma_mask = 0xffffffffUL
-	}
-};
-
-#endif
 //
 /*=======================================================================*/
 /* Image sensor                                                        */
@@ -1821,14 +1796,6 @@ if (retval != 0) {
 #endif
 
 
-#if 0 //defined(CONFIG_MDP_MT6575)
-    //printk("[MDP]platform_device_register\n\r");
-    retval = platform_device_register(&mt6575_MDP_dev);
-    if(retval != 0){
-        return retval;
-    }
-#endif
-
 #if defined(MTK_SENSOR_SUPPORT)
 
 	retval = platform_device_register(&hwmon_sensor);
@@ -2025,13 +1992,6 @@ retval = platform_device_register(&dummychar_device);
 //=======================================================================
 #if 1 //defined(CONFIG_ISP_MT6582)
     retval = platform_device_register(&mt_isp_dev);
-    if (retval != 0){
-        return retval;
-    }
-#endif
-
-#if 0
-    retval = platform_device_register(&mt_eis_dev);
     if (retval != 0){
         return retval;
     }

@@ -104,137 +104,6 @@ static unsigned int mt_eint_get_mask(unsigned int eint_num)
     return st;
 }
 
-#if 0
-void mt_eint_mask_all(void)
-{
-    unsigned int base;
-    unsigned int val = 0xFFFFFFFF, ap_cnt = (EINT_MAX_CHANNEL / 32), i;
-    if (EINT_MAX_CHANNEL % 32)
-        ap_cnt++;
-    dbgmsg("[EINT] cnt:%d\n", ap_cnt);
-
-    base = EINT_MASK_SET_BASE;
-    for (i = 0; i < ap_cnt; i++) {
-        writel(val, IOMEM(base + (i * 4)));
-        dbgmsg("[EINT] mask addr:%x = %x\n", EINT_MASK_BASE + (i * 4),
-               readl(IOMEM(EINT_MASK_BASE + (i * 4))));
-    }
-}
-
-/*
- * mt_eint_unmask_all: Mask the specified EINT number.
- */
-void mt_eint_unmask_all(void)
-{
-    unsigned int base;
-    unsigned int val = 0xFFFFFFFF, ap_cnt = (EINT_MAX_CHANNEL / 32), i;
-    if (EINT_MAX_CHANNEL % 32)
-        ap_cnt++;
-    dbgmsg("[EINT] cnt:%d\n", ap_cnt);
-
-    base = EINT_MASK_CLR_BASE;
-    for (i = 0; i < ap_cnt; i++) {
-        writel(val, IOMEM(base + (i * 4)));
-        dbgmsg("[EINT] unmask addr:%x = %x\n", EINT_MASK_BASE + (i * 4),
-               readl(IOMEM(EINT_MASK_BASE + (i * 4))));
-    }
-}
-
-/*
- * mt_eint_get_soft: To get the eint mask
- * @eint_num: the EINT number to get
- */
-unsigned int mt_eint_get_soft(unsigned int eint_num)
-{
-    unsigned int base;
-    unsigned int st;
-
-    if (eint_num < EINT_AP_MAXNUMBER) {
-        base = (eint_num / 32) * 4 + EINT_SOFT_BASE;
-    } else {
-            dbgmsg("Error in %s [EINT] num:%d is larger than EINT_AP_MAXNUMBER\n", __func__, eint_num);
-        return 0;
-    }
-    st = readl(IOMEM(base));
-
-    return st;
-}
-#endif
-
-#if 0
-/*
- * mt_eint_emu_set: Trigger the specified EINT number.
- * @eint_num: EINT number to set
- */
-void mt_eint_emu_set(unsigned int eint_num)
-{
-        unsigned int base = 0;
-        unsigned int bit = 1 << (eint_num % 32);
-    unsigned int value = 0;
-
-        if (eint_num < EINT_AP_MAXNUMBER) {
-                base = (eint_num / 32) * 4 + EINT_EMUL_BASE;
-        } else {
-            dbgmsg("Error in %s [EINT] num:%d is larger than EINT_AP_MAXNUMBER\n", __func__, eint_num);
-        return;
-        }
-    value = readl(IOMEM(base));
-    value = bit | value;
-        writel(value, IOMEM(base));
-    value = readl(IOMEM(base));
-
-        dbgmsg("[EINT] emul set addr:%x = %x, bit=%x\n", base, value, bit);
-
-
-}
-
-/*
- * mt_eint_emu_clr: Trigger the specified EINT number.
- * @eint_num: EINT number to clr
- */
-void mt_eint_emu_clr(unsigned int eint_num)
-{
-        unsigned int base = 0;
-        unsigned int bit = 1 << (eint_num % 32);
-    unsigned int value = 0;
-
-        if (eint_num < EINT_AP_MAXNUMBER) {
-                base = (eint_num / 32) * 4 + EINT_EMUL_BASE;
-        } else {
-            dbgmsg("Error in %s [EINT] num:%d is larger than EINT_AP_MAXNUMBER\n", __func__, eint_num);
-        return;
-        }
-    value = readl(IOMEM(base));
-    value = (~bit) & value;
-        writel(value, IOMEM(base));
-    value = readl(IOMEM(base));
-
-        dbgmsg("[EINT] emul clr addr:%x = %x, bit=%x\n", base, value, bit);
-
-}
-
-/*
- * eint_send_pulse: Trigger the specified EINT number.
- * @eint_num: EINT number to send
- */
-inline void mt_eint_send_pulse(unsigned int eint_num)
-{
-    unsigned int base_set = (eint_num / 32) * 4 + EINT_SOFT_SET_BASE;
-    unsigned int base_clr = (eint_num / 32) * 4 + EINT_SOFT_CLR_BASE;
-    unsigned int bit = 1 << (eint_num % 32);
-    if (eint_num < EINT_AP_MAXNUMBER) {
-        base_set = (eint_num / 32) * 4 + EINT_SOFT_SET_BASE;
-        base_clr = (eint_num / 32) * 4 + EINT_SOFT_CLR_BASE;
-    } else {
-            dbgmsg("Error in %s [EINT] num:%d is larger than EINT_AP_MAXNUMBER\n", __func__, eint_num);
-        return;
-    }
-
-    writel(bit, IOMEM(base_set));
-    writel(bit, IOMEM(base_clr));
-}
-#endif
-
 #if defined(EINT_TEST)
 /*
  * mt_eint_soft_set: Trigger the specified EINT number.
@@ -1044,17 +913,9 @@ static ssize_t cur_eint_soft_set_store(struct device_driver *driver, const char 
 
     num = simple_strtoul(p, &p, 10);
     if (num == 1) {
-#if 0 //defined(CONFIG_MT6582_FPGA)||defined(CONFIG_MT6589_FPGA)
-    mt_eint_emu_set(cur_eint_num);
-#else
         mt_eint_soft_set(cur_eint_num);
-#endif
     } else if (num == 0) {
-#if 0 //defined(CONFIG_MT6582_FPGA)||defined(CONFIG_MT6589_FPGA)
-    mt_eint_emu_clr(cur_eint_num);
-#else
         mt_eint_soft_clr(cur_eint_num);
-#endif
     } else {
         printk("invalid number:%d it should be 1 to trigger interrupt or 0 to clr.\n", num);
     }
@@ -1066,11 +927,7 @@ static void mt_eint_soft_isr(void)
 {
     EINT_FUNC.softisr_called[cur_eint_num] = 1;
     dbgmsg("in mt_eint_soft_isr\n");
-#if 0 //defined(CONFIG_MT6582_FPGA)||defined(CONFIG_MT6589_FPGA)
-    mt_eint_emu_clr(cur_eint_num);
-#else
     mt_eint_soft_clr(cur_eint_num);
-#endif
     return;
 }
 static ssize_t cur_eint_reg_isr_show(struct device_driver *driver, char *buf)
@@ -1394,24 +1251,6 @@ static void setup_MD_eint(void)
 #endif //MD_EINT
 }
 
-#if 0
-void mt_eint_test()
-{
-    int cur_eint_num = 200;
-    int sens = 1;
-    int pol = 1;
-    int is_en_db = 0;
-    int is_auto_umask = 0;
-    
-    mt_eint_mask(cur_eint_num);
-    mt_eint_set_polarity(cur_eint_num, pol);
-    mt_eint_set_sens(cur_eint_num, sens);
-    mt_eint_registration(cur_eint_num, EINTF_TRIGGER_HIGH, mt_eint_soft_isr, is_auto_umask);
-    mt_eint_unmask(cur_eint_num);
-    mt_eint_emu_set(cur_eint_num);
-}
-#endif
-
 /*
  * mt_eint_print_status: Print the EINT status register.
  */
@@ -1509,14 +1348,6 @@ static int __init mt_eint_init(void)
 
     return 0;
 }
-#if 0
-void mt_eint_dump_status(unsigned int eint)
-{
-   if (eint >= EINT_MAX_CHANNEL)
-       return;
-   printk("[EINT] eint:%d,mask:%x,pol:%x,deb:%x,sens:%x\n",eint,mt_eint_get_mask(eint),mt_eint_get_polarity(eint),mt_eint_get_debounce_cnt(eint),mt_eint_get_sens(eint));
-}
-#endif
 
 arch_initcall(mt_eint_init);
 
