@@ -130,9 +130,6 @@ typedef enum _ENUM_CMD_ID_T {
 #endif
 
     CMD_ID_SET_BWCS = 0xF1,
-#if CFG_SUPPORT_OSC_SETTING && defined(MT5931)
-    CMD_ID_SET_OSC = 0xf2,
-#endif
 	CMD_ID_SET_ROAMING_INFO = 0xF3,
 
 #if CFG_SUPPORT_BUILD_DATE_CODE
@@ -463,13 +460,6 @@ typedef struct _EVENT_CMD_RESULT {
 	UINT_8		ucStatus;
 	UINT_8		aucReserved[2];
 } EVENT_CMD_RESULT, *P_EVENT_CMD_RESULT;
-
-#if CFG_SUPPORT_OSC_SETTING && defined(MT5931)
-typedef struct _CMD_MCU_LP_PARAM_T {
-    UINT_16     u2OscStableTime;
-    UINT_8      ucReserved[6];
-} CMD_MCU_LP_PARAM_T, *P_CMD_MCU_LP_PARAM_T;
-#endif
 
 
 // CMD_ID_ACCESS_REG & EVENT_ID_ACCESS_REG
@@ -870,7 +860,7 @@ typedef struct _CMD_TX_PWR_T {
     INT_8       cTxPwr2G4Cck;		/* signed, in unit of 0.5dBm */
 #if defined(MT6620)
     INT_8       acReserved[3];
-#elif defined(MT5931) || defined(MT6628)
+#elif defined(MT6628)
     INT_8       cTxPwr2G4Dsss;      /* signed, in unit of 0.5dBm */
     INT_8       acReserved[2];
 #else
