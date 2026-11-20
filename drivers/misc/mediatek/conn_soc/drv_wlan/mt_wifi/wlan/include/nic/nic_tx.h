@@ -34,25 +34,7 @@
 
 /* Maximum buffer count for individual HIF TCQ */
 
-#if defined(MT6620)
-#if CFG_SLT_SUPPORT
-    /* 20101215 mtk01725 Redistributed the initial TC resources for SLT operation */
-    #define NIC_TX_BUFF_COUNT_TC0       0   // First connection: 0
-    #define NIC_TX_BUFF_COUNT_TC1       16   // First connection: 32
-    #define NIC_TX_BUFF_COUNT_TC2       0   // First connection: 0
-    #define NIC_TX_BUFF_COUNT_TC3       0   // First connection: 0
-    #define NIC_TX_BUFF_COUNT_TC4       4   // First connection: 2
-    #define NIC_TX_BUFF_COUNT_TC5       0   // First connection: 0
-#else
-    /* 20100302 mtk02468 Redistributed the initial TC resources for normal operation */
-    #define NIC_TX_BUFF_COUNT_TC0       6   // First connection: 0
-    #define NIC_TX_BUFF_COUNT_TC1       8   // First connection: 32
-    #define NIC_TX_BUFF_COUNT_TC2       8   // First connection: 0
-    #define NIC_TX_BUFF_COUNT_TC3       8   // First connection: 0
-    #define NIC_TX_BUFF_COUNT_TC4       4   // First connection: 2
-    #define NIC_TX_BUFF_COUNT_TC5       2   // First connection: 0
-#endif
-#elif defined(MT6628)
+#if defined(MT6628)
     #define NIC_TX_BUFF_COUNT_TC0       1   // First connection: 0
     #define NIC_TX_BUFF_COUNT_TC1       20  // First connection: 32
     #define NIC_TX_BUFF_COUNT_TC2       1   // First connection: 0
