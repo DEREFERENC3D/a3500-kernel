@@ -156,7 +156,6 @@ struct fm_trace_fifo_t {
     __ret;                          \
 })
 
-#if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
 #include "fm_utils.h"
 
 #define RX_BUF_SIZE 128
@@ -194,7 +193,6 @@ struct fm_link_event {
 	struct fm_flag_event *ln_event;
 	struct fm_res_ctx result; // seek/scan/read/RDS
 };
-#endif
 
 /*
  * FM data and ctrl link APIs: platform related and bus related
