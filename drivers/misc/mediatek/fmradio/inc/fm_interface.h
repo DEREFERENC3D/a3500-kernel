@@ -245,18 +245,10 @@ struct fm_lowlevel_ops {
     struct fm_rds_interface ri;
 };
 
-#if (!defined(MT6620_FM)&&!defined(MT6628_FM)&&!defined(MT6627_FM)&&!defined(MT6630_FM))
-extern fm_s32 fm_low_ops_register(struct fm_lowlevel_ops *ops);
-extern fm_s32 fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
-extern fm_s32 fm_rds_ops_register(struct fm_lowlevel_ops *ops);
-extern fm_s32 fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
-#endif
-#ifdef MT6627_FM
 extern fm_s32 MT6627fm_low_ops_register(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6627fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6627fm_rds_ops_register(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6627fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
-#endif
 
 /*
  * fm_get_channel_space - get the spcace of gived channel
