@@ -19,15 +19,6 @@
 #define CFG_AIS_SUPPORT_REJ_CNT_AVOID
 
 /*******************************************************************************
-*                    E X T E R N A L   R E F E R E N C E S
-********************************************************************************
-*/
-
-#ifndef MT6628
-#define MT6628
-#endif
-
-/*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
 */
@@ -169,20 +160,14 @@
  * Flags and Parameters for Integration
  *------------------------------------------------------------------------------
  */
-#if defined(MT6628)
-
 #define CFG_MULTI_ECOVER_SUPPORT    0
 
 #define CFG_ENABLE_CAL_LOG      1
 #define CFG_REPORT_RFBB_VERSION       1
 
-#endif
-
 #define CFG_CHIP_RESET_SUPPORT                      1
 
-#if defined(MT6628)
-    #define CFG_EMBED_FIRMWARE_BUILD_DATE_CODE  1
-#endif
+#define CFG_EMBED_FIRMWARE_BUILD_DATE_CODE  1
 
 
 // SPM issue: suspend current is higher than deep idle
@@ -399,21 +384,14 @@
 #define CFG_ENABLE_FW_DOWNLOAD_ACK              1
 #define CFG_ENABLE_FW_ENCRYPTION                1
 
-#if defined(MT6628)
-    #define CFG_ENABLE_FW_DOWNLOAD_AGGREGATION  0
-    #define CFG_ENABLE_FW_DIVIDED_DOWNLOAD      1
-#else
-    #define CFG_ENABLE_FW_DOWNLOAD_AGGREGATION  0
-    #define CFG_ENABLE_FW_DIVIDED_DOWNLOAD      0
-#endif
+#define CFG_ENABLE_FW_DOWNLOAD_AGGREGATION  0
+#define CFG_ENABLE_FW_DIVIDED_DOWNLOAD      1
 
 
 
-#if defined(MT6628)
-    #define CFG_FW_LOAD_ADDRESS                     0x00060000
-    #define CFG_OVERRIDE_FW_START_ADDRESS           0
-    #define CFG_FW_START_ADDRESS                    0x00060000
-#endif
+#define CFG_FW_LOAD_ADDRESS                     0x00060000
+#define CFG_OVERRIDE_FW_START_ADDRESS           0
+#define CFG_FW_START_ADDRESS                    0x00060000
 
 
 /*------------------------------------------------------------------------------
