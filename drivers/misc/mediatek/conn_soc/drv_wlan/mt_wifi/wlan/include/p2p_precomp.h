@@ -105,10 +105,6 @@
 
 #include "hal.h"
 
-#if defined(MT6620)
-    #include "mt6620_reg.h"
-#endif
-
 #include "rlm.h"
 #include "rlm_domain.h"
 #include "rlm_protection.h"
