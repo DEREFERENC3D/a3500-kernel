@@ -83,9 +83,7 @@
 #define BOW_PROTOCOL_ID_SECURITY_FRAME          0x0003
 
 
-#define CHIP_NAME    "MT6582"
-
-#define DRV_NAME "["CHIP_NAME"]: "
+#define DRV_NAME "[MT6582]: "
 
 /* Define if target platform is Android.
  * It should already be defined in Android kernel source
