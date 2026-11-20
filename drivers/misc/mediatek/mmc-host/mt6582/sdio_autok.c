@@ -14,14 +14,6 @@
 #define AUTOK_VERSION_NO (0x62900010)
 #define SDIO_AUTOK_ID (1)
 
-#ifdef MT6582LTE
-#undef MT6582LTE
-#endif
-
-
-
-/* Host platform defination */
-#define MT6582LTE
 
 #define AUTOK_CMD_TIMES     (20)
 #define AUTOK_RDAT_TIMES    (1)
@@ -472,10 +464,8 @@ static unsigned int autok_rdat_fbound_th = 4;
 static unsigned int autok_vcore_scan_num = AUTOK_VCORE_SCAN_NUM;
 static unsigned int freq_mhz = 200;
 
-#if defined(MT6582LTE)
 static unsigned int gfIOSS = 0;
 static unsigned int gfCoreTT = 0;
-#endif
 static unsigned int gfTinyMar = 0;
 
 static char g_tune_result_str[33];
@@ -2116,10 +2106,8 @@ typedef enum
 #define AUTOK_TRANS_BOUND_RISING    autok_trans_bound_rising
 #define AUTOK_TRANS_BOUND_FALLING   autok_trans_bound_falling
 
-#if defined(MT6582LTE)
 static int autok_trans_bound_rising = 3;   /* 6/2 */
 static int autok_trans_bound_falling = 3;  /* 6/2 */
-#endif
 
 #define autok_calc_cycle(cyc, char_s, char_e, s_num, e_num, isTotalT, isSRising)     \
     if (isTotalT)   \
@@ -4173,9 +4161,7 @@ autok_tune_rd(
     unsigned int RDlyRefCMD, RDlyRefSTG1;
     unsigned int baseCKGEN = 0;
     unsigned int max_LBoundCnt = 0, LDeMarMin;
-    #if defined(MT6582LTE)
     unsigned int TinyMar = 0;
-    #endif
     
     unsigned int m,x;
     unsigned int sel=0;
@@ -4462,7 +4448,6 @@ autok_tune_rd(
                     RealPadDelay = autok_rdata_scan[RealCKGEN].BoundReg1_E + 1 +  
                         (IntBound - autok_rdata_scan[RealCKGEN].BoundReg1_E - 1)/2;
 
-                    #if defined(MT6582LTE)
                     TinyMar = (IntBound - autok_rdata_scan[RealCKGEN].BoundReg1_E - 1);
                     
                     /* 
@@ -4501,7 +4486,6 @@ autok_tune_rd(
                             }
                         }
                     }
-                    #endif
                 }
                 /* In case of right boundary by shifting CKGEN */
                 else {
@@ -4711,7 +4695,6 @@ autok_tune_rd(
 
                     RealPadDelay = IntBound - NewMargin/2 - 1;
 
-                    #if defined(MT6582LTE)
                     TinyMar = NewMargin;
 
                     /* 
@@ -4743,7 +4726,6 @@ autok_tune_rd(
                             }
                         }
                     }
-                    #endif
                         
                 }
                 else {
@@ -5558,7 +5540,6 @@ static void autok_setup_envir(struct msdc_host *host)
 {
     freq_mhz = host->mclk/1000000;
 
-    #if defined(MT6582LTE)
     {
     unsigned int io_ring, core_ring;
     
@@ -5598,7 +5579,6 @@ static void autok_setup_envir(struct msdc_host *host)
         else
             gfCoreTT = 0;
     }
-    #endif
 
     AUTOK_PRINT("freq:%d, vcore_num:%d, rdat_th:%d\r\n", freq_mhz, 
         autok_vcore_scan_num, autok_rdat_fbound_th);
