@@ -71,24 +71,6 @@ static UINT_32 pvIoBufferUsage = 0;
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-#if defined(MT6620) && CFG_MULTI_ECOVER_SUPPORT
-typedef enum _ENUM_WMTHWVER_TYPE_T{
-    WMTHWVER_MT6620_E1 = 0x0,
-    WMTHWVER_MT6620_E2 = 0x1,
-    WMTHWVER_MT6620_E3 = 0x2,
-    WMTHWVER_MT6620_E4 = 0x3,
-    WMTHWVER_MT6620_E5 = 0x4,
-    WMTHWVER_MT6620_E6 = 0x5,
-    WMTHWVER_MT6620_MAX,
-    WMTHWVER_INVALID = 0xff
-} ENUM_WMTHWVER_TYPE_T, *P_ENUM_WMTHWVER_TYPE_T;
-
-extern ENUM_WMTHWVER_TYPE_T
-mtk_wcn_wmt_hwver_get(
-    VOID
-    );
-#endif
-
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -159,22 +141,7 @@ kalFirmwareOpen (
 
 
     /* open the fw file */
-#if defined(MT6620) & CFG_MULTI_ECOVER_SUPPORT
-    switch(mtk_wcn_wmt_hwver_get()) {
-    case WMTHWVER_MT6620_E1:
-    case WMTHWVER_MT6620_E2:
-    case WMTHWVER_MT6620_E3:
-    case WMTHWVER_MT6620_E4:
-    case WMTHWVER_MT6620_E5:
-        filp = filp_open("/etc/firmware/"CFG_FW_FILENAME, O_RDONLY, 0);
-        break;
-
-    case WMTHWVER_MT6620_E6:
-    default:
-        filp = filp_open("/etc/firmware/"CFG_FW_FILENAME"_E6", O_RDONLY, 0);
-        break;
-    }
-#elif defined(MT6628)
+#if defined(MT6628)
 //    filp = filp_open("/etc/firmware/"CFG_FW_FILENAME"_MT6628", O_RDONLY, 0);
 //    filp = filp_open("/etc/firmware/"CFG_FW_FILENAME"_MT6582", O_RDONLY, 0);
 	kalMemZero(aucFilePath, sizeof(aucFilePath));
