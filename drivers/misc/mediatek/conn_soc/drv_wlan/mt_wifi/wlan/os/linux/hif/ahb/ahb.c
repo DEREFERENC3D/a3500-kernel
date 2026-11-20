@@ -36,8 +36,6 @@
 
 #if defined(MT6620)
     #include "mt6620_reg.h"
-#elif defined(MT5931)
-    #include "mt5931_reg.h"
 #elif defined(MT6628)
     #include "mt6582_reg.h"
 #endif
