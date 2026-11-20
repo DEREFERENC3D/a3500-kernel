@@ -36,10 +36,6 @@ static struct fm_lowlevel_ops fm_low_ops;
 #ifdef MT6627_FM
 static struct fm_lowlevel_ops MT6627fm_low_ops;
 #endif
-//MTK FM Radio private advanced features
-#if 0//(!defined(MT6620_FM)&&!defined(MT6628_FM))
-static struct fm_priv priv_adv;
-#endif
 //mutex for char device ops
 static struct fm_lock *fm_ops_lock;
 //mutex for RDS parsing and read result
@@ -972,43 +968,6 @@ fm_s32 fm_tune_new(struct fm *fm, struct fm_tune_t *parm)
         fm_memset(fm->pstRDSData, 0, sizeof(rds_t));
     }
 
-#if 0//(!defined(MT6620_FM)&&!defined(MT6628_FM))
-    //HILO side adjust if need
-    if (priv_adv.priv_tbl.hl_dese) {
-        if ((ret = priv_adv.priv_tbl.hl_dese(parm->freq, NULL)) < 0) {
-            goto out;
-        }
-
-        WCN_DBG(FM_INF | MAIN, "HILO side %d\n", ret);
-    }
-
-    //Frequency avoid adjust if need
-    if (priv_adv.priv_tbl.fa_dese) {
-        if ((ret = priv_adv.priv_tbl.fa_dese(parm->freq, NULL)) < 0) {
-            goto out;
-        }
-
-        WCN_DBG(FM_INF | MAIN, "FA %d\n", ret);
-    }
-
-    //MCU clock adjust if need
-    if (priv_adv.priv_tbl.mcu_dese) {
-        if ((ret = priv_adv.priv_tbl.mcu_dese(parm->freq, NULL)) < 0) {
-            goto out;
-        }
-
-        WCN_DBG(FM_INF | MAIN, "MCU %d\n", ret);
-    }
-
-    //GPS clock adjust if need
-    if (priv_adv.priv_tbl.gps_dese) {
-        if ((ret = priv_adv.priv_tbl.gps_dese(parm->freq, NULL)) < 0) {
-            goto out;
-        }
-
-        WCN_DBG(FM_INF | MAIN, "GPS %d\n", ret);
-    }
-#endif
     fm_op_state_set(fm, FM_STA_TUNE);
     WCN_DBG(FM_ALT | MAIN, "tuning to %d\n", parm->freq);
 
@@ -1726,43 +1685,6 @@ fm_s32 fm_tune(struct fm *fm, struct fm_tune_parm *parm)
         fm_memset(fm->pstRDSData, 0, sizeof(rds_t));
     }
 
-#if 0//(!defined(MT6620_FM)&&!defined(MT6628_FM))
-    //HILO side adjust if need
-    if (priv_adv.priv_tbl.hl_dese) {
-        if ((ret = priv_adv.priv_tbl.hl_dese(parm->freq, NULL)) < 0) {
-            goto out;
-        }
-
-        WCN_DBG(FM_INF | MAIN, "HILO side %d\n", ret);
-    }
-
-    //Frequency avoid adjust if need
-    if (priv_adv.priv_tbl.fa_dese) {
-        if ((ret = priv_adv.priv_tbl.fa_dese(parm->freq, NULL)) < 0) {
-            goto out;
-        }
-
-        WCN_DBG(FM_INF | MAIN, "FA %d\n", ret);
-    }
-
-    //MCU clock adjust if need
-    if (priv_adv.priv_tbl.mcu_dese) {
-        if ((ret = priv_adv.priv_tbl.mcu_dese(parm->freq, NULL)) < 0) {
-            goto out;
-        }
-
-        WCN_DBG(FM_INF | MAIN, "MCU %d\n", ret);
-    }
-
-    //GPS clock adjust if need
-    if (priv_adv.priv_tbl.gps_dese) {
-        if ((ret = priv_adv.priv_tbl.gps_dese(parm->freq, NULL)) < 0) {
-            goto out;
-        }
-
-        WCN_DBG(FM_INF | MAIN, "GPS %d\n", ret);
-    }
-#endif
     fm_op_state_set(fm, FM_STA_TUNE);
     WCN_DBG(FM_ALT | MAIN, "tuning to %d\n", parm->freq);
 
