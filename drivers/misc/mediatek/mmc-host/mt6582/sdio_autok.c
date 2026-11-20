@@ -22,7 +22,6 @@
 
 /* Host platform defination */
 #define MT6582LTE
-//#define MT6595WIFI
 
 #define AUTOK_CMD_TIMES     (20)
 #define AUTOK_RDAT_TIMES    (1)
