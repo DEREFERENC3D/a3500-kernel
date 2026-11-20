@@ -27,10 +27,6 @@
 #undef MT6620
 #endif
 
-#ifdef MT5931
-#undef MT5931
-#endif
-
 #ifndef MT6628
 #define MT6628
 #endif
@@ -195,12 +191,6 @@
 
     #define CFG_ENABLE_CAL_LOG      0
     #define CFG_REPORT_RFBB_VERSION       0
-#elif defined(MT5931)
-
-#define CFG_MULTI_ECOVER_SUPPORT    0
-#define CFG_ENABLE_CAL_LOG      0
-#define CFG_REPORT_RFBB_VERSION       0
-
 #elif defined(MT6628)
 
 #define CFG_MULTI_ECOVER_SUPPORT    0
@@ -455,9 +445,6 @@
         #define CFG_OVERRIDE_FW_START_ADDRESS           0
         #define CFG_FW_START_ADDRESS                    0x10008001
     #endif
-#elif defined(MT5931)
-    #define CFG_FW_LOAD_ADDRESS                     0xFF900000
-    #define CFG_FW_START_ADDRESS                    0x00000000
 #elif defined(MT6628)
     #define CFG_FW_LOAD_ADDRESS                     0x00060000
     #define CFG_OVERRIDE_FW_START_ADDRESS           0
@@ -553,15 +540,9 @@
 #define CFG_SUPPORT_AAA                         1
 
 
-#if (defined(MT5931) && defined(LINUX))
-#define CFG_SUPPORT_BCM                         1
-#define CFG_SUPPORT_BCM_BWCS                    1
-#define CFG_SUPPORT_BCM_BWCS_DEBUG              1
-#else
 #define CFG_SUPPORT_BCM                         0
 #define CFG_SUPPORT_BCM_BWCS                    0
 #define CFG_SUPPORT_BCM_BWCS_DEBUG              0
-#endif
 
 #define CFG_SUPPORT_RDD_TEST_MODE       0
 
@@ -634,10 +615,6 @@
 #define CFG_SUPPORT_ANTI_PIRACY     1
 
 #define CFG_SUPPORT_OSC_SETTING     1
-
-#if defined(MT5931)
-#define CFG_SUPPORT_WHOLE_CHIP_RESET    1  /* for e3 chip only */
-#endif
 
 #define CFG_SUPPORT_P2P_RSSI_QUERY        0
 
