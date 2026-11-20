@@ -87,14 +87,6 @@ extern ENUM_WMTHWVER_TYPE_T
 mtk_wcn_wmt_hwver_get(
     VOID
     );
-#elif defined(MT5931) && CFG_MULTI_ECOVER_SUPPORT
-typedef enum _ENUM_HWVER_TYPE_T{
-    HWVER_MT5931_E1 = 0x1,
-    HWVER_MT5931_E2 = 0x2,
-    HWVER_MT5931_E3 = 0x3,
-    HWVER_MT5931_MAX,
-    HWVER_INVALID = 0xff
-} ENUM_HWVER_TYPE_T, *P_ENUM_HWVER_TYPE_T;
 #endif
 
 
@@ -180,17 +172,6 @@ kalFirmwareOpen (
     case WMTHWVER_MT6620_E6:
     default:
         filp = filp_open("/etc/firmware/"CFG_FW_FILENAME"_E6", O_RDONLY, 0);
-        break;
-    }
-#elif defined(MT5931) && CFG_MULTI_ECOVER_SUPPORT
-    switch (wlanGetEcoVersion(prGlueInfo->prAdapter)) {
-    case HWVER_MT5931_E1:
-    case HWVER_MT5931_E2:
-        filp = filp_open("/etc/firmware/"CFG_FW_FILENAME"_E2", O_RDONLY, 0);
-        break;
-    case HWVER_MT5931_E3:
-    default:
-        filp = filp_open("/etc/firmware/"CFG_FW_FILENAME, O_RDONLY, 0);
         break;
     }
 #elif defined(MT6628)
