@@ -4279,8 +4279,6 @@ nicPrintFirmwareAssertInfo(
 
 #if defined(MT6620)
     u4ChipId = 6620;
-#elif defined(MT5931)
-    u4ChipId = 5931;
 #elif defined(MT6628)
     u4ChipId = 6582;
 #endif
