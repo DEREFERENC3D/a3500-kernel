@@ -18,28 +18,16 @@
 #undef MT6582LTE
 #endif
 
-#ifdef MT6592LTE
-#undef MT6592LTE
-#endif
 
-#ifdef MT6595WIFI
-#undef MT6595WIFI
-#endif
 
 /* Host platform defination */
 #define MT6582LTE
 //#define MT6592LTE
 //#define MT6595WIFI
 
-#ifdef MT6290
 #define AUTOK_CMD_TIMES     (20)
 #define AUTOK_RDAT_TIMES    (1)
 #define AUTOK_WDAT_TIMES    (1)
-#else
-#define AUTOK_CMD_TIMES     (20)
-#define AUTOK_RDAT_TIMES    (1)
-#define AUTOK_WDAT_TIMES    (1)
-#endif
 
 #define CMD_TIMEOUT         (HZ/10 * 5)   /* 100ms x5 */
 
@@ -113,17 +101,10 @@
 
 /*Following definition is provieded by designer PVT simulation result
   The data is used to calculating the auto-K stage1 range spec*/
-#ifdef MT6290
-#define MIN_CLK_GEN_DELAY_IN_PS (12123)
-#define MAX_CLK_GEN_DELAY_IN_PS (32726)
-#define MIN_PAD_DELAY_IN_PS (3111) /*bc_RCcbest : FF/LT/HV*/
-#define MAX_PAD_DELAY_IN_PS (8618) /*wcl_RCcworst SS/LT/LV*/
-#else
 #define MIN_CLK_GEN_DELAY_IN_PS (9120)
 #define MAX_CLK_GEN_DELAY_IN_PS (24320)//(18950)
 #define MIN_PAD_DELAY_IN_PS (2400) /*bc_RCcbest : FF/LT/HV*/
 #define MAX_PAD_DELAY_IN_PS (6400)//(5000) /*wcl_RCcworst SS/LT/LV*/
-#endif
 #define SCALE_OF_CLK_GEN_2_PAD_DELAY (MIN_CLK_GEN_DELAY_IN_PS/MIN_PAD_DELAY_IN_PS)
 
 /*****************************************************************************
@@ -156,11 +137,7 @@
 
 #define MIN_DATA_SCORE (MIN_SCORE_OF_PAD_DELAY_AGAINST_TEMP_VAR - AUTOK_TUNING_INACCURACY)
 
-#ifdef MT6290
-#define AUTOK_PRINT(_fmt, args...)        printf("[AUTO_K]" _fmt, ## args)
-#else
 #define AUTOK_PRINT(_fmt, args...)        printk(KERN_ERR "[AUTO_K]" _fmt, ## args)
-#endif
 
 #ifdef AUTOK_DEBUG
 #define AUTOK_ERR()     while(1)
@@ -2859,20 +2836,12 @@ ReScanCycle:
     memset(autok_ckg_data, 0, sizeof(S_AUTOK_CKGEN_DATA)*SCALE_CKGEN_MSDC_DLY_SEL);
     memset(autok_rdata_scan, 0, sizeof(autok_rdata_scan));
     memset(&data, 0, sizeof(S_AUTOK_CMD_DLY));
-    #ifdef MT6290
-    periodCycle = FREQ_MHZ_2_PERIOD_CYCLE_IN_PS(host->sclk/1000000);
-    #else
     periodCycle = FREQ_MHZ_2_PERIOD_CYCLE_IN_PS(host->mclk/1000000);
-    #endif
     clk_gen_delay_period_cycle = MAX_SCALE_OF_CLK_GEN_IN_ONE_CYCLE(periodCycle);
     clk_gen_delay_period_cycle = THRESHOLD_VAL(clk_gen_delay_period_cycle, SCALE_CKGEN_MSDC_DLY_SEL);
     ckgen_dly_period_max = clk_gen_delay_period_cycle;
 
-    #ifdef MT6290
-    minPadCycleScore = MIN_SCORE_OF_PAD_DELAY_IN_ONE_CYCLE(periodCycle);
-    #else
     minPadCycleScore = SCALE_PAD_TUNE_CMDRDLY;
-    #endif
     
     if(minPadCycleScore >= SCALE_PAD_TUNE_CMDRDLY) {
         bTryFindPadCycle = 0;
@@ -3141,13 +3110,8 @@ ReScanCycle:
         if (fCMDIntDlyFound) {
             CMDIntDlyS = CMDIntDly;
 
-            #ifdef MT6290
-            CMDIntDlyE = CMDIntDly + 1;
-            /* For MT65x2, Just do NOT scan CMD matrix anymore */
-            #else
             CMDIntDlyE = CMDIntDly;
             max_score = 32;
-            #endif
         }
         else {
             CMDIntDlyS = 0;
@@ -3355,11 +3319,7 @@ ReScanCycle:
             }
         }
 
-        #ifdef MT6290
-        if(1) {
-        #else
         if(!fCMDIntDlyFound) {
-        #endif
 
             /* Apply CMD internal delay */
             autok_ckg_data[k].interDelaySel = sel;

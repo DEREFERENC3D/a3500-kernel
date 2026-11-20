@@ -189,21 +189,9 @@ extern fm_s32 cfg_item_match(fm_s8 *src_key, fm_s8 *src_val, fm_s8 *dst_key, fm_
 
 extern fm_s32 fm_cust_config(const fm_s8 *filepath);
 extern fm_u16 fm_cust_config_fetch(enum fm_cust_cfg_op op_code);
-#ifdef MT6628_FM
-extern fm_s32 MT6628fm_cust_config_setup(const fm_s8 *filepath);
-extern fm_u16 MT6628fm_cust_config_fetch(enum fm_cust_cfg_op op_code);
-#endif
-#ifdef MT6620_FM	
-extern fm_s32 MT6620fm_cust_config_setup(const fm_s8 *filepath);
-extern fm_u16 MT6620fm_cust_config_fetch(enum fm_cust_cfg_op op_code);
-#endif
 #ifdef MT6627_FM
 extern fm_s32 MT6627fm_cust_config_setup(const fm_s8 *filepath);
 extern fm_u16 MT6627fm_cust_config_fetch(enum fm_cust_cfg_op op_code);
-#endif
-#ifdef MT6630_FM
-extern fm_s32 MT6630fm_cust_config_setup(const fm_s8 *filepath);
-extern fm_u16 MT6630fm_cust_config_fetch(enum fm_cust_cfg_op op_code);
 #endif
 
 #endif //__FM_CONFIG_H__

@@ -55,9 +55,6 @@
 #define SENSORDB(x,...)
 #endif
 
-#if defined(MT6577)||defined(MT6589)
-static DEFINE_SPINLOCK(gc2235_drv_lock);
-#endif
 
 extern int iReadRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u8 * a_pRecvData, u16 a_sizeRecvData, u16 i2cId);
 extern int iWriteRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u16 i2cId);
@@ -154,13 +151,7 @@ static kal_uint8 GC2235_read_cmos_sensor(kal_uint8 addr)
 *************************************************************************/
 void GC2235_set_shutter(kal_uint16 iShutter)
 {
-#if defined(MT6577)||defined(MT6589)
-	spin_lock(&gc2235_drv_lock);
-#endif
 	GC2235_sensor.shutter = iShutter;
-#if defined(MT6577)||defined(MT6589)
-	spin_unlock(&gc2235_drv_lock);
-#endif
 
 	if (!iShutter) iShutter = 1; /* avoid 0 */
 	
@@ -276,24 +267,12 @@ static void GC2235_sensor_to_camera_para(void)
   for (i = 0; 0xFFFFFFFF != GC2235_sensor.eng.reg[i].Addr; i++)
   {
   	temp_data = GC2235_read_cmos_sensor(GC2235_sensor.eng.reg[i].Addr);
-#if defined(MT6577)||defined(MT6589)
-	spin_lock(&gc2235_drv_lock);
-#endif
     GC2235_sensor.eng.reg[i].Para = temp_data;
-#if defined(MT6577)||defined(MT6589)
-	spin_unlock(&gc2235_drv_lock);
-#endif
   }
   for (i = GC2235_FACTORY_START_ADDR; 0xFFFFFFFF != GC2235_sensor.eng.reg[i].Addr; i++)
   {
   	temp_data = GC2235_read_cmos_sensor(GC2235_sensor.eng.reg[i].Addr);
-#if defined(MT6577)||defined(MT6589)
-	spin_lock(&gc2235_drv_lock);
-#endif
     GC2235_sensor.eng.reg[i].Para = temp_data;
-#if defined(MT6577)||defined(MT6589)
-	spin_unlock(&gc2235_drv_lock);
-#endif
   }
 }
 
@@ -448,13 +427,7 @@ inline static kal_bool GC2235_set_sensor_item_info(MSDK_SENSOR_ITEM_INFO_STRUCT 
     case GC2235_PRE_GAIN_Gr_INDEX:
     case GC2235_PRE_GAIN_Gb_INDEX:
     case GC2235_PRE_GAIN_B_INDEX:
-#if defined(MT6577)||defined(MT6589)
-		spin_lock(&gc2235_drv_lock);
-#endif
       GC2235_sensor.eng.cct[para->ItemIdx].Para = para->ItemValue * BASEGAIN / 1000;
-#if defined(MT6577)||defined(MT6589)
-	  spin_unlock(&gc2235_drv_lock);
-#endif
       GC2235_SetGain(GC2235_sensor.gain); /* update gain */
       break;
     default:
@@ -483,13 +456,7 @@ inline static kal_bool GC2235_set_sensor_item_info(MSDK_SENSOR_ITEM_INFO_STRUCT 
         break;
       }
       //GC2235_set_isp_driving_current(temp_para);
-#if defined(MT6577)||defined(MT6589)
-      spin_lock(&gc2235_drv_lock);
-#endif
       GC2235_sensor.eng.reg[GC2235_CMMCLK_CURRENT_INDEX].Para = temp_para;
-#if defined(MT6577)||defined(MT6589)
-	  spin_unlock(&gc2235_drv_lock);
-#endif
       break;
     default:
       ASSERT(0);
@@ -779,9 +746,6 @@ UINT32 GC2235Close(void)
 UINT32 GC2235Preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 					  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {	
-#if defined(MT6577)||defined(MT6589)
-	spin_lock(&gc2235_drv_lock);	
-#endif
 	GC2235_sensor.pv_mode = KAL_TRUE;
 	
 	//GC2235_set_mirror(sensor_config_data->SensorImageMirror);
@@ -795,9 +759,6 @@ UINT32 GC2235Preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	GC2235_sensor.line_length = GC2235_PV_PERIOD_PIXEL_NUMS;
 	GC2235_sensor.frame_height = GC2235_PV_PERIOD_LINE_NUMS;
 	GC2235_sensor.pclk = GC2235_PREVIEW_CLK;
-#if defined(MT6577)||defined(MT6589)
-	spin_unlock(&gc2235_drv_lock);
-#endif
 	//GC2235_Write_Shutter(GC2235_sensor.shutter);
 	return ERROR_NONE;
 }   /*  GC2235Preview   */
@@ -821,14 +782,8 @@ UINT32 GC2235Capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 						  MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
 	kal_uint32 shutter = (kal_uint32)GC2235_sensor.shutter;
-#if defined(MT6577)||defined(MT6589)
-	spin_lock(&gc2235_drv_lock);
-#endif
 	GC2235_sensor.video_mode = KAL_FALSE;
 	GC2235_sensor.pv_mode = KAL_FALSE;
-#if defined(MT6577)||defined(MT6589)
-	spin_unlock(&gc2235_drv_lock);
-#endif
 	return ERROR_NONE;
 }   /* GC2235_Capture() */
 

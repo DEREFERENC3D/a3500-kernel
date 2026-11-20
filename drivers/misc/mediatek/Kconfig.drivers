@@ -150,14 +150,6 @@ config MTK_FB_SUPPORT_ASSERTION_LAYER # FB_MT6516_SUPPORT_ASSERTION_LAYER
           If you want to enable AEE assertion layer support, say Y here.
           If unsure, say N.
 
-# TODO check what's MT6516_EVB_BOARD
-config MTK_FB_EVB_USE_HVGA_LCM # FB_MT6516_EVB_USE_HVGA_LCM
-        bool "Use MagnaChip TA7601 HVGA LCM on EVB"
-        depends on FB_MT6516 && MT6516_EVB_BOARD
-        default n
-        ---help---
-          Use MagnaChip TA7601 HVGA LCM on EVB
-
 menuconfig GPS
         tristate "GPS drivers"
         default y
@@ -335,28 +327,8 @@ config MTK_MTD_NAND_INTERRUPT_SCHEME # MTD_NAND_MT6516_INTERRUPT_SCHEME MTD_NAND
 
 # Power Related
 if POWER_SUPPLY
-config MT6326_PMIC # PMIC_MT6326
-        tristate "MediaTek PMIC Driver"
-        depends on ARCH_MT6516
-        default y
-
 config MTK_SMART_BATTERY # 
         tristate "MediaTek Smart Battery Driver"
-        default y
-
-config MTK_DUMMY_BATTERY # DUMMY_BATTERY_MT6516
-        tristate "MediaTek Dummy Battery Driver"
-        depends on ARCH_MT6516
-        default n
-
-config MTK_PMU # PMU_MT6573
-        tristate "MediaTek Power Management Unit Driver"
-        depends on ARCH_MT6573
-        default y
-
-config MTK_FGADC # FGADC_MT6573
-        tristate "MediaTek Fuel Gauge Driver"
-        depends on ARCH_MT6573
         default y
 
 config MTK_PMIC # 
@@ -445,60 +417,6 @@ config MTK_WD_KICKER # WD_KICKER
         Watch dog kicker is a module in the kernel for kicking the watch dog
 
 # Wireless
-menuconfig MT592X
-        tristate "MediaTek MT592x driver support"
-	depends on MTK_COMBO_WIFI=n
-        select WIRELESS_EXT
-        select WEXT_PRIV
-
-config MT5921
-        bool "MediaTek MT5921 WLAN card"
-        depends on MT592X
-
-config MT5922
-        bool "MediaTek MT5922 WLAN card"
-        depends on MT592X
-
-config MT592X_DEBUG
-        bool "MediaTek MT592x debug support"
-        depends on MT592X
-
-config MT592X_PROC
-        bool "MediaTek MT592x proc support"
-        depends on MT592X
-
-config MT592X_IBSS
-        bool "MediaTek MT592x IBSS support"
-        depends on MT592X
-
-config MT592X_SW_ENC
-        bool "MediaTek MT592x software encrypt support"
-        depends on MT592X
-
-config MT592X_WPS
-        bool "MediaTek MT592x WPS support"
-        depends on MT592X
-
-config MT592X_EEPROM
-        bool "MediaTek MT592x EEPROM support"
-        depends on MT592X
-
-config MT592X_WAPI
-        bool "MediaTek MT592x WAPI support"
-        depends on MT592X
-
-config MT592X_PTA
-        bool "MediaTek MT592x PTA support"
-        depends on MT592X
-
-config MT592X_SDIO
-        bool "MediaTek MT592x SDIO support"
-        depends on MT592X && MMC
-
-config MT592X_SDIO_CLNT
-        tristate "MediaTek MT592X SDIO CLNT support"
-        depends on MMC
-
 config USB_MTK_ACM_TEMP
 	tristate "MediaTek USB ACM Temp support"
 	default y

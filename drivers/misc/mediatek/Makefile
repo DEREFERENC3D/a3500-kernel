@@ -96,10 +96,7 @@ obj-y	+= gpu/
 ifneq ($(CONFIG_MTK_COMBO),)
 subdir-ccflags-y += -DMTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
 subdir-ccflags-y += -DMTK_WCN_REMOVE_KERNEL_MODULE
-ifneq ($(filter MT6620E3 MT6628 MT6630,$(MTK_COMBO_CHIP)),)
-subdir-ccflags-y += -DMTK_WCN_COMBO_CHIP_SUPPORT
-endif
-ifneq ($(filter CONSYS_6572 CONSYS_6582 CONSYS_6592,$(MTK_COMBO_CHIP)),)
+ifneq ($(filter CONSYS_6582,$(MTK_COMBO_CHIP)),)
 obj-y	+= conn_soc/
 endif
 obj-y	+= common_detect/

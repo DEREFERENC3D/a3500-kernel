@@ -251,29 +251,11 @@ extern fm_s32 fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
 extern fm_s32 fm_rds_ops_register(struct fm_lowlevel_ops *ops);
 extern fm_s32 fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
 #endif
-#ifdef MT6620_FM
-extern fm_s32 MT6620fm_low_ops_register(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6620fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6620fm_rds_ops_register(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6620fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
-#endif
-#ifdef MT6628_FM
-extern fm_s32 MT6628fm_low_ops_register(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6628fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6628fm_rds_ops_register(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6628fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
-#endif
 #ifdef MT6627_FM
 extern fm_s32 MT6627fm_low_ops_register(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6627fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6627fm_rds_ops_register(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6627fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
-#endif
-#ifdef MT6630_FM
-extern fm_s32 MT6630fm_low_ops_register(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6630fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6630fm_rds_ops_register(struct fm_lowlevel_ops *ops);
-extern fm_s32 MT6630fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
 #endif
 
 /*

@@ -33,17 +33,8 @@
 static struct fm *g_fm_struct = NULL;
 //we must get low level interface first, when add a new chip, the main effort is this interface
 static struct fm_lowlevel_ops fm_low_ops;
-#ifdef MT6620_FM
-static struct fm_lowlevel_ops MT6620fm_low_ops;
-#endif
-#ifdef MT6628_FM
-static struct fm_lowlevel_ops MT6628fm_low_ops;
-#endif
 #ifdef MT6627_FM
 static struct fm_lowlevel_ops MT6627fm_low_ops;
-#endif
-#ifdef MT6630_FM
-static struct fm_lowlevel_ops MT6630fm_low_ops;
 #endif
 //MTK FM Radio private advanced features
 #if 0//(!defined(MT6620_FM)&&!defined(MT6628_FM))
@@ -71,9 +62,6 @@ static fm_s32 fm_cur_freq_set(fm_u16 new_freq);
 static enum fm_op_state fm_op_state_get(struct fm *fmp);
 static enum fm_op_state fm_op_state_set(struct fm *fmp, enum fm_op_state sta);
 static void fm_timer_func(unsigned long data);
-#ifdef MT6620_FM    
-static void fmtx_timer_func(unsigned long data);
-#endif
 static void fm_enable_rds_BlerCheck(struct fm *fm);
 static void fm_disable_rds_BlerCheck(void);
 static void fm_rds_reset_work_func(unsigned long data);
@@ -215,19 +203,9 @@ fm_s32 fm_open(struct fm *fmp)
 		WCN_DBG(FM_NTC | MAIN, "wmt chip id=0x%x\n",chipid);
 		if(chipid == 0x6628)//get WCN chip ID
 		{
-#ifdef MT6628_FM
-			fm_low_ops = MT6628fm_low_ops;
-			fmp->chip_id = 0x6628;
-			WCN_DBG(FM_NTC | MAIN, "get 6628 low ops\n");
-#endif
 		}
 		else if(chipid == 0x6620)
 		{
-#ifdef MT6620_FM
-			fm_low_ops = MT6620fm_low_ops;
-			fmp->chip_id = 0x6620;
-			WCN_DBG(FM_NTC | MAIN, "get 6620 low ops\n");
-#endif
 		}
 		else if ((chipid == 0x6572)||(chipid == 0x6582)||(chipid == 0x6592))
 		{
@@ -239,11 +217,6 @@ fm_s32 fm_open(struct fm *fmp)
 		}
 		else if(chipid == 0x6630)
 		{
-#ifdef MT6630_FM
-            fm_low_ops = MT6630fm_low_ops;
-            fmp->chip_id = 0x6630;
-            WCN_DBG(FM_NTC | MAIN, "get 6630 low ops\n");
-#endif
 		}
 
 		if(fm_low_ops.bi.pwron == NULL)
@@ -471,19 +444,6 @@ fm_s32 fm_powerup_tx(struct fm *fm, struct fm_tune_parm *parm)
 		parm->err = FM_SUCCESS; 
 	}
     fm_cur_freq_set(parm->freq);
-#ifdef MT6620_FM    
-	//if(fm_low_ops.ri.rds_bci_get)
-	{
-		fm_timer_sys->count = 0;
-		fm_timer_sys->tx_pwr_ctrl_en = FM_TX_PWR_CTRL_ENABLE;
-		fm_timer_sys->tx_rtc_ctrl_en = FM_TX_RTC_CTRL_ENABLE;
-		fm_timer_sys->tx_desense_en = FM_TX_DESENSE_ENABLE;
-	
-		fm_timer_sys->init(fm_timer_sys, fmtx_timer_func, (unsigned long)g_fm_struct,FM_TIMER_TIMEOUT_MIN, 0);
-		fm_timer_sys->start(fm_timer_sys);
-		WCN_DBG(FM_NTC | MAIN, "start timer ok\n");
-	}
-#endif
 out:
     FM_UNLOCK(fm_ops_lock);
     return ret;
@@ -551,15 +511,6 @@ fm_s32 fm_powerdowntx(struct fm *fm)
 
     if (FM_PWR_TX_ON == fm_pwr_state_get(fm)) 
     {
-#ifdef MT6620_FM    
-		if (FM_LOCK(fm_timer_lock)) return (-FM_ELOCK);
-		fm_timer_sys->stop(fm_timer_sys);
-		FM_UNLOCK(fm_timer_lock);
-		fm_timer_sys->count = 0;
-		fm_timer_sys->tx_pwr_ctrl_en = FM_TX_PWR_CTRL_DISABLE;
-		fm_timer_sys->tx_rtc_ctrl_en = FM_TX_RTC_CTRL_DISABLE;
-		fm_timer_sys->tx_desense_en = FM_TX_DESENSE_DISABLE;
-#endif		
 		//fm_low_ops.ri.rds_onoff(fm->pstRDSData, fm_false);
 		//execute power down sequence
 		ret = fm_low_ops.bi.pwrdownseq_tx();
@@ -2028,56 +1979,6 @@ out:
     FM_UNLOCK(fm_timer_lock);
 }
 
-#ifdef MT6620_FM    
-static void fmtx_timer_func(unsigned long data)
-{
-    struct fm *fm = g_fm_struct;
-    fm_s32 vco_cycle = 1;
-
-    if (FM_LOCK(fm_timer_lock)) return;
-
-    fm_timer_sys->count++; 
-    if (fm != NULL) 
-    {
-		//schedule tx pwr ctrl work if need
-		if(fm->txpwrctl < 1)
-		{
-			WCN_DBG(FM_WAR | MAIN,"tx power ctl time err\n");
-			fm->txpwrctl = FM_TX_PWR_CTRL_INVAL_MIN;
-		}
-		if((fm_timer_sys->tx_pwr_ctrl_en == FM_TX_PWR_CTRL_ENABLE) && (fm_timer_sys->count%fm->txpwrctl == 0))
-		{
-			WCN_DBG(FM_NTC | MAIN, "Tx timer:fm_tx_power_ctrl_work\n");
-			fm->timer_wkthd->add_work(fm->timer_wkthd, fm->fm_tx_power_ctrl_work); 
-		}
-		/*
-		//schedule tx RTC ctrl work if need
-		if((timer->tx_rtc_ctrl_en == FM_TX_RTC_CTRL_ENABLE)&& (timer->count%FM_TX_RTC_CTRL_INTERVAL == 0)){
-			FM_LOG_DBG(D_TIMER,"fm_tx_rtc_ctrl_work, ticks:%d\n", jiffies_to_msecs(jiffies));
-			queue_work(fm->fm_timer_workqueue, &fm->fm_tx_rtc_ctrl_work); 
-		}*/
-		//schedule tx desense with wifi/bt work if need
-		if(fm->vcooff < 1)
-		{
-			WCN_DBG(FM_WAR | MAIN,"tx vco tracking time err\n");
-			fm->vcooff = FM_TX_VCO_OFF_MIN;
-		}
-		vco_cycle = fm->vcooff + fm->vcoon/1000;
-		if((fm_timer_sys->tx_desense_en == FM_TX_DESENSE_ENABLE) && (fm_timer_sys->count%vco_cycle == 0))
-		{
-			WCN_DBG(FM_NTC | MAIN, "Tx timer:fm_tx_desense_wifi_work\n");
-			fm->timer_wkthd->add_work(fm->timer_wkthd, fm->fm_tx_desense_wifi_work); 
-		}
-    }
-    if (fm_timer_sys->update(fm_timer_sys)) {
-		WCN_DBG(FM_NTC | MAIN, "timer skip\n");
-        goto out; //fm timer is stoped before timeout
-    }
-
-out:
-    FM_UNLOCK(fm_timer_lock);
-}
-#endif
 static void fm_tx_power_ctrl_worker_func(unsigned long data)
 {
     fm_s32 ctrl = 0,ret=0;
@@ -2449,32 +2350,11 @@ fm_s32 fm_cust_config_setup(fm_s8 * filename)
 {
 	fm_s32 ret;
 #if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
-#ifdef MT6628_FM	
-	ret = MT6628fm_cust_config_setup(filename);
-	if(ret < 0)
-	{
-        WCN_DBG(FM_ERR | MAIN, "MT6628fm_cust_config_setup failed\n");
-	}
-#endif
-#ifdef MT6620_FM
-	ret = MT6620fm_cust_config_setup(filename);
-	if(ret < 0)
-	{
-        WCN_DBG(FM_ERR | MAIN, "MT6620fm_cust_config_setup failed\n");
-	}
-#endif
 #ifdef MT6627_FM
 	ret = MT6627fm_cust_config_setup(filename);
 	if(ret < 0)
 	{
         WCN_DBG(FM_ERR | MAIN, "MT6627fm_cust_config_setup failed\n");
-	}
-#endif
-#ifdef MT6630_FM
-	ret = MT6630fm_cust_config_setup(filename);
-	if(ret < 0)
-	{
-        WCN_DBG(FM_ERR | MAIN, "MT6630fm_cust_config_setup failed\n");
 	}
 #endif
 #else
@@ -2758,46 +2638,6 @@ fm_s32 fm_env_setup(void)
 
     WCN_DBG(FM_NTC | MAIN, "%s\n", __func__);
 #if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
-#ifdef MT6620_FM	
-    //register call back functions
-    ret = fm_callback_register(&MT6620fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
-    //get low level functions
-    ret = MT6620fm_low_ops_register(&MT6620fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
-    //get rds level functions
-    ret = MT6620fm_rds_ops_register(&MT6620fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
-#endif	
-#ifdef MT6628_FM	
-    //register call back functions
-    ret = fm_callback_register(&MT6628fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
-    //get low level functions
-    ret = MT6628fm_low_ops_register(&MT6628fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
-    //get rds level functions
-    ret = MT6628fm_rds_ops_register(&MT6628fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
-#endif	
 #ifdef MT6627_FM	
     //register call back functions
     ret = fm_callback_register(&MT6627fm_low_ops);
@@ -2813,26 +2653,6 @@ fm_s32 fm_env_setup(void)
     WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
     //get rds level functions
     ret = MT6627fm_rds_ops_register(&MT6627fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
-#endif	
-#ifdef MT6630_FM	
-    //register call back functions
-    ret = fm_callback_register(&MT6630fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
-    //get low level functions
-    ret = MT6630fm_low_ops_register(&MT6630fm_low_ops);
-    if (ret) {
-        return ret;
-    }
-    WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
-    //get rds level functions
-    ret = MT6630fm_rds_ops_register(&MT6630fm_low_ops);
     if (ret) {
         return ret;
     }
@@ -2929,48 +2749,6 @@ fm_s32 fm_env_destroy(void)
     fm_link_release();
 
 #if (defined(MT6620_FM)||defined(MT6628_FM)||defined(MT6627_FM)||defined(MT6630_FM))
-#if defined(MT6620_FM)
-    //register call back functions
-		ret = fm_callback_unregister(&MT6620fm_low_ops);
-
-    if (ret) {
-        return -1;
-    }
-		//put low level functions
-		ret = MT6620fm_low_ops_unregister(&MT6620fm_low_ops);
-	
-		if (ret) {
-			return -1;
-		}
-	
-		//put rds func
-		ret = MT6620fm_rds_ops_unregister(&MT6620fm_low_ops);
-	
-		if (ret) {
-			return -1;
-		}
-#endif
-#if defined(MT6628_FM)
-		//register call back functions
-		ret = fm_callback_unregister(&MT6628fm_low_ops);
-
-		if (ret) {
-			return -1;
-		}
-		//put low level functions
-		ret = MT6628fm_low_ops_unregister(&MT6628fm_low_ops);
-
-		if (ret) {
-			return -1;
-		}
-	
-		//put rds func
-		ret = MT6628fm_rds_ops_unregister(&MT6628fm_low_ops);
-	
-		if (ret) {
-			return -1;
-		}
-#endif
 #if defined(MT6627_FM)
 		//register call back functions
 		ret = fm_callback_unregister(&MT6627fm_low_ops);
@@ -2987,27 +2765,6 @@ fm_s32 fm_env_destroy(void)
 	
 		//put rds func
 		ret = MT6627fm_rds_ops_unregister(&MT6627fm_low_ops);
-	
-		if (ret) {
-			return -1;
-		}
-#endif
-#if defined(MT6630_FM)
-		//register call back functions
-		ret = fm_callback_unregister(&MT6630fm_low_ops);
-
-		if (ret) {
-			return -1;
-		}
-		//put low level functions
-		ret = MT6630fm_low_ops_unregister(&MT6630fm_low_ops);
-
-		if (ret) {
-			return -1;
-		}
-	
-		//put rds func
-		ret = MT6630fm_rds_ops_unregister(&MT6630fm_low_ops);
 	
 		if (ret) {
 			return -1;
