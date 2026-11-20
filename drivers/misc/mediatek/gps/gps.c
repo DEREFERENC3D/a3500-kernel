@@ -202,14 +202,6 @@ static inline void mt3326_gps_power(struct mt3326_gps_hardware *hw,
             if (err)
                 GPS_ERR("ext_power_on fail\n");
         }
-#if 0
-#ifndef MTK_MT6620 
-		if (!hwPowerOn(MT6516_POWER_V3GTX, VOL_2800,"MT3326")) {
-			GPS_ERR("power on fails!!\n");
-			return;
-		}
-#endif
-#endif
         if (hw->ext_power_on) {
             err = hw->ext_power_on(1);
             if (err)
@@ -231,26 +223,6 @@ static inline void mt3326_gps_power(struct mt3326_gps_hardware *hw,
             if (err)
                 GPS_ERR("ext_power_off fail\n");
         }
-#if 0
-#ifndef MTK_MT6620
-                if (force) {
-            /*TO FIX: the LDO pin is shared between modem 
-              and external devices, it doesn't work if only
-              calling hwPowerDown*/
-            typedef enum
-            {
-            	V3GTX_ENABLE_WITH_SRCLKEN = 0,
-            	V3GTX_ENABLE_WITH_V3GTX_EN
-            }v3gtx_on_sel_enum;
-            extern void pmic_v3gtx_on_sel(v3gtx_on_sel_enum);
-            pmic_v3gtx_on_sel(V3GTX_ENABLE_WITH_V3GTX_EN);
-            GPS_DBG("force power off!!\n");
-        }
-        
-        if (!hwPowerDown(MT6516_POWER_V3GTX,"MT3326" ))
-			GPS_ERR("power off fail\n");
-#endif
-#endif
     }
     power_on = on;
 }
