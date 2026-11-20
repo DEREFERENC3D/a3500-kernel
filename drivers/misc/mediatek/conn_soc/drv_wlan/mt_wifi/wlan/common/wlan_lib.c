@@ -1064,76 +1064,6 @@ PFN_OID_HANDLER_FUNC apfnOidWOTimeoutCheck[] = {
 *                              F U N C T I O N S
 ********************************************************************************
 */
-#if 0 /* no use */
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This is a private routine, which is used to check if HW access is needed
-*        for the OID query/ set handlers.
-*
-* \param[IN] pfnOidHandler Pointer to the OID handler.
-* \param[IN] fgSetInfo     It is a Set information handler.
-*
-* \retval TRUE This function needs HW access
-* \retval FALSE This function does not need HW access
-*/
-/*----------------------------------------------------------------------------*/
-BOOLEAN
-wlanIsHandlerNeedHwAccess (
-    IN PFN_OID_HANDLER_FUNC pfnOidHandler,
-    IN BOOLEAN              fgSetInfo
-    )
-{
-    PFN_OID_HANDLER_FUNC* apfnOidHandlerWOHwAccess;
-    UINT_32 i;
-    UINT_32 u4NumOfElem;
-
-    if (fgSetInfo) {
-        apfnOidHandlerWOHwAccess = apfnOidSetHandlerWOHwAccess;
-        u4NumOfElem = sizeof(apfnOidSetHandlerWOHwAccess) / sizeof(PFN_OID_HANDLER_FUNC);
-    }
-    else {
-        apfnOidHandlerWOHwAccess = apfnOidQueryHandlerWOHwAccess;
-        u4NumOfElem = sizeof(apfnOidQueryHandlerWOHwAccess) / sizeof(PFN_OID_HANDLER_FUNC);
-    }
-
-    for (i = 0; i < u4NumOfElem; i++) {
-        if (apfnOidHandlerWOHwAccess[i] == pfnOidHandler) {
-            return FALSE;
-        }
-    }
-
-    return TRUE;
-}   /* wlanIsHandlerNeedHwAccess */
-
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This routine is called to set flag for later handling card
-*        ejected event.
-*
-* \param[in] prAdapter Pointer to the Adapter structure.
-*
-* \return (none)
-*
-* \note When surprised removal happens, Glue layer should invoke this
-*       function to notify WPDD not to do any hw access.
-*/
-/*----------------------------------------------------------------------------*/
-VOID
-wlanCardEjected (
-    IN P_ADAPTER_T         prAdapter
-    )
-{
-    DEBUGFUNC("wlanCardEjected");
-    //INITLOG(("\n"));
-
-    ASSERT(prAdapter);
-
-     /* mark that the card is being ejected, NDIS will shut us down soon */
-    nicTxRelease(prAdapter);
-
-} /* wlanCardEjected */
-#endif
 
 
 /*----------------------------------------------------------------------------*/
@@ -1802,15 +1732,6 @@ wlanAdapterStart (
             &u4SetInfoLen);
 #endif
 
-#if 0
-    /* Update Auto rate parameters in FW */
-    nicRlmArUpdateParms(prAdapter,
-        prRegInfo->u4ArSysParam0,
-        prRegInfo->u4ArSysParam1,
-        prRegInfo->u4ArSysParam2,
-        prRegInfo->u4ArSysParam3);
-#endif
-
     } while(FALSE);
 
     if(u4Status == WLAN_STATUS_SUCCESS) {
@@ -1931,36 +1852,6 @@ wlanAdapterStop (
 
     return u4Status;
 } /* wlanAdapterStop */
-
-
-#if 0
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This function is called by ISR (interrupt).
-*
-* \param prAdapter      Pointer of Adapter Data Structure
-*
-* \retval TRUE: NIC's interrupt
-* \retval FALSE: Not NIC's interrupt
-*/
-/*----------------------------------------------------------------------------*/
-BOOL
-wlanISR (
-    IN P_ADAPTER_T prAdapter,
-    IN BOOLEAN fgGlobalIntrCtrl
-    )
-{
-    ASSERT(prAdapter);
-
-    if (fgGlobalIntrCtrl) {
-        nicDisableInterrupt(prAdapter);
-
-        //wlanIST(prAdapter);
-    }
-
-    return TRUE;
-}
-#endif
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -4087,11 +3978,6 @@ wlanProcessSecurityFrame(
                 prCmdInfo->u2InfoBufLen         = (UINT_16)u4PacketLen;
                 prCmdInfo->pucInfoBuffer        = NULL;
                 prCmdInfo->prPacket             = prPacket;
-#if 0
-                prCmdInfo->ucStaRecIndex        = qmGetStaRecIdx(prAdapter,
-                                                                    aucEthDestAddr,
-                                                                    (ENUM_NETWORK_TYPE_INDEX_T)ucNetworkType);
-#endif
                 prStaRec                        = cnmGetStaRecByAddress(prAdapter,
                                                                         (ENUM_NETWORK_TYPE_INDEX_T)ucNetworkType,
                                                                         aucEthDestAddr);
@@ -4348,25 +4234,6 @@ wlanEnableP2pFunction (
     IN P_ADAPTER_T prAdapter
     )
 {
-#if 0
-    P_MSG_P2P_FUNCTION_SWITCH_T prMsgFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T)NULL;
-
-    prMsgFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T)cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_P2P_FUNCTION_SWITCH_T));
-    if (!prMsgFuncSwitch) {
-        ASSERT(FALSE);
-        return;
-    }
-
-
-    prMsgFuncSwitch->rMsgHdr.eMsgId = MID_MNY_P2P_FUN_SWITCH;
-    prMsgFuncSwitch->fgIsFuncOn = TRUE;
-
-
-    mboxSendMsg(prAdapter,
-                    MBOX_ID_0,
-                    (P_MSG_HDR_T)prMsgFuncSwitch,
-                    MSG_SEND_METHOD_BUF);
-#endif
     return;
 }
 
@@ -5133,15 +5000,6 @@ wlanLoadManufactureData (
     prAdapter->rWifiVar.rConnSettings.u2CountryCode =
         (((UINT_16) prRegInfo->au2CountryCode[0]) << 8) |
         (((UINT_16) prRegInfo->au2CountryCode[1]) & BITS(0,7));
-
-#if 0 /* Bandwidth control will be controlled by GUI. 20110930
-       * So ignore the setting from registry/NVRAM
-       */
-    prAdapter->rWifiVar.rConnSettings.uc2G4BandwidthMode =
-            prRegInfo->uc2G4BwFixed20M ? CONFIG_BW_20M : CONFIG_BW_20_40M;
-    prAdapter->rWifiVar.rConnSettings.uc5GBandwidthMode =
-            prRegInfo->uc5GBwFixed20M ? CONFIG_BW_20M : CONFIG_BW_20_40M;
-#endif
 
     /* 6. Set domain and channel information to chip */
     rlmDomainSendCmd(prAdapter, FALSE);
