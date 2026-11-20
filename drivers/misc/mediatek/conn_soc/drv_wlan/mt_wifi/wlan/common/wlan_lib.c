@@ -2076,10 +2076,6 @@ wlanSendCommand (
 	/* init */
     prTxCtrl = &prAdapter->rTxCtrl;
 
-    //DbgPrint("wlanSendCommand()\n");
-    //
-    //
-
     do {
         // <0> card removal check
         if(kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
