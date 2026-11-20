@@ -858,12 +858,8 @@ typedef struct _CMD_CH_PRIVILEGE_T {
 
 typedef struct _CMD_TX_PWR_T {
     INT_8       cTxPwr2G4Cck;		/* signed, in unit of 0.5dBm */
-#if defined(MT6628)
     INT_8       cTxPwr2G4Dsss;      /* signed, in unit of 0.5dBm */
     INT_8       acReserved[2];
-#else
-    #error "No valid definition!"
-#endif
 
     INT_8       cTxPwr2G4OFDM_BPSK;
     INT_8       cTxPwr2G4OFDM_QPSK;
