@@ -625,21 +625,6 @@ nicFreeScanResultIE (
     IN UINT_32      u4Idx
     );
 
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-/*----------------------------------------------------------------------------*/
-/* Workaround Control                                                         */
-/*----------------------------------------------------------------------------*/
-WLAN_STATUS
-nicEnableClockGating (
-    IN P_ADAPTER_T prAdapter
-    );
-
-WLAN_STATUS
-nicDisableClockGating (
-    IN P_ADAPTER_T prAdapter
-    );
-#endif
-
 
 /*----------------------------------------------------------------------------*/
 /* Fixed Rate Hacking                                                         */
