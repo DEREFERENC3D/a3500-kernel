@@ -5169,9 +5169,6 @@ static void autok_tuning_parameter_init(struct msdc_host *host, E_AUTOK_TUNING_S
 
         /* cmd response turn around period, just for UHS104 mode */
         msdc_autok_adjust_param(host, CMD_RSP_TA_CNTR, &val, MSDC_READ);
-        #ifdef MT6290
-        pAutokData[E_MSDC_CMD_RSP_TA_CNTR].data.sel = val;
-        #else
 
         #if 1   /* Temporary */
         pAutokData[E_MSDC_CMD_RSP_TA_CNTR].data.sel = 3;
@@ -5184,13 +5181,9 @@ static void autok_tuning_parameter_init(struct msdc_host *host, E_AUTOK_TUNING_S
             pAutokData[E_MSDC_CMD_RSP_TA_CNTR].data.sel = 0;
 
         msdc_autok_adjust_param(host, CMD_RSP_TA_CNTR, &pAutokData[E_MSDC_CMD_RSP_TA_CNTR].data.sel, MSDC_WRITE);
-        #endif
         
         /* read data latch clock selection */
         msdc_autok_adjust_param(host, INT_DAT_LATCH_CK, &val, MSDC_READ);
-        #ifdef MT6290
-        pAutokData[E_MSDC_INT_DAT_LATCH_CK_SEL].data.sel = val;
-        #else
 
         #if 1   /* Temporary */
         pAutokData[E_MSDC_INT_DAT_LATCH_CK_SEL].data.sel = 0;
@@ -5203,13 +5196,9 @@ static void autok_tuning_parameter_init(struct msdc_host *host, E_AUTOK_TUNING_S
             pAutokData[E_MSDC_INT_DAT_LATCH_CK_SEL].data.sel = 0;
             
         msdc_autok_adjust_param(host, INT_DAT_LATCH_CK, &pAutokData[E_MSDC_INT_DAT_LATCH_CK_SEL].data.sel, MSDC_WRITE);
-        #endif
 
         /* write CRC turn around period, just for UHS104 mode */
         msdc_autok_adjust_param(host, WRDAT_CRCS_TA_CNTR, &val, MSDC_READ);
-        #ifdef MT6290
-        pAutokData[E_MSDC_WRDAT_CRCS_TA_CNTR].data.sel = val;
-        #else
 
         #if 1   /* Temporary */
         pAutokData[E_MSDC_WRDAT_CRCS_TA_CNTR].data.sel = 3;
@@ -5222,7 +5211,6 @@ static void autok_tuning_parameter_init(struct msdc_host *host, E_AUTOK_TUNING_S
             pAutokData[E_MSDC_WRDAT_CRCS_TA_CNTR].data.sel = 0;
 
         msdc_autok_adjust_param(host, WRDAT_CRCS_TA_CNTR, &pAutokData[E_MSDC_WRDAT_CRCS_TA_CNTR].data.sel, MSDC_WRITE);
-        #endif
         
         /* read sampling edge*/
         pAutokData[E_MSDC_IOCON_RDSPL].data.sel = 0;
