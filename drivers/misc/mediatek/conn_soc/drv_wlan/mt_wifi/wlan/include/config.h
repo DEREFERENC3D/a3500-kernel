@@ -217,16 +217,6 @@
 #endif
 
 
-/*------------------------------------------------------------------------------
- * Flags for workaround
- *------------------------------------------------------------------------------
- */
-#if defined(MT6620) && (MT6620_FPGA_BWCS == 0) && (MT6620_FPGA_V5 == 0)
-    #define MT6620_E1_ASIC_HIFSYS_WORKAROUND            0
-#else
-    #define MT6620_E1_ASIC_HIFSYS_WORKAROUND            0
-#endif
-
 // SPM issue: suspend current is higher than deep idle
 #define CFG_SPM_WORKAROUND_FOR_HOTSPOT                  1
 
