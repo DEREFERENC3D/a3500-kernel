@@ -30,9 +30,6 @@
 #include "fm_stdlib.h"
 #include "fm_patch.h"
 #include "fm_config.h"
-#if (!defined(MT6628_FM)&&!defined(MT6620_FM)&&!defined(MT6627_FM)&&!defined(MT6630_FM))
-#include "fm_cust_cfg.h"
-#endif
 static fm_cust_cfg fm_config;
 static fm_s32 fm_index = 0;
 
@@ -372,32 +369,7 @@ static fm_s32 cfg_item_handler(fm_s8 *grp, fm_s8 *key, fm_s8 *val, fm_cust_cfg *
 static fm_s32 fm_cust_config_default(fm_cust_cfg *cfg)
 {
     FMR_ASSERT(cfg);
-#if (!defined(MT6628_FM)&&!defined(MT6620_FM)&&!defined(MT6627_FM)&&!defined(MT6630_FM))
 
-    cfg->rx_cfg.long_ana_rssi_th = FM_RX_RSSI_TH_LONG;
-    cfg->rx_cfg.short_ana_rssi_th = FM_RX_RSSI_TH_SHORT;
-    cfg->rx_cfg.cqi_th = FM_RX_CQI_TH;
-    cfg->rx_cfg.mr_th = FM_RX_MR_TH;
-    cfg->rx_cfg.smg_th = FM_RX_SMG_TH;
-    cfg->rx_cfg.scan_ch_size = FM_RX_SCAN_CH_SIZE;
-    cfg->rx_cfg.seek_space = FM_RX_SEEK_SPACE;
-    cfg->rx_cfg.band = FM_RX_BAND;
-    cfg->rx_cfg.band_freq_l = FM_RX_BAND_FREQ_L;
-    cfg->rx_cfg.band_freq_h = FM_RX_BAND_FREQ_H;
-    cfg->rx_cfg.scan_sort = FM_RX_SCAN_SORT_SELECT;
-    cfg->rx_cfg.fake_ch_num = FM_RX_FAKE_CH_NUM;
-    cfg->rx_cfg.fake_ch_rssi_th = FM_RX_FAKE_CH_RSSI;
-    cfg->rx_cfg.fake_ch[0] = FM_RX_FAKE_CH_1;
-    cfg->rx_cfg.fake_ch[1] = FM_RX_FAKE_CH_2;
-    cfg->rx_cfg.fake_ch[2] = FM_RX_FAKE_CH_3;
-    cfg->rx_cfg.fake_ch[3] = FM_RX_FAKE_CH_4;
-    cfg->rx_cfg.fake_ch[4] = FM_RX_FAKE_CH_5;
-    cfg->rx_cfg.deemphasis = FM_RX_DEEMPHASIS;
-
-    cfg->tx_cfg.scan_hole_low = FM_TX_SCAN_HOLE_LOW;
-    cfg->tx_cfg.scan_hole_high = FM_TX_SCAN_HOLE_HIGH;
-    cfg->tx_cfg.power_level = FM_TX_PWR_LEVEL_MAX;
-#endif
     return 0;
 }
 
