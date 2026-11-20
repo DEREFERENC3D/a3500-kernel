@@ -232,12 +232,6 @@ secFsmInit (
 
     prSecInfo = &prSta->rSecInfo;
 
-    #if 1 /* MT6620 */
-    //At MT5921, is ok, but at MT6620, firmware base ASIC, the firmware
-    //will lost these data, thus, driver have to keep the wep material and
-    //setting to firmware while awake from D3.
-    #endif
-
     prSecInfo->eCurrentState = SEC_STATE_INIT;
 
     prSecInfo->fg2nd1xSend = FALSE;

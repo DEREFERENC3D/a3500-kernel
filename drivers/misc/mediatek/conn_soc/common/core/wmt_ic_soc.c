@@ -203,27 +203,6 @@ static UCHAR WMT_SET_DAI_REG_EVT[] = {0x02, 0x08, 0x04, 0x00/*length*/
 #endif
 
 
-#if !(CFG_IC_SOC) //For MT6628 no need to set ALLEINT registers, done in f/w
-/* enable all interrupt */
-static UCHAR WMT_SET_ALLINT_REG_CMD[] = {0x01, 0x08, 0x10, 0x00/*length*/
-    ,0x01 /* op: w */
-    ,0x01 /*type: reg */
-    ,0x00 /*rev*/
-    ,0x01 /*1 registers*/
-    ,0x00, 0x03, 0x05, 0x80/*addr:0x80050300*/
-    ,0x00, 0xC4, 0x00, 0x00/*value:0x0000C400*/
-    ,0x00, 0xC4, 0x00, 0x00/*mask:0x0000C400*/
-};
-
-static UCHAR WMT_SET_ALLINT_REG_EVT[] = {0x02, 0x08, 0x04, 0x00/*length*/
-    ,0x00 /*S: 0*/
-    ,0x00 /*type: reg */
-    ,0x00 /*rev*/
-    ,0x01 /*1 registers*/
-};
-
-#endif
-
 #if CFG_SET_OPT_REG_SWLA /* enable swla: eesk(7) eecs(8) oscen(19) sck0(24) scs0(25)  */
 static UCHAR WMT_SET_SWLA_REG_CMD[] = {0x01, 0x08, 0x1C, 0x00/*length*/
     ,0x01 /* op: w */
@@ -387,19 +366,6 @@ static UCHAR WMT_SET_SDIO_DRV_REG_EVT[] = {0x02, 0x08, 0x04, 0x00/*length*/
 #if CFG_WMT_WIFI_5G_SUPPORT
 static UCHAR WMT_GET_SOC_ADIE_CHIPID_CMD[] = {0x01,0x13,0x04,0x00,0x02,0x04,0x24,0x00};
 static UCHAR WMT_GET_SOC_ADIE_CHIPID_EVT[] = {0x02,0x13,0x09,0x00,0x00,0x02,0x04,0x24,0x00,0x00,0x00,0x00,0x00};
-#endif
-
-#if (!CFG_IC_SOC)
-
-/* stp sdio init scripts */
-static struct init_script init_table_1_1[] =
-{
-    /* table_1_1 is only applied to common SDIO interface */
-    INIT_CMD(WMT_SET_ALLINT_REG_CMD, WMT_SET_ALLINT_REG_EVT, "enable all interrupt"),
-    /* applied to MT6628 ? */
-    INIT_CMD(WMT_WAKEUP_DIS_GATE_CMD, WMT_WAKEUP_DIS_GATE_EVT, "disable gating"),
-};
-
 #endif
 
 static struct init_script init_table_1_2[] =

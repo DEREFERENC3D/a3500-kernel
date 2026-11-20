@@ -511,21 +511,6 @@ nicpmSetAcpiPowerD0 (
             }
         }
 
-#if defined(MT5931)
-        // Acquire LP-OWN
-        ACQUIRE_POWER_CONTROL_FROM_PM(prAdapter);
-    #if !CFG_ENABLE_FULL_PM
-        nicpmSetDriverOwn(prAdapter);
-    #endif
-
-        /* 2. Initialize the Adapter */
-        if ( (u4Status = nicInitializeAdapter(prAdapter)) != WLAN_STATUS_SUCCESS ) {
-            DBGLOG(INIT, ERROR, ("nicInitializeAdapter failed!\n"));
-            u4Status = WLAN_STATUS_FAILURE;
-            break;
-        }
-#endif
-
         if(u4Status == WLAN_STATUS_SUCCESS) {
             // 6.1 reset interrupt status
             HAL_READ_INTR_STATUS(prAdapter, 4, (PUINT_8)&u4WHISR);

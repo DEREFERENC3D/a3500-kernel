@@ -19,10 +19,6 @@ KBUILD_CFLAGS += -DMTK_SEC_FASTBOOT_UNLOCK_SUPPORT
 endif
 endif
 
-ifeq ($(MTK_TB_WIFI_3G_MODE), WIFI_ONLY)
-KBUILD_CFLAGS += -DMTK_TB_WIFI_3G_MODE_WIFI_ONLY
-endif
-
 obj-y := core.o irq.o timer.o mt_dbg.o
 obj-y += mt_devs.o mt_gpt.o mt_boot.o board.o 
 obj-y += ca7_timer.o
@@ -60,14 +56,6 @@ obj-y += mt_clkmgr.o
 obj-y += sbchk_base.o
 obj-y += mtk_ccci_helper.o
 obj-y += mtk_eemcs_helper.o
-
-ifneq ($(CONFIG_MTK_CCCI_DEVICES),y)
-ccflags-y  += -D__USING_DUMMY_CCCI_API__
-endif
-
-ifneq ($(MTK_TABLET_HARDWARE), )
-ccflags-y += -DMTK_TABLET_PLATFORM=\"$(shell echo $(MTK_TABLET_HARDWARE) | tr a-z A-Z )\"
-endif
 
 obj-y += mt_ptp.o
 obj-y += mssv.o

@@ -926,13 +926,9 @@ nicRxInitialize (
 
 #if CFG_SDIO_RX_AGG
     prRxCtrl->pucRxCoalescingBufPtr = prAdapter->pucCoalescingBufCached;
-    #if !defined(MT5931)
     HAL_CFG_MAX_HIF_RX_LEN_NUM(prAdapter, CFG_SDIO_MAX_RX_AGG_NUM);
-    #endif
 #else
-    #if !defined(MT5931)
     HAL_CFG_MAX_HIF_RX_LEN_NUM(prAdapter, 1);
-    #endif
 #endif
 
 #if CFG_HIF_STATISTICS
@@ -947,37 +943,6 @@ nicRxInitialize (
 
     return;
 } /* end of nicRxInitialize() */
-
-
-#if defined(MT5931)
-/*----------------------------------------------------------------------------*/
-/*!
-* @brief Initialize HIF RX control registers explicitly
-*
-* @param prAdapter      Pointer to the Adapter structure.
-*
-* @return (none)
-*/
-/*----------------------------------------------------------------------------*/
-VOID
-nicRxPostInitialize (
-    IN P_ADAPTER_T prAdapter
-    )
-{
-    P_RX_CTRL_T prRxCtrl;
-    DEBUGFUNC("nicRxPostInitialize");
-
-    ASSERT(prAdapter);
-    prRxCtrl = &prAdapter->rRxCtrl;
-
-#if CFG_SDIO_RX_AGG
-    HAL_CFG_MAX_HIF_RX_LEN_NUM(prAdapter, CFG_SDIO_MAX_RX_AGG_NUM);
-#else
-    HAL_CFG_MAX_HIF_RX_LEN_NUM(prAdapter, 1);
-#endif
-
-} /* end of nicRxPostInitialize() */
-#endif
 
 
 /*----------------------------------------------------------------------------*/

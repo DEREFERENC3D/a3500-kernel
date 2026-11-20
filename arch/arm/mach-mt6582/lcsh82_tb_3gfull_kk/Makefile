@@ -1,11 +1,6 @@
 # Project-specific sources: the custgen-selected set actually built by the stock kernel.
 include $(srctree)/drivers/misc/mediatek/helpers/common.mk
 
-# Selection defines for the customizable drivers
-subdir-ccflags-y += -DCPT_CLAA070WP0B_HIMAX -DAUO_B070EAN014_HIMAX \
-                    -DA5142_MIPI_RAW -DHI257_YUV -DGC2235_RAW \
-                    -DDUMMY_FLASHLIGHT -DDUMMY_LENS
-
 # Board definition
 obj-y += core/board.o
 

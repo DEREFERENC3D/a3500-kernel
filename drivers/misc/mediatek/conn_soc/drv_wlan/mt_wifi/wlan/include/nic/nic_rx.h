@@ -347,13 +347,6 @@ nicRxInitialize (
     IN P_ADAPTER_T prAdapter
     );
 
-#if defined(MT5931)
-VOID
-nicRxPostInitialize (
-    IN P_ADAPTER_T prAdapter
-    );
-#endif
-
 VOID
 nicRxUninitialize (
     IN P_ADAPTER_T prAdapter

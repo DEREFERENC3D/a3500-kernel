@@ -59,10 +59,6 @@ subdir-ccflags-y += $(addprefix -I,$(sort $(dir $(shell find $(MTK_PLATFORM_PATH
 subdir-ccflags-y += -I$(MTK_PLATFORM_PATH_ROOT)/include/mach \
              -I$(MTK_PLATFORM_PATH_ROOT)/include
 
-# Build macros previously injected by ProjectConfig.mk
-subdir-ccflags-y += -DMTK_LCM_PHYSICAL_ROTATION='"0"' -DMTK_WCN_SOC_CHIP_SUPPORT \
-                    -DCONSYS_6582 -DMTK_CONSYS_MT6582
-
 # Chip-specific driver headers (nested <driver>/mt6582 layout)
 subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/auxadc/$(MTK_PLATFORM) \

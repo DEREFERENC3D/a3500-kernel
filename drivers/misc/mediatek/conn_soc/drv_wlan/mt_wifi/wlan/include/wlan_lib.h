@@ -1036,14 +1036,6 @@ wlanSetAcpiState (
     IN ENUM_ACPI_STATE_T ePowerState
     );
 
-#if CFG_SUPPORT_OSC_SETTING && defined(MT5931)
-WLAN_STATUS
-wlanSetMcuOscStableTime (
-    IN P_ADAPTER_T      prAdapter,
-    IN UINT_16          u2OscStableTime
-    );
-#endif
-
 VOID
 wlanDefTxPowerCfg (
     IN P_ADAPTER_T      prAdapter

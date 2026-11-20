@@ -44,16 +44,6 @@
 #include <linux/string.h>
 
 
-#ifdef  0//MT6516
-#include <mach/mt6516_gpio.h>
-#include <mach/mt6516_typedefs.h>
-#define MT6616_I2C_PORT      2
-#define MT65XX_EINT_IRQ_UNMASK MT6516_EINTIRQUnmask
-#define MT65XX_EINT_IRQ_MASK MT6516_EINTIRQMask
-#define MT65XX_EINT_SET_HW_DEBOUNCE MT6516_EINT_Set_HW_Debounce
-#define MT65XX_EINT_SET_SENSITIVITY MT6516_EINT_Set_Sensitivity
-#define MT65XX_EINT_REGISTRATION MT6516_EINT_Registration
-#else
 #include <mach/mt6573_gpio.h>
 #include <mach/mt6573_typedefs.h>
 #include <cust_gpio_usage.h>
@@ -63,7 +53,6 @@
 #define MT65XX_EINT_SET_HW_DEBOUNCE mt65xx_eint_set_hw_debounce
 #define MT65XX_EINT_SET_SENSITIVITY mt65xx_eint_set_sens
 #define MT65XX_EINT_REGISTRATION mt65xx_eint_registration
-#endif
 
 /******************DBG level added by DDB************************/
 #define D_IOCTL 0x00000010

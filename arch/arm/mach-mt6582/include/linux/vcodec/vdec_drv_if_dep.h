@@ -138,11 +138,9 @@ typedef struct __VDEC_HANDLE_T
 // Morris Yang 20111101 [
     VAL_UINT32_T  nOmxTids;
 // ]
-#if 1   //defined(MT6572)     //VCODEC_MULTI_THREAD
 // Jackal Chen [
     VAL_VOID_T              *pDrvModule;    ///< used for dlopen and dlclose
 // ]
-#endif
     VAL_BOOL_T              fgValInitFlag; ///< hValHandle is available or not
 } VDEC_HANDLE_T;
 

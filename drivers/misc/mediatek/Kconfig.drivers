@@ -29,24 +29,6 @@ menuconfig MTK_CCCI_DEVICES # CCCI_DEVICES TODO Depends on ARCH_MT6573 --> no bo
         ---help---
           Say Y here to get to see options for device drivers from ccci.
           If you say N, all options in this submenu will be skipped and disabled.
-config MTK_CCCI_DRIVER # CCCI_DRIVER
-        tristate "CCCI Driver"
-        depends on MTK_CCCI_DEVICES
-        default m
-        ---help---
-          This option enables ccci device driver support
-config MTK_CCCI_EXT # CCCI_DRIVER
-        tristate "Dual CCCI Driver"
-        depends on MTK_CCCI_DEVICES
-        default y
-        ---help---
-          This option enables dual ccci device driver support
-config MTK_NET_CCMNI # NET_CCMNI
-        bool "MediaTek CCMNI driver"
-        depends on MTK_CCCI_DEVICES
-        default n
-        select WIRELESS_EXT
-        select WEXT_PRIV
 
 # EEMCS 
 menuconfig MTK_EEMCS_DEVICES # Use by MT6290M over SDIO
@@ -55,12 +37,6 @@ menuconfig MTK_EEMCS_DEVICES # Use by MT6290M over SDIO
         ---help---
           Say Y here to get to see options for device drivers from EEMCS.
           If you say N, all options in this submenu will be skipped and disabled.
-config MTK_EEMCS_DRIVER # EEMCS_DRIVER
-        tristate "EEMCS Driver"
-        depends on MTK_EEMCS_DEVICES
-        default m
-        ---help---
-          This option enables EEMCS device driver support
 
 # Frame Buffer Related
 menuconfig MTK_FB # FB_MT6516 FB_MT6573
@@ -244,13 +220,6 @@ menuconfig MTK_MTD_NAND # MTD_NAND_MT6516
         depends on MTD_NAND
         ---help---
           Enables support for NAND Flash chips wired to MediaTek chips.
-config MTK_MTD_NAND_INTERRUPT_SCHEME # MTD_NAND_MT6516_INTERRUPT_SCHEME MTD_NAND_MT6573_INTERRUPT_SCHEME
-        bool "Nand Read/Write with interrupt scheme"
-        depends on MTK_MTD_NAND
-        default n
-        ---help---
-          Enable interrupt scheme in Nand Read/Write.
-
 # Power Related
 if POWER_SUPPLY
 config MTK_SMART_BATTERY # 

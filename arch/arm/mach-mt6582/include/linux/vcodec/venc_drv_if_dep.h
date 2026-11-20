@@ -61,11 +61,9 @@ typedef struct __VENC_HANDLE_T
     VAL_MEMORY_T             rExtraDataMem; ///< Save extra data memory information to be used in release.
 //  ]
     VAL_UINT32_T  nOmxTids;
-#if 1   //defined(MT6572)     //VCODEC_MULTI_THREAD
 // Jackal Chen [
     VAL_VOID_T              *pDrvModule;    ///< used for dlopen and dlclose
 // ]
-#endif
     VIDEO_ENC_WRAP_HANDLE_T hWrapper;
 } VENC_HANDLE_T;
 
