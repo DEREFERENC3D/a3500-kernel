@@ -83,9 +83,7 @@
 #define BOW_PROTOCOL_ID_SECURITY_FRAME          0x0003
 
 
-#if defined(MT6620)
-    #define CHIP_NAME    "MT6620"
-#elif defined(MT6628)
+#if defined(MT6628)
     #define CHIP_NAME    "MT6582"
 #endif
 
