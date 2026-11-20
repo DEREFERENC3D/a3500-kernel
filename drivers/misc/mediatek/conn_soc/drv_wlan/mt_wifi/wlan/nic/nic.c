@@ -4277,9 +4277,7 @@ nicPrintFirmwareAssertInfo(
 
     aucAssertFile[6] = '\0';
 
-#if defined(MT6620)
-    u4ChipId = 6620;
-#elif defined(MT6628)
+#if defined(MT6628)
     u4ChipId = 6582;
 #endif
 
