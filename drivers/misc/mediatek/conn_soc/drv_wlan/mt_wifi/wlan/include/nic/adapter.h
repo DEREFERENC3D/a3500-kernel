@@ -1180,11 +1180,6 @@ struct _ADAPTER_T {
 
     P_SDIO_CTRL_T           prSDIOCtrl;
 
-#if (MT6620_E1_ASIC_HIFSYS_WORKAROUND == 1)
-    /* Element for MT6620 E1 HIFSYS workaround */
-    BOOLEAN                 fgIsClockGatingEnabled;
-#endif
-
     /* Buffer for Authentication Event */
     /* <Todo> Move to glue layer and refine the kal function */
     /* Reference to rsnGeneratePmkidIndication function at rsn.c */
