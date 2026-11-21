@@ -105,14 +105,9 @@ static int get_hw_battery_temp(void)
     return got_value;
 */
 	int ret=0;
-#if defined(CONFIG_POWER_EXT)
-	//EVB
-	ret = -1270;
-#else
 	//Phone
 	ret = read_tbat_value();
 	ret = ret * 10;
-#endif
 
 	return ret;
 }

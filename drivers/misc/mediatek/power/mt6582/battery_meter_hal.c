@@ -43,8 +43,6 @@ extern int IMM_IsAdcInitReady(void);
 //============================================================ // 
 void get_hw_chip_diff_trim_value(void)
 {
-#if defined(CONFIG_POWER_EXT)
-#else
     kal_int32 reg_val_1 = 0;
     kal_int32 reg_val_2 = 0;
     
@@ -106,14 +104,10 @@ void get_hw_chip_diff_trim_value(void)
 
     bm_print(BM_LOG_FULL, "[Chip_Trim] %d,%d\n", 
         chip_diff_trim_value_4_0, chip_diff_trim_value);
-#endif
 }
 
 kal_int32 use_chip_trim_value(kal_int32 not_trim_val)
 {
-#if defined(CONFIG_POWER_EXT)
-    return not_trim_val;
-#else
     kal_int32 ret_val=0;
 
     ret_val=((not_trim_val*chip_diff_trim_value)/1000);
@@ -121,14 +115,10 @@ kal_int32 use_chip_trim_value(kal_int32 not_trim_val)
     bm_print(BM_LOG_FULL, "[use_chip_trim_value] %d -> %d\n", not_trim_val, ret_val);
     
     return ret_val;
-#endif    
 }
 
 int get_hw_ocv(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 4001;    
-#else
     kal_int32 adc_result_reg=0;
     kal_int32 adc_result=0;
     kal_int32 r_val_temp=4;    
@@ -147,7 +137,6 @@ int get_hw_ocv(void)
 
     adc_result += g_hw_ocv_tune_value;
     return adc_result;
-#endif    
 }
 
 
@@ -182,11 +171,7 @@ static kal_int32 fgauge_hw_reset(void *data)
 
 static kal_int32 read_adc_v_bat_sense(void *data)
 {
-#if defined(CONFIG_POWER_EXT)
-    *(kal_int32*)(data) = 4201;
-#else
     *(kal_int32*)(data) = PMIC_IMM_GetOneChannelValue(VBAT_CHANNEL_NUMBER,*(kal_int32*)(data),1);
-#endif
 
     return STATUS_OK;
 }
@@ -195,20 +180,13 @@ static kal_int32 read_adc_v_bat_sense(void *data)
 
 static kal_int32 read_adc_v_i_sense(void *data)
 {
-#if defined(CONFIG_POWER_EXT)
-    *(kal_int32*)(data) = 4202;
-#else
     *(kal_int32*)(data) = PMIC_IMM_GetOneChannelValue(ISENSE_CHANNEL_NUMBER,*(kal_int32*)(data),1);
-#endif
 
     return STATUS_OK;
 }
 
 static kal_int32 read_adc_v_bat_temp(void *data)
 {
-#if defined(CONFIG_POWER_EXT)
-    *(kal_int32*)(data) = 0;
-#else
     #if defined(MTK_PCB_TBAT_FEATURE)
 
         int ret = 0, data[4], i, ret_value = 0, ret_temp = 0;
@@ -238,33 +216,24 @@ static kal_int32 read_adc_v_bat_temp(void *data)
         bm_print(BM_LOG_FULL, "[read_adc_v_charger] return PMIC_IMM_GetOneChannelValue(4,times,1);\n");
         *(kal_int32*)(data) = PMIC_IMM_GetOneChannelValue(VBATTEMP_CHANNEL_NUMBER,*(kal_int32*)(data),1);
     #endif
-#endif
 
     return STATUS_OK;
 }
 
 static kal_int32 read_adc_v_charger(void *data)
 {    
-#if defined(CONFIG_POWER_EXT)
-    *(kal_int32*)(data) = 5001;
-#else
     kal_int32 val;
     val = PMIC_IMM_GetOneChannelValue(VCHARGER_CHANNEL_NUMBER,*(kal_int32*)(data),1);
     val = (((R_CHARGER_1+R_CHARGER_2)*100*val)/R_CHARGER_2)/100;
 	
     *(kal_int32*)(data) = val;
-#endif
 
     return STATUS_OK;
 }
 
 static kal_int32 read_hw_ocv(void *data)
 {
-#if defined(CONFIG_POWER_EXT)
-    *(kal_int32*)(data) = 3999;
-#else
     *(kal_int32*)(data) = get_hw_ocv();
-#endif
 
     return STATUS_OK;
 }

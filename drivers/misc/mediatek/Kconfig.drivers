@@ -234,9 +234,6 @@ config MTK_PMIC_WRAP
         default y
         ---help---
           MediaTek pmic_wrap driver 
-config POWER_EXT # 
-        tristate "MediaTek Power Ext"        
-        default y
         
 endif #POWER_SUPPLY
 

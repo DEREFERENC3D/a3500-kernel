@@ -840,10 +840,6 @@ int BattVoltToTemp(int dwVolt)
 
 int force_get_tbat(void)
 {
-#if defined(CONFIG_POWER_EXT) || defined(FIXED_TBAT_25)
-    bm_print(BM_LOG_CRTI, "[force_get_tbat] fixed TBAT=25 t\n");
-    return 25;
-#else
     int bat_temperature_volt=0;
     int bat_temperature_val=0;
     int fg_r_value=0;
@@ -884,7 +880,6 @@ int force_get_tbat(void)
         bat_temperature_volt_temp, bat_temperature_volt, fg_current_state, fg_current_temp, fg_r_value, bat_temperature_val);
     
     return bat_temperature_val;    
-#endif    
 }
 EXPORT_SYMBOL(force_get_tbat);
 
@@ -1567,8 +1562,6 @@ void fgauge_construct_r_table_profile(kal_int32 temperature, R_PROFILE_STRUC_P t
 
 void fgauge_construct_table_by_temp(void)
 {
-#if defined(CONFIG_POWER_EXT)
-#else
     kal_uint32 i;
     static kal_int32 init_temp = KAL_TRUE;
     static kal_int32 curr_temp, last_temp, avg_temp;
@@ -1605,14 +1598,10 @@ void fgauge_construct_table_by_temp(void)
     }
 
     tempIndex = (tempIndex+1)%TEMP_AVERAGE_SIZE;
-
-#endif
 }
 
 void fg_qmax_update_for_aging(void)
 {
-#if defined(CONFIG_POWER_EXT)
-#else
     kal_bool hw_charging_done = bat_is_charging_full();
 
     if(hw_charging_done == KAL_TRUE) // charging full, g_HW_Charging_Done == 1
@@ -1646,7 +1635,6 @@ void fg_qmax_update_for_aging(void)
     {
         bm_print(BM_LOG_CRTI, "[fg_qmax_update_for_aging] hw_charging_done=%d\r\n", hw_charging_done);
     }
-#endif    
 }
 
 
@@ -1669,11 +1657,7 @@ void dod_init(void)
     //-------------------------------------------------------------------------------
     #endif
     
-    #if defined(CONFIG_POWER_EXT)
-    g_rtc_fg_soc = gFG_capacity_by_v;    
-    #else
     g_rtc_fg_soc = get_rtc_spare_fg_value();
-    #endif
     if(g_rtc_fg_soc >= gFG_capacity_by_v)
     {
         if(((g_rtc_fg_soc != 0) && ((g_rtc_fg_soc-gFG_capacity_by_v) < CUST_POWERON_DELTA_CAPACITY_TOLRANCE) &&(( gFG_capacity_by_v > CUST_POWERON_LOW_CAPACITY_TOLRANCE || bat_is_charger_exist() == KAL_TRUE)))
@@ -2321,8 +2305,6 @@ kal_int32 fgauge_read_capacity(kal_int32 type)
 
 void fg_voltage_mode(void)
 {
-#if defined(CONFIG_POWER_EXT)
-#else
     if(bat_is_charger_exist() == KAL_TRUE)
     {
         /* SOC only UP when charging */
@@ -2340,7 +2322,6 @@ void fg_voltage_mode(void)
         
     bm_print(BM_LOG_FULL, "[FGADC_VoltageMothod] gFG_capacity_by_v=%ld,gfg_percent_check_point=%ld\r\n", 
         gFG_capacity_by_v, gfg_percent_check_point);
-#endif    
 }
 
 
@@ -2529,8 +2510,6 @@ void fgauge_algo_run_init(void)
 
 void fgauge_initialization(void)
 {
-#if defined(CONFIG_POWER_EXT)
-#else
     int i = 0;
     kal_uint32 ret=0;
 
@@ -2574,17 +2553,12 @@ void fgauge_initialization(void)
     ret = battery_meter_ctrl(BATTERY_METER_CMD_DUMP_REGISTER, NULL);
     
     bm_print(BM_LOG_CRTI, "[fgauge_initialization] Done\n");
-#endif
 }
 #endif
 
 kal_int32 get_dynamic_period(int first_use, int first_wakeup_time, int battery_capacity_level)
 {
-#if defined(CONFIG_POWER_EXT)
-
-    return first_wakeup_time;
-
-#elif defined(SOC_BY_AUXADC) ||  defined(SOC_BY_SW_FG)
+#if defined(SOC_BY_AUXADC) ||  defined(SOC_BY_SW_FG)
 
     kal_int32 vbat_val = 0;
 
@@ -2875,10 +2849,6 @@ kal_int32 battery_meter_get_charger_voltage(void)
 
 kal_int32 battery_meter_get_battery_percentage(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 50;
-#else
-
     if(bat_is_charger_exist() == KAL_FALSE)
         fg_qmax_update_for_aging_flag = 1;
 
@@ -2906,17 +2876,11 @@ kal_int32 battery_meter_get_battery_percentage(void)
             return (100-oam_d_2);
         #endif
     #endif
-
-#endif
 }
 
 
 kal_int32 battery_meter_initial(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 0;
-#else
-
 #ifdef MTK_MULTI_BAT_PROFILE_SUPPORT
     fgauge_get_profile_id();
 #endif
@@ -2941,7 +2905,6 @@ kal_int32 battery_meter_initial(void)
     #endif
 
     return 0;
-#endif
 }
 
 void reset_parameter_car(void)
@@ -3002,9 +2965,6 @@ void reset_parameter_dod_full(kal_uint32 ui_percentage)
 
 kal_int32 battery_meter_reset(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 0;
-#else
     kal_uint32 ui_percentage = bat_get_ui_percentage();
 
     if(bat_is_charging_full() == KAL_TRUE) // charge full
@@ -3020,85 +2980,56 @@ kal_int32 battery_meter_reset(void)
     reset_parameter_dod_full(ui_percentage);
     
     return 0;
-#endif
 }
 
 kal_int32 battery_meter_sync(kal_int32 bat_i_sense_offset)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 0;
-#else
     g_I_SENSE_offset = bat_i_sense_offset;
     return 0;
-#endif	
 }
 
 kal_int32 battery_meter_get_battery_zcv(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 3987;
-#else
     return gFG_voltage;
-#endif	
 }
 
 kal_int32 battery_meter_get_battery_nPercent_zcv(void)    
 {
-#if defined(CONFIG_POWER_EXT)
-    return 3700;
-#else
     return gFG_15_vlot; // 15% zcv,  15% can be customized by 100-g_tracking_point
-#endif	
 }
 
 kal_int32 battery_meter_get_battery_nPercent_UI_SOC(void) 
 {
-#if defined(CONFIG_POWER_EXT)
-    return 15;
-#else
     return g_tracking_point; // tracking point
-#endif	
 }
 
 kal_int32 battery_meter_get_tempR(kal_int32 dwVolt)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 0;
-#else
     int TRes;
       
     TRes = (RBAT_PULL_UP_R*dwVolt) / (RBAT_PULL_UP_VOLT-dwVolt);        
     
     return TRes;
-#endif
 }
 
 kal_int32 battery_meter_get_tempV(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 0;
-#else
     int ret=0;
 		int val=0;
 		
 		val = 1; // set avg times
     ret = battery_meter_ctrl(BATTERY_METER_CMD_GET_ADC_V_BAT_TEMP, &val);
     return val;
-#endif    
 }
 
 kal_int32 battery_meter_get_VSense(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    return 0;
-#else
 		int ret=0;
 		int val=0;
 		
 		val = 1; //set avg times
     ret = battery_meter_ctrl(BATTERY_METER_CMD_GET_ADC_V_I_SENSE, &val);
     return val;
-#endif
 }
 
 // ============================================================ //
@@ -3381,9 +3312,7 @@ static int battery_meter_suspend(struct platform_device *dev, pm_message_t state
     }
     // -- end of hibernation path
 
-#if defined(CONFIG_POWER_EXT)
-
-#elif defined(SOC_BY_SW_FG)
+#if defined(SOC_BY_SW_FG)
     struct timespec xts, tom;
 
 	get_xtime_and_monotonic_and_sleep_offset(&xts, &tom, &g_rtc_time_before_sleep);
@@ -3399,9 +3328,7 @@ static int battery_meter_suspend(struct platform_device *dev, pm_message_t state
 
 static int battery_meter_resume(struct platform_device *dev)
 {
-#if defined(CONFIG_POWER_EXT)
-
-#elif defined(SOC_BY_SW_FG)
+#if defined(SOC_BY_SW_FG)
 	kal_int32 hw_ocv_after_sleep;
 	struct timespec xts, tom, rtc_time_after_sleep;
 //    kal_int32 sw_vbat;

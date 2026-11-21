@@ -110,15 +110,10 @@ void mt_power_off(void)
 	rtc_bbpu_power_down();
 
 	while (1) {
-#if defined(CONFIG_POWER_EXT)
-		//EVB
-		printk("EVB without charger\n");
-#else	
 		//Phone	
 		printk("Phone with charger\n");
 		if (pmic_chrdet_status() == KAL_TRUE)
 			arch_reset(0, "power_off_with_charger");
-#endif
     }
 }
 

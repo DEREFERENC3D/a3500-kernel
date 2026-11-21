@@ -80,25 +80,7 @@ void pmic_disable_pll(int id, char *mod_name)
 //----------------------------------------------------------------------
 
 
-#if defined(CONFIG_POWER_EXT)
-//----------------------------------------------------------------------
-#define CUST_EINT_POLARITY_LOW              0
-#define CUST_EINT_POLARITY_HIGH             1
-#define CUST_EINT_DEBOUNCE_DISABLE          0
-#define CUST_EINT_DEBOUNCE_ENABLE           1
-#define CUST_EINT_EDGE_SENSITIVE            0
-#define CUST_EINT_LEVEL_SENSITIVE           1
-
-#define CUST_EINT_MT6323_PMIC_NUM              25
-#define CUST_EINT_MT6323_PMIC_DEBOUNCE_CN      1
-//#define CUST_EINT_MT6323_PMIC_POLARITY         CUST_EINT_POLARITY_HIGH
-//#define CUST_EINT_MT6323_PMIC_SENSITIVE        CUST_EINT_LEVEL_SENSITIVE
-#define CUST_EINT_MT6323_PMIC_TYPE             EINTF_TRIGGER_HIGH
-#define CUST_EINT_MT6323_PMIC_DEBOUNCE_EN      CUST_EINT_DEBOUNCE_ENABLE
-//----------------------------------------------------------------------
-#else
 #include <cust_eint.h>
-#endif
 
 //==============================================================================
 // PMIC related define

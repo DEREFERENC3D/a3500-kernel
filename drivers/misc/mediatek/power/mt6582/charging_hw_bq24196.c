@@ -750,9 +750,6 @@ kal_bool charging_type_detection_done(void)
  static kal_uint32 charging_get_charger_type(void *data)
  {
 	 kal_uint32 status = STATUS_OK;
-#if defined(CONFIG_POWER_EXT)
-	 *(CHARGER_TYPE*)(data) = STANDARD_HOST;
-#else
 
 #if defined(MTK_WIRELESS_CHARGER_SUPPORT)
     int wireless_state = 0;
@@ -849,7 +846,7 @@ kal_bool charging_type_detection_done(void)
  	charging_type_det_done = KAL_TRUE;
 
     g_charger_type = *(CHARGER_TYPE*)(data);
-#endif
+
 	 return status;
 }
 

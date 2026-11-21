@@ -297,10 +297,6 @@ int get_charger_detect_status(void)
 ///////////////////////////////////////////////////////////////////////////////////////////
 kal_bool upmu_is_chr_det(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    //return KAL_TRUE;
-    return get_charger_detect_status();
-#else	
     kal_uint32 tmp32;
     tmp32=get_charger_detect_status();
     if(tmp32 == 0)
@@ -322,7 +318,6 @@ kal_bool upmu_is_chr_det(void)
             return KAL_FALSE;
         }
     }
-    #endif	
 }
 EXPORT_SYMBOL(upmu_is_chr_det);
 
@@ -434,13 +429,7 @@ static int usb_get_property(struct power_supply *psy,
 
     switch (psp) {
     case POWER_SUPPLY_PROP_ONLINE:     
-        #if defined(CONFIG_POWER_EXT)
-        //#if 0
-        data->USB_ONLINE = 1;
         val->intval = data->USB_ONLINE;
-        #else
-        val->intval = data->USB_ONLINE;
-        #endif        
         break;
     default:
         ret = -EINVAL;
@@ -568,19 +557,6 @@ static struct battery_data battery_main = {
     .get_property = battery_get_property,                
     },
 /* CC: modify to have a full power supply status */
-#if defined(CONFIG_POWER_EXT)
-    .BAT_STATUS = POWER_SUPPLY_STATUS_FULL,    
-    .BAT_HEALTH = POWER_SUPPLY_HEALTH_GOOD,
-    .BAT_PRESENT = 1,
-    .BAT_TECHNOLOGY = POWER_SUPPLY_TECHNOLOGY_LION,
-    .BAT_CAPACITY = 100,
-    .BAT_batt_vol = 4200,
-    .BAT_batt_temp = 22,
-    /* Dual battery */
-    .status_2nd = POWER_SUPPLY_STATUS_NOT_CHARGING,
-    .capacity_2nd = 50,
-    .present_2nd = 0,
-#else
     .BAT_STATUS = POWER_SUPPLY_STATUS_NOT_CHARGING,    
     .BAT_HEALTH = POWER_SUPPLY_HEALTH_GOOD,
     .BAT_PRESENT = 1,
@@ -592,11 +568,9 @@ static struct battery_data battery_main = {
     .status_2nd = POWER_SUPPLY_STATUS_NOT_CHARGING,
     .capacity_2nd = 50,
     .present_2nd = 0,
-#endif
 };
 
 
-#if !defined(CONFIG_POWER_EXT)
 ///////////////////////////////////////////////////////////////////////////////////////////
 //// Create File For EM : ADC_Charger_Voltage
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -1637,8 +1611,6 @@ static void usb_update(struct usb_data *usb_data)
     power_supply_changed(usb_psy); 
 }
 
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////////////////
 //// Battery Temprature Parameters and functions
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -1803,11 +1775,7 @@ unsigned long BAT_Get_Battery_Voltage(int polling_mode)
 {
     unsigned long ret_val = 0;
 
-#if defined(CONFIG_POWER_EXT)
-	ret_val = 4000;
-#else	
     ret_val=battery_meter_get_battery_voltage();
-#endif    
 
     return ret_val;
 }
@@ -2362,9 +2330,6 @@ static void mt_battery_thermal_check(void)
 #else    
 		if(BMT_status.temperature >= 60)
         {
-            #if defined(CONFIG_POWER_EXT)
-            battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] CONFIG_POWER_EXT, no update battery update power down.\n");
-            #else
             {
                 if( (g_platform_boot_mode==META_BOOT) || (g_platform_boot_mode==ADVMETA_BOOT) || (g_platform_boot_mode==ATE_FACTORY_BOOT) )
                 {
@@ -2391,7 +2356,6 @@ static void mt_battery_thermal_check(void)
                     //mt_power_off();
                 }
             }
-            #endif
         }
 #endif
         
@@ -2477,17 +2441,10 @@ static void mt_battery_charger_detect_check(void)
 
 static void mt_battery_update_status(void)
 {
-#if defined(CONFIG_POWER_EXT)
-    battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] CONFIG_POWER_EXT, no update Android.\n");
-#else
-	{
-		wireless_update(&wireless_main);
-		battery_update(&battery_main);			
-		ac_update(&ac_main);
-		usb_update(&usb_main);
-	}
-
-#endif	
+    wireless_update(&wireless_main);
+    battery_update(&battery_main);			
+    ac_update(&ac_main);
+    usb_update(&usb_main);
 }
 
 void update_battery_2nd_info(int status_2nd, int capacity_2nd, int present_2nd)
@@ -2516,11 +2473,6 @@ void do_chrdet_int_task(void)
             BMT_status.charger_exist = KAL_TRUE;
 
             wake_lock(&battery_suspend_lock);
-
-#if defined(CONFIG_POWER_EXT)
-            mt_usb_connect();
-     	      battery_xlog_printk(BAT_LOG_CRTI, "[do_chrdet_int_task] call mt_usb_connect() in EVB\n");
-#endif
         }
         else
         {
@@ -2537,11 +2489,6 @@ void do_chrdet_int_task(void)
 #endif
 
             wake_unlock(&battery_suspend_lock);
-
-#if defined(CONFIG_POWER_EXT)
-            mt_usb_disconnect();
-            battery_xlog_printk(BAT_LOG_CRTI, "[do_chrdet_int_task] call mt_usb_disconnect() in EVB\n");
-#endif
         }
          
 		//Place charger detection and battery update here is used to speed up charging icon display.
@@ -3037,7 +2984,6 @@ static int battery_probe(struct platform_device *dev)
     }
     battery_xlog_printk(BAT_LOG_CRTI, "[BAT_probe] power_supply_register Battery Success !!\n");
 
-#if !defined(CONFIG_POWER_EXT)
     /* For EM */
 	{
 	    int ret_device_file=0;
@@ -3128,7 +3074,6 @@ static int battery_probe(struct platform_device *dev)
     /*LOG System Set*/
     init_proc_log();
 
-#endif   
 	g_bat_init_flag = KAL_TRUE;
 	
     return 0;
@@ -3154,8 +3099,6 @@ static int battery_suspend(struct device *device)
 	struct timespec xts, tom;
 
     //battery_xlog_printk(BAT_LOG_CRTI, "******** battery driver suspend!! ********\n" );
-#ifdef CONFIG_POWER_EXT
-#else
     if (mutex_trylock(&bat_mutex) != 1)
     {
         return 1;//skip this suspend operation
@@ -3169,7 +3112,6 @@ static int battery_suspend(struct device *device)
     mutex_unlock(&bat_mutex);
 
     battery_xlog_printk(BAT_LOG_CRTI, "@bs=1@\n" );
-#endif
 
     get_xtime_and_monotonic_and_sleep_offset(&xts, &tom, &g_bat_time_before_sleep);
     return 0;
@@ -3178,8 +3120,6 @@ static int battery_suspend(struct device *device)
 
 static int battery_resume(struct device *device)
 {
-#ifdef CONFIG_POWER_EXT
-#else
 	kal_bool is_pcm_timer_trigger = KAL_FALSE;
 	struct timespec xts, tom, bat_time_after_sleep;
 
@@ -3216,7 +3156,6 @@ static int battery_resume(struct device *device)
     battery_xlog_printk(BAT_LOG_CRTI, "@bs=0@\n");
     mutex_unlock(&bat_mutex);
 	
-#endif
     return 0;
 }
 

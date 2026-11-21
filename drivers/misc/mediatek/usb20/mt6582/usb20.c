@@ -302,11 +302,7 @@ bool usb_cable_connected(void)
 	//ALPS00775710
 #endif //end CONFIG_USB_MTK_OTG
 
-#ifdef CONFIG_POWER_EXT
-	if (upmu_get_rgs_chrdet())
-#else
 	if (upmu_is_chr_det())
-#endif
 	{
 		int type = mt_charger_type_detection();
 		if ((type == STANDARD_HOST) || (type == CHARGING_HOST))

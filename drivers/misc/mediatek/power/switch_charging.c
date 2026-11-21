@@ -82,9 +82,6 @@ extern void bq24196_set_en_hiz(kal_uint32 val);
  // ============================================================ //
 void BATTERY_SetUSBState(int usb_state_value)
 {
-#if defined(CONFIG_POWER_EXT)
-	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY_SetUSBState] in FPGA/EVB, no service\r\n");
-#else
     if ( (usb_state_value < USB_SUSPEND) || ((usb_state_value > USB_CONFIGURED))){
         battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] BAT_SetUSBState Fail! Restore to default value\r\n");    
         usb_state_value = USB_UNCONFIGURED;
@@ -92,7 +89,6 @@ void BATTERY_SetUSBState(int usb_state_value)
         battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] BAT_SetUSBState Success! Set %d\r\n", usb_state_value);    
         g_usb_state = usb_state_value;    
     }
-#endif	
 }
 
 
