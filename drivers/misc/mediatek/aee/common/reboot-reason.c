@@ -4,7 +4,6 @@
 #include <linux/init.h>
 #include <linux/sched.h>
 #include <linux/aee.h>
-#include <linux/mrdump.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
@@ -357,7 +356,6 @@ void aee_stop_nested_panic(struct pt_regs *regs)
 	}
 
 	aee_nested_printf("aee_stop_nested_panic: RAMDUMP.\n");
-	__mrdump_create_oops_dump(AEE_REBOOT_MODE_NESTED_EXCEPTION, (struct pt_regs *)thread->regs_on_excp, "Nested Panic");
 	
 	res = get_wd_api(&wd_api);
 	if (res) {

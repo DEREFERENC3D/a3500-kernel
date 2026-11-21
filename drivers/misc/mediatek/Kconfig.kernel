@@ -59,10 +59,6 @@ config MTK_AEE_IPANIC
         tristate "Enable AEE Kernel Panic Dump"
         default y
 
-config MTK_AEE_MRDUMP
-       tristate "Enable AEE RAMDUMP support"
-       default y
-
 config MTK_AEE_DRAM_CONSOLE
        bool "Enable DRAM console"
        default n
