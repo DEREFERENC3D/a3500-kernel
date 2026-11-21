@@ -977,21 +977,6 @@ static struct platform_device pmem_multimedia_device = {
 };
 #endif
 
-#if defined(CONFIG_ANDROID_VMEM)
-static struct android_vmem_platform_data  pdata_vmultimedia = {
-        .name = "vmem_multimedia",
-        .no_allocator = 0,
-        .cached = 1,
-        .buffered = 1
-};
-
-static struct platform_device vmem_multimedia_device = {
-        .name = "android_vmem",
-        .id = -1,
-        .dev = { .platform_data = &pdata_vmultimedia }
-};
-#endif
-
 /*=======================================================================*/
 /* MT6575 SYSRAM                                                         */
 /*=======================================================================*/
@@ -1908,18 +1893,6 @@ retval = platform_device_register(&dummychar_device);
 
     retval = platform_device_register(&pmem_multimedia_device);
     if (retval != 0){
-       return retval;
-    }
-#endif
-
-#if defined(CONFIG_ANDROID_VMEM)
-    pdata_vmultimedia.start = PMEM_MM_START;;
-    pdata_vmultimedia.size = PMEM_MM_SIZE;
-    printk("VMEM start: 0x%lx size: 0x%lx\n", pdata_vmultimedia.start, pdata_vmultimedia.size);
-
-    retval = platform_device_register(&vmem_multimedia_device);
-    if (retval != 0){
-	printk("vmem platform register failed\n");
        return retval;
     }
 #endif
