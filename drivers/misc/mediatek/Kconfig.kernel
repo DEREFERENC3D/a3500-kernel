@@ -35,10 +35,6 @@ endmenu
 
 menu "MTPROF tools"
 
-config MTK_MUTATION
-        bool "Support some MTK debug/profiling patches"
-        default y
-
 config MTPROF_CPUTIME
     bool "thread cputime profiling"
     depends on SCHEDSTATS

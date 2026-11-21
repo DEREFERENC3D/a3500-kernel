@@ -571,6 +571,7 @@ static struct battery_data battery_main = {
 };
 
 
+#if !defined(CONFIG_POWER_EXT)
 ///////////////////////////////////////////////////////////////////////////////////////////
 //// Create File For EM : ADC_Charger_Voltage
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -1611,6 +1612,8 @@ static void usb_update(struct usb_data *usb_data)
     power_supply_changed(usb_psy); 
 }
 
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 //// Battery Temprature Parameters and functions
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -2489,6 +2492,11 @@ void do_chrdet_int_task(void)
 #endif
 
             wake_unlock(&battery_suspend_lock);
+
+#if defined(CONFIG_POWER_EXT)
+            mt_usb_disconnect();
+            battery_xlog_printk(BAT_LOG_CRTI, "[do_chrdet_int_task] call mt_usb_disconnect() in EVB\n");
+#endif
         }
          
 		//Place charger detection and battery update here is used to speed up charging icon display.
@@ -2984,6 +2992,7 @@ static int battery_probe(struct platform_device *dev)
     }
     battery_xlog_printk(BAT_LOG_CRTI, "[BAT_probe] power_supply_register Battery Success !!\n");
 
+#if !defined(CONFIG_POWER_EXT)
     /* For EM */
 	{
 	    int ret_device_file=0;
@@ -3074,6 +3083,7 @@ static int battery_probe(struct platform_device *dev)
     /*LOG System Set*/
     init_proc_log();
 
+#endif   
 	g_bat_init_flag = KAL_TRUE;
 	
     return 0;
