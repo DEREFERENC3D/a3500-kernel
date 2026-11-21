@@ -131,11 +131,6 @@ config MTK_ETM
        default y
        help
 
-config MTK_ION_DEBUG
-       bool "Support ion debugger"
-       default y
-       help
-
 menu "MT load balance and schedule enhancement"
 config MT_SCHED
 	bool "Enhance CPU affinity in hotplug"	

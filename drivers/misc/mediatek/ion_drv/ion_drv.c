@@ -33,13 +33,6 @@
 
 #define ION_FUNC_ENTER  //MMProfileLogMetaString(MMP_ION_DEBUG, MMProfileFlagStart, __func__);
 #define ION_FUNC_LEAVE  //MMProfileLogMetaString(MMP_ION_DEBUG, MMProfileFlagEnd, __func__);
-#if CONFIG_MTK_ION_DEBUG
-#define ION_DEBUG_INFO KERN_DEBUG
-#define ION_DEBUG_TRACE KERN_DEBUG
-#define ION_DEBUG_ERROR KERN_ERR
-#define ION_DEBUG_WARN KERN_WARNING
-extern unsigned int ion_debugger;
-#endif
 //#pragma GCC optimize ("O0")
 #define DEFAULT_PAGE_SIZE 0x1000
 #define PAGE_ORDER 12
@@ -243,81 +236,6 @@ static long ion_sys_ioctl(struct ion_client *client, unsigned int cmd, unsigned 
         break;
     case ION_SYS_RECORD:
 	{
-#if CONFIG_MTK_ION_DEBUG
-
-	     unsigned int i;
-	     char *tmp_string = NULL;
-	    
-	     if(Param.record_param.action == ION_FUNCTION_CHECK_ENABLE)
-	     {
-		ret = (long)ion_debugger;
-		break;
-	     }
-	     if(ion_debugger)
-	     {
- 
-	     //copy mapping info from userspace to kernel space 
-	     if(!from_kernel && (Param.record_param.backtrace_num > 0))
-	     {
-	     	for(i = 0 ; i < Param.record_param.backtrace_num;i++)
-	     	{
-			if(Param.record_param.mapping_record[i].size > 0 )
-			{
-				unsigned int string_len = 0;
-				string_len = strlen_user((void __user*)Param.record_param.mapping_record[i].name);
-				if(string_len > 0)
-				{
-					int ret;
-					tmp_string = (char *)kmalloc(string_len,GFP_KERNEL);
-					ret = copy_from_user(tmp_string, (void __user *)Param.record_param.mapping_record[i].name, string_len);
-					if(tmp_string!=NULL)
-					{
-	     				 	Param.record_param.mapping_record[i].name= get_userString_from_hashTable(tmp_string,string_len);
-						kfree(tmp_string);
-					}
-					else
-					{
-						printk(ION_DEBUG_ERROR "[ION_FUNC%d][ion_sys_ioctl]tmp_string is NULL\n",Param.record_param.action);
-					}
-				}
-				else
-				{
-					printk(ION_DEBUG_ERROR "[ION_FUNC%d][ion_sys_ioctl]mapping info error can't get right string len \n",Param.record_param.action);
-				}
-			}
-	     	}
-	     }
-	     Param.record_param.client = client;
-	     if(Param.record_param.handle != NULL)
-	     {
-            struct ion_handle *kernel_handle;  
-            kernel_handle = ion_drv_get_kernel_handle(client, 
-                            Param.record_param.handle, from_kernel);
-            if(IS_ERR(kernel_handle))
-            {
-                IONMSG("ion_sys_record fail!\n");
-                ret = -EINVAL;
-                break;
-            }
-			Param.record_param.buffer = ion_handle_buffer(kernel_handle);
-			if(!from_kernel)
-			{
-				Param.record_param.handle = kernel_handle;
-			}
-
-            if(Param.record_param.buffer != NULL)
-            {
-				printk(ION_DEBUG_TRACE "[ION_FUNC%d][ion_sys_record]BUFFER :[%x] size :[%d] handle: [0x%x]\n",Param.record_param.action,(unsigned int)Param.record_param.buffer,Param.record_param.buffer->size,(unsigned int)Param.record_param.handle);
-            	}
-            else
-            {
-				printk(ION_DEBUG_TRACE "[ION_FUNC%d]buffer is NULL handle: [0x%x]\n",Param.record_param.action,(unsigned int)Param.record_param.handle);
-            } 
-	     }
-	     record_ion_info(from_kernel,&Param.record_param);
-	     printk(ION_DEBUG_TRACE "[ION_FUNC%d][ion_sys_ioctl]DONE\n",Param.record_param.action);
-	     }	
-#endif
 	     break;
 	}
     case ION_SYS_SET_HANDLE_BACKTRACE:
