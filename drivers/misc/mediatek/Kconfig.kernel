@@ -33,14 +33,6 @@ endmenu
 
 endmenu
 
-menu "MTPROF tools"
-
-config MTPROF_CPUTIME
-    bool "thread cputime profiling"
-    depends on SCHEDSTATS
-
-endmenu
-
 config MTK_AEE_FEATURE
         tristate "Enable Android Exception Enhancement"
         default n
