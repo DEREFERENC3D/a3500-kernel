@@ -489,47 +489,7 @@ static int ion_mm_heap_debug_show(struct ion_heap *heap, struct seq_file *s,
 
     }
 
-    #if ION_RUNTIME_DEBUGGER
-    //dump all handle's backtrace 
-    for (n = rb_first(&dev->clients); n; n = rb_next(n)) {
-        struct ion_client *client = rb_entry(n, struct ion_client,node);
-
-        if (client->task) {
-                char task_comm[TASK_COMM_LEN];
-                get_task_comm(task_comm, client->task);
-                ION_PRINT_LOG_OR_SEQ(s, "%16.s %16u(pid)================>\n", task_comm,client->pid);
-        } else {
-        	ION_PRINT_LOG_OR_SEQ(s, "%16.s %16u(pid)================>\n", client->name,client->pid);
-        }
-
-        {
-            struct rb_node *m;
-
-            mutex_lock(&client->lock);
-            for (m = rb_first(&client->handles); m; m = rb_next(m)) {
-                    struct ion_handle *handle = rb_entry(m,
-                                                         struct ion_handle,
-                                                         node);
-                    int i;
-
-                    ION_PRINT_LOG_OR_SEQ(s, "handle=0x%x, buffer=0x%x, heap=%d, backtrace is:\n",
-                    (unsigned int)handle, (unsigned int)handle->buffer, handle->buffer->heap->id);
-
-                for(i=0; i<handle->dbg.backtrace_num; i++)
-                {
-                	ION_PRINT_LOG_OR_SEQ(s,"\t\tbt: 0x%x\n", handle->dbg.backtrace[i]);
-                }
-
-            }
-            mutex_unlock(&client->lock);
-        }
-            
-    }
-    #endif
-
-    
-
-        return 0;
+    return 0;
 }
 
 void ion_mm_heap_total_memory() {

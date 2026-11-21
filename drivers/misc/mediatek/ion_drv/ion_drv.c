@@ -240,31 +240,8 @@ static long ion_sys_ioctl(struct ion_client *client, unsigned int cmd, unsigned 
 	}
     case ION_SYS_SET_HANDLE_BACKTRACE:
     {
-#if ION_RUNTIME_DEBUGGER
-	     unsigned int i;
-        struct ion_handle *kernel_handle;  
-        kernel_handle = ion_drv_get_kernel_handle(client, 
-                        Param.record_param.handle, from_kernel);
-        if(IS_ERR(kernel_handle))
-        {
-            IONMSG("ion_set_handle_bt fail!\n");
-            ret = -EINVAL;
-            break;
-        }
-
-        kernel_handle->dbg.pid = (unsigned int) current->pid;
-        kernel_handle->dbg.tgid = (unsigned int)current->tgid;
-        kernel_handle->dbg.backtrace_num = Param.record_param.backtrace_num;
-
-        for(i=0; i<Param.record_param.backtrace_num; i++)
-        {
-            kernel_handle->dbg.backtrace[i] = Param.record_param.backtrace[i];
-        }
-#endif
-
+        break;
 	}
-    break;
-    
     default:
         printk("[ion_sys_ioctl]: Error. Invalid command.\n");
         ret = -EFAULT;
