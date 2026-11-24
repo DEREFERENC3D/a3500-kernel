@@ -1166,6 +1166,11 @@ static int mmc_sd_resume(struct mmc_host *host)
 	return err;
 }
 
+int mmc_sd_power_cycle(struct mmc_host *host, u32 ocr, struct mmc_card *card)
+{
+	return mmc_sd_init_card(host, ocr, card);
+}
+
 static int mmc_sd_power_restore(struct mmc_host *host)
 {
 	int ret;

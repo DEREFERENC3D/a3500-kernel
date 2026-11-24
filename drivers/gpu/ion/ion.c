@@ -39,6 +39,7 @@
 
 #include "ion_priv.h"
 
+#if 0 //we move it to ion_priv.h. so we can dump every buffer info in ion_mm_heap.c
 /**
  * struct ion_device - the metadata of the ion device node
  * @dev:		the actual misc device
@@ -106,6 +107,7 @@ struct ion_handle {
 	unsigned int kmap_cnt;
 	int id;
 };
+#endif
 
 bool ion_buffer_fault_user_mappings(struct ion_buffer *buffer)
 {
@@ -402,12 +404,12 @@ static struct ion_handle *ion_handle_lookup(struct ion_client *client,
 	return ERR_PTR(-EINVAL);
 }
 
-static struct ion_handle *ion_uhandle_get(struct ion_client *client, int id)
+struct ion_handle *ion_uhandle_get(struct ion_client *client, int id)
 {
 	return idr_find(&client->idr, id);
 }
 
-static bool ion_handle_validate(struct ion_client *client, struct ion_handle *handle)
+bool ion_handle_validate(struct ion_client *client, struct ion_handle *handle)
 {
 	return (ion_uhandle_get(client, handle->id) == handle);
 }

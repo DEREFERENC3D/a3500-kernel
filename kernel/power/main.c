@@ -18,8 +18,23 @@
 
 #include "power.h"
 
+#define HIB_PM_DEBUG 0
+extern bool console_suspend_enabled; // from printk.c
+#define _TAG_HIB_M "HIB/PM"
+#if (HIB_PM_DEBUG)
+#undef hib_log
+#define hib_log(fmt, ...)	pr_warn("[%s][%s]" fmt, _TAG_HIB_M, __func__, ##__VA_ARGS__);
+#else
+#define hib_log(fmt, ...)
+#endif
+#undef hib_warn
+#define hib_warn(fmt, ...)  pr_warn("[%s][%s]" fmt, _TAG_HIB_M, __func__, ##__VA_ARGS__);
+
 DEFINE_MUTEX(pm_mutex);
 EXPORT_SYMBOL_GPL(pm_mutex);
+
+unsigned int pm_flags;
+EXPORT_SYMBOL(pm_flags);
 
 #ifdef CONFIG_PM_SLEEP
 
@@ -49,7 +64,7 @@ int pm_notifier_call_chain(unsigned long val)
 EXPORT_SYMBOL_GPL(pm_notifier_call_chain);
 
 /* If set, devices may be suspended and resumed asynchronously. */
-int pm_async_enabled = 1;
+int pm_async_enabled = 0;
 
 static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
 			     char *buf)
@@ -301,28 +316,70 @@ static suspend_state_t decode_state(const char *buf, size_t n)
 static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 			   const char *buf, size_t n)
 {
-	suspend_state_t state;
-	int error;
+#ifdef CONFIG_SUSPEND
+#ifdef CONFIG_EARLYSUSPEND
+	suspend_state_t state = PM_SUSPEND_ON;
+#else
+	suspend_state_t state = PM_SUSPEND_STANDBY;
+#endif
+	const char * const *s;
+#endif
+	char *p;
+	int len;
+	int error = -EINVAL;
 
-	error = pm_autosleep_lock();
-	if (error)
-		return error;
+	p = memchr(buf, '\n', n);
+	len = p ? p - buf : n;
 
-	if (pm_autosleep_state() > PM_SUSPEND_ON) {
-		error = -EBUSY;
-		goto out;
+#ifdef CONFIG_MTK_HIBERNATION
+	state = decode_state(buf, n);
+#endif
+
+#ifdef CONFIG_MTK_HIBERNATION
+	if (len == 8 && !strncmp(buf, "hibabort", len)) {
+		error = mtk_hibernate_abort();
+		goto Exit;
+	}
+#endif
+
+	/* First, check if we are requested to hibernate */
+	if (len == 4 && !strncmp(buf, "disk", len)) {
+#ifdef CONFIG_MTK_HIBERNATION
+#ifdef CONFIG_EARLYSUSPEND
+		if (PM_SUSPEND_ON == get_suspend_state()) {
+			error = -EINVAL;
+			goto Exit;
+		}
+#endif
+		if (!pre_hibernate()) {
+			error = 0;
+			error = mtk_hibernate();
+		}
+#else // !CONFIG_MTK_HIBERNATION
+		error = hibernate();
+#endif
+		goto Exit;
 	}
 
-	state = decode_state(buf, n);
-	if (state < PM_SUSPEND_MAX)
-		error = pm_suspend(state);
-	else if (state == PM_SUSPEND_MAX)
-		error = hibernate();
-	else
-		error = -EINVAL;
+#ifdef CONFIG_SUSPEND
+	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++) {
+		if (*s && len == strlen(*s) && !strncmp(buf, *s, len))
+			break;
+	}
+	if (state < PM_SUSPEND_MAX && *s) {
+#ifdef CONFIG_EARLYSUSPEND
+		if (state == PM_SUSPEND_ON || valid_state(state)) {
+			error = 0;
+			request_suspend_state(state);
+		} else
+			error = -EINVAL;
+#else
+		error = enter_state(state);
+#endif
+	}
+#endif
 
- out:
-	pm_autosleep_unlock();
+ Exit:
 	return error ? error : n;
 }
 

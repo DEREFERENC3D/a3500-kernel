@@ -66,6 +66,11 @@ struct thread_info {
 	unsigned long		thumbee_state;	/* ThumbEE Handler Base register */
 #endif
 	struct restart_block	restart_block;
+// TODO: Remove after ripping out MTK_AEE_FEATURE
+#ifdef CONFIG_MTK_AEE_FEATURE
+	int			cpu_excp;
+	void 			*regs_on_excp;
+#endif
 };
 
 #define INIT_THREAD_INFO(tsk)						\

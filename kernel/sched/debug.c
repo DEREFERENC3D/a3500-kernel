@@ -507,3 +507,8 @@ void proc_sched_set_task(struct task_struct *p)
 	memset(&p->se.statistics, 0, sizeof(p->se.statistics));
 #endif
 }
+
+// TODO: MTK Nuke after removing dependency in "mediatek/kernel/drivers/aee/common/wdt-handler.c"
+void sysrq_sched_debug_show_at_KE(void)
+{
+}

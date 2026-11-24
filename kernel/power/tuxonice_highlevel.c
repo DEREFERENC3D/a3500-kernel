@@ -105,6 +105,7 @@ EXPORT_SYMBOL_GPL(tuxonice_signature);
 
 unsigned long boot_kernel_data_buffer;
 
+#if 0
 static char *result_strings[] = {
 	"Hibernation was aborted",
 	"The user requested that we cancel the hibernation",
@@ -139,6 +140,8 @@ static char *result_strings[] = {
 	"Header reservation too small",
 	"Device Power Management Preparation failed",
 };
+#endif
+
 
 /**
  * toi_finish_anything - cleanup after doing anything
@@ -158,7 +161,7 @@ void toi_finish_anything(int hibernate_or_resume)
 		set_cpus_allowed_ptr(current, cpu_all_mask);
 		toi_alloc_print_debug_stats();
 		atomic_inc(&snapshot_device_available);
-    unlock_system_sleep();
+		unlock_system_sleep();
 	}
 
 	set_fs(oldfs);
@@ -181,7 +184,7 @@ int toi_start_anything(int hibernate_or_resume)
 	set_fs(KERNEL_DS);
 
 	if (hibernate_or_resume) {
-    lock_system_sleep();
+		lock_system_sleep();
 
 		if (!atomic_add_unless(&snapshot_device_available, -1, 0))
 			goto snapshotdevice_unavailable;
@@ -395,16 +398,21 @@ static int get_toi_debug_info(const char *buffer, int count)
 
 	for (i = 0; i < TOI_NUM_RESULT_STATES; i++)
 		if (test_result_state(i)) {
+#if 0
 			SNPRINTF("%s: %s.\n", first_result ?
 					"- Result         " :
 					"                 ",
 					result_strings[i]);
+#endif
 			first_result = 0;
 		}
-	if (first_result)
+	if (first_result) {
+#if 0
 		SNPRINTF("- Result         : %s.\n", nr_hibernates ?
 			"Succeeded" :
 			"No hibernation attempts so far");
+#endif
+	}
 	return len;
 }
 
@@ -424,7 +432,6 @@ static void do_cleanup(int get_debug_info, int restarting)
 
 	if (get_debug_info)
 		toi_prepare_status(DONT_CLEAR_BAR, "Cleaning up...");
-
 	free_checksum_pages();
 
 	if (get_debug_info)
@@ -530,6 +537,9 @@ static int check_still_keeping_image(void)
 static int toi_init(int restarting)
 {
 	int result, i, j;
+
+	if (test_result_state(TOI_ABORTED))
+		return 1;
 
 	toi_result = 0;
 
@@ -1002,11 +1012,17 @@ void toi_try_resume(void)
 	resume_attempted = 1;
 
 	current->flags |= PF_MEMALLOC;
+
+	get_online_cpus(); /* protect against CPU hotplug */
 	toi_start_other_threads();
 
 	if (do_toi_step(STEP_RESUME_CAN_RESUME) &&
-			!do_toi_step(STEP_RESUME_LOAD_PS1))
+	    !do_toi_step(STEP_RESUME_LOAD_PS1)) {
+		put_online_cpus();
 		do_toi_step(STEP_RESUME_DO_RESTORE);
+	} else {
+		put_online_cpus();
+	}
 
 	toi_stop_other_threads();
 	do_cleanup(0, 0);
@@ -1124,6 +1140,11 @@ out:
 	if (sys_power_disk)
 		toi_finish_anything(SYSFS_HIBERNATING);
 
+#ifdef CONFIG_MTK_HIBERNATION
+	if (test_result_state(TOI_ARCH_PREPARE_FAILED))
+		result = 0xdead;
+#endif
+
 	return result;
 }
 
@@ -1203,6 +1224,19 @@ int toi_launch_userspace_program(char *command, int channel_no,
 
 	return retval;
 }
+
+#ifdef CONFIG_MTK_HIBERNATION
+int toi_abort_hibernate(void)
+{
+	if (test_result_state(TOI_ABORTED))
+		return 0;
+
+	set_result_state(TOI_ABORTED);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(toi_abort_hibernate);
+#endif
 
 /*
  * This array contains entries that are automatically registered at

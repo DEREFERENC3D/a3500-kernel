@@ -30,6 +30,8 @@ typedef u64 __nocast cputime64_t;
 #define usecs_to_cputime64(__usec)	\
 	jiffies64_to_cputime64(nsecs_to_jiffies64((__usec) * 1000))
 
+#define cputime_to_msecs(__ct)		jiffies_to_msecs(__ct)
+
 /*
  * Convert cputime to seconds and back.
  */
