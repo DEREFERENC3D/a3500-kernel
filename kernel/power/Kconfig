@@ -26,11 +26,6 @@ config HAS_EARLYSUSPEND
 	bool
 	default y
 
-config HAS_SBSUSPEND
-	bool
-	depends on HAS_EARLYSUSPEND
-	default y
-
 config WAKELOCK
 	bool
 	default y
