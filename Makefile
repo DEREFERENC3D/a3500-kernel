@@ -1160,28 +1160,6 @@ _modinst_post: _modinst_
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modinst
 	$(call cmd,depmod)
 
-# MTK, Infinity, 20090730 {
-# Target to install android modules
-
-AMODLIB	= $(INSTALL_MOD_PATH)/lib/modules
-export AMODLIB
-AMODSYMLIB = $(INSTALL_MOD_PATH)/../symbols/system/lib/modules
-export AMODSYMLIB
-
-PHONY += android_modules_install
-android_modules_install: _android_modinst_
-
-PHONY += _android_modinst_
-_android_modinst_:
-	@if [ ! -d $(AMODLIB) ]; then \
-	   mkdir -p $(AMODLIB); \
-	fi
-	@if [ ! -d $(AMODSYMLIB) ]; then \
-	   mkdir -p $(AMODSYMLIB); \
-	fi
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.android.modinst
-# MTK, Infinity, 20090730 }
-
 else # CONFIG_MODULES
 
 # Modules not configured
