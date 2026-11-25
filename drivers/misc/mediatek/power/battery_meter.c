@@ -151,12 +151,9 @@ struct timespec last_oam_run_time;
 /* Temperature window size */
 #define TEMP_AVERAGE_SIZE 	30
 
-#ifdef MTK_MULTI_BAT_PROFILE_SUPPORT
 extern int IMM_GetOneChannelValue_Cali(int Channel, int*voltage);
 kal_uint32 g_fg_battery_id = 0;
 
-#ifdef MTK_GET_BATTERY_ID_BY_AUXADC
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 void fgauge_get_profile_id(void)
 {
 	int id_volt = 0;
@@ -188,53 +185,6 @@ void fgauge_get_profile_id(void)
 
 	bm_print(BM_LOG_CRTI, "[fgauge_get_profile_id]Battery id (%d)\n", g_fg_battery_id);		
 }
-#else
-void fgauge_get_profile_id(void)
-{
-	int id_volt = 0;
-    int id = 0;
-	int ret = 0;
-
-	ret = IMM_GetOneChannelValue_Cali(BATTERY_ID_CHANNEL_NUM, &id_volt);
-	if(ret != 0)
-        bm_print(BM_LOG_CRTI, "[fgauge_get_profile_id]id_volt read fail\n");
-	else
-        bm_print(BM_LOG_CRTI, "[fgauge_get_profile_id]id_volt = %d\n", id_volt);
-
-    if ( (sizeof(g_battery_id_voltage)/sizeof(kal_int32)) != TOTAL_BATTERY_NUMBER)
-    {
-        bm_print(BM_LOG_CRTI, "[fgauge_get_profile_id]error! voltage range incorrect!\n");
-        return;
-    }
-
-    for (id = 0; id < TOTAL_BATTERY_NUMBER; id++)
-    {
-        if(id_volt < g_battery_id_voltage[id])
-        {
-            g_fg_battery_id = id;
-            break;
-        }
-        else if (g_battery_id_voltage[id] == -1)
-        {
-            g_fg_battery_id = TOTAL_BATTERY_NUMBER-1;
-        }
-    }
-
-    bm_print(BM_LOG_CRTI, "[fgauge_get_profile_id]Battery id (%d)\n", g_fg_battery_id);		
-}
-#endif
-#elif defined(MTK_GET_BATTERY_ID_BY_GPIO)
-void fgauge_get_profile_id(void)
-{
-    g_fg_battery_id = 0;
-}
-#else
-void fgauge_get_profile_id(void)
-{
-    g_fg_battery_id = 0;
-}
-#endif
-#endif
 
 // ============================================================ //
 // function prototype

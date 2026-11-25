@@ -7,17 +7,12 @@
 // define
 // ============================================================
 #define BAT_NTC_10 1
-#define BAT_NTC_47 0
 
 #if (BAT_NTC_10 == 1)
 #define RBAT_PULL_UP_R             16900	
 #define RBAT_PULL_DOWN_R	   27000	
 #endif
 
-#if (BAT_NTC_47 == 1)
-#define RBAT_PULL_UP_R             61900	
-#define RBAT_PULL_DOWN_R	  100000	
-#endif
 #define RBAT_PULL_UP_VOLT          1800
 
 
@@ -107,27 +102,6 @@ typedef enum
 #endif
 #endif
 
-#if (BAT_NTC_47 == 1)
-    BATT_TEMPERATURE Batt_Temperature_Table[] = {
-        {-20,483954},
-        {-15,360850},
-        {-10,271697},
-        { -5,206463},
-        {  0,158214},
-        {  5,122259},
-        { 10,95227},
-        { 15,74730},
-        { 20,59065},
-        { 25,47000},
-        { 30,37643},
-        { 35,30334},
-        { 40,24591},
-        { 45,20048},
-        { 50,16433},
-        { 55,13539},
-        { 60,11210}        
-    };
-#endif
 
 #if defined(MTK_MULTI_BAT_PROFILE_SUPPORT)
 // T0 -10C
