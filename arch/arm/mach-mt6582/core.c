@@ -14,10 +14,14 @@
 #include <asm/hardware/cache-l2x0.h>
 #include <asm/smp_scu.h>
 #include <asm/page.h>
+#include <asm/cacheflush.h>
+#include <asm/proc-fns.h>
+#include <linux/irqflags.h>
 #include <mach/mt_reg_base.h>
 #include <mach/irqs.h>
+#include <mach/system.h>
 
-extern void arm_machine_restart(char mode, const char *cmd);
+extern void setup_mm_for_reboot(void);
 extern struct sys_timer mt6582_timer;
 extern void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi);
 extern void mt_reserve(void);
@@ -200,6 +204,28 @@ void __init mt_map_io(void)
     /* Reserve 14 MiB for consistent DMA allocations, as the stock
      * platform did by overriding DEFAULT_CONSISTENT_DMA_SIZE. */
     init_consistent_dma_size(SZ_8M + SZ_4M + SZ_2M);
+}
+
+void arm_machine_restart(char mode, const char *cmd)
+{
+	/* machine_restart() has already flushed the console and will report
+	 * a failed reboot if this returns. Only the platform-specific part
+	 * is needed here. */
+	local_irq_disable();
+	local_fiq_disable();
+	setup_mm_for_reboot();
+
+	/* With L1 off and L2 on the spinlock cannot be acquired, so disable
+	 * the L2 as well. */
+	outer_flush_all();
+	outer_disable();
+	outer_flush_all();
+
+	flush_cache_all();
+	cpu_proc_fin();
+	flush_cache_all();
+
+	arch_reset(mode, cmd);
 }
 
 #ifdef CONFIG_MTK_TABLET_PLATFORM
