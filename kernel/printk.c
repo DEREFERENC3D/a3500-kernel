@@ -83,11 +83,6 @@ inline void mt_disable_uart(void)
     if (mt_need_uart_console == 0)
         printk_disable_uart = 1;
 }
-inline void mt_enable_uart(void)
-{
-    if (mt_need_uart_console == 1 && printk_disable_uart)
-        printk_disable_uart = 0;
-}
 #endif
 /* printk's without a loglevel use this.. */
 #define DEFAULT_MESSAGE_LOGLEVEL CONFIG_DEFAULT_MESSAGE_LOGLEVEL
@@ -1385,7 +1380,6 @@ int is_console_locked(void)
 
 static DEFINE_PER_CPU(int, printk_pending);
 static DEFINE_PER_CPU(char [PRINTK_BUF_SIZE], printk_sched_buf);
-static DEFINE_PER_CPU(int, printk_sched_length);
 
 void printk_tick(void)
 {
@@ -1394,7 +1388,6 @@ void printk_tick(void)
 		if (pending & PRINTK_PENDING_SCHED) {
 			char *buf = __get_cpu_var(printk_sched_buf);
 			printk(KERN_WARNING "[sched_delayed] %s", buf);
-			__get_cpu_var(printk_sched_length) = 0;
 		}
 		if (pending & PRINTK_PENDING_WAKEUP)
 			wake_up_interruptible(&log_wait);
@@ -1855,18 +1848,12 @@ int printk_sched(const char *fmt, ...)
 	va_list args;
 	char *buf;
 	int r;
-    int buf_length;
+
 	local_irq_save(flags);
 	buf = __get_cpu_var(printk_sched_buf);
-    buf_length = __get_cpu_var(printk_sched_length);
 
 	va_start(args, fmt);
-    if (PRINTK_BUF_SIZE >= buf_length) {
-        r = vsnprintf(buf + buf_length, PRINTK_BUF_SIZE - buf_length, fmt, args);
-        __get_cpu_var(printk_sched_length) += r;
-    } else {
-        r = 0;
-    }
+	r = vsnprintf(buf, PRINTK_BUF_SIZE, fmt, args);
 	va_end(args);
 
 	__this_cpu_or(printk_pending, PRINTK_PENDING_SCHED);
