@@ -60,8 +60,6 @@
 
 #define V_PSWPIN            (1 << 0)
 #define V_PSWPOUT           (1 << 1)
-#define V_PGFMFAULT         (1 << 2)
-#define V_PGANFAULT         (1 << 3)
 
 #define P_ADJ               (1 << 0)
 #define P_RSS               (1 << 1)
@@ -79,7 +77,7 @@
 #define P_FMT_COUNT         (P_SWPIN | P_SWPOUT | P_FMFAULT | P_MINFAULT | P_MAJFAULT)
 
 #define M_FILTER_ALL        (M_MEMFREE | M_SWAPFREE | M_CACHED | M_GPUUSE | M_MLOCK | M_ZRAM | M_ACTIVE | M_INACTIVE | M_SHMEM)
-#define V_FILTER_ALL        (V_PSWPIN | V_PSWPOUT | V_PGFMFAULT | V_PGANFAULT)
+#define V_FILTER_ALL        (V_PSWPIN | V_PSWPOUT)
 #define P_FILTER_ALL        (P_ADJ | P_RSS | P_RSWAP | P_SWPIN | P_SWPOUT | P_FMFAULT)
 #define B_FILTER_ALL        (B_NORMAL | B_HIGH)
 
@@ -287,11 +285,6 @@ int mlog_print_fmt(struct seq_file *m)
         seq_printf(m, "   swpin");
     if (vmstat_filter & V_PSWPOUT)
         seq_printf(m, "  swpout");
-    if (vmstat_filter & V_PGFMFAULT)
-        seq_printf(m, "   fmflt");
-    if (vmstat_filter & V_PGANFAULT)
-        seq_printf(m, "   anflt");
-
     if (buddyinfo_filter) {
         seq_printf(m, "   [normal]");
         seq_printf(m, "   [high]");
@@ -390,25 +383,11 @@ static void mlog_vmstat(void)
 		struct vm_event_state *this = &per_cpu(vm_event_states, cpu);
         v[PSWPIN] += this->event[PSWPIN];
         v[PSWPOUT] += this->event[PSWPOUT];
-        v[PGFMFAULT] += this->event[PGFMFAULT];
-        
-        // TODO: porting PGANFAULT to kernel-3.10
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0))
-        v[PGANFAULT] += this->event[PGANFAULT];
-#endif
 	}
 
     spin_lock_bh(&mlogbuf_lock);
     mlog_emit_32(v[PSWPIN]);
     mlog_emit_32(v[PSWPOUT]);
-    mlog_emit_32(v[PGFMFAULT]);
-    
-    // TODO: porting PGANFAULT to kernel-3.10
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))    
-    mlog_emit_32(0);
-#else
-    mlog_emit_32(v[PGANFAULT]);
-#endif
     spin_unlock_bh(&mlogbuf_lock);
 }
 
