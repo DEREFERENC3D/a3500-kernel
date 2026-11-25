@@ -25,6 +25,7 @@
 #include <mach/dma.h>
 #include <linux/delay.h>
 #include <linux/earlysuspend.h>
+#include <linux/tick.h>
 #include "mach/sync_write.h"
 #include "mach/mt_reg_base.h"
 #include "mach/mt_clkmgr.h"
@@ -51,6 +52,24 @@
 #define VCODEC_DEVNAME     "Vcodec"
 #define MT6582_VCODEC_DEV_MAJOR_NUMBER 160   //189
 //#define VDEC_USE_L2C
+
+/* These were generic scheduler exports used only by the VCODEC_GET_*
+ * ioctls below; keep them local to their consumer. */
+static unsigned long long vcodec_thread_cputime(pid_t pid)
+{
+	struct task_struct *p = pid ? find_task_by_vpid(pid) : current;
+	return task_sched_runtime(p);
+}
+
+static unsigned long long vcodec_cpu_idle(int cpu)
+{
+	return get_cpu_idle_time_us(cpu, NULL);
+}
+
+static unsigned long long vcodec_sched_clock(void)
+{
+	return sched_clock();
+}
 
 static dev_t vcodec_devno = MKDEV(MT6582_VCODEC_DEV_MAJOR_NUMBER,0);
 static struct cdev *vcodec_cdev;
@@ -1072,13 +1091,13 @@ static long vcodec_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned 
             VAL_UINT8_T cpu_id;
             //MFV_LOGE("[MT6582] VCODEC_GET_CPU_LOADING_INFO num_possible_cpus(%d)\n", num_possible_cpus());
             for (cpu_id = 0 ; cpu_id < num_possible_cpus()  ; cpu_id++) {
-                _temp._cpu_idle_time += mt_get_cpu_idle(cpu_id);
-                _temp._thread_cpu_time += mt_get_thread_cputime(cpu_id);
+                _temp._cpu_idle_time += vcodec_cpu_idle(cpu_id);
+                _temp._thread_cpu_time += vcodec_thread_cputime(cpu_id);
             }
             //spin_lock_irqsave(&OalHWContextLock, ulFlags);
             //_temp._inst_count = getCurInstanceCount();
             //spin_unlock_irqrestore(&OalHWContextLock, ulFlags);
-            _temp._sched_clock = mt_sched_clock();
+            _temp._sched_clock = vcodec_sched_clock();
 #endif
             ret = copy_to_user(user_data_addr, &_temp, sizeof(VAL_VCODEC_CPU_LOADING_INFO_T));
             if (ret) {
