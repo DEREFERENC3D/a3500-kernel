@@ -1,4 +1,5 @@
 #include <linux/vmalloc.h>  
+#include <linux/module.h>
 #include <asm/uaccess.h>
 #include <linux/major.h>
 #include <linux/miscdevice.h>

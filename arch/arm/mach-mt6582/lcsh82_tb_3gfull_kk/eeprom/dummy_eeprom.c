@@ -7,6 +7,7 @@
 #include <linux/i2c.h>
 #include <mt_i2c_extflag.h>
 #include <linux/platform_device.h>
+#include <linux/module.h>
 #include <linux/delay.h>
 #include <linux/cdev.h>
 #include <linux/uaccess.h>

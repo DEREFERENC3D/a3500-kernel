@@ -1,4 +1,5 @@
 #include <linux/interrupt.h>
+#include <linux/module.h>
 #include <linux/i2c.h>
 #include <mt_i2c_extflag.h>
 #include <linux/slab.h>
