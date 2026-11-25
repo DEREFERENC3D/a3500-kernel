@@ -42,7 +42,6 @@ endif
 obj-y	+= fmradio/
 obj-y	+= gps/
 obj-y	+= hwmon/
-obj-y	+= mhl/
 obj-y	+= almk/
 obj-y	+= btcvsd/
 obj-y	+= bthid/

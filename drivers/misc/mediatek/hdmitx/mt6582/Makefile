@@ -10,7 +10,6 @@ ccflags-y += -I$(MTK_CUSTOM_PATH)/hdmitx/  \
              -I$(MTK_CUSTOM_PATH)/video/ \
              -I$(MTK_CUSTOM_PATH)/video/     \
              -I$(MTK_CUSTOM_PATH)/sync/ \
-             -I$(MTK_CUSTOM_PATH)/mhl/driver/mhl_tx_drv/ \
              -I$(MTK_ROOT_CUSTOM_OUT)/kernel/hdmi/inc/ 
 
 ifeq ($(CUSTOM_KERNEL_HDMI),nxp_tda19989)
