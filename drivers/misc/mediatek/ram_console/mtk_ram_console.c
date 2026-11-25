@@ -1,5 +1,4 @@
 #include <linux/slab.h>
-#include <linux/aee.h>
 #include <linux/atomic.h>
 #include <linux/console.h>
 #include <linux/delay.h>
@@ -175,63 +174,6 @@ void emmc_read_last_kmsg(void)
 #endif
 
 
-void aee_rr_rec_reboot_mode(u8 mode)
-{
-	if (ram_console_buffer) {
-		ram_console_buffer->reboot_mode = mode;
-	}
-}
-
-extern void aee_rr_rec_kdump_params(void *params)
-{
- 	if (ram_console_buffer) {
-		ram_console_buffer->kparams = params;
- 	}
-}
-
-void aee_rr_rec_fiq_step(u8 i)
-{
-	if(ram_console_buffer)
-	{
-		ram_console_buffer->fiq_step = i;
-	}
-}
-
-void aee_rr_rec_last_irq_enter(int cpu, int irq, u64 j)
-{
-	if ((ram_console_buffer != NULL) && (cpu >= 0) && (cpu < RC_CPU_COUNT)) {
-		ram_console_buffer->last_irq_enter[cpu] = irq;
-		ram_console_buffer->jiffies_last_irq_enter[cpu] = j;
-	}
-	mb();
-}
-
-void aee_rr_rec_last_irq_exit(int cpu, int irq, u64 j)
-{
-	if ((ram_console_buffer != NULL) && (cpu >= 0) && (cpu < RC_CPU_COUNT)) {
-		ram_console_buffer->last_irq_exit[cpu] = irq;
-		ram_console_buffer->jiffies_last_irq_exit[cpu] = j;
-	}
-	mb();
-}
-
-void aee_rr_rec_last_sched_jiffies(int cpu, u64 j, const char *comm)
-{
-	if ((ram_console_buffer != NULL) && (cpu >= 0) && (cpu < RC_CPU_COUNT)) {
-		ram_console_buffer->jiffies_last_sched[cpu] = j;
-		strlcpy(ram_console_buffer->last_sched_comm[cpu], comm, TASK_COMM_LEN);
-	}
-	mb();
-}
-
-void aee_rr_rec_hoplug(int cpu, u8 data1, u8 data2)
-{
-	if ((ram_console_buffer != NULL) && (cpu >= 0) && (cpu < RC_CPU_COUNT)) {
-		ram_console_buffer->hotplug_data1[cpu] = data1;
-		ram_console_buffer->hotplug_data2[cpu] = data2;
-	}
-}
-
 void sram_log_save(const char *msg, int count)
 {
 	struct ram_console_buffer *buffer;	
@@ -275,84 +217,6 @@ void sram_log_save(const char *msg, int count)
 		}
 	}
 
-}
-
-void aee_sram_fiq_save_bin(const char *msg, size_t len)
-{
-	int delay = 100;
-	char bin_buffer[4];
-	struct ram_console_buffer *buffer = ram_console_buffer;	
-
-	if(FIQ_log_size + len > ram_console_buffer_size)
-	{
-		return;
-	}
-	
-	if(len > 0xffff)
-	{
-		return;
-	}
-
-	if(len%4 !=0)
-	{
-		len -= len%4;
-	}
-	
-	if(!atomic_read(&rc_in_fiq))
-	{
-		atomic_set(&rc_in_fiq, 1);
-	}
-
-	while ((delay > 0) && (spin_is_locked(&ram_console_lock))) {
-		udelay(1);
-		delay--;
-	}
-
-	// bin buffer flag 00ff
-	bin_buffer[0] = 0x00;
-	bin_buffer[1] = 0xff;
-	// bin buffer size
-	bin_buffer[2] = len/255;
-	bin_buffer[3] = len%255;	
-	
-	sram_log_save(bin_buffer, 4);
-	sram_log_save(msg, len);	
-	FIQ_log_size = FIQ_log_size + len +4;
-	buffer->bin_log_count += len;
-	
-
-}
-
-
-void aee_disable_ram_console_write(void)
-{
-
-	atomic_set(&rc_in_fiq, 1);
-	return;
-}
-
-void aee_sram_fiq_log(const char *msg)
-{
-	unsigned int count = strlen(msg);
-	int delay = 100;
-	
-	if(FIQ_log_size + count > ram_console_buffer_size)
-	{
-		return;
-	}
-
-	if(!atomic_read(&rc_in_fiq))
-	{
-		atomic_set(&rc_in_fiq, 1);
-	}
-
-	while ((delay > 0) && (spin_is_locked(&ram_console_lock))) {
-		udelay(1);
-		delay--;
-	}
-
-	sram_log_save(msg, count);
-	FIQ_log_size += count;
 }
 
 void
@@ -645,10 +509,8 @@ static const struct file_operations ram_console_file_ops = {
 static int __init ram_console_late_init(void)
 {
 	struct proc_dir_entry *entry;
-	struct last_reboot_reason lrr;
 	char *ram_console_header_buffer;
 	int str_real_len = 0;
-	int i = 0;
 
 #ifdef CONFIG_MTK_EMMC_SUPPORT
 	emmc_read_last_kmsg();
@@ -659,28 +521,6 @@ static int __init ram_console_late_init(void)
 		printk(KERN_ERR"ram console old log is null!\n");
 		return 0;
 	}
-
-	memset(&lrr, 0, sizeof(struct last_reboot_reason));
-	lrr.wdt_status = ram_console_old_header.hw_status;
-	lrr.fiq_step = ram_console_old_header.fiq_step;
-	lrr.reboot_mode = ram_console_old_header.reboot_mode;
-
-	for(i = 0; i < NR_CPUS; i++)
-	{
-		lrr.last_irq_enter[i] = ram_console_old_header.last_irq_enter[i];
-		lrr.jiffies_last_irq_enter[i] = ram_console_old_header.jiffies_last_irq_enter[i];
-
-		lrr.last_irq_exit[i] = ram_console_old_header.last_irq_exit[i];
-		lrr.jiffies_last_irq_exit[i] = ram_console_old_header.jiffies_last_irq_exit[i];
-
-		lrr.jiffies_last_sched[i] = ram_console_old_header.jiffies_last_sched[i];
-		strlcpy(lrr.last_sched_comm[i], ram_console_old_header.last_sched_comm[i], TASK_COMM_LEN);
-
-		lrr.hotplug_data1[i] = ram_console_old_header.hotplug_data1[i];
-		lrr.hotplug_data2[i] = ram_console_old_header.hotplug_data2[i];
-	}
-
-	aee_rr_last(&lrr);
 
 	ram_console_header_buffer = kmalloc(RAM_CONSOLE_HEADER_STR_LEN, GFP_KERNEL);
 	if(ram_console_header_buffer == NULL)

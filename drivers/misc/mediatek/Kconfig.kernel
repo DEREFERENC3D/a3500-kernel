@@ -33,25 +33,6 @@ endmenu
 
 endmenu
 
-config MTK_AEE_FEATURE
-        tristate "Enable Android Exception Enhancement"
-        default n
-        ---help---
-          Enable Android Exception Enhancement
-
-config MTK_AEE_AED
-        tristate "Enable AEE Kernel Exception Report Daemon"
-        default y
-
-config MTK_AEE_IPANIC
-        tristate "Enable AEE Kernel Panic Dump"
-        default y
-
-config MTK_AEE_DRAM_CONSOLE
-       bool "Enable DRAM console"
-       default n
-       depends on MTK_AEE_FEATURE
-
 config CPUTIME_SUPPORT
 	bool "cputime profiling support for functions"
 	default n

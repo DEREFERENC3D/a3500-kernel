@@ -20,7 +20,6 @@
 #include <linux/uaccess.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
-#include <linux/aee.h>
 
 #include <linux/xlog.h>
 

@@ -14,7 +14,6 @@ static int wd_cpu_hot_plug_on_notify(int cpu);
 static int wd_cpu_hot_plug_off_notify(int cpu);
 static int spmwdt_mode_config(WD_REQ_CTL en,WD_REQ_MODE mode );
 static int thermal_mode_config(WD_REQ_CTL en,WD_REQ_MODE mode );
-static int confirm_hwreboot(void);
 static void resume_notify(void);
 static void suspend_notify(void);
 static int mtk_wk_wdt_config(enum ext_wdt_mode mode, int timeout_val);
@@ -39,7 +38,6 @@ static struct wd_api  g_wd_api_obj=
    .wd_restart = wd_restart,
    .wd_config = mtk_wk_wdt_config,
    .wd_set_mode = set_mode,
-   .wd_aee_confirm_hwreboot = confirm_hwreboot,
    .wd_disable_ext = disable_ext,
    .wd_disable_local = disable_local,
    .wd_suspend_notify = suspend_notify,
@@ -153,11 +151,6 @@ static int set_mode(enum ext_wdt_mode mode)
    
    return 0;
 
-}
-static int confirm_hwreboot(void)
-{
-  mtk_wdt_confirm_hwreboot();
-  return 0;
 }
 static void suspend_notify(void)
 {
@@ -328,12 +321,6 @@ static int set_mode(enum ext_wdt_mode mode)
    return 0;
 
 }
-static int confirm_hwreboot(void)
-{
-  printk("dummy confirm_hwreboot"); 
-  return 0;
-}
-
 static void suspend_notify(void)
 {
  

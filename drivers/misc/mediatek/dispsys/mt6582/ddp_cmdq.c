@@ -1281,7 +1281,7 @@ TaskStruct* cmdq_acquire_task(int32_t  scenario,
         cmdq_release_task(pTask); 
         pTask = NULL; 
         
-        // throw AEE
+        // report error
     }
 
     /*
@@ -2298,7 +2298,7 @@ int32_t cmdq_core_wait_task_done(
     uint32_t      insts[4];
     uint32_t      type;
     // error report
-    bool         throwAEE = false;
+    bool         reportError = false;
     const char   *module = NULL;
     uint32_t     instA, instB;
 
@@ -2354,7 +2354,7 @@ int32_t cmdq_core_wait_task_done(
             // dump error info
             CMDQ_ERR("SW timeout of task 0x%p on thread %d\n", pTask, thread);
             cmdq_attach_error_task(pTask, thread);
-            throwAEE = true;
+            reportError = true;
             cmdq_core_parse_error(pTask, thread,
                                   &module,
                                   &instA,
@@ -2403,9 +2403,9 @@ int32_t cmdq_core_wait_task_done(
             CMDQ_ERR("Resume CMDQ THR[%d] executeion after sw timeout\n", thread);
             DISP_REG_SET(DISP_REG_CMDQ_THRx_SUSPEND(thread), 0x0);
 
-            // raise AEE
+            // report error
             spin_unlock_irqrestore(&gCmdqExecLock, flags);
-            if (throwAEE)
+            if (reportError)
             {
                 const uint32_t op = (instA & 0xFF000000) >> 24;
                 

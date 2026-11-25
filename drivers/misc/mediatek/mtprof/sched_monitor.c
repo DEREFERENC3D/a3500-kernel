@@ -15,7 +15,6 @@
 #include <linux/mt_sched_mon.h>
 #include <linux/stacktrace.h>
 
-#include <linux/aee.h>
 #include <linux/stacktrace.h>
 
 
@@ -199,7 +198,6 @@ void mt_trace_ISR_start(int irq)
 
     b->cur_ts = sched_clock();
     b->cur_event = (unsigned long)irq;
-    aee_rr_rec_last_irq_enter(smp_processor_id(), irq, b->cur_ts);
  
 }
 void mt_trace_ISR_end(int irq)
@@ -214,7 +212,6 @@ void mt_trace_ISR_end(int irq)
     b->cur_event = 0;
     b->cur_ts = 0;
     event_duration_check(b);
-    aee_rr_rec_last_irq_exit(smp_processor_id(), irq, b->last_te);
 
     //reset HRTimer function counter
     b = & __raw_get_cpu_var(hrt_mon);

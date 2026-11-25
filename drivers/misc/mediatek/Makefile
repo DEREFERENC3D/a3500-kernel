@@ -20,7 +20,6 @@ obj-y	+= boot/
 obj-$(CONFIG_ZRAM) += mlog/
 obj-y	+= gpu/
 obj-y	+= gpio/
-obj-y	+= aee/
 obj-y	+= wdk/
 obj-y	+= wdt/
 obj-y	+= ion_drv/

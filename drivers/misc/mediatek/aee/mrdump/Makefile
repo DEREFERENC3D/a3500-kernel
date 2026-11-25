@@ -1,1 +1,0 @@
-obj-$(CONFIG_MTK_AEE_IPANIC) += mrdump_mini.o

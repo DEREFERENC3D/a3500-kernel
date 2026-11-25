@@ -43,7 +43,6 @@ struct wd_api {
 	int (*wd_disable_local)(void);
 	int (*wd_disable_all)(void);
 	int (*wd_set_mode)(enum ext_wdt_mode);
-	int (*wd_aee_confirm_hwreboot)(void);
 	void (*wd_suspend_notify)(void);
 	void (*wd_resume_notify)(void);
 	unsigned int (*wd_get_check_bit)(void);
