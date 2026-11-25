@@ -22,7 +22,6 @@
 #include <mach/devs.h>
 #include <mach/mt_boot.h>
 #include <linux/version.h>
-#include <mach/mtk_eemcs_helper.h>
 #include <mach/mtk_memcfg.h>
 #include <mach/dfo_boot.h>
 #include <mach/dfo_boot_default.h>
@@ -1073,7 +1072,6 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
                              RESERVED_MEM_MODEM;
     resource_size_t avail_dram = 0;
     resource_size_t bl_mem_sz = 0;
-    unsigned char md_inf_from_meta[4] = {0};
 
 #if defined(CONFIG_MTK_FB)
 	struct tag *temp_tags = tags;
@@ -1085,8 +1083,6 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
 #endif
 
     printk(KERN_ALERT"Load default dfo data...\n");
-
-    parse_eemcs_dfo_setting(&dfo_boot_default, DFO_BOOT_COUNT);
 
     for (; tags->hdr.size; tags = tag_next(tags)) {
         if (tags->hdr.tag == ATAG_MEM) {
@@ -1129,19 +1125,7 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
           g_meta_com_type = tags->u.meta_com.meta_com_type;
           g_meta_com_id = tags->u.meta_com.meta_com_id;
         } else if (tags->hdr.tag == ATAG_DFO_DATA) {
-            parse_eemcs_dfo_setting(&tags->u.dfo_data, DFO_BOOT_COUNT);
             mtkfb_parse_dfo_setting(&tags->u.dfo_data, DFO_BOOT_COUNT);
-        }
-		else if(tags->hdr.tag == ATAG_MDINFO_DATA) {
-            printk(KERN_ALERT "Get MD inf from META\n");
-            printk(KERN_ALERT "md_inf[0]=%d\n",tags->u.mdinfo_data.md_type[0]);
-            printk(KERN_ALERT "md_inf[1]=%d\n",tags->u.mdinfo_data.md_type[1]);
-            printk(KERN_ALERT "md_inf[2]=%d\n",tags->u.mdinfo_data.md_type[2]);
-            printk(KERN_ALERT "md_inf[3]=%d\n",tags->u.mdinfo_data.md_type[3]);
-            md_inf_from_meta[0]=tags->u.mdinfo_data.md_type[0];
-            md_inf_from_meta[1]=tags->u.mdinfo_data.md_type[1];
-            md_inf_from_meta[2]=tags->u.mdinfo_data.md_type[2]; 
-            md_inf_from_meta[3]=tags->u.mdinfo_data.md_type[3];
         }
     }
 
@@ -1165,16 +1149,6 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
         }
     }
 #endif
-
-    if ((g_boot_mode == META_BOOT) || (g_boot_mode == ADVMETA_BOOT)) {
-        /* 
-         * Always use default dfo setting in META mode.
-         * We can fix abnormal dfo setting this way.
-         */
-        printk(KERN_ALERT"(META mode) Load default dfo data...\n");
-        parse_eemcs_dfo_setting(&dfo_boot_default, DFO_BOOT_COUNT);
-        parse_ext_meta_md_setting(md_inf_from_meta);
-    }
 
     kernel_mem_sz = avail_dram; // keep the DRAM size (limited by CONFIG_MAX_DRAM_SIZE_SUPPORT)
     /*
@@ -2063,11 +2037,6 @@ void __weak mtk_wcn_consys_memory_reserve(void)
     printk(KERN_ERR"weak reserve function: %s", __FUNCTION__);
 }
 
-void __weak eemcs_memory_reserve(void) 
-{
-    printk(KERN_ERR"calling weak function %s\n", __FUNCTION__);
-}
-
 void mt_reserve(void)
 {
 //    aee_dram_console_reserve_memory();
@@ -2084,8 +2053,5 @@ void mt_reserve(void)
      * New memory reserve functions should be APPENDED to old funtions 
      */
     mtk_wcn_consys_memory_reserve();
-#if defined(CONFIG_MTK_EEMCS_DEVICES)
-    eemcs_memory_reserve();
-#endif    
     /* Last line of dynamic reserve functions */
 }

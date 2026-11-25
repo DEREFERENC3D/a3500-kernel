@@ -39,8 +39,6 @@ ifneq ($(CONFIG_MTK_FPGA),y)
 ifneq ($(MTK_RTC_NO_HAL),yes)
 obj-y	+= rtc/
 endif
-ifeq ($(CONFIG_MTK_EEMCS_DEVICES),y)
-endif
 obj-y	+= fmradio/
 obj-y	+= gps/
 obj-y	+= hwmon/
@@ -101,6 +99,5 @@ endif
 obj-y	+= common_detect/
 endif
 
-obj-y	+= conn_md/
 obj-y	+= selinux_warning/
 obj-y	+= debug_util/
