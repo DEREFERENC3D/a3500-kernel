@@ -168,7 +168,6 @@ static long ion_sys_cache_sync(struct ion_client *client, ion_sys_cache_sync_par
             MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_CLEAN_ALL], MMProfileFlagStart, 1, 1);
             //printk("[ion_sys_cache_sync]: ION cache clean all.\n");
             smp_inner_dcache_flush_all();
-            outer_clean_all();
             MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_CLEAN_ALL], MMProfileFlagEnd, 1, 1);
         }
         else if (pParam->sync_type == ION_CACHE_INVALID_ALL)
