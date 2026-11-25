@@ -54,10 +54,10 @@ extern int pm_wake_unlock(const char *buf);
 #endif /* !CONFIG_PM_WAKELOCKS */
 
 // HOTPLUG
-#if defined(CONFIG_CPU_FREQ_GOV_HOTPLUG) || defined(CONFIG_CPU_FREQ_GOV_BALANCE)
+#ifdef CONFIG_CPU_FREQ_GOV_HOTPLUG
 extern void hp_set_dynamic_cpu_hotplug_enable(int enable);
 extern struct mutex hp_onoff_mutex;
-#endif // CONFIG_CPU_FREQ_GOV_HOTPLUG || CONFIG_CPU_FREQ_GOV_BALANCE
+#endif /* CONFIG_CPU_FREQ_GOV_HOTPLUG */
 
 bool system_is_hibernating = false;
 EXPORT_SYMBOL(system_is_hibernating);
@@ -154,7 +154,7 @@ static inline void hib_unplug_cores(void) {}
 // en: 1 enable, en: 0 disable
 static void hib_hotplug_mode(int en)
 {
-#if defined(CONFIG_CPU_FREQ_GOV_HOTPLUG) || defined(CONFIG_CPU_FREQ_GOV_BALANCE)
+#ifdef CONFIG_CPU_FREQ_GOV_HOTPLUG
     static int g_hp_disable = 0;
     if (en) {
         if (1 == g_hp_disable) {
@@ -170,7 +170,7 @@ static void hib_hotplug_mode(int en)
             g_hp_disable = 1;
         }
     }
-#endif // CONFIG_CPU_FREQ_GOV_HOTPLUG || CONFIG_CPU_FREQ_GOV_BALANCE
+#endif /* CONFIG_CPU_FREQ_GOV_HOTPLUG */
 }
 
 static void hib_ftrace_buffer(int en)
