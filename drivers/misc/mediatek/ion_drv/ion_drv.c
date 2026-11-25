@@ -27,7 +27,6 @@
 #include <linux/err.h>
 #include <linux/export.h>
 #include <linux/mmprofile.h>
-#include "ion_profile.h"
 #include <linux/debugfs.h>
 
 
@@ -127,19 +126,16 @@ static long ion_sys_cache_sync(struct ion_client *client, ion_sys_cache_sync_par
         // L1 cache sync
         if((pParam->sync_type==ION_CACHE_CLEAN_BY_RANGE) || (pParam->sync_type==ION_CACHE_CLEAN_BY_RANGE_USE_VA))
         {
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_CLEAN_RANGE], MMProfileFlagStart, size, 0);
             //printk("[ion_sys_cache_sync]: ION cache clean by range. start=0x%08X size=0x%08X\n", start, size);
             dmac_map_area((void*)start, size, DMA_TO_DEVICE);
         }
         else if ((pParam->sync_type == ION_CACHE_INVALID_BY_RANGE)||(pParam->sync_type == ION_CACHE_INVALID_BY_RANGE_USE_VA))
         {
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_INVALID_RANGE], MMProfileFlagStart, size, 0);
             //printk("[ion_sys_cache_sync]: ION cache invalid by range. start=0x%08X size=0x%08X\n", start, size);
             dmac_unmap_area((void*)start, size, DMA_FROM_DEVICE);
         }
         else if ((pParam->sync_type == ION_CACHE_FLUSH_BY_RANGE)||(pParam->sync_type == ION_CACHE_FLUSH_BY_RANGE_USE_VA))
         {
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_FLUSH_RANGE], MMProfileFlagStart, size, 0);
             //printk("[ion_sys_cache_sync]: ION cache flush by range. start=0x%08X size=0x%08X\n", start, size);
             dmac_flush_range((void*)start, (void*)(start+size-1));
         }
@@ -152,40 +148,27 @@ static long ion_sys_cache_sync(struct ion_client *client, ion_sys_cache_sync_par
             ion_unmap_kernel(client, kernel_handle);
         }
 
-        if (pParam->sync_type == ION_CACHE_CLEAN_BY_RANGE)
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_CLEAN_RANGE], MMProfileFlagEnd, size, 0);
-        else if (pParam->sync_type == ION_CACHE_INVALID_BY_RANGE)
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_INVALID_RANGE], MMProfileFlagEnd, size, 0);
-        else if (pParam->sync_type == ION_CACHE_FLUSH_BY_RANGE)
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_FLUSH_RANGE], MMProfileFlagEnd, size, 0);
-        
     }
     else
     {
         // All cache operation
         if (pParam->sync_type == ION_CACHE_CLEAN_ALL)
         {
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_CLEAN_ALL], MMProfileFlagStart, 1, 1);
             //printk("[ion_sys_cache_sync]: ION cache clean all.\n");
             smp_inner_dcache_flush_all();
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_CLEAN_ALL], MMProfileFlagEnd, 1, 1);
         }
         else if (pParam->sync_type == ION_CACHE_INVALID_ALL)
         {
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_INVALID_ALL], MMProfileFlagStart, 1, 1);
             //printk("[ion_sys_cache_sync]: ION cache invalid all.\n");
             smp_inner_dcache_flush_all();
             outer_inv_all();
             //outer_flush_all();
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_INVALID_ALL], MMProfileFlagEnd, 1, 1);
         }
         else if (pParam->sync_type == ION_CACHE_FLUSH_ALL)
         {
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_FLUSH_ALL], MMProfileFlagStart, 1, 1);
             //printk("[ion_sys_cache_sync]: ION cache flush all.\n");
             smp_inner_dcache_flush_all();
             outer_flush_all();
-            MMProfileLogEx(ION_MMP_Events[PROFILE_DMA_FLUSH_ALL], MMProfileFlagEnd, 1, 1);
         }
     }
     ION_FUNC_LEAVE;
@@ -282,24 +265,6 @@ static long ion_custom_ioctl(struct ion_client *client, unsigned int cmd, unsign
     return _ion_ioctl(client, cmd, arg, 0);
 }
 
-static int debug_profile_get(void *data, u64 *val)
-{
-    *val = -1;
-    return 0;
-}
-
-static int debug_profile_set(void *data, u64 val)
-{
-    ion_profile_init();
-    return 0;
-}
-
-
-DEFINE_SIMPLE_ATTRIBUTE(debug_profile_fops, debug_profile_get,
-                        debug_profile_set, "%llu\n");
-
-
-
 int num_heaps;
 struct ion_heap **heaps;
 
@@ -341,9 +306,6 @@ int ion_drv_probe(struct platform_device *pdev)
 	}
     
 	platform_set_drvdata(pdev, g_ion_device);
-
-    debugfs_create_file("ion_profile", 0644, g_ion_device->debug_root, NULL,
-                        &debug_profile_fops);
 
 	return 0;
 

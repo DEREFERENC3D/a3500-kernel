@@ -16,7 +16,6 @@
 #include <linux/ion_drv.h>
 #include <linux/mutex.h>
 #include <linux/mmprofile.h>
-#include "ion_profile.h"
 
 typedef struct  
 {
