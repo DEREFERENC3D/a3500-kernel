@@ -122,7 +122,6 @@ CHECKFLAGS	+= -D__arm__
 #Default value
 head-y		:= arch/arm/kernel/head$(MMUEXT).o arch/arm/kernel/init_task.o
 textofs-y	:= 0x00008000
-textofs-$(CONFIG_ARCH_MT6582) := 0x00008000
 textofs-$(CONFIG_ARCH_CLPS711X) := 0x00028000
 # We don't want the htc bootloader to corrupt kernel during resume
 textofs-$(CONFIG_PM_H1940)      := 0x00108000
@@ -239,7 +238,6 @@ machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 LINUXINCLUDE += $(addprefix -I,$(sort $(dir $(shell find $(srctree)/arch/arm/mach-mt6582/lcsh82_tb_3gfull_kk -type f -name '*.h'))))
 LINUXINCLUDE += -I$(srctree)/drivers/misc/mediatek/pmt/mt6582
 platdirs := $(patsubst %,arch/arm/plat-%/,$(plat-y))
-
 
 ifeq ($(KBUILD_SRC),)
 KBUILD_CPPFLAGS += $(patsubst %,-I%include,$(machdirs) $(platdirs))
