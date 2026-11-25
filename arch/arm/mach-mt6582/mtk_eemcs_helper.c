@@ -25,7 +25,7 @@
 #define DFO_FEATURE_EN
 #define MD5_MEM_SIZE    (16*1024*1024)
 
-//-------------feature enable/disable configure (oringinal from mtk_ccci_helper.c)----------------//
+//-------------feature enable/disable configure----------------//
 #define FEATURE_GET_MD_BAT_VOL		//disable for bring up
 //-------------grobal variable define----------------//
 

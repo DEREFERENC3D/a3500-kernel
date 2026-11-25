@@ -34,7 +34,6 @@ obj-y += accelerometer/accel.o \
     leds/cust_leds.o \
     lens/dummy_lens.o \
     sound/yusu_android_speaker.o \
-    ssw/sim_switch.o \
     touchpanel/goodix_tool.o \
     touchpanel/gt9xx_driver.o \
     touchpanel/gt9xx_openshort.o \

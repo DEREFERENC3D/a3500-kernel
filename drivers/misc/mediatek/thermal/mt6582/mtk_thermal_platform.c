@@ -23,7 +23,6 @@
 #include <mach/mtk_thermal_platform.h>
 #include <mach/mt_typedefs.h>
 #include <mach/mt_storage_logger.h>
-#include <mach/mtk_mdm_monitor.h>
 
 #include <mach/mt_thermal.h>
 
@@ -581,7 +580,7 @@ int mtk_thermal_get_batt_info(
     return 0;
 }
 
-#define NO_EXTRA_THERMAL_ATTR (7)
+#define NO_EXTRA_THERMAL_ATTR (1)
 static char* extra_attr_names[NO_EXTRA_THERMAL_ATTR] = {0};
 static int extra_attr_values[NO_EXTRA_THERMAL_ATTR] = {0};
 static char* extra_attr_units[NO_EXTRA_THERMAL_ATTR] = {0};
@@ -592,27 +591,10 @@ int mtk_thermal_get_extra_info(
     int **attr_values, 
     char ***attr_units)
 {
-    int size, i=0;
-    
+    int i=0;
+
     if (no_extra_attr)
         *no_extra_attr = NO_EXTRA_THERMAL_ATTR;
-
-    //******************
-    // Modem Index
-    //******************
-    {
-        struct md_info *p_info;
-        mtk_mdm_get_md_info(&p_info, &size);
-        if (size <= NO_EXTRA_THERMAL_ATTR-1)
-        {
-            for (i=0; i<size; i++) 
-            {
-                extra_attr_names[i] = p_info[i].attribute;
-                extra_attr_values[i] = p_info[i].value;
-                extra_attr_units[i] = p_info[i].unit;
-            }
-        }
-    }
 
     //******************
     // Wifi Index

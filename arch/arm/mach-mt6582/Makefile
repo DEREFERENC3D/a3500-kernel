@@ -54,7 +54,6 @@ obj-y += mt_dcm.o mt_idle.o
 obj-y += mt_clkmgr_common.o
 obj-y += mt_clkmgr.o
 obj-y += sbchk_base.o
-obj-y += mtk_ccci_helper.o
 obj-y += mtk_eemcs_helper.o
 
 obj-y += mt_ptp.o

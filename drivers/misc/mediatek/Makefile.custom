@@ -64,7 +64,6 @@ subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/auxadc/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/devinfo/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/dispsys/$(MTK_PLATFORM) \
-             -I$(MTK_CUSTOM_PATH)/dual_ccci/$(MTK_PLATFORM)/include \
              -I$(MTK_CUSTOM_PATH)/gpu/$(MTK_PLATFORM)/mali/mali/platform \
              -I$(MTK_CUSTOM_PATH)/leds/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/i2c/$(MTK_PLATFORM) \
@@ -76,8 +75,7 @@ subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/wdk
 
 # Generic MediaTek include trees
-subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/dual_ccci/include \
-             -I$(MTK_CUSTOM_PATH)/sync \
+subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/sync \
              -I$(MTK_CUSTOM_PATH)/video \
              -I$(MTK_CUSTOM_PATH)/ssw/inc \
              -I$(MTK_CUSTOM_PATH)/lens/inc \

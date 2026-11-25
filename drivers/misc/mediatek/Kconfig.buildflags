@@ -75,10 +75,6 @@ config LCM_HEIGHT
 	string "LCM height"
 	default "1280"
 
-config CUSTOM_KERNEL_SSW
-	string "Custom SIM switch driver"
-	default "ssw_single"
-
 config MTK_SIM1_SOCKET_TYPE
 	string "SIM1 socket type"
 	default "1"
@@ -107,14 +103,6 @@ config SLT_DRV_P3550_WIFI_ONLY_CONFIG
 
 config USER_BUILD_KERNEL
 	bool "User build kernel"
-	default y
-
-config MTK_TB_WIFI_3G_MODE_WIFI_ONLY
-	bool "Tablet Wi-Fi-only mode"
-	default y
-
-config MTK_DUMMY_CCCI_API
-	bool "Use dummy CCCI API"
 	default y
 
 comment "Board components"

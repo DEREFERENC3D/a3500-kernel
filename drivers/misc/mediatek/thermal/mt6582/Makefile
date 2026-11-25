@@ -6,7 +6,6 @@ else
 endif
 
 obj-$(CONFIG_THERMAL) += mtk_thermal_platform.o
-obj-$(CONFIG_THERMAL) += mtk_ts_pa_thput.o
 #obj-$(CONFIG_THERMAL) += mtk_ts_skin.o
 
 ifneq ($(CONFIG_MTK_COMBO_WIFI),)
@@ -32,7 +31,6 @@ obj-y += mtk_ts_cpu.o
 
 ifeq ($(CONFIG_THERMAL),y)
     obj-y += mtk_ts_pmic.o
-    obj-y += mtk_ts_pa.o
     obj-y += mtk_ts_abb.o
     obj-y += mtk_ts_xtal.o
     ifeq ($(MTK_ENABLE_MD2),yes)

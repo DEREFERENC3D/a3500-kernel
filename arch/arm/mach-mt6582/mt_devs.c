@@ -22,7 +22,6 @@
 #include <mach/devs.h>
 #include <mach/mt_boot.h>
 #include <linux/version.h>
-#include <mach/mtk_ccci_helper.h>
 #include <mach/mtk_eemcs_helper.h>
 #include <mach/mtk_memcfg.h>
 #include <mach/dfo_boot.h>
@@ -1087,7 +1086,6 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
 
     printk(KERN_ALERT"Load default dfo data...\n");
 
-    parse_ccci_dfo_setting(&dfo_boot_default, DFO_BOOT_COUNT);
     parse_eemcs_dfo_setting(&dfo_boot_default, DFO_BOOT_COUNT);
 
     for (; tags->hdr.size; tags = tag_next(tags)) {
@@ -1131,7 +1129,6 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
           g_meta_com_type = tags->u.meta_com.meta_com_type;
           g_meta_com_id = tags->u.meta_com.meta_com_id;
         } else if (tags->hdr.tag == ATAG_DFO_DATA) {
-            parse_ccci_dfo_setting(&tags->u.dfo_data, DFO_BOOT_COUNT);
             parse_eemcs_dfo_setting(&tags->u.dfo_data, DFO_BOOT_COUNT);
             mtkfb_parse_dfo_setting(&tags->u.dfo_data, DFO_BOOT_COUNT);
         }
@@ -1175,8 +1172,6 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
          * We can fix abnormal dfo setting this way.
          */
         printk(KERN_ALERT"(META mode) Load default dfo data...\n");
-        parse_ccci_dfo_setting(&dfo_boot_default, DFO_BOOT_COUNT);
-        parse_meta_md_setting(md_inf_from_meta);
         parse_eemcs_dfo_setting(&dfo_boot_default, DFO_BOOT_COUNT);
         parse_ext_meta_md_setting(md_inf_from_meta);
     }
@@ -1442,16 +1437,6 @@ static struct platform_device mt_extmem = {
 	.id             = 0,
 };
 #endif
-/*=======================================================================*/
-/* MT6582 Board Device Initialization                                    */
-/* Sim switch driver                                                         */
-/*=======================================================================*/
-#if defined (CONFIG_CUSTOM_KERNEL_SSW)
-static struct platform_device ssw_device = {	
-	.name = "sim-switch",	
-	.id = -1};
-#endif
-
 /*=======================================================================*/
 /* MT6589 Board Device Initialization                                    */
 /*=======================================================================*/
@@ -2011,13 +1996,6 @@ retval = platform_device_register(&dummychar_device);
 	}
 //#endif
 
-#if defined (CONFIG_CUSTOM_KERNEL_SSW)	
-	retval = platform_device_register(&ssw_device);    
-	if (retval != 0) {        
-		return retval;    
-	}
-#endif
-
 #ifdef CONFIG_MTK_USE_RESERVED_EXT_MEM	
 	retval = platform_device_register(&mt_extmem);
 	
@@ -2106,7 +2084,6 @@ void mt_reserve(void)
      * New memory reserve functions should be APPENDED to old funtions 
      */
     mtk_wcn_consys_memory_reserve();
-    ccci_md_mem_reserve();
 #if defined(CONFIG_MTK_EEMCS_DEVICES)
     eemcs_memory_reserve();
 #endif    

@@ -57,7 +57,6 @@ obj-y	+= auxadc/
 obj-y	+= ram_console/
 obj-y	+= thermal/
 obj-y	+= evdo_support/
-obj-y	+= wmt_ccci/
 endif
 
 # MediaTek display driver (common core + MT6582 panel HAL)

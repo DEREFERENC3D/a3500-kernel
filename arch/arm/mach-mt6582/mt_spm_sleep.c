@@ -14,7 +14,6 @@
 #include <mach/mt_dormant.h>
 #include <mach/wd_api.h>
 #include <mach/eint.h>
-#include <mach/mtk_ccci_helper.h>
 
 /**************************************
  * only for internal debug
@@ -1008,8 +1007,6 @@ static wake_reason_t spm_output_wake_reason(const wake_status_t *wakesta, bool d
 
     if (wakesta->r12 & WAKE_SRC_EINT)
         mt_eint_print_status();
-    if (wakesta->r12 & WAKE_SRC_CCIF_MD)
-        exec_ccci_kern_func_by_md_id(0, ID_GET_MD_WAKEUP_SRC, NULL, 0);
 
     return wr;
 }
