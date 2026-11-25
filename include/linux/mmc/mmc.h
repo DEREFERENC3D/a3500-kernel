@@ -320,9 +320,6 @@ struct _mmc_csd {
 #define EXT_CSD_DATA_TAG_SUPPORT	499	/* RO */
 #define EXT_CSD_HPI_FEATURES		503	/* RO */
 
-
-/* bit0 for diacard support with emmc4.41 plus */
-#define EXT_CSD_SAMSUNG_FEATURE         64      /* RO */
 /*
  * EXT_CSD field definitions
  */
