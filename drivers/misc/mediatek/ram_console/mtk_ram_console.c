@@ -21,7 +21,7 @@
 static int mtk_cpu_num = 0;
 
 #ifdef CONFIG_MTK_EMMC_SUPPORT
-#include <linux/mmc/sd_misc.h>
+#include <mach/sd_misc.h>
 
 extern int card_dump_func_write(unsigned char* buf, unsigned int len, unsigned long long offset, int dev);
 extern int card_dump_func_read(unsigned char* buf, unsigned int len, unsigned long long offset, int dev);

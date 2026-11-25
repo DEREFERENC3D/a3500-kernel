@@ -7,7 +7,7 @@
 #include <linux/aee.h>
 #include "ipanic.h"
 #include <linux/delay.h>
-#include <linux/mmc/sd_misc.h>
+#include <mach/sd_misc.h>
 #include <linux/mrdump.h>
 #include <mach/wd_api.h>
 #define EMMC_BLOCK_SIZE 512

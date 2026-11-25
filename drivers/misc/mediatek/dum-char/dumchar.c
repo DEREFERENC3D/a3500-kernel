@@ -25,7 +25,7 @@
 #include "dumchar.h"		/* local definitions */
 #include "pmt.h"
 #include <linux/mmc/host.h>
-#include <linux/mmc/sd_misc.h>
+#include <mach/sd_misc.h>
 #include <linux/version.h>
 //#include "../mmc-host/mt_sd.h"
 #include <linux/genhd.h>

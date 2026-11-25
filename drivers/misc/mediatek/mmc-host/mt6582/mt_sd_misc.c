@@ -25,7 +25,7 @@
 //#include <asm/tcm.h>
 
 #include "mt_sd.h"
-#include <linux/mmc/sd_misc.h>
+#include <mach/sd_misc.h>
 #include "board-custom.h"
 #include "drivers/mmc/card/queue.h"
 
@@ -115,7 +115,7 @@ void msdc_check_init_done(void)
     host = msdc_get_host(MSDC_EMMC,1,0);
     BUG_ON(!host);
     BUG_ON(!host->mmc);
-    host->mmc->card_init_wait(host->mmc);
+    wait_for_completion_timeout(&host->card_init_done, HZ * 5);
     BUG_ON(!host->mmc->card);
     return;
 }

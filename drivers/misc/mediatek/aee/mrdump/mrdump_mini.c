@@ -2,7 +2,7 @@
 #include <linux/aee.h>
 #include <linux/elf.h>
 #include <linux/kdebug.h>
-#include <linux/mmc/sd_misc.h>
+#include <mach/sd_misc.h>
 #include <linux/mrdump.h>
 
 extern int msdc_init_panic(int dev);

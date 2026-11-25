@@ -9,7 +9,7 @@
 
 #include "partition_define.h"
 #include "pmt.h"
-#include <linux/mmc/sd_misc.h>
+#include <mach/sd_misc.h>
 
 #define USING_XLOG
 

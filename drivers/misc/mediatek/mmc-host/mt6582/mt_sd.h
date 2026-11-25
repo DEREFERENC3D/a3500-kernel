@@ -1174,6 +1174,7 @@ struct msdc_host
 
     struct completion           cmd_done;
     struct completion           xfer_done;
+    struct completion           card_init_done;
     struct pm_message           pm_state;
 
     u32                         mclk;           /* mmc subsystem clock */

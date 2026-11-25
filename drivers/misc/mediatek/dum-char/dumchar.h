@@ -6,7 +6,7 @@
 #include <linux/cdev.h>
 #include <linux/mtd/mtd.h>
 #include <linux/semaphore.h>
-#include <linux/mmc/sd_misc.h>
+#include <mach/sd_misc.h>
 /*
  * Macros to help debugging
  */

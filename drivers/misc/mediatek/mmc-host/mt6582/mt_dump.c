@@ -16,7 +16,7 @@
 #include "mt_sd.h"
 #include "mt_dump.h"
 #include <mach/board.h> 
-#include <linux/mmc/sd_misc.h>
+#include <mach/sd_misc.h>
 
 #ifdef CONFIG_MTK_EMMC_SUPPORT
 #include "partition_define.h"
