@@ -8,6 +8,8 @@
 #include <asm/mach/arch.h>
 #include <asm/mach/time.h>
 #include <asm/mach/map.h>
+#include <linux/dma-mapping.h>
+#include <asm/dma-mapping.h>
 #include <asm/mach-types.h>
 #include <asm/hardware/cache-l2x0.h>
 #include <asm/smp_scu.h>
@@ -194,6 +196,10 @@ static struct map_desc mt_io_desc[] __initdata =
 void __init mt_map_io(void)
 {
     iotable_init(mt_io_desc, ARRAY_SIZE(mt_io_desc));
+
+    /* Reserve 14 MiB for consistent DMA allocations, as the stock
+     * platform did by overriding DEFAULT_CONSISTENT_DMA_SIZE. */
+    init_consistent_dma_size(SZ_8M + SZ_4M + SZ_2M);
 }
 
 #ifdef CONFIG_MTK_TABLET_PLATFORM
