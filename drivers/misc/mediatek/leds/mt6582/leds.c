@@ -31,6 +31,7 @@
 #include <mach/upmu_common_sw.h>
 #include <mach/upmu_hw.h>
 #include "leds_sw.h"
+#include "../leds_drv.h"
 //#include <linux/leds_sw.h>
 //#include <mach/mt_pmic_feature_api.h>
 //#include <mach/mt_boot.h>

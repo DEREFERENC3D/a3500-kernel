@@ -3,6 +3,11 @@
 #include <cust_leds.h>
 #include <cust_leds_def.h>
 
+/* MTK high-resolution brightness level adjustment */
+#define LED_INCREASE_LED_LEVEL_MTKPATCH
+#define LED_RESERVEBIT_SHIFT 16
+#define LED_RESERVEBIT_PATTERN 1
+
 /****************************************************************************
  * LED DRV functions
  ***************************************************************************/
