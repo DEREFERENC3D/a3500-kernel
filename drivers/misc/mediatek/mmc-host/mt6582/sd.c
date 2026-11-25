@@ -2159,7 +2159,7 @@ static void msdc_set_mclk(struct msdc_host *host, int ddr, u32 hz)
     if (host->hw->flags & MSDC_SDIO_IRQ)
         spin_unlock_irqrestore(&SDIO_IRQ_lock, flags_lock);
 }
-extern int mmc_sd_power_cycle(struct mmc_host *host, u32 ocr, struct mmc_card *card);
+extern int mmc_sd_init_card(struct mmc_host *host, u32 ocr, struct mmc_card *card);
 
 /* 0 means pass */
 static u32 msdc_power_tuning(struct msdc_host *host)
@@ -2267,7 +2267,7 @@ static u32 msdc_power_tuning(struct msdc_host *host)
             sw_timeout = host->sw_timeout;
             host_err = host->error;
             spin_unlock(&host->lock);
-            ret = mmc_sd_power_cycle(mmc, mmc->ocr, card);
+            ret = mmc_sd_init_card(mmc, mmc->ocr, card);
             spin_lock(&host->lock);
             host->mrq = mrq;
             host->power_cycle = power_cycle;
