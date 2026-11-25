@@ -52,10 +52,6 @@
  //global variable
  // ============================================================ //
 static CHARGER_TYPE g_charger_type = CHARGER_UNKNOWN;
-#if defined(MTK_WIRELESS_CHARGER_SUPPORT)
-#define WIRELESS_CHARGER_EXIST_STATE 0
-int wireless_charger_gpio_number   = (168 | 0x80000000); 
-#endif
 int gpio_off_dir  = GPIO_DIR_OUT;
 int gpio_off_out  = GPIO_OUT_ONE;
 int gpio_on_dir   = GPIO_DIR_OUT;
@@ -751,18 +747,7 @@ kal_bool charging_type_detection_done(void)
  {
 	 kal_uint32 status = STATUS_OK;
 
-#if defined(MTK_WIRELESS_CHARGER_SUPPORT)
-    int wireless_state = 0;
-    wireless_state = mt_get_gpio_in(wireless_charger_gpio_number);
-    if(wireless_state == WIRELESS_CHARGER_EXIST_STATE)
-    {
-        *(CHARGER_TYPE*)(data) = WIRELESS_CHARGER;
-        battery_xlog_printk(BAT_LOG_CRTI, "WIRELESS_CHARGER!\r\n");
-        return status;
-    }
-#endif
-
-    if(g_charger_type!=CHARGER_UNKNOWN && g_charger_type!=WIRELESS_CHARGER)
+    if(g_charger_type!=CHARGER_UNKNOWN)
     {
         *(CHARGER_TYPE*)(data) = g_charger_type;
         battery_xlog_printk(BAT_LOG_CRTI, "return %d!\r\n", g_charger_type);

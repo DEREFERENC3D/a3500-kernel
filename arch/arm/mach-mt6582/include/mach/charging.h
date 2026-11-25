@@ -85,7 +85,6 @@ typedef enum {
     APPLE_2_1A_CHARGER,     // 2.1A apple charger
     APPLE_1_0A_CHARGER,     // 1A apple charger
     APPLE_0_5A_CHARGER,     // 0.5A apple charger
-    WIRELESS_CHARGER,
 } CHARGER_TYPE;
 
 

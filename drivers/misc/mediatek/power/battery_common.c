@@ -104,7 +104,6 @@ kal_bool g_call_state = CALL_IDLE;
 kal_bool g_charging_full_reset_bat_meter = KAL_FALSE;
 int g_platform_boot_mode = 0;
 struct timespec g_bat_time_before_sleep;
-int g_smartbook_update = 0;
 
 #if defined(MTK_TEMPERATURE_RECHARGE_SUPPORT)
 kal_uint32 g_batt_temp_status = TEMP_POS_NORMAL;
@@ -153,7 +152,6 @@ int battery_out_data[1] = {0};
 int charging_level_data[1] = {0};
 kal_bool g_ADC_Cali = KAL_FALSE;
 kal_bool g_ftm_battery_flag = KAL_FALSE;
-static int g_wireless_state = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //// Thread related 
@@ -176,16 +174,6 @@ extern U32 _g_bat_sleep_total_time;
 ////////////////////////////////////////////////////////////////////////////////
 // FOR ANDROID BATTERY SERVICE
 ////////////////////////////////////////////////////////////////////////////////
-/* Dual battery */
-int g_status_2nd = POWER_SUPPLY_STATUS_NOT_CHARGING;
-int g_capacity_2nd = 50;
-int g_present_2nd = 0;
-
-struct wireless_data {
-    struct power_supply psy;
-    int WIRELESS_ONLINE;    
-};
-
 struct ac_data {
     struct power_supply psy;
     int AC_ONLINE;    
@@ -214,17 +202,9 @@ struct battery_data {
     int BAT_BatterySenseVoltage;
     int BAT_ISenseVoltage;
     int BAT_ChargerVoltage;
-    /* Dual battery */
-    int status_2nd;
-    int capacity_2nd;
-    int present_2nd;
 #if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     int charge_full_design;
 #endif
-};
-
-static enum power_supply_property wireless_props[] = {
-    POWER_SUPPLY_PROP_ONLINE,
 };
 
 static enum power_supply_property ac_props[] = {
@@ -252,10 +232,6 @@ static enum power_supply_property battery_props[] = {
     POWER_SUPPLY_PROP_BatterySenseVoltage,
     POWER_SUPPLY_PROP_ISenseVoltage,
     POWER_SUPPLY_PROP_ChargerVoltage,
-    /* Dual battery */
-    POWER_SUPPLY_PROP_status_2nd,
-    POWER_SUPPLY_PROP_capacity_2nd,
-    POWER_SUPPLY_PROP_present_2nd,
 #if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
 #endif
@@ -383,25 +359,6 @@ int init_proc_log(void)
 }
 
 
-static int wireless_get_property(struct power_supply *psy,
-    enum power_supply_property psp,
-    union power_supply_propval *val)
-{
-    int ret = 0;
-    struct wireless_data *data = container_of(psy, struct wireless_data, psy);    
-    battery_xlog_printk(BAT_LOG_CRTI, "[wireless_get_property] start\n");    
-    switch (psp) {
-    case POWER_SUPPLY_PROP_ONLINE:                           
-        val->intval = data->WIRELESS_ONLINE;
-        battery_xlog_printk(BAT_LOG_CRTI, "[wireless_get_property] data->WIRELESS_ONLINE %d\n", data->WIRELESS_ONLINE);    
-        break;
-    default:
-        ret = -EINVAL;
-        break;
-    }
-    return ret;
-}
-
 static int ac_get_property(struct power_supply *psy,
     enum power_supply_property psp,
     union power_supply_propval *val)
@@ -488,16 +445,6 @@ static int battery_get_property(struct power_supply *psy,
     case POWER_SUPPLY_PROP_ChargerVoltage:
         val->intval = data->BAT_ChargerVoltage;
         break;
-    /* Dual battery */
-    case POWER_SUPPLY_PROP_status_2nd :
-        val->intval = data->status_2nd;
-        break;
-    case POWER_SUPPLY_PROP_capacity_2nd :
-        val->intval = data->capacity_2nd;
-        break;
-    case POWER_SUPPLY_PROP_present_2nd :
-        val->intval = data->present_2nd;
-        break;
 #if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 	val->intval = data->charge_full_design;
@@ -510,18 +457,6 @@ static int battery_get_property(struct power_supply *psy,
 
     return ret;
 }
-
-/* wireless_data initialization */
-static struct wireless_data wireless_main = {
-    .psy = {
-    .name = "wireless",
-    .type = POWER_SUPPLY_TYPE_WIRELESS,
-    .properties = wireless_props,
-    .num_properties = ARRAY_SIZE(wireless_props),
-    .get_property = wireless_get_property,                
-    },
-    .WIRELESS_ONLINE = 0,
-};
 
 /* ac_data initialization */
 static struct ac_data ac_main = {
@@ -564,10 +499,6 @@ static struct battery_data battery_main = {
     .BAT_CAPACITY = 50,
     .BAT_batt_vol = 0,
     .BAT_batt_temp = 0,
-    /* Dual battery */
-    .status_2nd = POWER_SUPPLY_STATUS_NOT_CHARGING,
-    .capacity_2nd = 50,
-    .present_2nd = 0,
 };
 
 
@@ -1266,11 +1197,6 @@ static void mt_battery_update_EM(struct battery_data *bat_data)
     bat_data->BAT_BatterySenseVoltage=BMT_status.bat_vol;	
     bat_data->BAT_ISenseVoltage=BMT_status.Vsense;	// API
     bat_data->BAT_ChargerVoltage=BMT_status.charger_vol;	
-    /* Dual battery */
-    bat_data->status_2nd = g_status_2nd;
-    bat_data->capacity_2nd = g_capacity_2nd;
-    bat_data->present_2nd = g_present_2nd;
-	battery_xlog_printk(BAT_LOG_FULL, "Power/Battery", "status_2nd = %d, capacity_2nd = %d, present_2nd = %d\n", bat_data->status_2nd, bat_data->capacity_2nd, bat_data->present_2nd);
 	if((BMT_status.UI_SOC == 100) && (BMT_status.charger_exist == KAL_TRUE))
 		 bat_data->BAT_STATUS = POWER_SUPPLY_STATUS_FULL;
 
@@ -1534,40 +1460,6 @@ static void battery_update(struct battery_data *bat_data)
 	mt_battery_update_EM(bat_data);
 		
     power_supply_changed(bat_psy);    
-}
-
-void update_charger_info(int wireless_state)
-{
-    #if defined(CONFIG_POWER_VERIFY)
-    battery_xlog_printk(BAT_LOG_CRTI, "[update_charger_info] no support\n");
-    #else
-    g_wireless_state = wireless_state;
-    battery_xlog_printk(BAT_LOG_CRTI, "[update_charger_info] get wireless_state=%d\n",
-        wireless_state);
-
-    wake_up_bat();
-    #endif
-}
-
-static void wireless_update(struct wireless_data *wireless_data)
-{
-    struct power_supply *wireless_psy = &wireless_data->psy;
-
-    if( BMT_status.charger_exist == KAL_TRUE || g_wireless_state)
-    {         
-        if ( (BMT_status.charger_type == WIRELESS_CHARGER) || g_wireless_state)
-        {
-            wireless_data->WIRELESS_ONLINE = 1;        
-            wireless_psy->type = POWER_SUPPLY_TYPE_WIRELESS;
-            battery_xlog_printk(BAT_LOG_CRTI, "[wireless_update]\n");
-        }
-    }
-    else
-    {
-        wireless_data->WIRELESS_ONLINE = 0;        
-    }
-    
-    power_supply_changed(wireless_psy);    
 }
 
 static void ac_update(struct ac_data *ac_data)
@@ -2373,10 +2265,6 @@ CHARGER_TYPE mt_charger_type_detection(void)
 
     mutex_lock(&charger_type_mutex);
     
-#if defined(MTK_WIRELESS_CHARGER_SUPPORT)
-    battery_charging_control(CHARGING_CMD_GET_CHARGER_TYPE,&CHR_Type_num);
-    BMT_status.charger_type = CHR_Type_num;	
-#else
     if(BMT_status.charger_type == CHARGER_UNKNOWN)
     {
         battery_charging_control(CHARGING_CMD_GET_CHARGER_TYPE,&CHR_Type_num);
@@ -2398,14 +2286,6 @@ static void mt_battery_charger_detect_check(void)
 		
 		BMT_status.charger_exist = KAL_TRUE;
 	
-#if defined(MTK_WIRELESS_CHARGER_SUPPORT)
-        mt_charger_type_detection();
-
-        if((BMT_status.charger_type==STANDARD_HOST) || (BMT_status.charger_type==CHARGING_HOST) )
-        {
-            mt_usb_connect();
-        }
-#else        
 		if(BMT_status.charger_type == CHARGER_UNKNOWN)
 		{
 			mt_charger_type_detection();
@@ -2444,26 +2324,9 @@ static void mt_battery_charger_detect_check(void)
 
 static void mt_battery_update_status(void)
 {
-    wireless_update(&wireless_main);
     battery_update(&battery_main);			
     ac_update(&ac_main);
     usb_update(&usb_main);
-}
-
-void update_battery_2nd_info(int status_2nd, int capacity_2nd, int present_2nd)
-{
-    #if defined(CONFIG_POWER_VERIFY)
-    battery_xlog_printk(BAT_LOG_CRTI, "Power/Battery", "[update_battery_2nd_info] no support\n");
-    #else
-    g_status_2nd = status_2nd;
-    g_capacity_2nd = capacity_2nd;
-    g_present_2nd = present_2nd;
-    battery_xlog_printk(BAT_LOG_CRTI, "Power/Battery", "[update_battery_2nd_info] get status_2nd=%d,capacity_2nd=%d,present_2nd=%d\n",
-        status_2nd, capacity_2nd, present_2nd);
-
-    wake_up_bat();
-    g_smartbook_update = 1;
-    #endif
 }
 
 void do_chrdet_int_task(void)
@@ -2571,9 +2434,8 @@ int bat_thread_kthread(void *x)
         bat_thread_timeout = KAL_FALSE;
         hrtimer_start(&battery_kthread_timer, ktime, HRTIMER_MODE_REL);   
         ktime = ktime_set(BAT_TASK_PERIOD, 0);  // 10s, 10* 1000 ms
-        if( chr_wake_up_bat == KAL_TRUE && g_smartbook_update != 1)	// for charger plug in/ out
+        if( chr_wake_up_bat == KAL_TRUE )	// for charger plug in/ out
         {
-                g_smartbook_update = 0;
            	battery_meter_reset();
 			chr_wake_up_bat = KAL_FALSE;
 			            
@@ -2975,14 +2837,6 @@ static int battery_probe(struct platform_device *dev)
         return ret;
     }             
     battery_xlog_printk(BAT_LOG_CRTI, "[BAT_probe] power_supply_register USB Success !!\n");
-    
-    ret = power_supply_register(&(dev->dev), &wireless_main.psy);
-    if (ret)
-    {            
-        battery_xlog_printk(BAT_LOG_CRTI, "[BAT_probe] power_supply_register WIRELESS Fail !!\n");                    
-        return ret;
-    }             
-    battery_xlog_printk(BAT_LOG_CRTI, "[BAT_probe] power_supply_register WIRELESS Success !!\n");
     
     ret = power_supply_register(&(dev->dev), &battery_main.psy);
     if (ret)
