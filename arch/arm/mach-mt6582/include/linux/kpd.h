@@ -37,10 +37,6 @@
 #include <linux/earlysuspend.h>
 #include <linux/aee.h>
 
-#ifdef MTK_SMARTBOOK_SUPPORT
-#include <linux/sbsuspend.h> //smartbook
-#endif
-
 #include <asm/atomic.h>
 #include <asm/uaccess.h>
 
@@ -83,13 +79,11 @@
 #endif
 #define SET_KPD_KCOL		_IO('k', 29)
 
-
 #define KPD_SAY		"kpd: "
 #if KPD_DEBUG
 #define kpd_print(fmt, arg...)	printk(KPD_SAY fmt, ##arg)
 #else
 #define kpd_print(fmt, arg...)	do {} while (0)
 #endif
-
 
 #endif // __KPD_H__

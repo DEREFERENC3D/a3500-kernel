@@ -29,34 +29,6 @@ static u16 kpd_keymap_state[KPD_NUM_MEMS] = {
 
 static bool kpd_sb_enable = false;
 
-#ifdef MTK_SMARTBOOK_SUPPORT
-static void sb_kpd_release_keys(struct input_dev *dev)
-{
-	int code;
-	for (code = 0; code <= KEY_MAX; code++) {
-		if (test_bit(code, dev->keybit)) {
-			kpd_print("report release event for sb plug in! keycode:%d \n",code);
-			input_report_key(dev, code, 0);
-			input_sync(dev);
-		}
-	}
-}
-
-void sb_kpd_enable(void)
-{
-	kpd_sb_enable = true;
-	kpd_print("sb_kpd_enable performed! \n");	
-	mt65xx_reg_sync_writew(0x0, KP_EN);
-	sb_kpd_release_keys(kpd_input_dev);
-}
-
-void sb_kpd_disable(void)
-{
-	kpd_sb_enable = false;
-	kpd_print("sb_kpd_disable performed! \n");
-	mt65xx_reg_sync_writew(0x1, KP_EN);
-}
-#else
 void sb_kpd_enable(void)
 {
 	kpd_print("sb_kpd_enable empty function for HAL!\n");	
@@ -66,7 +38,6 @@ void sb_kpd_disable(void)
 {
 	kpd_print("sb_kpd_disable empty function for HAL!\n");
 }
-#endif
 
 #ifndef EVB_PLATFORM
 static void enable_kpd(int enable)
@@ -178,7 +149,6 @@ void mtk_kpd_gpios_get(unsigned int ROW_REG[], unsigned int COL_REG[])
 	#ifdef GPIO_KPD_KROW7_PIN
 		ROW_REG[7] = GPIO_KPD_KROW7_PIN;
 	#endif
-
 
 	#ifdef GPIO_KPD_KCOL0_PIN
 		COL_REG[0] = GPIO_KPD_KCOL0_PIN;

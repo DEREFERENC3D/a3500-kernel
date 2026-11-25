@@ -51,11 +51,6 @@
 #include "disp_drv_platform.h"
 #include "ddp_reg.h"
 
-#ifdef MTK_SMARTBOOK_SUPPORT
-#include <linux/sbsuspend.h>
-#include "smartbook.h"
-#endif
-
 #ifdef I2C_DBG
 #include "tmbslHdmiTx_types.h"
 #include "tmbslTDA9989_local.h"
@@ -98,12 +93,6 @@ static struct task_struct *hdmi_rdma_update_task = NULL;
 static wait_queue_head_t hdmi_rdma_update_wq;
 static atomic_t hdmi_rdma_update_event = ATOMIC_INIT(0);
 
-#ifdef MTK_SMARTBOOK_SUPPORT
-static struct task_struct *hdmi_status_update_task = NULL;
-static wait_queue_head_t hdmi_status_update_wq;
-static atomic_t hdmi_status_update_event = ATOMIC_INIT(0);
-#endif
-
 DEFINE_SEMAPHORE(hdmi_video_mode_mutex);
 static DEFINE_SEMAPHORE(hdmi_update_mutex);
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,7 +131,6 @@ unsigned long capture_addr;
 #define SET_HDMI_NOT_FAKE()     (atomic_set(&hdmi_fake_in, false))
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~extern declare~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 extern unsigned int gMutexID;
@@ -361,7 +349,6 @@ static int hdmi_rdma_update_kthread(void *data)
 
         MMProfileLogEx(HDMI_MMP_Events.BufferUpdate, MMProfileFlagStart, p->is_clock_on, 1);
 
-
         if (down_interruptible(&hdmi_update_mutex))
         {
             MMProfileLogEx(HDMI_MMP_Events.MutexErr, MMProfileFlagPulse, Mutex_Err1, Mutex_Err1);
@@ -388,94 +375,6 @@ static int hdmi_rdma_update_kthread(void *data)
         }
 
     }
-}
-#endif
-
-#ifdef MTK_SMARTBOOK_SUPPORT
-bool callback_plug = false;
-struct timer_list smb_timer;
-static bool smb_timer_started = false;
-
-static int hdmi_status_update_kthread(void *data)
-{
-    struct sched_param param = { .sched_priority = RTPM_PRIO_SCRN_UPDATE };
-    sched_setscheduler(current, SCHED_RR, &param);
-
-    for (;;)
-    {
-        wait_event_interruptible(hdmi_status_update_wq, atomic_read(&hdmi_status_update_event));
-        atomic_set(&hdmi_status_update_event, 0);
-
-        printk("[hdmi]%s, state = %d\n", __func__, callback_plug);
-
-        if (callback_plug == false)
-        {
-            continue;
-        }
-
-        hdmi_drv->get_params(hdmi_params);
-        if (hdmi_params->cabletype == MHL_SMB_CABLE)
-        {
-#ifdef CONFIG_HAS_SBSUSPEND
-            sb_plug_in();
-#endif
-        }
-
-        hdmi_resume();
-        switch_set_state(&hdmi_switch_data, HDMI_STATE_ACTIVE);
-
-        printk("[hdmi]%s,  out!\n", __func__);
-
-        if (kthread_should_stop())
-        {
-            break;
-        }
-    }
-
-    return 0;
-}
-
-/* Smart book plug in callback*/
-void smartbook_state_callback()
-{
-    printk("[hdmi]%s \n", __func__);
-
-    if (smb_timer_started) {
-        del_timer(&smb_timer);
-        smb_timer_started = false;
-    }
-	
-    atomic_set(&hdmi_status_update_event, 1);
-    wake_up_interruptible(&hdmi_status_update_wq);
-
-}
-
-static void __smb_timer_isr(unsigned long n)
-{
-    HDMI_FUNC();
-    del_timer(&smb_timer);
-
-    smb_timer_started = false;
-    smartbook_state_callback();
-}
-
-int hdmi_smb_notify_delay(int ms_latency)
-{
-    HDMI_FUNC();
-
-    if (smb_timer_started == true)
-    {
-        return 0;
-    }
-
-    memset((void *)&smb_timer, 0, sizeof(smb_timer));
-    smb_timer.expires = jiffies + msecs_to_jiffies(ms_latency);;
-    smb_timer.function = __smb_timer_isr;
-    init_timer(&smb_timer);
-    add_timer(&smb_timer);
-
-    smb_timer_started = true;
-    return 0;
 }
 #endif
 
@@ -538,7 +437,6 @@ int hdmi_rdma_address_config(bool enable, hdmi_video_buffer_info buffer_info)
                                       + buffer_info.src_offset_x * rdmaInputsize + offset;
 
         struct disp_path_config_struct config = {0};
-
 
         // Config RDMA1->DPI
         config.addr = hdmiSourceAddr;
@@ -696,7 +594,6 @@ static int hdmi_video_config(HDMI_VIDEO_RESOLUTION vformat, HDMI_VIDEO_INPUT_FOR
     HDMI_FUNC();
     RETIF(IS_HDMI_NOT_ON(), 0);
 
-
     return hdmi_drv->video_config(vformat, vin, vout);
 }
 
@@ -726,7 +623,6 @@ int hdmi_audio_config(int samplerate)
         HDMI_LOG("samplerate not support:%d\n", samplerate);
     }
 
-
     hdmi_drv->audio_config(p->output_audio_format);
 
     return 0;
@@ -737,7 +633,6 @@ int hdmi_audio_config(int samplerate)
 {
     HDMI_FUNC();
 
-
     return hdmi_drv->video_enable(enable);
 }
 
@@ -745,7 +640,6 @@ int hdmi_audio_config(int samplerate)
 /*static*/ int hdmi_audio_enable(bool enable)
 {
     HDMI_FUNC();
-
 
     return hdmi_drv->audio_enable(enable);
 }
@@ -821,38 +715,15 @@ void hdmi_state_callback(HDMI_STATE state)
     {
         case HDMI_STATE_NO_DEVICE:
         {
-#ifdef MTK_SMARTBOOK_SUPPORT
-            callback_plug = false;
-#endif
             hdmi_suspend();
             switch_set_state(&hdmi_switch_data, HDMI_STATE_NO_DEVICE); 
             switch_set_state(&hdmires_switch_data, 0);
                     
-#ifdef MTK_SMARTBOOK_SUPPORT
-#ifdef CONFIG_HAS_SBSUSPEND
-
-            if (hdmi_params->cabletype == MHL_SMB_CABLE)
-            {
-                int loop_cnt = 0;
-                while(smarbook_enable) {
-                    msleep(50);
-                    if(++loop_cnt > 100) {
-                        break;
-                    }
-                }
-                sb_plug_out();
-            }
-
-            printk("[hdmi]%s, state = %d out!\n", __func__, state);
-#endif
-#endif
             break;
         }
 
         case HDMI_STATE_ACTIVE:
         {
-
-#ifndef MTK_SMARTBOOK_SUPPORT
 
             hdmi_resume();
 
@@ -864,12 +735,6 @@ void hdmi_state_callback(HDMI_STATE state)
 
             switch_set_state(&hdmi_switch_data, HDMI_STATE_ACTIVE);
           
-#else
-			
-
-            callback_plug = true;
-            hdmi_smb_notify_delay(3500);
-#endif
             hdmi_reschange = HDMI_VIDEO_RESOLUTION_NUM;
             break;
         }
@@ -976,15 +841,6 @@ static HDMI_STATUS hdmi_drv_init(void)
         hdmi_rdma_update_task = kthread_create(hdmi_rdma_update_kthread, NULL, "hdmi_rdma_update_kthread");
         wake_up_process(hdmi_rdma_update_task);
     }
-#endif
-
-#ifdef MTK_SMARTBOOK_SUPPORT
-    if (!hdmi_status_update_task)
-    {
-        hdmi_status_update_task = kthread_create(hdmi_status_update_kthread, NULL, "hdmi_status_update_kthread");
-        wake_up_process(hdmi_status_update_task);
-    }
-
 #endif
 
     return HDMI_STATUS_OK;
@@ -1870,7 +1726,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
     return r;
 }
 
-
 static int hdmi_remove(struct platform_device *pdev)
 {
     return 0;
@@ -1904,18 +1759,6 @@ static void hdmi_sb_disable()
     smarbook_enable = false;
 }
 
-#ifdef MTK_SMARTBOOK_SUPPORT
-#ifdef CONFIG_HAS_SBSUSPEND
-static struct sb_handler sb_backlight_control_desc = {
-    .level    = SB_LEVEL_DISABLE_TOUCH,
-    .plug_in  = sb_backlight_turnoff,
-    .plug_out = sb_backlight_turnon,
-    .enable   = hdmi_sb_enable,
-    .disable  = hdmi_sb_disable,
-};
-#endif
-#endif
-
 static BOOL hdmi_drv_init_context(void)
 {
     static const HDMI_UTIL_FUNCS hdmi_utils =
@@ -1929,7 +1772,6 @@ static BOOL hdmi_drv_init_context(void)
     {
         return TRUE;
     }
-
 
     hdmi_drv = (HDMI_DRIVER *)HDMI_GetDriver();
 
@@ -1955,12 +1797,6 @@ static void __exit hdmi_exit(void)
     class_destroy(hdmi_class);
     cdev_del(hdmi_cdev);
     unregister_chrdev_region(hdmi_devno, 1);
-
-#ifdef MTK_SMARTBOOK_SUPPORT
-#ifdef CONFIG_HAS_SBSUSPEND
-	unregister_sb_handler(&sb_backlight_control_desc);
-#endif
-#endif
 
 }
 
@@ -2012,9 +1848,6 @@ static int hdmi_probe(struct platform_device *pdev)
 
     init_waitqueue_head(&hdmi_vsync_wq);
 
-#ifdef MTK_SMARTBOOK_SUPPORT
-    init_waitqueue_head(&hdmi_status_update_wq);
-#endif
     return 0;
 }
 
@@ -2029,7 +1862,6 @@ static int __init hdmi_init(void)
 {
     int ret = 0;
     printk("[hdmi]%s\n", __func__);
-
 
     if (platform_driver_register(&hdmi_driver))
     {
@@ -2090,12 +1922,6 @@ static int __init hdmi_init(void)
     {
         factory_mode = true;
     }
-
-#ifdef MTK_SMARTBOOK_SUPPORT
-#ifdef CONFIG_HAS_SBSUSPEND
-	register_sb_handler(&sb_backlight_control_desc);
-#endif
-#endif
 
     return 0;
 }

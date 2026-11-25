@@ -11,7 +11,6 @@
         }                                                                   \
     } while (0)
 
-
 extern unsigned int mtkfb_get_fb_phys_addr(void);
 extern unsigned int mtkfb_get_fb_size(void);
 extern unsigned int mtkfb_get_fb_va(void);
@@ -38,8 +37,6 @@ struct ext_buffer
 #define MTK_EXT_DISPLAY_GET_MEMORY_INFO         HDMI_IOW(45, struct ext_memory_info)
 #define MTK_EXT_DISPLAY_GET_BUFFER              HDMI_IOW(46, struct ext_buffer)
 #define MTK_EXT_DISPLAY_FREE_BUFFER             HDMI_IOW(47, struct ext_buffer)
-
-
 
 enum HDMI_report_state
 {
@@ -72,7 +69,4 @@ void hdmi_reg_dump(void);
 
 void hdmi_read_reg(unsigned char u8Reg, unsigned int *p4Data);
 void hdmi_write_reg(unsigned char u8Reg, unsigned char u8Data);
-#ifdef MTK_SMARTBOOK_SUPPORT
-void smartbook_state_callback();
-#endif
 #endif

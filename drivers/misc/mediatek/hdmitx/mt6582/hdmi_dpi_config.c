@@ -32,12 +32,7 @@ static HDMI_COLOR_ORDER rgb_order;
 static unsigned int hdmi_resolution_param_table[][3] =
 {
     {720,   480,    60},
-#ifdef MTK_SMARTBOOK_SUPPORT
-    //{1366,  768,    60},
     {1280,  720,    60},
-#else
-    {1280,  720,    60},
-#endif
     {1920,  1080,   30},
 };
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,7 +111,6 @@ void hdmi_dpi_config_update(int hdmi_width, int hdmi_height)
     //hdmi_dpi_colorbar_enable(true);
     //DPI_CHECK_RET(HDMI_DPI(_ConfigInRBSwap)(true));
 }
-
 
 /* Will only be used in hdmi_drv_init(), this means that will only be use in ioctl(MTK_HDMI_AUDIO_VIDEO_ENABLE) */
 void hdmi_dpi_config_clock(HDMI_PARAMS *hdmi_params)
@@ -253,15 +247,6 @@ void hdmi_dpi_setting_res(u8 arg, HDMI_CABLE_TYPE cable_type, _t_hdmi_context *h
             hdmi_context_unstatic->bg_width = ((1280 * hdmi_context_unstatic->scaling_factor) / 100 >> 2) << 2 ;
             hdmi_context_unstatic->hdmi_width = 1280 - hdmi_context_unstatic->bg_width; //1280  1366
             hdmi_context_unstatic->hdmi_height = 720 - hdmi_context_unstatic->bg_height;//720;  768
-#ifdef MTK_SMARTBOOK_SUPPORT
-            if (cable_type == MHL_SMB_CABLE)
-            {
-                hdmi_context_unstatic->hdmi_width = 1366;
-                hdmi_context_unstatic->hdmi_height = 768;
-                hdmi_context_unstatic->bg_height = 0;
-                hdmi_context_unstatic->bg_width = 0;
-            }
-#endif
             hdmi_context_unstatic->output_video_resolution = HDMI_VIDEO_1280x720p_60Hz;
             break;
         }

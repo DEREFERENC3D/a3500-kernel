@@ -14,7 +14,6 @@
  *
  */
 
-
 /*kpd.h file path: ALPS/mediatek/kernel/include/linux */
 #include <linux/kpd.h>
 
@@ -60,7 +59,6 @@ static int kpd_pdrv_suspend(struct platform_device *pdev, pm_message_t state);
 static int kpd_pdrv_resume(struct platform_device *pdev);
 #endif
 
-
 static struct platform_driver kpd_pdrv = {
 	.probe		= kpd_pdrv_probe,
 	.remove		= kpd_pdrv_remove,
@@ -80,7 +78,6 @@ static void kpd_memory_setting(void)
 	kpd_init_keymap_state(kpd_keymap_state);
 	return;
 }
-
 
 /*****************for kpd auto set wake up source*************************/
 
@@ -344,7 +341,6 @@ void kpd_pwrkey_pmic_handler(unsigned long pressed)
 	kpd_pmic_pwrkey_hal(pressed);
 }
 #endif
-
 
 void kpd_pmic_rstkey_handler(unsigned long pressed)
 {
@@ -709,7 +705,6 @@ long kpd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return 0;
 }
 
-
 int kpd_dev_open(struct inode *inode, struct file *file)
 {
 	return 0;
@@ -732,7 +727,6 @@ static int kpd_open(struct input_dev *dev)
 	kpd_slide_qwerty_init();//API 1 for kpd slide qwerty init settings	
 	return 0;
 }
-
 
 static int kpd_pdrv_probe(struct platform_device *pdev)
 {
@@ -879,7 +873,6 @@ static int kpd_pdrv_resume(struct platform_device *pdev)
 #define kpd_pdrv_resume		NULL
 #endif
 
-
 #ifdef USE_EARLY_SUSPEND
 static void kpd_early_suspend(struct early_suspend *h)
 {
@@ -917,16 +910,6 @@ static struct early_suspend kpd_early_suspend_desc = {
 };
 #endif
 
-#ifdef MTK_SMARTBOOK_SUPPORT
-#ifdef CONFIG_HAS_SBSUSPEND
-static struct sb_handler kpd_sb_handler_desc = {
-	.level		= SB_LEVEL_DISABLE_KEYPAD,
-	.plug_in	= sb_kpd_enable,
-	.plug_out	= sb_kpd_disable,
-};
-#endif
-#endif
-
 static int __init kpd_mod_init(void)
 {
 	int r;
@@ -939,12 +922,6 @@ static int __init kpd_mod_init(void)
 
 #ifdef USE_EARLY_SUSPEND
 	register_early_suspend(&kpd_early_suspend_desc);
-#endif
-
-#ifdef MTK_SMARTBOOK_SUPPORT
-#ifdef CONFIG_HAS_SBSUSPEND
-	register_sb_handler(&kpd_sb_handler_desc);
-#endif
 #endif
 
 	return 0;
