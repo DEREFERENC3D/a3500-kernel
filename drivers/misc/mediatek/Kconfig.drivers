@@ -35,16 +35,6 @@ menuconfig MTK_FB # FB_MT6516 FB_MT6573
           If you want to use MediaTek(R) frame buffer diver, say Y here.
           If unsure, say N.
 
-config MTK_FB_SUPPORT_ASSERTION_LAYER # FB_MT6516_SUPPORT_ASSERTION_LAYER
-        bool "AEE Assertion Layer Support"
-        depends on MTK_FB
-        select FONT_8x16
-        default y
-        ---help---
-          This enable support for AEE assertion layer.
-          If you want to enable AEE assertion layer support, say Y here.
-          If unsure, say N.
-
 menuconfig GPS
         tristate "GPS drivers"
         default y

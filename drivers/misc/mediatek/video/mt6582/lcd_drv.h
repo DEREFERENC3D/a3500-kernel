@@ -410,7 +410,6 @@ LCD_STATUS LCD_ReadIF(LCD_IF_ID id, LCD_IF_A0_MODE a0, UINT32 *value, LCD_IF_MCU
 LCD_STATUS LCD_StartTransfer(BOOL blocking, BOOL isMutexLocked);
 
 LCD_STATUS LCD_Dump_Layer_Info(void);
-LCD_STATUS LCD_Dynamic_Change_FB_Layer(unsigned int isAEEEnabled);
 
 // Retrieve Information
 LCD_STATE LCD_GetState(void);

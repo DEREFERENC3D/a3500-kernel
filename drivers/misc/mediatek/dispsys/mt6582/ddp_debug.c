@@ -141,7 +141,6 @@ void init_ddp_mmp_events(void)
 static char dbg_buf[2048];
 extern void mtkfb_dump_layer_info(void);
 extern unsigned int gNeedToRecover;
-extern unsigned int isAEEEnabled;
 static void process_dbg_opt(const char *opt)
 {
     char *buf = dbg_buf + strlen(dbg_buf);
@@ -397,11 +396,6 @@ static void process_dbg_opt(const char *opt)
             mm_cmdq f\n\
             smi_larb0 10\n\
             smi_common 11\n");
-        }
-        else if(enable==22)
-        {
-            sprintf(buf, "isAEEEnabled=%d \n",isAEEEnabled); 
-            DISP_MSG("isAEEEnabled=%d \n", isAEEEnabled);
         }
     }
     

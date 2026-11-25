@@ -51,7 +51,6 @@
 #define MTKFB_GET_INTERFACE_TYPE               MTK_IOR(77, unsigned long)  ///0 DBI, 1 DPI, 2 MIPI
 #define MTKFB_GET_POWERSTATE		           MTK_IOR(78, unsigned long)  ///0: power off  1: power on
 #define MTKFB_GET_DISPLAY_IF_INFORMATION       MTK_IOR(90, mtk_dispif_info_t)
-#define MTKFB_AEE_LAYER_EXIST                  MTK_IOR(92, unsigned long)	//called before SET_OVERLAY each time, if true, hwc will not use FB_LAYER again
 #define MTKFB_GET_OVERLAY_LAYER_INFO           MTK_IOR(93, struct fb_overlay_layer_info)
 #define MTKFB_FACTORY_AUTO_TEST                MTK_IOR(94, unsigned long)
 #define MTKFB_GET_FRAMEBUFFER_MVA              MTK_IOR(95, unsigned int)
@@ -60,7 +59,6 @@
 //error handling
 #define MTKFB_META_RESTORE_SCREEN              MTK_IOW(101, unsigned long)
 #define MTKFB_ERROR_INDEX_UPDATE_TIMEOUT       MTK_IO(103)
-#define MTKFB_ERROR_INDEX_UPDATE_TIMEOUT_AEE   MTK_IO(104)
 
 //----------------------------------------------------------------------
 

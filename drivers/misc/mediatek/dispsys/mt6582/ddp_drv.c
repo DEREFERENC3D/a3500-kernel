@@ -162,7 +162,7 @@ static volatile int disp_irq_log_module = 0;
 
 static DISPLAY_TDSHP_T g_TDSHP_Index; 
 
-static int g_irq_err_print = 0; // print aee warning 2s one time
+static int g_irq_err_print = 0; // print warning 2s one time
 #define DDP_ERR_IRQ_INTERVAL_TIME 5
 static unsigned int disp_irq_err = 0;
 unsigned int cnt_rdma_underflow = 0;

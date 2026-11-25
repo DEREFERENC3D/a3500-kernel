@@ -215,7 +215,6 @@ int mtk_wdt_enable(enum wk_wdt_en en)
 }
 int  mtk_wdt_confirm_hwreboot(void)
 {
-    //aee need confirm wd can hw reboot
     //printk("mtk_wdt_probe : Initialize to dual mode \n");
     unsigned int tmp=0;
 	mtk_wdt_restart(WD_TYPE_NOLOCK);//restart spm wdt

@@ -1338,7 +1338,6 @@ bool LCD_IsLayerEnable(LCD_LAYER_ID id)
     return (bool)(cached_layer_config[id].layer_en);
 }
 
-extern unsigned int isAEEEnabled;
 
 LCD_STATUS LCD_Dump_Layer_Info()
 {

@@ -191,7 +191,6 @@ int OVL3DConfig(unsigned int layer_id,
 	  return 0;
 }
 
-extern unsigned int isAEEEnabled;
 extern unsigned int dal_fb_pa;
 int OVLLayerConfig(unsigned int layer,
                    unsigned int source, 
@@ -220,11 +219,6 @@ int OVLLayerConfig(unsigned int layer,
     ASSERT((dst_w <= OVL_MAX_WIDTH) && (dst_h <= OVL_MAX_HEIGHT));
     fmt = ovl_fmt_convert(format);
 
-    if((layer==3) && (isAEEEnabled==1) && (addr!=dal_fb_pa))
-    {
-        printk("[DDP], config AEE layer! addr=0x%x \n", addr);
-    }
-    
     if(fmt==OVL_INPUT_FORMAT_ABGR8888  ||
        fmt==OVL_INPUT_FORMAT_PABGR8888 ||
        fmt==OVL_INPUT_FORMAT_xBGR8888 ||

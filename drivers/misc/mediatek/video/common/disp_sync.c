@@ -22,7 +22,6 @@
 ///=============================================================================
 // external variables declarations
 ///==========================
-extern BOOL isAEEEnabled;
 static BOOL log_on = 0;
 void disp_sync_log_on(BOOL on) {
 	log_on = on;
@@ -228,10 +227,6 @@ SYNC_STATUS disp_sync_prepare_buffer(struct fb_overlay_buffer *buf) {
 	//XLOG_DBG("prepare 0x%08x\n", (buf->layer_id<<24)|(buf->layer_en<<16)|(buf->ion_fd==MTK_FB_NO_ION_FD?0:buf->ion_fd));
 	info = &layer_infos[layer];
 	timeline = sync_timelines[layer];
-	if (isAEEEnabled && (layer == DISP_DEFAULT_UI_LAYER_ID)) {
-		XLOG_ERR("Maybe hang: AEE is enabled, HWC cannot use FB_LAYER again!\n");
-		return SYNC_STATUS_ERROR;
-	}
 	if (layer != info->layer_id) {
 		// Reset sync_fence info
 		disp_sync_init_layer_info(layer);

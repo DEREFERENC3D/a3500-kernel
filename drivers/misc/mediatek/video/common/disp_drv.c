@@ -234,7 +234,6 @@ void ReleaseUpdateMutex(void)
 static DECLARE_WAIT_QUEUE_HEAD(clean_up_wq);
 static int clean_up_task_wakeup = 0;
 struct task_struct *clean_up_task = NULL;
-extern BOOL isAEEEnabled;
 
 #define UNUSED_BUF_IDX (0xffffffff)
 static unsigned int buf_idx_using[2][HW_OVERLAY_COUNT] = 
@@ -264,12 +263,6 @@ static int _DISP_CleanUpKThread(void *data)
         {
             unsigned long flags;
 
-			if(isAEEEnabled && (i == DISP_DEFAULT_UI_LAYER_ID)) 
-            {
-				DISP_LOG("aee on\n");
-                disp_sync_release(i);
-                continue;
-			}
             
             spin_lock_irqsave(&buf_usage_lock, flags);
             {

@@ -169,7 +169,6 @@ extern BOOL is_lcm_in_suspend_mode;
 extern OVL_CONFIG_STRUCT* captured_layer_config;
 extern OVL_CONFIG_STRUCT* realtime_layer_config;
 extern unsigned int is_video_mode_running;
-extern unsigned int isAEEEnabled;
 // ---------------------------------------------------------------------------
 //  local function declarations
 // ---------------------------------------------------------------------------
@@ -691,11 +690,6 @@ static int mtkfb_pan_display_impl(struct fb_var_screeninfo *var, struct fb_info 
     vaEnd   = vaStart + info->var.yres * info->fix.line_length;
 
     mutex_lock(&OverlaySettingMutex);
-    if(isAEEEnabled)
-    {
-        printk("[FB Driver] aee on so changed pan_display to layer %d \n",DISP_CHANGED_UI_LAYER_ID);
-        layer = DISP_CHANGED_UI_LAYER_ID;
-    }
     DISP_CHECK_RET(DISP_SetFrameBufferAddr(paStart));
     cached_layer_config[layer].vaddr = (unsigned int)vaStart;
     cached_layer_config[layer].layer_en = 1;
@@ -1038,7 +1032,6 @@ static int mtkfb_soft_cursor(struct fb_info *info, struct fb_cursor *cursor)
 
     return 0;
 }
-extern DAL_STATUS DAL_Dynamic_Change_FB_Layer(unsigned int isAEEEnabled);
 static int mtkfb_set_overlay_layer(struct fb_info *info, struct fb_overlay_layer* layerInfo, unsigned int locked)
 {
     struct mtkfb_device *fbdev = (struct mtkfb_device *)info->par;
@@ -1196,14 +1189,6 @@ static int mtkfb_set_overlay_layer(struct fb_info *info, struct fb_overlay_layer
 	    temp[id].aen = TRUE;
     }
 
-	// xuecheng, for slt debug
-	if(!strcmp(current->comm, "display_slt"))
-	{
-		temp[id].aen = FALSE;
-		isAEEEnabled = 1;
-		DAL_Dynamic_Change_FB_Layer(isAEEEnabled); // default_ui_ layer coniig to changed_ui_layer
-	}
-
     //set src width, src height
     temp[id].src_x = layerInfo->src_offset_x;
     temp[id].src_y = layerInfo->src_offset_y;
@@ -1316,10 +1301,7 @@ LeaveOverlayMode:
     if (!locked) {
     	mutex_lock(&OverlaySettingMutex);
     }
-	if(!(isAEEEnabled && (id==DISP_DEFAULT_UI_LAYER_ID)))
-	{
-	    memcpy(cached_layer_config, temp, sizeof(temp));
-	}
+	memcpy(cached_layer_config, temp, sizeof(temp));
 	atomic_set(&OverlaySettingDirtyFlag, 1);
 	atomic_set(&OverlaySettingApplied, 0);
 	if (!locked) {
@@ -1533,7 +1515,6 @@ void mtkfb_dump_layer_info(void)
 	}
 	    
 	// dump mmp data
-	//mtkfb_aee_print("surfaceflinger-mtkfb blocked");
 
 }
 
@@ -1710,13 +1691,6 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
         return (r);
     }
 
-    case MTKFB_ERROR_INDEX_UPDATE_TIMEOUT_AEE:
-    {
-        printk("[DDP] mtkfb_ioctl():MTKFB_ERROR_INDEX_UPDATE_TIMEOUT  \n");
-        // call info dump function here
-        mtkfb_dump_layer_info();
-        return (r);
-    }
         
     case MTKFB_SET_VIDEO_LAYERS:
     {
@@ -1949,12 +1923,6 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
         result = mtkfb_fm_auto_test();
 		return copy_to_user(argp, &result, sizeof(result)) ? -EFAULT : 0;
 	}
-    case MTKFB_AEE_LAYER_EXIST:
-    {
-		//printk("[MTKFB] isAEEEnabled=%d \n", isAEEEnabled);
-		return copy_to_user(argp, &isAEEEnabled,
-                            sizeof(isAEEEnabled)) ? -EFAULT : 0;
-    }
     case MTKFB_LOCK_FRONT_BUFFER:
         return 0;
     case MTKFB_UNLOCK_FRONT_BUFFER:
@@ -2903,11 +2871,8 @@ int hdmi_disc_disp_path(void)
     for(i=0; i<HW_OVERLAY_COUNT; i++)
     {
         disp_sync_release(i);
-        if (!((i == DISP_DEFAULT_UI_LAYER_ID) && isAEEEnabled)) 
-        {
-            cached_layer_config[i].layer_en = 0;
-            cached_layer_config[i].isDirty = 0;
-        }
+        cached_layer_config[i].layer_en = 0;
+        cached_layer_config[i].isDirty = 0;
         printk("[FB Driver] layer%d release fences\n",i);		
     }
 #endif
@@ -3008,11 +2973,8 @@ static void mtkfb_early_suspend(struct early_suspend *h)
     for(i=0;i<HW_OVERLAY_COUNT;i++)
     {
         disp_sync_release(i);
-        if (!((i == DISP_DEFAULT_UI_LAYER_ID) && isAEEEnabled)) 
-        {
-            cached_layer_config[i].layer_en = 0;
-            cached_layer_config[i].isDirty = 0;
-        }
+        cached_layer_config[i].layer_en = 0;
+        cached_layer_config[i].isDirty = 0;
         MTKFB_LOG("[FB driver] layer%d release fences\n",i);		
     }
 #endif
