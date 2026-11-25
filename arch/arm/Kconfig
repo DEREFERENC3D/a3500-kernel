@@ -33,7 +33,7 @@ config ARM
 	select GENERIC_IRQ_SHOW
 	select CPU_PM if (SUSPEND || CPU_IDLE)
 	select GENERIC_PCI_IOMAP
-	select ARM_HAS_SG_CHAIN if (ARCH_MT6589 || ARCH_MT6582 || ARCH_MT6572 || ARCH_MT8127)
+	select ARM_HAS_SG_CHAIN if ARCH_MT6582
 	select HAVE_BPF_JIT if NET
 	help
 	  The ARM series is a line of low-power-consumption RISC chip designs
@@ -1621,7 +1621,7 @@ config LOCAL_TIMERS
 	bool "Use local timer interrupts"
 	depends on SMP
 	default y
-	select HAVE_ARM_TWD if (!ARCH_MSM_SCORPIONMP && !EXYNOS4_MCT && !ARCH_MT6589 && !ARCH_MT6582 && !ARCH_MT6572 && !ARCH_MT8127 && !ARCH_MT6592 && !ARCH_MT6595)
+	select HAVE_ARM_TWD if (!ARCH_MSM_SCORPIONMP && !EXYNOS4_MCT && !ARCH_MT6582)
 	help
 	  Enable support for local timers on SMP platforms, rather then the
 	  legacy IPI broadcast method.  Local timers allows the system
