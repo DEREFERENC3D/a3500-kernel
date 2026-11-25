@@ -67,6 +67,9 @@
 #define TTY_FLIP_ARG(a)  ((a)->port)
 #endif
 
+/* UART port type used by this driver, private to it. */
+#define PORT_MTK 101
+
 spinlock_t		 mtk_console_lock;
 spinlock_t		 mtk_uart_bt_lock;
 
