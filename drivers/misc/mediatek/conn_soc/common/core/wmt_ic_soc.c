@@ -557,8 +557,6 @@ mtk_wcn_soc_crystal_triming_set (VOID);
 
 static MTK_WCN_BOOL mtk_wcn_soc_quick_sleep_flag_get(VOID);
 
-static MTK_WCN_BOOL mtk_wcn_soc_aee_dump_flag_get(VOID);
-
 #if CFG_WMT_SDIO_DRIVING_SET
 static INT32 mtk_wcn_soc_set_sdio_driving(void);
 #endif
@@ -576,7 +574,6 @@ WMT_IC_OPS wmt_ic_ops_soc = {
     .ic_ver_check = mtk_wcn_soc_ver_check,
     .co_clock_ctrl = mtk_wcn_soc_co_clock_ctrl,
     .is_quick_sleep  = mtk_wcn_soc_quick_sleep_flag_get,
-    .is_aee_dump_support = mtk_wcn_soc_aee_dump_flag_get,
 };
 
 /*******************************************************************************
@@ -1064,12 +1061,6 @@ INT32 mtk_wcn_soc_co_clock_ctrl(WMT_CO_CLOCK on)
 static MTK_WCN_BOOL mtk_wcn_soc_quick_sleep_flag_get(VOID)
 {
     return MTK_WCN_BOOL_TRUE;
-}
-
-
-static MTK_WCN_BOOL mtk_wcn_soc_aee_dump_flag_get(VOID)
-{
-    return MTK_WCN_BOOL_FALSE;    
 }
 
 

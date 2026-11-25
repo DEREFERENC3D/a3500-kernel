@@ -10,9 +10,6 @@
 #include <linux/irq.h>
 #include <linux/sched.h>
 #include <linux/list.h>
-#ifdef CONFIG_MTK_AEE_FEATURE
-#include <linux/aee.h>
-#endif  
 #include <linux/timer.h>
 #include <linux/workqueue.h>
 
@@ -295,11 +292,6 @@ static irqreturn_t mpu_violation_irq(int irq, void *dev_id)
     }  
     printk(KERN_CRIT "[EMI MPU] Debug info end------------------------------------------\n");
     
-#ifdef CONFIG_MTK_AEE_FEATURE
-    //aee_kernel_exception("EMI MPU", "EMI MPU violation.\nEMP_MPUS = 0x%x, EMI_MPUT = 0x%x, EMI_MPU(PQR).\n", dbg_s, dbg_t+EMI_PHY_OFFSET, dbg_pqry);
-    aee_kernel_exception("EMI MPU", "EMI MPU violation.\nEMP_MPUS = 0x%x, EMI_MPUT = 0x%x, module is %s.\n", dbg_s, dbg_t+EMI_PHY_OFFSET, master_name);    
-#endif
-
     __clear_emi_mpu_vio();
 
 
@@ -742,7 +734,7 @@ static void emi_axi_set_master(const unsigned int setting)
     mt65xx_reg_sync_writel(value, EMI_CHKER);
 }
 
-static void emi_axi_dump_info(int aee_ke_en)
+static void emi_axi_dump_info(void)
 {
     int value, master_ID;
     char *master_name;
@@ -765,10 +757,6 @@ static void emi_axi_dump_info(int aee_ke_en)
         printk(KERN_CRIT "[EMI MPU AXI] Debug info end ----------------------------------------\n");
 
         master_name = __id2name(master_ID);    
-#ifdef CONFIG_MTK_AEE_FEATURE
-        if (aee_ke_en)
-            aee_kernel_exception("EMI MPU AXI", "AXI violation.\EMI_CHKER = 0x%x, module is %s.\n", value, master_name);    
-#endif
         // clear AXI checker status
         mt65xx_reg_sync_writel((1 << AXI_VIO_CLR) | readl(IOMEM(EMI_CHKER)), EMI_CHKER);
     }
@@ -776,7 +764,7 @@ static void emi_axi_dump_info(int aee_ke_en)
 
 static void emi_axi_vio_timer_func(unsigned long a)
 {
-    emi_axi_dump_info(1);
+    emi_axi_dump_info();
 
     mod_timer(&emi_axi_vio_timer, jiffies + AXI_VIO_MONITOR_TIME);
 }
@@ -787,7 +775,7 @@ static ssize_t emi_axi_vio_show(struct device_driver *driver, char *buf)
     
     value = readl(IOMEM(EMI_CHKER));
 
-    emi_axi_dump_info(0);
+    emi_axi_dump_info();
 
     return snprintf(buf, PAGE_SIZE, "AXI vio setting is: ADR_CHK_EN %s, LOCK_CHK_EN %s, NON_ALIGN_CHK_EN %s\n", (value & (1 << AXI_ADR_CHK_EN)) ? "ON" : "OFF",
                                                                                                                     (value & (1 << AXI_LOCK_CHK_EN)) ? "ON" : "OFF",
@@ -825,7 +813,7 @@ DRIVER_ATTR(emi_axi_vio,	0644, emi_axi_vio_show,     emi_axi_vio_store);
 /*
 static int emi_mpu_panic_cb(struct notifier_block *this, unsigned long event, void *ptr)
 {
-    emi_axi_dump_info(1);
+    emi_axi_dump_info();
     
     return NOTIFY_DONE;
 }*/

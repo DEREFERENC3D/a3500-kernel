@@ -41,7 +41,6 @@
 typedef enum {
     BTM_RST_OP = 0,
     BTM_DMP_OP = 1,
-    BTM_GET_AEE_SUPPORT_FLAG= 2,
     BTM_MAX_OP,
 }MTKSTP_BTM_WMT_OP_T;
 

@@ -142,7 +142,6 @@
 #define AUDDRV_GET_AUXADC_CHANNEL_VALUE   _IOW(AUD_DRV_IOC_MAGIC, 0xb0, int)
 
 // used for debug
-#define AUDDRV_AEE_IOCTL              _IOW(AUD_DRV_IOC_MAGIC, 0xFA, int)
 #define AUDDRV_GPIO_IOCTL              _IOW(AUD_DRV_IOC_MAGIC, 0xFB, int)
 #define AUDDRV_LOG_PRINT              _IOWR(AUD_DRV_IOC_MAGIC, 0xFD, int)
 #define AUDDRV_ASSERT_IOCTL        _IOW(AUD_DRV_IOC_MAGIC, 0xFE, int)

@@ -4,7 +4,6 @@
 #include <linux/interrupt.h>
 #include <linux/cpu.h>
 #include <linux/notifier.h>
-#include <linux/aee.h>
 #include <linux/mtk_ram_console.h>
 #include <asm/mach/irq.h>
 #include <asm/hardware/gic.h>
@@ -873,9 +872,6 @@ static void fiq_isr(struct fiq_glue_handler *h, void *regs, void *svc_sp)
 
     if (irq == FIQ_SMP_CALL_SGI) {
         fiq_isr_logs[cpu].smp_call_cnt++;
-    }
-    if (irq == MT_WDT_IRQ_ID) {
-        aee_rr_rec_fiq_step(AEE_FIQ_STEP_FIQ_ISR_BASE);
     }
     for (i = 0; i < ARRAY_SIZE(irqs_to_fiq); i++) {
         if (irqs_to_fiq[i].irq == irq) {

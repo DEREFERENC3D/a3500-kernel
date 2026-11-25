@@ -3,7 +3,6 @@
 
 #include <linux/kernel.h>
 #include <linux/mmprofile.h>
-#include <linux/aee.h>
 #include "ddp_drv.h"
 
 extern struct DDP_MMP_Events_t
@@ -40,7 +39,7 @@ extern unsigned int irq_err_log;
 #define DISP_DBG(string, args...) if(dbg_log) printk("[DDP]"string,##args)  // default off, use "adb shell "echo dbg_log:1 > sys/kernel/debug/dispsys" to enable
 #define DISP_MSG(string, args...) printk("[DDP]"string,##args)  // default on, important msg, not err
 #define DISP_ERR(string, args...) printk("[DDP]error:"string,##args)  //default on, err msg
-#define DDP_IRQ_ERR(string) if(irq_err_log) aee_kernel_warning_api(__FILE__, __LINE__, DB_OPT_DEFAULT, "DDP, "string, string)  // default off
+#define DDP_IRQ_ERR(string) if(irq_err_log) DISP_ERR(string)  // default off
 
 void ddp_debug_init(void);
 void ddp_debug_exit(void);

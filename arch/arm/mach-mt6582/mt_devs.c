@@ -26,7 +26,6 @@
 #include <mach/atag_mt6582.h>
 #include <mach/dfo_boot.h>
 #include <mach/dfo_boot_default.h>
-#include <linux/aee.h>
 
 #define SERIALNO_LEN 32
 static char serial_number[SERIALNO_LEN];
@@ -2052,7 +2051,6 @@ void __weak mtk_wcn_consys_memory_reserve(void)
 
 void mt_reserve(void)
 {
-//    aee_dram_console_reserve_memory();
 
 #if defined(CONFIG_MTK_RAM_CONSOLE_USING_DRAM)
     memblock_reserve(CONFIG_MTK_RAM_CONSOLE_DRAM_ADDR, CONFIG_MTK_RAM_CONSOLE_DRAM_SIZE);

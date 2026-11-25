@@ -25,7 +25,6 @@
 #include <linux/sched.h>
 #include <linux/mm.h>
 #include <linux/xlog.h> // For xlog_printk().
-#include <linux/aee.h>
 
 #include <mach/hardware.h>
 //#include <mach/mt6589_pll.h>
@@ -90,7 +89,6 @@ typedef int                 MBOOL;
 #define ISP_SET_BIT(reg, bit)   ((*(volatile MUINT32*)(reg)) |= (MUINT32)(1 << (bit)))
 #define ISP_CLR_BIT(reg, bit)   ((*(volatile MUINT32*)(reg)) &= ~((MUINT32)(1 << (bit))))
 
-#define OVERRUN_AEE_WARNING
 
 /*******************************************************************************
 * defined value
@@ -3617,8 +3615,6 @@ static __tcmfunc irqreturn_t ISP_Irq(MINT32  Irq, MVOID *DeviceId)
     }
 
     
-#if defined(OVERRUN_AEE_WARNING)
-
     if(IrqStatus[ISP_IRQ_TYPE_INT] & ISP_IRQ_INT_STATUS_TG1_ERR_ST)
     {
         senifIntStA = ISP_RD32((void *)(ISP_ADDR + 0x4018));
@@ -3640,11 +3636,9 @@ static __tcmfunc irqreturn_t ISP_Irq(MINT32  Irq, MVOID *DeviceId)
                 schedule_work(&g_IspInfo.ScheduleWorkSENINF);
                 tasklet_schedule(&IspTaskletSENIF); 
 
-                aee_kernel_warning_api(__FILE__, __LINE__, DB_OPT_DEFAULT, "CAMERA", "SENIF FIFO overrun/underrun");
             }
         }
     }
-#endif
 
     //[MT]ToDo: Need to Check
     /*if ( IrqStatus[ISP_IRQ_TYPE_INTX]&ISP_IRQ_INTX_STATUS_DMA_ERR_ST ) {

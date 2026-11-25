@@ -41,7 +41,6 @@
 #include "mtkfb_info.h"
 #include "ddp_ovl.h"
 #include "disp_drv_platform.h"
-#include <linux/aee.h>
 // Fence Sync Object
 #if defined (MTK_FB_SYNC_SUPPORT)
 #include "disp_sync.h"
@@ -1488,11 +1487,6 @@ EXIT:
 }
 
 
-#include <linux/aee.h>
-#define mtkfb_aee_print(string, args...) do{\
-    aee_kernel_warning_api(__FILE__, __LINE__, DB_OPT_MMPROFILE_BUFFER, "sf-mtkfb blocked", string, ##args);  \
-}while(0)
-
 void mtkfb_dump_layer_info(void)
 {
 	unsigned int i;
@@ -1721,7 +1715,6 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
         printk("[DDP] mtkfb_ioctl():MTKFB_ERROR_INDEX_UPDATE_TIMEOUT  \n");
         // call info dump function here
         mtkfb_dump_layer_info();
-        mtkfb_aee_print("surfaceflinger-mtkfb blocked");
         return (r);
     }
         
@@ -1785,13 +1778,11 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
     		    }
     		    if (layerInfo[i].layer_enable && (layerInfo[i].next_buff_idx == cached_layer_config[i].buff_idx)) {
     		    	MTKFB_ERR("layerId(%d) HWC reset the same buffer(%d)!\n", layerId, layerInfo[i].next_buff_idx);
-					//aee_kernel_warning("MTKFB","layerId(%d) HWC reset the same buffer(%d)!\n", layerInfo[i].layer_id, layerInfo[i].next_buff_idx);
 					continue;
     		    }
 				if (layerInfo[i].layer_enable && (layerInfo[i].next_buff_idx <= cached_layer_config[i].buff_idx))
 				{
     		    	MTKFB_ERR("layerId(%d) HWC set the old buffer(%d),last idx(%d)!\n", layerId, layerInfo[i].next_buff_idx, cached_layer_config[i].buff_idx);
-					//aee_kernel_warning("MTKFB","layerId(%d) HWC set the old buffer(%d)!\n", layerInfo[i].layer_id, layerInfo[i].next_buff_idx);
 					continue;
 				}
 				if(is_early_suspended)

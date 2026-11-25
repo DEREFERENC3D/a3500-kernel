@@ -449,7 +449,7 @@ VOID stp_do_tx_timeout(VOID)
 						issue_type = STP_FW_NOACK_ISSUE;
 		            	iRet = stp_dbg_set_fw_info("STP NoAck",osal_strlen("STP NoAck"),issue_type);
 						
-		                osal_dbg_assert_aee("[SOC_CONNSYS]NoAck", "**[WCN_ISSUE_INFO]STP Tx Timeout**\n F/W has NO any RESPONSE. Please check F/W status first\n");
+		                osal_dbg_assert_msg("[SOC_CONNSYS]NoAck", "**[WCN_ISSUE_INFO]STP Tx Timeout**\n F/W has NO any RESPONSE. Please check F/W status first\n");
 						if(STP_IS_ENABLE_RST(stp_core_ctx))
 		                {
 		                    STP_SET_READY(stp_core_ctx, 0);
@@ -1196,7 +1196,7 @@ static VOID stp_process_packet(VOID)
 	        {
 	        	mtk_wcn_stp_set_wmt_evt_err_trg_assert(0);
 	            //(*sys_dbg_assert_aee)("[MT662x]Ack Miss", "**STP Ack Miss**\n Ack Miss.\n");
-	            osal_dbg_assert_aee("[SOC_CONSYS]Ack Miss", "**[WCN_ISSUE_INFO]STP Ack Miss**\n Ack Miss.\n");
+	            osal_dbg_assert_msg("[SOC_CONSYS]Ack Miss", "**[WCN_ISSUE_INFO]STP Ack Miss**\n Ack Miss.\n");
 
 	            if(STP_IS_ENABLE_RST(stp_core_ctx))
 	            {
@@ -2223,12 +2223,11 @@ int mtk_wcn_stp_parser_data(UINT8 *buffer, UINT32 length)
                         /*Normal mode: whole chip reset*/
                         else
                         {
-                            /*Aee Kernel Warning Message Shown First*/
                             //(*sys_dbg_assert_aee)("[MT662x]f/w Assert", stp_core_ctx.rx_buf);
                             mtk_wcn_stp_coredump_start_ctrl(0);
                             mtk_wcn_stp_dbg_dump_package();
                             
-                            osal_dbg_assert_aee(stp_core_ctx.rx_buf, stp_core_ctx.rx_buf);
+                            osal_dbg_assert_msg(stp_core_ctx.rx_buf, stp_core_ctx.rx_buf);
                             /*Whole Chip Reset Procedure Invoke*/
                             if(STP_IS_ENABLE_RST(stp_core_ctx)){
                                 STP_SET_READY(stp_core_ctx, 0);

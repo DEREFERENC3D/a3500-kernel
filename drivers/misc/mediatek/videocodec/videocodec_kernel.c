@@ -14,7 +14,6 @@
 #include <linux/vmalloc.h>
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
-#include <linux/aee.h>
 #include <linux/timer.h>
 #include <linux/cache.h>
 #include <linux/xlog.h>

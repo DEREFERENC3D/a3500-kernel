@@ -9,7 +9,6 @@
 #include <linux/kthread.h>
 #include <linux/err.h>
 #include <linux/delay.h>  
-#include <linux/aee.h>
 
 #include <mach/irqs.h>
 #include <mach/mt_spm.h>
@@ -161,7 +160,6 @@ static const pcm_desc_t pcm_sodidle = {
 
 #define spm_error2(fmt, args...)    \
 do {                                \
-    aee_sram_printk(fmt, ##args);   \
     spm_error(fmt, ##args);         \
 } while (0)
 

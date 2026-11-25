@@ -242,7 +242,7 @@ start:
 	}
   /* kirby 20100427: for log missing warning { */
   if(is_overflow(log->size, log->sign, reader->sign, reader->r_off)) {
-		printk("[AEE] Some logs might have been lost!\n");
+		printk("Some logs might have been lost!\n");
 		ret = warn_overflow(log, reader, buf);
 		goto out;
   }

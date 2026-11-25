@@ -98,5 +98,4 @@ endif
 obj-y	+= common_detect/
 endif
 
-obj-y	+= selinux_warning/
 obj-y	+= debug_util/

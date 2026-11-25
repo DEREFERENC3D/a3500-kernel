@@ -5,7 +5,6 @@
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
 #include <linux/slab.h>
-#include <linux/aee.h>
 #include <linux/xlog.h>
 #include <linux/delay.h>
 #include <mach/mt_clkmgr.h>

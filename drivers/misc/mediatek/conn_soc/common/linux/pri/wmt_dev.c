@@ -78,14 +78,6 @@ UINT32 pAtchNum = 0;
 
 static UINT8 gEmiBuf[1024*32];
 
-#if CFG_WMT_PROC_FOR_AEE
-static struct proc_dir_entry *gWmtAeeEntry = NULL;
-#define WMT_AEE_PROCNAME "driver/wmt_aee"
-#define WMT_PROC_AEE_SIZE 3072
-static UINT32 g_buf_len = 0;
-static UINT8 *pBuf = NULL;
-static UINT32 passCnt = 0;
-#endif
 
 #if CFG_WMT_DBG_SUPPORT
 static struct proc_dir_entry *gWmtDbgEntry = NULL;
@@ -932,13 +924,11 @@ static INT32 wmt_dbg_poll_cpupcr(INT32 par1, INT32 par2, INT32 par3)
 {
 	UINT32 count = 0;
 	UINT16 sleep = 0;
-	UINT16 toAee = 0;
 	count = par2;
 	sleep = (par3 & 0xF0) >> 4;
-	toAee = (par3 & 0x0F);
 
-	WMT_INFO_FUNC("polling count[%d],polling sleep[%d],toaee[%d]\n",count,sleep,toAee);
-	wmt_lib_poll_cpupcr(count,sleep,toAee);
+	WMT_INFO_FUNC("polling count[%d],polling sleep[%d]\n",count,sleep);
+	wmt_lib_poll_cpupcr(count,sleep);
 
 	return 0;
 }
@@ -1037,79 +1027,6 @@ INT32 wmt_dev_dbg_remove(VOID)
 }
 #endif
 
-#if CFG_WMT_PROC_FOR_AEE
-
-static int wmt_dev_proc_for_aee_read(char *page, char **start, off_t off, int count, int *eof, void *data)
-{
-	UINT32 len = 0;
-
-	WMT_INFO_FUNC("wmt-dev:wmt for aee page(%p)off(%d)count(%d)\n",page,off,count);
-
-	if(off == 0)
-	{
-		pBuf = wmt_lib_get_cpupcr_xml_format(&len);
-		g_buf_len = len;
-		
-		/*pass 3k buffer for each proc read*/
-		passCnt = g_buf_len / WMT_PROC_AEE_SIZE;
-		passCnt = (g_buf_len % WMT_PROC_AEE_SIZE) ? (passCnt + 1) : passCnt;
-		WMT_INFO_FUNC("wmt_dev:wmt for aee buffer len(%d)passCnt(%d)\n",g_buf_len,passCnt);
-	}
-
-	if(passCnt)
-	{
-		if(g_buf_len > WMT_PROC_AEE_SIZE)
-		{
-			osal_memcpy(page,pBuf,WMT_PROC_AEE_SIZE);
-			*start += WMT_PROC_AEE_SIZE;
-			g_buf_len -= WMT_PROC_AEE_SIZE;
-			pBuf += WMT_PROC_AEE_SIZE;
-			WMT_INFO_FUNC("wmt_dev:after read,wmt for aee buffer len(%d)\n",g_buf_len);
-			*eof = 1;
-			passCnt--;
-			return WMT_PROC_AEE_SIZE;
-		}
-		else
-		{
-			osal_memcpy(page,pBuf,g_buf_len);
-			*start += g_buf_len;
-			len = g_buf_len;
-			g_buf_len = 0;
-			*eof = 1;
-			passCnt--;
-			pBuf += len;
-			return len;
-		}
-	}
-
-	return 0;
-
-}
-static int wmt_dev_proc_for_aee_write(struct file *file, const char *buffer, unsigned long count, void *data)
-{
-	return 0;
-}
-INT32 wmt_dev_proc_for_aee_setup(VOID)
-{
-    gWmtAeeEntry= create_proc_entry(WMT_AEE_PROCNAME, 0664, NULL);
-    if(gWmtAeeEntry == NULL){
-        WMT_ERR_FUNC("Unable to create / wmt_aee proc entry\n\r");
-        return -1;
-    }
-    gWmtAeeEntry->read_proc = wmt_dev_proc_for_aee_read;
-    gWmtAeeEntry->write_proc = wmt_dev_proc_for_aee_write;
-    return 0;
-}
-
-INT32 wmt_dev_proc_for_aee_remove(VOID)
-{
-    if (NULL != gWmtAeeEntry)
-    {
-        remove_proc_entry(WMT_AEE_PROCNAME, NULL);
-    }
-    return 0;
-}
-#endif
 
 VOID wmt_dev_rx_event_cb (VOID)
 {
@@ -1866,12 +1783,12 @@ WMT_unlocked_ioctl (
                 WMT_ERR_FUNC("copy assert string failed\n");
             }
             pBuffer[NAME_MAX] = '\0';
-            osal_dbg_assert_aee(pBuffer, pBuffer);
+            osal_dbg_assert_msg(pBuffer, pBuffer);
         }
             break;
         case 11:
         {
-            osal_dbg_assert_aee("MT662x f/w coredump end", "MT662x firmware coredump ends");
+            osal_dbg_assert_msg("MT662x f/w coredump end", "MT662x firmware coredump ends");
 			wmt_lib_host_awake_put();
         }
         break;
@@ -2120,10 +2037,6 @@ static int WMT_init(void)
     wmt_dev_dbg_setup();
 #endif
 
-#if CFG_WMT_PROC_FOR_AEE
-	wmt_dev_proc_for_aee_setup();
-#endif
-
     WMT_INFO_FUNC("wmt_dev register thermal cb\n");
     wmt_lib_register_thermal_ctrl_cb(wmt_dev_tm_temp_query);
 
@@ -2186,9 +2099,6 @@ static void WMT_exit (void)
     wmt_dev_dbg_remove();
 #endif
 
-#if CFG_WMT_PROC_FOR_AEE
-	wmt_dev_proc_for_aee_remove();
-#endif
     cdev_del(&gWmtCdev);
     unregister_chrdev_region(dev, WMT_DEV_NUM);
     gWmtMajor = -1;

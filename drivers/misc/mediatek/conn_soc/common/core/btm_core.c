@@ -112,49 +112,6 @@ static INT32 _stp_btm_put_dump_to_nl(void)
 }
 
 
-static INT32 _stp_btm_put_dump_to_aee(void)
-{
-    static UINT8  buf[2048];
-    static UINT8  tmp[2048];
-
-    UINT32  buf_len;       
-    STP_PACKET_T  *pkt;
-    STP_DBG_HDR_T *hdr;
-    INT32 remain = 0;
-    INT32 retry = 0;
-    INT32 ret = 0;
-    STP_BTM_INFO_FUNC("Enter..\n");
-
-    do {
-        remain = stp_dbg_dmp_out_ex(&buf[0], &buf_len);
-        if (buf_len > 0) {
-            pkt = (STP_PACKET_T*)buf;
-            hdr = &pkt->hdr;
-            if (hdr->dbg_type == STP_DBG_FW_DMP) {
-                memcpy(&tmp[0], pkt->raw, pkt->hdr.len);
-
-                if (pkt->hdr.len <= 1500) {
-                    tmp[pkt->hdr.len] = '\n';
-                    tmp[pkt->hdr.len + 1] = '\0';
-
-                    ret = stp_dbg_aee_send(tmp, pkt->hdr.len, 0);                 
-                } else {
-                    STP_BTM_INFO_FUNC("dump entry length is over long\n");
-                    BUG_ON(0);
-                }
-                retry = 0;
-            }
-        } else {  
-            retry ++;
-            msleep(100);
-        }
-    }while ((remain > 0) || (retry < 2));
-
-    STP_BTM_INFO_FUNC("Exit..\n");
-    return ret;
-}
-
-
 INT32 _stp_trigger_firmware_assert_via_emi(VOID)
 {
     INT32 status = -1;
@@ -182,7 +139,6 @@ INT32 _stp_trigger_firmware_assert_via_emi(VOID)
 
 
 
-#define COMBO_DUMP2AEE
 #if 1
 #define STP_DBG_PAGED_DUMP_BUFFER_SIZE (32*1024*sizeof(char))
 UINT8 g_paged_dump_buffer[STP_DBG_PAGED_DUMP_BUFFER_SIZE]={0};
@@ -210,7 +166,6 @@ VOID _stp_dump_emi_dump_buffer(UINT8 *buffer,UINT32 len)
 static INT32 _stp_btm_handler(MTKSTP_BTM_T *stp_btm, P_STP_BTM_OP pStpOp)
 {
     INT32 ret = -1;
-    INT32 dump_sink = 1; //core dump target, 0: aee; 1: netlink
     static UINT32 counter = 0;
 	UINT32 full_dump_left = STP_FULL_DUMP_TIME;
 	UINT32 page_counter = 0;
@@ -257,15 +212,7 @@ static INT32 _stp_btm_handler(MTKSTP_BTM_T *stp_btm, P_STP_BTM_OP pStpOp)
         case STP_OPID_BTM_DBG_DUMP:
             /*Notify the wmt to get dump data*/
             STP_BTM_DBG_FUNC("wmt dmp notification\n");
-            dump_sink = ((stp_btm->wmt_notify(BTM_GET_AEE_SUPPORT_FLAG) == MTK_WCN_BOOL_TRUE) ? 0 : 1);
-            
-            if (dump_sink == 0) {
-                _stp_btm_put_dump_to_aee();
-            } else if (dump_sink == 1) {
-                _stp_btm_put_dump_to_nl();
-            } else {
-                STP_BTM_ERR_FUNC("unknown sink %d\n", dump_sink);
-            }            
+            _stp_btm_put_dump_to_nl();
                            
         break;
 
@@ -378,13 +325,13 @@ static INT32 _stp_btm_handler(MTKSTP_BTM_T *stp_btm, P_STP_BTM_OP pStpOp)
 			}
 			
             if(dump_len <= 32*1024){
-                ret = stp_dbg_aee_send(&g_paged_dump_buffer[0],dump_len, 0);
+                ret = stp_dbg_dump_send(&g_paged_dump_buffer[0],dump_len, 0);
                 if(ret == 0){
-                     STP_BTM_INFO_FUNC("aee send ok!\n");
+                     STP_BTM_INFO_FUNC("dump send ok!\n");
                 } else if (ret == 1) {
-                     STP_BTM_INFO_FUNC("aee send fisish!\n");
+                     STP_BTM_INFO_FUNC("dump send finish!\n");
                 } else {
-                     STP_BTM_ERR_FUNC("aee send error!\n");
+                     STP_BTM_ERR_FUNC("dump send error!\n");
                 }
             } else {
                 STP_BTM_ERR_FUNC("dump len is over than 32K(%d)\n",dump_len);

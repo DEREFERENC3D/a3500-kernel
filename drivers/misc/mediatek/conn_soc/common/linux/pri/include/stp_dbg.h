@@ -120,8 +120,6 @@ typedef struct mtkstp_dbg_t{
     MTKSTP_LOG_SYS_T *logsys;
 }MTKSTP_DBG_T;
 
-extern void aed_combo_exception(const int *, int, const int *, int, const char *);
-
 #define STP_CORE_DUMP_TIMEOUT 5*60*1000 // default 5minutes
 #define STP_OJB_NAME_SZ 20
 #define STP_CORE_DUMP_INFO_SZ 500
@@ -264,7 +262,7 @@ stp_dbg_nl_send(
     unsigned char      cmd
     );
 
-extern INT32 stp_dbg_aee_send(unsigned char *aucMsg, INT32 len, INT32 cmd);
+extern INT32 stp_dbg_dump_send(unsigned char *aucMsg, INT32 len, INT32 cmd);
 
 extern int
 stp_dbg_log_pkt (

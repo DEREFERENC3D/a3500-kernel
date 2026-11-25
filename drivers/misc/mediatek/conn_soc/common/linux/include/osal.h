@@ -328,7 +328,7 @@ extern INT32 osal_test_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR pData);
 extern INT32 osal_test_and_clear_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR pData);
 extern INT32 osal_test_and_set_bit(UINT32 bitOffset, P_OSAL_BIT_OP_VAR pData);
 
-extern INT32 osal_dbg_assert_aee(const char *module, const char *detail_description);
+extern INT32 osal_dbg_assert_msg(const char *module, const char *detail_description);
 extern INT32 osal_gettimeofday(PINT32 sec, PINT32 usec);
 extern INT32 osal_printtimeofday(const PUINT8 prefix);
 

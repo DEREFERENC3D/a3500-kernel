@@ -2,7 +2,6 @@
 #define __DISP_SYNC_H
 
 #include <linux/xlog.h>
-#include <linux/aee.h>
 
 #define DISP_INVALID_FENCE_FD    	-1
 #define DISP_INVALID_ION_FD	   		-1
@@ -15,7 +14,7 @@ typedef unsigned char BOOL;
 #ifndef ASSERT
 #define ASSERT(expr, fmt, arg...)	\
 	do {							\
-		if (!(expr)) aee_kernel_warning("[DISP DRV] ASSERT FAILED(%s:%d):"fmt, __func__, __LINE__, ##arg); \
+		if (!(expr)) printk(KERN_ERR "[DISP DRV] ASSERT FAILED(%s:%d):"fmt, __func__, __LINE__, ##arg); \
 	} while (0)
 #endif
 

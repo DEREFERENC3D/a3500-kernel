@@ -14,7 +14,6 @@
 #include <linux/vmalloc.h>
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
-#include <linux/aee.h>
 #include <linux/timer.h>
 #include <linux/disp_assert_layer.h>
 #include <linux/xlog.h>
@@ -75,13 +74,6 @@ bool gM4uLogFlag = false;
 
 #define M4UERR(string, args...) do {\
 	xlog_printk(ANDROID_LOG_ERROR, "M4U", "error: "string,##args);  \
-	aee_kernel_exception("M4U", "[M4U] error:"string,##args);  \
-}while(0)
-
-static char m4u_name[100];
-#define m4u_aee_print(string, args...) do{\
-    snprintf(m4u_name,100, "[M4U]"string, ##args); \
-    aee_kernel_warning_api(__FILE__, __LINE__, DB_OPT_MMPROFILE_BUFFER, m4u_name, "[M4U] error:"string, ##args);  \
 }while(0)
 
 
@@ -1354,7 +1346,6 @@ static irqreturn_t MTK_M4U_isr(int irq, void *dev_id)
                 M4UINFO("pagetable @ 0x%x: 0x%x,0x%x,0x%x\n",faultMva,pteStart[-1], pteStart[0],pteStart[1]);
             }
 
-            m4u_aee_print("invalid PA:0x%x->0x%x\n", faultMva, M4U_ReadReg32(m4u_base, REG_MMU_INVLD_PA)); 
             m4u_dump_main_tlb_des(m4u_index);
             m4u_dump_pfh_tlb_des(m4u_index);
         }
@@ -2072,7 +2063,6 @@ static int m4u_do_mva_free(M4U_MODULE_ID_ENUM eModuleID,
     {
 
         spin_unlock_irqrestore(&gMvaGraph_lock, irq_flags);
-        m4u_aee_print("free mva error, larb=%d, module=%s\n", m4u_module_2_larb(eModuleID), m4u_get_module_name(eModuleID));
         M4UMSG("error to free mva========================>\n");
         M4UMSG("ModuleID=%s (expect %s) [%s]\n", 
                 m4u_get_module_name(eModuleID), m4u_get_module_name(mvaInfoGraph[startIdx]->eModuleId),
@@ -2400,9 +2390,6 @@ static int m4u_fill_pagetable(M4U_MODULE_ID_ENUM eModuleID, unsigned int BufAddr
     pmodule_current_size[eModuleID] += BufSize;
     if(pmodule_current_size[eModuleID]>gModuleMaxMVASize[eModuleID])
     {    	
-        m4u_aee_print("overflow: larb=%d, module=%s, mvaSize=%d(max=%d)\n", 
-            m4u_module_2_larb(eModuleID), m4u_get_module_name(eModuleID), 
-            pmodule_current_size[eModuleID], gModuleMaxMVASize[eModuleID]);
         M4UMSG("hint: alloc mva but forget to free it!!\n");
         m4u_dump_mva_info();
     }
@@ -2491,8 +2478,6 @@ int __m4u_alloc_mva(mva_info_t *pMvaInfo, struct sg_table *sg_table)
     mvaStart= m4u_do_mva_alloc(eModuleID, BufAddr, BufSize+align_page_num*0x1000, pMvaInfo);     	
     if(mvaStart == 0)
     {
-        m4u_aee_print("alloc mva fail: larb=%d,module=%s,size=%d\n", 
-            m4u_module_2_larb(eModuleID), m4u_get_module_name(eModuleID), BufSize);
             
         M4UMSG("mva_alloc error: no available MVA region for %d bytes!\n", BufSize);
         
@@ -2726,8 +2711,6 @@ int m4u_do_insert_seq_range(M4U_PORT_ID_ENUM eModuleID,
 
     if(mva2module(MVAStart)>=M4U_PORT_UNKNOWN)
     {
-        m4u_aee_print("insert range fail: larb=%d,module=%s\n", 
-            m4u_module_2_larb(eModuleID), m4u_get_module_name(eModuleID));
         M4UMSG(" m4u_insert_seq_range module=%s, MVAStart=0x%x is %s, MVAEnd=0x%x is %s\n", 
     	    m4u_get_module_name(eModuleID), MVAStart, m4u_get_module_name(mva2module(MVAStart)),
     	    MVAEnd, m4u_get_module_name(mva2module(MVAEnd)));
@@ -2926,7 +2909,6 @@ static int m4u_exec_cmd(struct mc_session_handle* m4u_session, m4u_msg_t* m4u_ms
 	ret = mc_notify(m4u_session);
 	if (MC_DRV_OK != ret)
 	{
-	    m4u_aee_print("tz_m4u Notify failed: %d\n", ret);
 	    goto exit;
 	}
 
@@ -2934,7 +2916,6 @@ static int m4u_exec_cmd(struct mc_session_handle* m4u_session, m4u_msg_t* m4u_ms
 	ret = mc_wait_notification(m4u_session, MC_INFINITE_TIMEOUT);
 	if (MC_DRV_OK != ret) 
 	{
-	    m4u_aee_print("Wait for response notification failed: 0x%x\n", ret);
 	    goto exit;
 	}
 
@@ -3393,10 +3374,6 @@ int m4u_config_port_normal(M4U_PORT_STRUCT* pM4uPort) //native
            M4U_ReadReg32(m4u_base, 0x5C8),M4U_ReadReg32(m4u_base, 0x5CC),M4U_ReadReg32(m4u_base, 0x5D0));
 
     if ((PortID == MDP_ROTO || PortID == MDP_ROTCO || PortID == MDP_ROTVO) && pM4uPort->Virtuality == 0) {
-        m4u_aee_print("m4u_config_port(), port=%s, Virtuality=%d, Security=%d, 0x5c0 = 0x%x, 0x5c4 = 0x%x, 0x5c8 = 0x%x, 0x5cc = 0x%x, 0x5d0 = 0x%x \n",
-                       m4u_get_port_name(pM4uPort->ePortID), pM4uPort->Virtuality, pM4uPort->Security,
-                       M4U_ReadReg32(m4u_base, 0x5C0), M4U_ReadReg32(m4u_base, 0x5C4), 
-                       M4U_ReadReg32(m4u_base, 0x5C8),M4U_ReadReg32(m4u_base, 0x5CC),M4U_ReadReg32(m4u_base, 0x5D0));
     }
 
     MMProfileLogEx(M4U_MMP_Events[PROFILE_CONFIG_PORT], MMProfileFlagStart, eModuleID, pM4uPort->ePortID);
@@ -3710,14 +3687,11 @@ static int _m4u_get_pages_user(M4U_MODULE_ID_ENUM eModuleID, unsigned int va,
             vma = find_vma(current->mm, va_tmp);
             if(!vma || vma->vm_start > va_tmp)
             {
-                m4u_aee_print("cannot find vma, va=0x%x, size=0x%x, fail_va=0x%x, pa=0x%x\n", 
-                        va, size, va_tmp, pa);
                 m4u_dump_maps(va);
                 goto err;
             }
             if(!((vma->vm_flags) & VM_LOCKED))
             {
-                m4u_aee_print("no mlock on vma\n");
                 m4u_dump_maps(va);
                 m4u_dump_maps(va_tmp);
                 dump_stack();
@@ -3744,8 +3718,6 @@ static int _m4u_get_pages_user(M4U_MODULE_ID_ENUM eModuleID, unsigned int va,
             m4u_dump_maps(va);
             m4u_dump_maps(va_tmp);
 
-            m4u_aee_print("get pa fail, va=0x%x, size=0x%x, fail_va=0x%x, pa=0x%x\n", 
-                va, size, va_tmp, pa);
             goto err;
         }
 
@@ -3904,8 +3876,6 @@ static int m4u_get_pages_user(M4U_MODULE_ID_ENUM eModuleID, unsigned int BufAddr
     
     if(BufSize>MAX_BUF_SIZE_TO_GET_USER_PAGE)
     {
-        m4u_aee_print("alloc mva fail: larb=%d,module=%s,size=%d\n", 
-            m4u_module_2_larb(eModuleID), m4u_get_module_name(eModuleID), BufSize);
     	  M4UMSG("m4u_get_pages(), single time alloc size=0x%x, bigger than limit=0x%x \n", BufSize, MAX_BUF_SIZE_TO_GET_USER_PAGE);
     	  return -EFAULT;
     } 
@@ -4067,8 +4037,6 @@ static int m4u_release_pages(M4U_MODULE_ID_ENUM eModuleID, unsigned int BufAddr,
 
     if(!mva_owner_match(eModuleID, mva2module(MVA)))
     {
-        m4u_aee_print("release page fail!: larb=%d,module=%s\n", 
-             m4u_module_2_larb(eModuleID), m4u_get_module_name(eModuleID));
         M4UMSG("m4u_release_pages module=%s, MVA=0x%x, expect module is %s \n", 
     	    m4u_get_module_name(eModuleID), MVA, m4u_get_module_name(mva2module(MVA)));
         m4u_mvaGraph_dump();
@@ -4188,8 +4156,6 @@ int m4u_do_dma_cache_maint(M4U_MODULE_ID_ENUM eModuleID, const void *start, size
 
     if(0==start)
     {
-        m4u_aee_print("cache sync fail!: larb=%d,module=%s\n", 
-             m4u_module_2_larb(eModuleID), m4u_get_module_name(eModuleID));
         M4UMSG(" m4u_dma_cache_maint():  module=%s, start=0x%x, size=%d, direction=%d \n", 
           m4u_get_module_name(eModuleID), (unsigned int)start, size, direction);
   	  return -1;
@@ -4208,9 +4174,6 @@ int m4u_do_dma_cache_maint(M4U_MODULE_ID_ENUM eModuleID, const void *start, size
     {
         if(1) //screen red in debug mode
         {
-            m4u_aee_print("Buffer align error: larb=%d,module=%s,addr=0x%x,size=%d,align=%d\n", 
-                 m4u_module_2_larb(eModuleID), m4u_get_module_name(eModuleID), 
-                 (unsigned int)start, size, L1_CACHE_BYTES);
       		M4UMSG("error: addr un-align, module=%s, addr=0x%x, size=0x%x, process=%s, align=0x%x\n",  m4u_get_module_name(eModuleID), 
       	        m4u_get_module_name(eModuleID), (unsigned int)start, size, current->comm, L1_CACHE_BYTES);
       	}

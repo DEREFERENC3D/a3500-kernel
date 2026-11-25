@@ -3,7 +3,6 @@
 
 #include <linux/debugfs.h>
 
-#include <linux/aee.h>
 #include <linux/disp_assert_layer.h>
 //#include <linux/unistd.h>
 //#include <linux/fcntl.h>
@@ -275,8 +274,7 @@ static void process_dbg_opt(const char *opt)
         unsigned int enable = (unsigned int) simple_strtoul(p, &p, 10);
         if(enable==1)
         {
-            printk("[DDP] debug=1, trigger AEE\n");
-            aee_kernel_exception("DDP-TEST-ASSERT", "[DDP] DDP-TEST-ASSERT");
+            printk("[DDP] debug=1\n");
         }
         else if(enable==2)
         {

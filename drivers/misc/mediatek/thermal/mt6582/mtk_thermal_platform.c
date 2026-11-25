@@ -7,7 +7,6 @@
 #include <linux/acpi.h>
 #include <linux/thermal.h>
 #include <linux/platform_device.h>
-#include <linux/aee.h>
 #include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/delay.h>
@@ -26,7 +25,6 @@
 
 #include <mach/mt_thermal.h>
 
-#include <linux/aee.h>
 
 #include <linux/mtk_gpu_utility.h>
 
@@ -393,11 +391,7 @@ static int get_sys_all_cpu_freq_info(void)
         if (cpu_total_dmips > mtktscpu_limited_dmips) 
         {
             THRML_ERROR_LOG("cpu %d over limit %d\n", cpu_total_dmips, mtktscpu_limited_dmips);
-            if (dmips_limit_warned == false)
-            {
-                aee_kernel_warning("thermal", "cpu %d over limit %d\n", cpu_total_dmips, mtktscpu_limited_dmips);
-                dmips_limit_warned = true;
-            }
+            dmips_limit_warned = true;
         }
     }
 

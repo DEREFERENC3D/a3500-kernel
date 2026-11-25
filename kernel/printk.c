@@ -45,7 +45,6 @@
 
 #include <linux/mt_sched_mon.h>
 #include <linux/preempt.h>
-#include <linux/aee.h>
 #include <asm/uaccess.h>
 
 #define CREATE_TRACE_POINTS
@@ -1428,8 +1427,6 @@ void console_unlock(void)
 	unsigned _con_start, _log_end;
 	unsigned wake_klogd = 0, retry = 0;
     unsigned long total_log_size = 0;
-    unsigned long long t1 = 0, t2 = 0;
-    char aee_str[80];
     int org_loglevel = console_loglevel;
     bool should_break = false;
 	int this_cpu;
@@ -1449,9 +1446,6 @@ again:
 	retry = 0;
 	for ( ; ; ) {
 		raw_spin_lock_irqsave(&logbuf_lock, flags);
-        if (log_in_resume) {
-            t1 = sched_clock();
-        }
 		wake_klogd |= log_start - log_end;
 		if (should_break || con_start == log_end)
 			break;			/* Nothing to print */
@@ -1474,20 +1468,13 @@ again:
         if(total_log_size < console_log_max)
             call_console_drivers(_con_start, _log_end);
         else if(!already_skip_log){
-            snprintf( aee_str, sizeof(aee_str), "PRINTK too much:%lu", total_log_size );
-            aee_kernel_warning(aee_str,"Need to shrink kernel log");
             already_skip_log = 1;
         }
         /**/
 
 		start_critical_timings();
         if (log_in_resume) {
-            t2 = sched_clock();
             console_loglevel = org_loglevel;
-            if (t2 - t1 > 100000000) {
-                snprintf( aee_str, sizeof(aee_str), "[RESUME CONSOLE too long:%lluns>100ms] s:%lluns e:%lluns", t2 - t1, t1, t2);
-                aee_kernel_warning(aee_str,"Need to shrink kernel log");
-            }
         }
 		local_irq_restore(flags);
 

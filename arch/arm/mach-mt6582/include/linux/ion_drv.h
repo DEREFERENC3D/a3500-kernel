@@ -112,12 +112,6 @@ typedef struct ion_mm_data
 #include <linux/xlog.h>
 #define IONMSG(string, args...)	xlog_printk(ANDROID_LOG_INFO, ION_LOG_TAG, string,##args)
 #define IONTMP(string, args...)  xlog_printk(ANDROID_LOG_INFO, ION_LOG_TAG, string,##args)
-#define ion_aee_print(string, args...) do{\
-    char ion_name[100];\
-    snprintf(ion_name,100, "["ION_LOG_TAG"]"string, ##args); \
-  aee_kernel_warning(ion_name, "["ION_LOG_TAG"]error:"string,##args);  \
-}while(0)
-
 // Exported global variables
 extern struct ion_device *g_ion_device;
 

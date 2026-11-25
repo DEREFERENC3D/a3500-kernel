@@ -35,7 +35,6 @@
 #include <linux/cdev.h>
 #include <linux/delay.h>
 #include <linux/platform_device.h>
-#include <linux/aee.h>
 #include <linux/xlog.h>
 #include <linux/proc_fs.h>
 #include <linux/syscalls.h>

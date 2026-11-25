@@ -12,7 +12,6 @@
 #include <linux/rtpm_prio.h>
 #include <linux/rtc.h>
 #include <linux/cpu.h>
-#include <linux/aee.h>
 #include <mach/local_wd_drv.h>
 #include <mach/ext_wd_drv.h>
 
@@ -319,7 +318,6 @@ static int kwdt_thread(void *arg)
 			   {
 				//printk("[WDK]: set  WDT kick_bit\n");
 				local_bit |= (1<<cpu);
-				//aee_rr_rec_wdk_kick_jiffies(jiffies);
 			   }
 			   printk_sched("[WDK], local_bit:0x%x, cpu:%d, check bit0x:%x,RT[%lld]\n", local_bit, cpu, wk_check_kick_bit(),sched_clock());
 			   if(local_bit == wk_check_kick_bit())

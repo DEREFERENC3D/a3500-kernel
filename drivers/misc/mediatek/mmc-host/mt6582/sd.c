@@ -49,10 +49,6 @@
 #include "partition_define.h"
 #include <mach/emi_mpu.h>
 #include <mach/memory.h>
-#ifdef CONFIG_MTK_AEE_FEATURE
-#include <linux/aee.h>
-#endif
-
 #ifdef CONFIG_MTK_HIBERNATION
 #include "mach/mtk_hibernate_dpm.h"
 #endif

@@ -168,123 +168,6 @@ static const u16 kpd_auto_keymap[] = {
 	KEY_FOCUS, KEY_CAMERA,
 };
 #endif
-/* for AEE manual dump */
-#define AEE_VOLUMEUP_BIT	0
-#define AEE_VOLUMEDOWN_BIT	1
-#define AEE_DELAY_TIME		15
-/* enable volup + voldown was pressed 5~15 s Trigger aee manual dump */
-#define AEE_ENABLE_5_15		1
-static struct hrtimer aee_timer;
-static unsigned long  aee_pressed_keys;
-static bool aee_timer_started;
-
-#if AEE_ENABLE_5_15
-#define AEE_DELAY_TIME_5S	5
-static struct hrtimer aee_timer_5s;
-static bool aee_timer_5s_started;
-static bool flags_5s;
-#endif
-
-static inline void kpd_update_aee_state(void) {
-	if(aee_pressed_keys == ((1<<AEE_VOLUMEUP_BIT) | (1<<AEE_VOLUMEDOWN_BIT))) {
-		/* if volumeup and volumedown was pressed the same time then start the time of ten seconds */
-		aee_timer_started = true;
-		
-#if AEE_ENABLE_5_15
-		aee_timer_5s_started = true;
-		hrtimer_start(&aee_timer_5s, 
-				ktime_set(AEE_DELAY_TIME_5S, 0),
-				HRTIMER_MODE_REL);
-#endif
-		hrtimer_start(&aee_timer, 
-				ktime_set(AEE_DELAY_TIME, 0),
-				HRTIMER_MODE_REL);
-		kpd_print("aee_timer started\n");
-	} else {
-		if(aee_timer_started) {
-/*
-  * hrtimer_cancel - cancel a timer and wait for the handler to finish.
-  * Returns:
-  *	0 when the timer was not active. 
-  *	1 when the timer was active.
- */
-			if(hrtimer_cancel(&aee_timer))
-			{
-				kpd_print("try to cancel hrtimer \n");
-#if AEE_ENABLE_5_15
-				if(flags_5s)
-				{
-					printk("Pressed Volup + Voldown5s~15s then trigger aee manual dump.\n");
-					aee_kernel_reminding("manual dump", "Trigger Vol Up +Vol Down 5s");
-				}
-#endif
-					
-			}
-#if AEE_ENABLE_5_15
-			flags_5s = false;
-#endif
-			aee_timer_started = false;
-			kpd_print("aee_timer canceled\n");
-		}
-
-#if AEE_ENABLE_5_15
-		if(aee_timer_5s_started) {
-/*
-  * hrtimer_cancel - cancel a timer and wait for the handler to finish.
-  * Returns:
-  *	0 when the timer was not active. 
-  *	1 when the timer was active.
- */
-			if(hrtimer_cancel(&aee_timer_5s))
-			{
-				kpd_print("try to cancel hrtimer (5s) \n");
-			}
-			aee_timer_5s_started = false;
-			kpd_print("aee_timer canceled (5s)\n");
-		}
-
-#endif
-	}
-}
-
-static void kpd_aee_handler(u32 keycode, u16 pressed) {
-	if(pressed) {
-		if(keycode == KEY_VOLUMEUP) {
-			__set_bit(AEE_VOLUMEUP_BIT, &aee_pressed_keys);
-		} else if(keycode == KEY_VOLUMEDOWN) {
-			__set_bit(AEE_VOLUMEDOWN_BIT, &aee_pressed_keys);
-		} else {
-			return;
-		}
-		kpd_update_aee_state();
-	} else {
-		if(keycode == KEY_VOLUMEUP) {
-			__clear_bit(AEE_VOLUMEUP_BIT, &aee_pressed_keys);
-		} else if(keycode == KEY_VOLUMEDOWN) {
-			__clear_bit(AEE_VOLUMEDOWN_BIT, &aee_pressed_keys);
-		} else {
-			return;
-		}
-		kpd_update_aee_state();
-	}
-}
-
-static enum hrtimer_restart aee_timer_func(struct hrtimer *timer) {
-	//printk("kpd: vol up+vol down AEE manual dump!\n");
-	//aee_kernel_reminding("manual dump ", "Triggered by press KEY_VOLUMEUP+KEY_VOLUMEDOWN");
-	aee_trigger_kdb();
-	return HRTIMER_NORESTART;
-}
-
-#if AEE_ENABLE_5_15
-static enum hrtimer_restart aee_timer_5s_func(struct hrtimer *timer) {
-	
-	//printk("kpd: vol up+vol down AEE manual dump timer 5s !\n");
-	flags_5s = true;
-	return HRTIMER_NORESTART;
-}
-#endif
-
 /************************************************************************************************************************************************/
 
 #if KPD_HAS_SLIDE_QWERTY
@@ -350,9 +233,6 @@ void kpd_pmic_rstkey_handler(unsigned long pressed)
 		return;
 	}
 	kpd_pmic_rstkey_hal(pressed);
-#ifdef KPD_PMIC_RSTKEY_MAP
-	kpd_aee_handler(KPD_PMIC_RSTKEY_MAP, pressed);
-#endif
 }
 /*********************************************************************/
 
@@ -389,8 +269,6 @@ static void kpd_keymap_handler(unsigned long data)
 				kpd_print("Linux keycode = 0\n");
 				continue;
 			}		
-			kpd_aee_handler(linux_keycode, pressed);
-			
 			kpd_backlight_handler(pressed, linux_keycode);
 			input_report_key(kpd_input_dev, linux_keycode, pressed);
 			input_sync(kpd_input_dev);
@@ -813,14 +691,6 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 #ifndef KPD_EARLY_PORTING /*add for avoid early porting build err the macro is defined in custom file*/
 	long_press_reboot_function_setting();///API 4 for kpd long press reboot function setting
 #endif	
-	hrtimer_init(&aee_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	aee_timer.function = aee_timer_func;
-
-#if AEE_ENABLE_5_15
-    hrtimer_init(&aee_timer_5s, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-    aee_timer_5s.function = aee_timer_5s_func;
-#endif
-
 	if((err = kpd_create_attr(&kpd_pdrv.driver)))
 	{
 		kpd_print("create attr file fail\n");

@@ -225,13 +225,8 @@ INT32 osal_dbg_assert(INT32 expr, const char *file, INT32 line)
 
 }
 
-INT32 osal_dbg_assert_aee(const char *module, const char *detail_description){
+INT32 osal_dbg_assert_msg(const char *module, const char *detail_description){
     osal_err_print("[WMT-ASSERT]""[E][Module]:%s, [INFO]%s\n", module, detail_description);
-
-#ifdef WMT_PLAT_ALPS
-    //aee_kernel_warning(module,detail_description);
-    aee_kernel_warning_api(__FILE__,__LINE__,DB_OPT_WCN_ISSUE_INFO,module,detail_description);
-#endif
     return 0;
 }
 

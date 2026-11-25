@@ -1344,10 +1344,6 @@ MTK_WCN_BOOL wmt_lib_btm_cb (MTKSTP_BTM_WMT_OP_T op)
         
         WMT_WARN_FUNC("TBD!!!\n");
     }
-	else if (op == BTM_GET_AEE_SUPPORT_FLAG)
-	{
-	    bRet = wmt_core_get_aee_dump_flag();
-	}
     return bRet;
 }
 
@@ -1799,22 +1795,9 @@ UINT8 *wmt_lib_get_fwinfor_from_emi(UINT8 section, UINT32 offset,UINT8 *buf,UINT
 	return 0;
 }
 
-INT32 wmt_lib_poll_cpupcr(UINT32 count,UINT16 sleep,UINT16 toAee)
+INT32 wmt_lib_poll_cpupcr(UINT32 count, UINT16 sleep)
 {
-	ENUM_STP_FW_ISSUE_TYPE issue_type;
-	
-	issue_type = STP_DBG_PROC_TEST;
-
-	stp_dbg_poll_cpupcr(count,sleep,1);
-
-	if(toAee)
-	{
-		stp_dbg_set_fw_info("STP ProcTest", osal_strlen("STP ProcTest"),issue_type);
-		osal_dbg_assert_aee("[SOC_CONSYS]ProcTest", "**[WCN_ISSUE_INFO]STP Tx Timeout**\n Polling CPUPCR for FW debug usage\n");
-	}else
-	{
-		WMT_INFO_FUNC("wmt_lib:do not pass cpupcr to AEE\n");
-	}
+	stp_dbg_poll_cpupcr(count, sleep, 1);
 	return 0;
 }
 

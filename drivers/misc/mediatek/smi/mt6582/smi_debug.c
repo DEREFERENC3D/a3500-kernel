@@ -14,7 +14,6 @@
 #include <linux/vmalloc.h>
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
-#include <linux/aee.h>
 #include <linux/timer.h>
 #include <asm/system.h>
 #include <asm-generic/irq_regs.h>

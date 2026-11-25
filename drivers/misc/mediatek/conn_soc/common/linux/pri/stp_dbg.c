@@ -45,11 +45,6 @@ MTKSTP_DBG_T *g_stp_dbg = NULL;
 
 #define STP_DBG_FAMILY_NAME        "STP_DBG"
 #define MAX_BIND_PROCESS    (4)
-#ifdef WMT_PLAT_ALPS
-#define STP_DBG_AEE_EXP_API (1)
-#else
-#define STP_DBG_AEE_EXP_API (0)
-#endif
 enum {
     __STP_DBG_ATTR_INVALID,
     STP_DBG_ATTR_MSG,
@@ -280,10 +275,7 @@ INT32 wcn_core_dump_in(P_WCN_CORE_DUMP_T dmp, PUINT8 buf, INT32 len)
 
 			}
             // show coredump start info on UI
-            //osal_dbg_assert_aee("MT662x f/w coredump start", "MT662x firmware coredump start");
-#if STP_DBG_AEE_EXP_API
-			aee_kernel_dal_show("SOC_CONSYS coredump start ....\n");
-#endif     
+            //osal_dbg_assert_msg("MT662x f/w coredump start", "MT662x firmware coredump start");
             // parsing data, and check end srting
             ret = wcn_core_dump_check_end(buf, len);
             if (ret == 1) {
@@ -402,12 +394,7 @@ INT32 wcn_core_dump_flush(INT32 rst)
     STP_DBG_INFO_FUNC("buf 0x%08x, len %d\n", (unsigned int)pbuf, len);
             
     // show coredump end info on UI
-    //osal_dbg_assert_aee("MT662x f/w coredump end", "MT662x firmware coredump ends");
-#if STP_DBG_AEE_EXP_API
-    aee_kernel_dal_show("++ SOC_CONSYS coredump get successfully ++\n");
-    // call AEE driver API
-    aed_combo_exception(NULL, 0, (const int*)pbuf, len, (const char*)g_core_dump->info);
-#endif   
+    //osal_dbg_assert_msg("MT662x f/w coredump end", "MT662x firmware coredump ends");
     
     // reset
     wcn_core_dump_reset(g_core_dump, STP_CORE_DUMP_TIMEOUT);
@@ -1233,7 +1220,7 @@ stp_dbg_nl_send(
 }
 
 
-INT32 stp_dbg_aee_send(unsigned char *aucMsg, INT32 len, INT32 cmd)
+INT32 stp_dbg_dump_send(unsigned char *aucMsg, INT32 len, INT32 cmd)
 {
     INT32 ret = 0;
 

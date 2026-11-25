@@ -59,7 +59,6 @@
 #include <linux/dma-mapping.h>
 //#include <linux/slab.h>
 //#include <linux/gfp.h>
-#include <linux/aee.h>
 #include <linux/timer.h>
 #include <linux/disp_assert_layer.h>
 //#include <linux/xlog.h>

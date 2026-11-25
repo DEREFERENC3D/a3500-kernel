@@ -82,7 +82,6 @@
 #include <asm/io.h>
 #include <mach/mt_reg_base.h>
 #include <asm/div64.h>
-#include <linux/aee.h>
 
 //#define TEST_PACKETLOSS
 

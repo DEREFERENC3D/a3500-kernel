@@ -92,7 +92,6 @@
 #include <asm/irq.h>
 #include <asm/io.h>
 #include <asm/div64.h>
-#include <linux/aee.h>
 #include <mach/pmic_mt6323_sw.h>
 #include <mach/upmu_common.h>
 #include <mach/upmu_hw.h>
@@ -140,7 +139,6 @@ static u64        AudDrv_dmamask      = 0xffffffffUL;
 static volatile bool   AudDrvSuspendStatus            = false; // is suspend flag
 static bool   AudIrqReset                              = false; // flag when irq to reset
 static bool   AuddrvSpkStatus                     = false;
-static bool   AuddrvAeeEnable                    = false;
 static volatile kal_uint8    Afe_irq_status  = 0;
 
 #define WriteArrayMax (6)
@@ -363,10 +361,6 @@ void CheckWriteWaitEvent(void)
     if (OverTimeCounter >= WriteWarningTrigger)
     {
         xlog_printk(ANDROID_LOG_ERROR, "Sound", "Audio Dump FTrace, OverTimeCounter=%d n", OverTimeCounter);
-        if (AuddrvAeeEnable)
-        {
-            aee_kernel_exception_api(__FILE__, __LINE__, DB_OPT_FTRACE, "Audio is blocked", "audio blocked dump ftrace");
-        }
         ResetWriteWaitEvent();
         //AudIrqReset = true;
     }
@@ -610,7 +604,6 @@ static int AudDrv_Read_Procmem(char *buf, char **start, off_t offset, int count 
     if (len > 4096)
     {
         xlog_printk(ANDROID_LOG_ERROR, "Sound", "Audio Dump FTrace, AudDrv_Read_Procmem len=%d count=%d . len > 4096", len);
-        aee_kernel_exception_api(__FILE__, __LINE__, DB_OPT_FTRACE, "AudDrv_Read_Procmem OverFlow", "AudDrv_Read_Procmem OverFlow");
     }   
     
     PRINTK_AUDDRV("-AudDrv_Read_Procmem \n");
@@ -3283,13 +3276,6 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
             ret = adc_return;
             break;
         }
-        case AUDDRV_AEE_IOCTL:
-        {
-            PRINTK_AUDDRV("AudDrv AUDDRV_AEE_IOCTL  arg = %lu", arg);
-            AuddrvAeeEnable = arg;
-            break;
-        }
-
         case AUDDRV_GET_DL1_REMAINDATA_TIME:
         {
             //PRINTK_AUDDRV("AudDrv AUDDRV_GET_DL1_REMAINDATA_TIME ");

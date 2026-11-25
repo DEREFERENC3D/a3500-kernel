@@ -33,9 +33,6 @@
 #include <linux/jiffies.h>
 #include <linux/slab.h>
 #include <linux/err.h>
-#ifdef WMT_PLAT_ALPS
-#include <linux/aee.h>
-#endif
 #include <linux/kfifo.h>
 #include <linux/wakelock.h>
 #include <linux/log2.h>

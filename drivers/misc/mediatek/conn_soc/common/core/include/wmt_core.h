@@ -215,7 +215,6 @@ typedef INT32 (*IC_PIN_CTRL)(WMT_IC_PIN_ID id, WMT_IC_PIN_STATE state, UINT32 fl
 typedef INT32 (*IC_VER_CHECK)(VOID);
 typedef INT32 (*CO_CLOCK_CTRL)(WMT_CO_CLOCK on);
 typedef MTK_WCN_BOOL(*IS_QUICK_SLEEP_SUPPORT)(VOID);
-typedef MTK_WCN_BOOL(*IS_AEE_DUMP_SUPPORT)(VOID);
 
 
 typedef struct _WMT_IC_OPS_ {
@@ -226,7 +225,6 @@ typedef struct _WMT_IC_OPS_ {
     IC_VER_CHECK ic_ver_check;
 	CO_CLOCK_CTRL co_clock_ctrl;
 	IS_QUICK_SLEEP_SUPPORT is_quick_sleep;
-	IS_AEE_DUMP_SUPPORT is_aee_dump_support;
 } WMT_IC_OPS, *P_WMT_IC_OPS;
 
 typedef struct _WMT_CTX_
@@ -384,8 +382,6 @@ wmt_core_tx (
     MTK_WCN_BOOL bRawFlag
     );
 extern MTK_WCN_BOOL wmt_core_is_quick_ps_support (void);
-
-extern MTK_WCN_BOOL wmt_core_get_aee_dump_flag(void);
 
 #if CFG_CORE_INTERNAL_TXRX
 extern INT32 wmt_core_lpbk_do_stp_init(void);

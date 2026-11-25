@@ -4,7 +4,6 @@
 #include <linux/spinlock.h>
 #include <linux/suspend.h>
 #include <linux/console.h>
-#include <linux/aee.h>
 
 #include <mach/sync_write.h>
 #include <mach/mt_sleep.h>
@@ -45,7 +44,6 @@
 
 #define slp_crit2(fmt, args...)     \
 do {                                \
-    aee_sram_printk(fmt, ##args);   \
     slp_crit(fmt, ##args);          \
 } while (0)
 

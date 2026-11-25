@@ -844,7 +844,6 @@ void cmdqInitialize()
     pVABase = dma_alloc_coherent(NULL, CMDQ_MAX_DMA_BUF_SIZE, &MVABase, GFP_ATOMIC);
     if(NULL == pVABase)
     {
-        CMDQ_AEE("CMDQ", "Allocate command buffer failed\n");
         //spin_unlock_irqrestore(&gCmdqTaskLock, flags); 
         return;
     }
@@ -1194,7 +1193,6 @@ TaskStruct* cmdq_acquire_task(int32_t  scenario,
     {
         if (NULL == pTask)
         {
-            CMDQ_AEE("CMDQ", "Can't acquire task info\n");
             cmdq_dump_task_usage();
             break;
         }
@@ -1284,7 +1282,6 @@ TaskStruct* cmdq_acquire_task(int32_t  scenario,
         pTask = NULL; 
         
         // throw AEE
-        CMDQ_AEE("CMDQ", "Copy commands buffer failed, [%d]\n", status);
     }
 
     /*
@@ -1706,7 +1703,6 @@ void cmdq_release_thread(int32_t   thread,
 
     if (-EFAULT == status)
     {
-        CMDQ_AEE("CMDQ", "Can't disable clock\n");
     }
 
     complete_all(&gCmdqComplete);
@@ -2328,7 +2324,6 @@ int32_t cmdq_core_wait_task_done(
     else if (TASK_STATE_ERROR == pTask->taskState)  // CMDQ error
     {
         cmdq_attach_error_task(pTask, thread);
-        CMDQ_AEE("CMDQ", "Execute user commands error, pTask[0x%08x], thread[%d]\n", pTask, thread);
         status = -EFAULT;
     }
     else if (0 > waitQ)  // Task be killed
@@ -2350,7 +2345,6 @@ int32_t cmdq_core_wait_task_done(
             {
                 cmdq_attach_error_task(pTask, thread);
                 spin_unlock_irqrestore(&gCmdqExecLock, flags);
-                CMDQ_AEE("CMDQ", "suspend thread %d failed after sw timeout\n", thread);
                 return -EFAULT;
             }
             
@@ -2397,7 +2391,6 @@ int32_t cmdq_core_wait_task_done(
                 {
                     cmdq_attach_error_task(pTask, thread);
                     spin_unlock_irqrestore(&gCmdqExecLock, flags);
-                    CMDQ_AEE("MDP", "reset hardware engine 0x%08x after sw timeout, thread:%d, task:0x%08x\n", pTask->engineFlag, thread, pTask);
                     return status;
                 }
 
@@ -2419,13 +2412,8 @@ int32_t cmdq_core_wait_task_done(
                 switch(op)
                 {
                 case CMDQ_CODE_WFE:
-                    CMDQ_AEE("CMDQ", "%s SW timeout, INST:(0x%08x, 0x%08x), OP:WAIT EVENT:%s\n", 
-                             module, 
-                             instA, instB,
-                             cmdq_core_get_event_name(instA & (~0xFF000000)));
                     break;
                 default:
-                    CMDQ_AEE("CMDQ", "%s SW timeout, INST:(0x%08x, 0x%08x), OP:%s\n", module, instA, instB, cmdq_core_parse_op(op));
                     break;
                 }
             }
@@ -2440,7 +2428,6 @@ int32_t cmdq_core_wait_task_done(
         {
             cmdq_attach_error_task(pTask, thread);
             spin_unlock_irqrestore(&gCmdqExecLock, flags);
-            CMDQ_AEE("CMDQ", "Reset HW thread %d failed\n", thread);
             return -EFAULT;
         }
 
@@ -2507,7 +2494,6 @@ static int32_t cmdq_exec_task_sync(TaskStruct *pTask,
             if(loop > CMDQ_MAX_LOOP_COUNT)
             {
                 spin_unlock_irqrestore(&gCmdqExecLock, flags);
-                CMDQ_AEE("CMDQ", "Reset HW thread %d failed\n", thread);
                 return -EFAULT;
             }
             loop++;
@@ -2549,7 +2535,6 @@ static int32_t cmdq_exec_task_sync(TaskStruct *pTask,
         if(0 > cmdq_suspend_HW_thread(thread))
         {
             spin_unlock_irqrestore(&gCmdqExecLock, flags);
-            CMDQ_AEE("CMDQ", "suspend HW thread %d failed when insert task[0x%08x]\n", thread, pTask);
             return -EFAULT;
         }
 
@@ -2597,7 +2582,6 @@ static int32_t cmdq_exec_task_sync(TaskStruct *pTask,
 
             if (loop < 1)
             {
-                CMDQ_AEE("CMDQ", "Invalid task count(%d) for reorder\n", loop);
                 spin_unlock_irqrestore(&gCmdqExecLock, flags);
                 return -EFAULT;
             }
@@ -2694,7 +2678,6 @@ static int32_t cmdq_exec_task_sync(TaskStruct *pTask,
                     {
                         cmdq_attach_error_task(pTask, thread);
                         spin_unlock_irqrestore(&gCmdqExecLock, flags);
-                        CMDQ_AEE("CMDQ", "Invalid task state for reorder %d %d\n", index, loop);
                         return -EFAULT;
                     }
                 }
@@ -2760,7 +2743,6 @@ void cmdqHandleError(int32_t thread, uint32_t value)
     {      
         cmdq_attach_error_task(NULL, thread);  
         spin_unlock_irqrestore(&gCmdqExecLock, flags);
-        CMDQ_AEE("CMDQ", "suspend HW thread %d failed in cmdqHandleError\n", thread);
         return;
     }
 
@@ -2871,7 +2853,6 @@ void cmdqHandleDone(int32_t thread, uint32_t value)
     {
         cmdq_attach_error_task(NULL, thread);
         spin_unlock_irqrestore(&gCmdqExecLock, flags);
-        CMDQ_AEE("CMDQ", "Suspend HW thread %d failed in cmdqHandleDone\n", thread);
         return;
     }    
     

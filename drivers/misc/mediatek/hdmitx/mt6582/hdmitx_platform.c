@@ -16,7 +16,6 @@
 
 static HDMI_DRIVER *mhl_drv = NULL;
 
-//extern unsigned int isAEEEnabled;
 //extern OVL_CONFIG_STRUCT cached_layer_config[DDP_OVL_LAYER_MUN];
 
 // ---------------------------------------------------------------------------

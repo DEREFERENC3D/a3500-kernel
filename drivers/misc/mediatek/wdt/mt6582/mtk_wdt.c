@@ -21,7 +21,6 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 
-#include <linux/aee.h>
 #include <mach/sync_write.h>
 #include <mach/ext_wd_drv.h>
 
@@ -33,8 +32,6 @@
 
 //#undef  DRV_WriteReg32
 //#define DRV_WriteReg32(a, v)			mt65xx_reg_sync_writel(v, a) //write32
-
-extern void aee_wdt_printf(const char *fmt, ...);
 
 /**---------------------------------------------------------------------
  * Sub feature switch region
@@ -221,7 +218,6 @@ int  mtk_wdt_confirm_hwreboot(void)
     //aee need confirm wd can hw reboot
     //printk("mtk_wdt_probe : Initialize to dual mode \n");
     unsigned int tmp=0;
-	aee_sram_fiq_log("mt6582 only hw reboot mode ++\n");
 	mtk_wdt_restart(WD_TYPE_NOLOCK);//restart spm wdt
 
 	//set rgu 20s time out 
@@ -240,8 +236,6 @@ int  mtk_wdt_confirm_hwreboot(void)
 
 	*(volatile u32 *)(MTK_WDT_MODE)=tmp;
 	
-	aee_sram_fiq_log("mt6582 only hw reboot mode --\n");
-
 	return 0;
 }
 
@@ -538,11 +532,6 @@ static void wdt_fiq(void *arg, void *regs, void *svc_sp)
     get_wd_api(&wd_api);
 	wdt_mode_val = DRV_Reg32(MTK_WDT_STATUS);
 	DRV_WriteReg32(MTK_WDT_NONRST_REG, wdt_mode_val);
-    #ifdef	CONFIG_MTK_WD_KICKER
-	aee_wdt_printf("\n kick=0x%08x,check=0x%08x \n",wd_api->wd_get_kick_bit(),wd_api->wd_get_check_bit());
-    #endif 
-
-     aee_wdt_fiq_info(arg, regs, svc_sp);
 
 }
 #else //CONFIG_FIQ_GLUE
@@ -554,8 +543,6 @@ static irqreturn_t mtk_wdt_isr(int irq, void *dev_id)
 	//mt65xx_irq_mask(AP_RGU_WDT_IRQ_ID);
 	rgu_wdt_intr_has_trigger = 1;
 	//wdt_report_info () ;
-	aee_wdt_irq_info();
-
 #endif	
 	return IRQ_HANDLED;
 }
@@ -679,7 +666,6 @@ void mtk_wd_suspend(void)
 
 	mtk_wdt_restart(WD_TYPE_NORMAL);
 
-	aee_sram_printk("[WDT] suspend\n");
 	printk("[WDT] suspend\n");
 }
 
@@ -694,7 +680,6 @@ void mtk_wd_resume(void)
 		
 	}
 
-	aee_sram_printk("[WDT] resume(%d)\n", g_wdt_enable);
 	printk("[WDT] resume(%d)\n", g_wdt_enable);
 }
 

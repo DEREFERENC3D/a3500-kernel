@@ -1889,23 +1889,6 @@ MTK_WCN_BOOL wmt_core_is_quick_ps_support (void)
 	return MTK_WCN_BOOL_FALSE;
 }
 
-MTK_WCN_BOOL wmt_core_get_aee_dump_flag(void)
-{
-    MTK_WCN_BOOL bRet = MTK_WCN_BOOL_FALSE;
-    P_WMT_CTX pctx = &gMtkWmtCtx;
-	
-	if ((NULL != pctx->p_ic_ops) && (NULL != pctx->p_ic_ops->is_aee_dump_support))
-	{
-	    bRet = (*(pctx->p_ic_ops->is_aee_dump_support))();
-	}
-	else
-	{
-	    bRet = MTK_WCN_BOOL_FALSE;
-	}
-	
-	return bRet;
-}
-
 
 INT32 opfunc_pin_state (P_WMT_OP pWmtOp)
 {

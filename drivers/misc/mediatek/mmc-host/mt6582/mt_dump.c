@@ -1185,7 +1185,7 @@ static unsigned int simp_mmc_rescan_try_freq(struct simp_mmc_host *host, unsigne
 
     /* sd/emmc will support */
     if (host->mtk_host->card->type == MMC_TYPE_MMC){
-		printk(KERN_EMERG "init emmc for ipanic dump\n");
+		printk(KERN_EMERG "init emmc for dump\n");
         err = simple_mmc_attach_mmc(host);
     } else if(host->mtk_host->card->type == MMC_TYPE_SD){
         printk(KERN_EMERG "init sd card\n");

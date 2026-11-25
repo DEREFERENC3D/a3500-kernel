@@ -16,7 +16,6 @@
 #include <linux/vmalloc.h>
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
-#include <linux/aee.h>
 #include <linux/timer.h>
 #include <linux/cache.h>
 #include <linux/xlog.h>
@@ -42,7 +41,6 @@
 
 #define M4UERR(string, args...) do { \
 	xlog_printk(ANDROID_LOG_ERROR, "M4U_K", "[pid=%d]error_assert_fail: "string,current->tgid,##args);  \
-	aee_kernel_exception("M4U", "[M4U_K] error:"string,##args);  \
 }while(0)
 
 

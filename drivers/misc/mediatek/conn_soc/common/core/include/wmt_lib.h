@@ -286,7 +286,7 @@ extern VOID wmt_lib_set_patch_info(P_WMT_PATCH_INFO pPatchinfo);
 extern INT32 wmt_lib_set_current_op(P_DEV_WMT pWmtDev, P_OSAL_OP pOp);
 extern P_OSAL_OP wmt_lib_get_current_op(P_DEV_WMT pWmtDev);
 extern UINT8 *wmt_lib_get_fwinfor_from_emi(UINT8 section, UINT32 offset,UINT8 *buff,UINT32 len);
-extern INT32 wmt_lib_poll_cpupcr(UINT32 count,UINT16 sleep,UINT16 toAee);
+extern INT32 wmt_lib_poll_cpupcr(UINT32 count, UINT16 sleep);
 extern UINT8 *wmt_lib_get_cpupcr_xml_format(UINT32 *len);
 extern INT32 wmt_lib_register_thermal_ctrl_cb(thermal_query_ctrl_cb thermal_ctrl);
 extern UINT32 wmt_lib_set_host_assert_info(UINT32 type,UINT32 reason,UINT32 en);

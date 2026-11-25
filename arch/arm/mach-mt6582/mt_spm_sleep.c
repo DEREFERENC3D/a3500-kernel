@@ -4,7 +4,6 @@
 #include <linux/spinlock.h>
 #include <linux/delay.h>
 #include <linux/string.h>
-#include <linux/aee.h>
 
 #include <mach/irqs.h>
 #include <mach/mt_cirq.h>
@@ -493,13 +492,11 @@ do {                                            \
 
 #define spm_crit2(fmt, args...)     \
 do {                                \
-    aee_sram_printk(fmt, ##args);   \
     spm_crit(fmt, ##args);          \
 } while (0)
 
 #define spm_error2(fmt, args...)    \
 do {                                \
-    aee_sram_printk(fmt, ##args);   \
     spm_error(fmt, ##args);         \
 } while (0)
 
