@@ -32,9 +32,10 @@ extern int dump_idle_info(char *buffer, int size);
 #define THREAD_INFO(sp) ((struct thread_info *) \
 				((unsigned long)(sp) & ~(THREAD_SIZE - 1)))
 
-#ifdef CONFIG_SCHED_DEBUG
-extern int sysrq_sched_debug_show_at_KE(void);
-#endif
+/* No sched debug dump is available from KE context. */
+void sysrq_sched_debug_show_at_KE(void)
+{
+}
 
 #ifdef CONFIG_SMP
 extern void dump_log_idle(void);
