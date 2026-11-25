@@ -26,10 +26,8 @@
 
 #include "bq24196.h"
 
-#ifndef MTK_BATTERY_NO_HAL
 #include "cust_charging.h"
 #include <mach/charging.h>
-#endif
 
 /**********************************************************
   *

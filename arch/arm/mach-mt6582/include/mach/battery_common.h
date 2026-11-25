@@ -119,16 +119,8 @@ typedef enum
 #define TEMP_POS_0_THRESHOLD  0
 #define TEMP_POS_0_THRES_PLUS_X_DEGREE 6
 
-#ifdef MTK_FAN5405_SUPPORT
 #define TEMP_NEG_10_THRESHOLD  0
 #define TEMP_NEG_10_THRES_PLUS_X_DEGREE  0
-#elif defined( MTK_BQ24158_SUPPORT)
-#define TEMP_NEG_10_THRESHOLD  0
-#define TEMP_NEG_10_THRES_PLUS_X_DEGREE  0
-#else
-#define TEMP_NEG_10_THRESHOLD  0
-#define TEMP_NEG_10_THRES_PLUS_X_DEGREE  0
-#endif
 
 /*****************************************************************************
  *  Normal battery temperature state 

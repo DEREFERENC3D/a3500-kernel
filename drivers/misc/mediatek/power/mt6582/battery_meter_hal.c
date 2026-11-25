@@ -187,35 +187,8 @@ static kal_int32 read_adc_v_i_sense(void *data)
 
 static kal_int32 read_adc_v_bat_temp(void *data)
 {
-    #if defined(MTK_PCB_TBAT_FEATURE)
-
-        int ret = 0, data[4], i, ret_value = 0, ret_temp = 0;
-        int Channel=1;
-        
-        if( IMM_IsAdcInitReady() == 0 )
-        {
-            bm_print(BM_LOG_CRTI, "[get_tbat_volt] AUXADC is not ready");
-            return 0;
-        }
-    
-        i = times;
-        while (i--)
-        {
-            ret_value = IMM_GetOneChannelValue(Channel, data, &ret_temp);
-            ret += ret_temp;
-            bm_print(BM_LOG_FULL, "[get_tbat_volt] ret_temp=%d\n",ret_temp);
-        }
-        
-        ret = ret*1500/4096 ;
-        ret = ret/times;
-        bm_print(BM_LOG_CRTI, "[get_tbat_volt] Battery output mV = %d\n",ret);
-
-        *(kal_int32*)(data) = ret;
-
-    #else
         bm_print(BM_LOG_FULL, "[read_adc_v_charger] return PMIC_IMM_GetOneChannelValue(4,times,1);\n");
         *(kal_int32*)(data) = PMIC_IMM_GetOneChannelValue(VBATTEMP_CHANNEL_NUMBER,*(kal_int32*)(data),1);
-    #endif
 
     return STATUS_OK;
 }

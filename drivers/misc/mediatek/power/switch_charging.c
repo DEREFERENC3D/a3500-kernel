@@ -235,10 +235,6 @@ PMU_STATUS do_jeita_state_machine(void)
 
 static void set_jeita_charging_current(void)
 {
-#ifdef CONFIG_USB_IF
-	if(BMT_status.charger_type == STANDARD_HOST)
-		return;
-#endif	
 
 	if(g_temp_status == TEMP_NEG_10_TO_POS_0)
     {
@@ -354,34 +350,10 @@ void select_charging_curret(void)
     {    
         if ( BMT_status.charger_type == STANDARD_HOST ) 
         {
-           #ifdef CONFIG_USB_IF
-            {
-            	g_temp_input_CC_value = CHARGE_CURRENT_MAX;
-                if (g_usb_state == USB_SUSPEND)
-                {
-                    g_temp_CC_value = USB_CHARGER_CURRENT_SUSPEND;
-                }
-                else if (g_usb_state == USB_UNCONFIGURED)
-                {
-                    g_temp_CC_value = USB_CHARGER_CURRENT_UNCONFIGURED;
-                }
-                else if (g_usb_state == USB_CONFIGURED)
-                {
-                    g_temp_CC_value = USB_CHARGER_CURRENT_CONFIGURED;
-                }
-                else
-                {
-                    g_temp_CC_value = USB_CHARGER_CURRENT_UNCONFIGURED;
-                }
-                
-                 battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] STANDARD_HOST CC mode charging : %d on %d state\r\n", g_temp_CC_value, g_usb_state);
-            }
-			#else
             {    
  				g_temp_input_CC_value = USB_CHARGER_CURRENT;
                 g_temp_CC_value = USB_CHARGER_CURRENT;
             }
-			#endif
         } 
         else if (BMT_status.charger_type == NONSTANDARD_CHARGER) 
         {   

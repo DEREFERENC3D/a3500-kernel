@@ -3466,11 +3466,7 @@ ret = pmic_config_interface(0x778,0x1,0x1,15); // [15:15]: RG_VREF18_ENB_MD;
     upmu_set_rg_deci_gdly_sel_mode(1);
     upmu_set_rg_osr(3);
 
-    #ifdef MTK_MT6333_SUPPORT
-    // move to mt6333 driver
-    #else
     pmu_drv_tool_customization_init();
-    #endif
     
 }
 
@@ -3548,12 +3544,6 @@ static int pmic_mt6323_probe(struct platform_device *dev)
     pmic_debug_init();
     xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "[PMIC] pmic_debug_init : done.\n" );
 
-    #ifdef MTK_ENABLE_MD5
-    pmic_config_interface(0x402,0x0,0x1,0); // [0:0]: VTCXO_LP_SEL; 
-    pmic_config_interface(0x402,0x1,0x1,11); // [11:11]: VTCXO_ON_CTRL;
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "[PMIC] VTCXO control by SRCLKEM due to MTK_ENABLE_MD5, Reg[0x402]=0x%x\n",
-        upmu_get_reg_value(0x402));
-    #endif
 
     return 0;
 }

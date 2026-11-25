@@ -502,7 +502,6 @@ static struct battery_data battery_main = {
 };
 
 
-#if !defined(CONFIG_POWER_EXT)
 ///////////////////////////////////////////////////////////////////////////////////////////
 //// Create File For EM : ADC_Charger_Voltage
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -1200,12 +1199,6 @@ static void mt_battery_update_EM(struct battery_data *bat_data)
 	if((BMT_status.UI_SOC == 100) && (BMT_status.charger_exist == KAL_TRUE))
 		 bat_data->BAT_STATUS = POWER_SUPPLY_STATUS_FULL;
 
-	#ifdef MTK_DISABLE_POWER_ON_OFF_VOLTAGE_LIMITATION
-	if(bat_data->BAT_CAPACITY <=0)
-		bat_data->BAT_CAPACITY = 1;
-	
-	battery_xlog_printk(BAT_LOG_CRTI, "BAT_CAPACITY=1, due to define MTK_DISABLE_POWER_ON_OFF_VOLTAGE_LIMITATION\r\n");
-	#endif
 }
 
 
@@ -1504,7 +1497,6 @@ static void usb_update(struct usb_data *usb_data)
     power_supply_changed(usb_psy); 
 }
 
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //// Battery Temprature Parameters and functions
@@ -1887,14 +1879,6 @@ static PMU_STATUS mt_battery_CheckChargerVoltage(void)
 	
 	if( BMT_status.charger_exist == KAL_TRUE)
     {
-        #if (V_CHARGER_ENABLE == 1)
-        if (BMT_status.charger_vol <= V_CHARGER_MIN )
-        {
-           battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY]Charger under voltage!!\r\n");                    
-            BMT_status.bat_charging_state = CHR_ERROR;
-            status = PMU_STATUS_FAIL;        
-        }
-        #endif        
         if ( BMT_status.charger_vol >= V_CHARGER_MAX )
         {
             battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY]Charger over voltage !!\r\n");                    
@@ -2026,41 +2010,11 @@ static void mt_battery_notify_TatalChargingTime_check(void)
 
 static void mt_battery_notify_VBat_check(void)
 {
-#if defined(BATTERY_NOTIFY_CASE_0004_VBAT)
-    if(BMT_status.bat_vol > 4350)
-    //if(BMT_status.bat_vol > 3800) //test
-    {
-        g_BatteryNotifyCode |= 0x0008;
-        battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] bat_vlot(%ld) > 4350mV\n", BMT_status.bat_vol);
-    }
-    else
-    {
-        g_BatteryNotifyCode &= ~(0x0008);
-    }
-
-    battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] BATTERY_NOTIFY_CASE_0004_VBAT (%x)\n", g_BatteryNotifyCode);
-
-#endif
 }
 
 
 static void mt_battery_notify_ICharging_check(void)
 {
-#if defined(BATTERY_NOTIFY_CASE_0003_ICHARGING)
-    if( (BMT_status.ICharging > 1000) &&
-        (BMT_status.total_charging_time > 300))
-    {
-        g_BatteryNotifyCode |= 0x0004;
-        battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] I_charging(%ld) > 1000mA\n", BMT_status.ICharging);
-    }
-    else
-    {
-        g_BatteryNotifyCode &= ~(0x0004);
-    }
-
-    battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] BATTERY_NOTIFY_CASE_0003_ICHARGING (%x)\n", g_BatteryNotifyCode);
-        
-#endif
 }
 
 
@@ -2356,10 +2310,6 @@ void do_chrdet_int_task(void)
 
             wake_unlock(&battery_suspend_lock);
 
-#if defined(CONFIG_POWER_EXT)
-            mt_usb_disconnect();
-            battery_xlog_printk(BAT_LOG_CRTI, "[do_chrdet_int_task] call mt_usb_disconnect() in EVB\n");
-#endif
         }
          
 		//Place charger detection and battery update here is used to speed up charging icon display.
@@ -2650,9 +2600,6 @@ static struct file_operations adc_cali_fops = {
 
 void check_battery_exist(void)
 {
-#if defined(CONFIG_DIS_CHECK_BATTERY)
-    battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Disable check battery exist.\n");
-#else
     kal_uint32 baton_count = 0;
 	kal_uint32 charging_enable = KAL_FALSE;
 	kal_uint32 battery_status;
@@ -2679,7 +2626,6 @@ void check_battery_exist(void)
             battery_charging_control(CHARGING_CMD_SET_PLATFORM_RESET,NULL);    
         }
     }    
-#endif
 }
 
 
@@ -2846,7 +2792,6 @@ static int battery_probe(struct platform_device *dev)
     }
     battery_xlog_printk(BAT_LOG_CRTI, "[BAT_probe] power_supply_register Battery Success !!\n");
 
-#if !defined(CONFIG_POWER_EXT)
     /* For EM */
 	{
 	    int ret_device_file=0;
@@ -2937,7 +2882,6 @@ static int battery_probe(struct platform_device *dev)
     /*LOG System Set*/
     init_proc_log();
 
-#endif   
 	g_bat_init_flag = KAL_TRUE;
 	
     return 0;
