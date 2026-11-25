@@ -21,9 +21,6 @@
 DEFINE_MUTEX(pm_mutex);
 EXPORT_SYMBOL_GPL(pm_mutex);
 
-unsigned int pm_flags;
-EXPORT_SYMBOL(pm_flags);
-
 #ifdef CONFIG_PM_SLEEP
 
 /* Routines for PM-transition notifications */
