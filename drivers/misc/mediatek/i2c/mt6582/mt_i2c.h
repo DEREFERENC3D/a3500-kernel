@@ -2,6 +2,7 @@
 #ifndef __MT_I2C_H__
 #define __MT_I2C_H__
 #include <mach/mt_typedefs.h>
+#include <mt_i2c_extflag.h>
 
 #define I2CTAG                "[mt-i2c]"
 #define I2CLOG(fmt, arg...)   printk(KERN_ERR I2CTAG fmt, ##arg)

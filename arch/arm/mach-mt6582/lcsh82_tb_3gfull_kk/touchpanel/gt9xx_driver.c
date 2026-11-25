@@ -1,5 +1,6 @@
 #include "tpd.h"
 #include "tpd_custom_gt9xx.h"
+#include <mt_i2c_extflag.h>
 
 #include "cust_gpio_usage.h"
 

@@ -37,6 +37,7 @@
 #include <linux/interrupt.h>
 #include <cust_eint.h>
 #include <linux/i2c.h>
+#include <mt_i2c_extflag.h>
 #include <linux/sched.h>
 #include <linux/kthread.h>
 #include <linux/rtpm_prio.h>
