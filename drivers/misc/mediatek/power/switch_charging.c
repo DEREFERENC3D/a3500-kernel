@@ -53,12 +53,6 @@
  kal_uint32 g_usb_state = USB_UNCONFIGURED;
  
   ///////////////////////////////////////////////////////////////////////////////////////////
-  //// JEITA
-  ///////////////////////////////////////////////////////////////////////////////////////////
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-  int g_temp_status=TEMP_POS_10_TO_POS_45;
-  kal_bool temp_error_recovery_chr_flag =KAL_TRUE;
-#endif
 
 
  
@@ -75,9 +69,7 @@
  // ============================================================ //
  //extern function
  // ============================================================ //
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 extern void bq24196_set_en_hiz(kal_uint32 val);
-#endif
 
  // ============================================================ //
 void BATTERY_SetUSBState(int usb_state_value)
@@ -97,154 +89,6 @@ kal_uint32 get_charging_setting_current()
     return g_temp_CC_value;	
 }
 
-
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-
-static BATTERY_VOLTAGE_ENUM select_jeita_cv(void)
-{
-    BATTERY_VOLTAGE_ENUM cv_voltage;
-
-    if(g_temp_status == TEMP_ABOVE_POS_60)
-    {
-        cv_voltage = JEITA_TEMP_ABOVE_POS_60_CV_VOLTAGE;
-    }
-    else if(g_temp_status == TEMP_POS_45_TO_POS_60)
-    {
-        cv_voltage = JEITA_TEMP_POS_45_TO_POS_60_CV_VOLTAGE;
-    }
-    else if(g_temp_status == TEMP_POS_10_TO_POS_45)
-    {
-    	#ifdef HIGH_BATTERY_VOLTAGE_SUPPORT
-        cv_voltage = BATTERY_VOLT_04_340000_V;
-      #else
-        cv_voltage = JEITA_TEMP_POS_10_TO_POS_45_CV_VOLTAGE;
-      #endif
-    }
-    else if(g_temp_status == TEMP_POS_0_TO_POS_10)
-    {
-        cv_voltage = JEITA_TEMP_POS_0_TO_POS_10_CV_VOLTAGE;
-    }
-    else if(g_temp_status == TEMP_NEG_10_TO_POS_0)
-    {
-        cv_voltage = JEITA_TEMP_NEG_10_TO_POS_0_CV_VOLTAGE;
-    }
-    else if(g_temp_status == TEMP_BELOW_NEG_10)
-    {
-        cv_voltage = JEITA_TEMP_BELOW_NEG_10_CV_VOLTAGE;
-    }
-    else
-    {
-        cv_voltage = BATTERY_VOLT_04_200000_V;
-    }            
-
-    return cv_voltage;
-}
-
-PMU_STATUS do_jeita_state_machine(void)
-{
-	BATTERY_VOLTAGE_ENUM cv_voltage;
-	
-    //JEITA battery temp Standard 
-	
-    if (BMT_status.temperature >= TEMP_POS_60_THRESHOLD) 
-    {
-        battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Over high Temperature(%d) !!\n\r", TEMP_POS_60_THRESHOLD);  
-        
-        g_temp_status = TEMP_ABOVE_POS_60;
-        
-        return PMU_STATUS_FAIL; 
-    }
-    else if(BMT_status.temperature > TEMP_POS_45_THRESHOLD)  //control 45c to normal behavior
-    {
-        if((g_temp_status == TEMP_ABOVE_POS_60) && (BMT_status.temperature >= TEMP_POS_60_THRES_MINUS_X_DEGREE))
-        {
-            battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Temperature between %d and %d,not allow charging yet!!\n\r", TEMP_POS_60_THRES_MINUS_X_DEGREE,TEMP_POS_60_THRESHOLD); 
-            
-            return PMU_STATUS_FAIL; 
-        }
-        else
-        {
-             battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Temperature between %d and %d !!\n\r", TEMP_POS_45_THRESHOLD,TEMP_POS_60_THRESHOLD); 
-            
-            g_temp_status = TEMP_POS_45_TO_POS_60;
-        }
-    }
-    else if(BMT_status.temperature >= TEMP_POS_10_THRESHOLD)
-    {
-        if( ((g_temp_status == TEMP_POS_45_TO_POS_60) && (BMT_status.temperature >= TEMP_POS_45_THRES_MINUS_X_DEGREE)) ||
-            ((g_temp_status == TEMP_POS_0_TO_POS_10 ) && (BMT_status.temperature <= TEMP_POS_10_THRES_PLUS_X_DEGREE ))) 
-        {
-            battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Temperature not recovery to normal temperature charging mode yet!!\n\r");     
-        }
-        else
-        {
-            battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Normal Temperature between %d and %d !!\n\r", TEMP_POS_10_THRESHOLD,TEMP_POS_45_THRESHOLD); 
-            g_temp_status = TEMP_POS_10_TO_POS_45;
-        }
-    }
-    else if(BMT_status.temperature >= TEMP_POS_0_THRESHOLD)
-    {
-        if((g_temp_status == TEMP_NEG_10_TO_POS_0 || g_temp_status == TEMP_BELOW_NEG_10) && (BMT_status.temperature <= TEMP_POS_0_THRES_PLUS_X_DEGREE))
-        {
-			if (g_temp_status == TEMP_NEG_10_TO_POS_0) {
-				battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Temperature between %d and %d !!\n\r", TEMP_POS_0_THRES_PLUS_X_DEGREE,TEMP_POS_10_THRESHOLD); 
-			}
-			if (g_temp_status == TEMP_BELOW_NEG_10) {
-				battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Temperature between %d and %d,not allow charging yet!!\n\r",	TEMP_POS_0_THRESHOLD,TEMP_POS_0_THRES_PLUS_X_DEGREE); 
-				return PMU_STATUS_FAIL; 
-			}
-        }
-        else
-        {
-            battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Temperature between %d and %d !!\n\r", TEMP_POS_0_THRESHOLD,TEMP_POS_10_THRESHOLD); 
-            
-            g_temp_status = TEMP_POS_0_TO_POS_10;
-        }
-    }
-    else if(BMT_status.temperature >= TEMP_NEG_10_THRESHOLD)
-    {
-        if((g_temp_status == TEMP_BELOW_NEG_10) && (BMT_status.temperature <= TEMP_NEG_10_THRES_PLUS_X_DEGREE))
-        {
-            battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Temperature between %d and %d,not allow charging yet!!\n\r", TEMP_NEG_10_THRESHOLD,TEMP_NEG_10_THRES_PLUS_X_DEGREE); 
-            
-            return PMU_STATUS_FAIL; 
-        }
-        else
-        {
-            battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery Temperature between %d and %d !!\n\r",  TEMP_NEG_10_THRESHOLD,TEMP_POS_0_THRESHOLD); 
-            
-            g_temp_status = TEMP_NEG_10_TO_POS_0;
-        }
-    }
-    else
-    {
-        battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery below low Temperature(%d) !!\n\r", TEMP_NEG_10_THRESHOLD);  
-        g_temp_status = TEMP_BELOW_NEG_10;
-        
-        return PMU_STATUS_FAIL; 
-    }
-
-	//set CV after temperature changed
-
-	cv_voltage = select_jeita_cv();
-	battery_charging_control(CHARGING_CMD_SET_CV_VOLTAGE,&cv_voltage);
-	
-	return PMU_STATUS_OK;
-}
-
-
-static void set_jeita_charging_current(void)
-{
-
-	if(g_temp_status == TEMP_NEG_10_TO_POS_0)
-    {
-        g_temp_CC_value = CHARGE_CURRENT_350_00_MA;
-		g_temp_input_CC_value = CHARGE_CURRENT_500_00_MA;	
-        battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] JEITA set charging current : %d\r\n", g_temp_CC_value);
-    }
-}
-
-#endif
 
 
 void select_charging_curret_bcct(void)
@@ -363,7 +207,6 @@ void select_charging_curret(void)
         } 
         else if (BMT_status.charger_type == STANDARD_CHARGER) 
         {
-        #if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 		// (10, 45] 0.5C(1770mA); (0, 10] or (45, 50] 0.3C(1062mA); 1C=3540mAh
 		if ((BMT_status.temperature>10) && (BMT_status.temperature<=45))
 		{
@@ -375,10 +218,6 @@ void select_charging_curret(void)
 			g_temp_input_CC_value = 150000;	// INPUT_CS_VTH[] charging_hw_bq24196.c
 			g_temp_CC_value = 57600;	// CS_VTH[] charging_hw_bq24196.c
 		}
-        #else
-        	g_temp_input_CC_value = AC_CHARGER_CURRENT;
-			g_temp_CC_value = AC_CHARGER_CURRENT;
-        #endif
         }
         else if (BMT_status.charger_type == CHARGING_HOST) 
         {
@@ -408,9 +247,6 @@ void select_charging_curret(void)
 
 		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Default CC mode charging : %d, input current = %d\r\n", g_temp_CC_value,g_temp_input_CC_value);
 
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-	set_jeita_charging_current();
-#endif		
     }
 
 	
@@ -438,9 +274,7 @@ static kal_uint32 charging_full_check(void)
 
 static void pchr_turn_on_charging (void)
 {
-#if !defined(MTK_JEITA_STANDARD_SUPPORT) 
 	BATTERY_VOLTAGE_ENUM cv_voltage;
-#endif	
 	kal_uint32 charging_enable = KAL_TRUE;
 
     if ( BMT_status.bat_charging_state == CHR_ERROR ) 
@@ -489,14 +323,8 @@ static void pchr_turn_on_charging (void)
 			battery_charging_control(CHARGING_CMD_SET_CURRENT,&g_temp_CC_value);
 
 			/*Set CV Voltage*/
-			#if !defined(MTK_JEITA_STANDARD_SUPPORT)            
-                #ifdef HIGH_BATTERY_VOLTAGE_SUPPORT
                     cv_voltage = BATTERY_VOLT_04_340000_V;
-                #else
-	            cv_voltage = BATTERY_VOLT_04_200000_V;
-                #endif            
 		    battery_charging_control(CHARGING_CMD_SET_CV_VOLTAGE,&cv_voltage);
-			#endif
         }
     }
 	
@@ -611,18 +439,6 @@ PMU_STATUS BAT_BatteryStatusFailAction(void)
 	
     battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] BAD Battery status... Charging Stop !!\n\r");            
 
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-    if((g_temp_status == TEMP_ABOVE_POS_60) ||(g_temp_status == TEMP_BELOW_NEG_10))
-    {
-        temp_error_recovery_chr_flag=KAL_FALSE;
-    }	
-    if((temp_error_recovery_chr_flag==KAL_FALSE) && (g_temp_status != TEMP_ABOVE_POS_60) && (g_temp_status != TEMP_BELOW_NEG_10))
-    {
-        temp_error_recovery_chr_flag=KAL_TRUE;
-        BMT_status.bat_charging_state=CHR_PRE;
-    }
-#endif
-
     BMT_status.total_charging_time = 0;
     BMT_status.PRE_charging_time = 0;
     BMT_status.CC_charging_time = 0;
@@ -633,9 +449,7 @@ PMU_STATUS BAT_BatteryStatusFailAction(void)
 	charging_enable = KAL_FALSE;
 	battery_charging_control(CHARGING_CMD_ENABLE,&charging_enable);
 
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	bq24196_set_en_hiz(0x1);
-#endif
 
     return PMU_STATUS_OK;
 }

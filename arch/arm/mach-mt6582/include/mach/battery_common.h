@@ -201,9 +201,6 @@ extern void do_chrdet_int_task(void);
 extern void wake_up_bat(void);
 extern unsigned long BAT_Get_Battery_Voltage(int polling_mode);
 extern void mt_battery_charging_algorithm(void);
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-extern PMU_STATUS do_jeita_state_machine(void);
-#endif
 
 #else
 

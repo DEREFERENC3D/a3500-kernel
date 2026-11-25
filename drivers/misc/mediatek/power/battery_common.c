@@ -120,9 +120,7 @@ kal_uint32 g_batt_soc_status = SOC_NORMAL;
 kal_bool g_battery_test_status = KAL_FALSE;
 kal_int32 g_battery_percent = 50;
 #endif
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 extern kal_uint32 g_fg_battery_id;
-#endif
 ////////////////////////////////////////////////////////////////////////////////
 // Integrate with NVRAM 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,9 +200,7 @@ struct battery_data {
     int BAT_BatterySenseVoltage;
     int BAT_ISenseVoltage;
     int BAT_ChargerVoltage;
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     int charge_full_design;
-#endif
 };
 
 static enum power_supply_property ac_props[] = {
@@ -232,9 +228,7 @@ static enum power_supply_property battery_props[] = {
     POWER_SUPPLY_PROP_BatterySenseVoltage,
     POWER_SUPPLY_PROP_ISenseVoltage,
     POWER_SUPPLY_PROP_ChargerVoltage,
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-#endif
 };
 
 
@@ -244,13 +238,8 @@ static enum power_supply_property battery_props[] = {
 ///////////////////////////////////////////////////////////////////////////////////////////
 //extern void mt_power_off(void);
 extern bool mt_usb_is_device(void);
-#if defined(CONFIG_USB_MTK_HDRC) || defined(CONFIG_USB_MU3D_DRV)
 extern void mt_usb_connect(void);
 extern void mt_usb_disconnect(void);
-#else
-#define mt_usb_connect() do { } while (0)
-#define mt_usb_disconnect() do { } while (0)
-#endif
 //extern int set_rtc_spare_fg_value(int val);
 
 
@@ -445,11 +434,9 @@ static int battery_get_property(struct power_supply *psy,
     case POWER_SUPPLY_PROP_ChargerVoltage:
         val->intval = data->BAT_ChargerVoltage;
         break;
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
     case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 	val->intval = data->charge_full_design;
 	break;
-#endif
     default:
         ret = -EINVAL;
         break;
@@ -1206,13 +1193,8 @@ static kal_bool mt_battery_100Percent_tracking_check(void)
 {
 	kal_bool resetBatteryMeter = KAL_FALSE;
 	
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-	kal_uint32 cust_sync_time = CUST_SOC_JEITA_SYNC_TIME;
-	static kal_uint32 timer_counter = (CUST_SOC_JEITA_SYNC_TIME/BAT_TASK_PERIOD);
-#else
 	kal_uint32 cust_sync_time = ONEHUNDRED_PERCENT_TRACKING_TIME;
 	static kal_uint32 timer_counter = (ONEHUNDRED_PERCENT_TRACKING_TIME/BAT_TASK_PERIOD);
-#endif
 
 	 if(BMT_status.bat_full == KAL_TRUE)	// charging full first, UI tracking to 100%
 	 {
@@ -1274,7 +1256,6 @@ static kal_bool mt_battery_100Percent_tracking_check(void)
 static kal_bool mt_battery_nPercent_tracking_check(void)
 {
 	kal_bool resetBatteryMeter = KAL_FALSE;
-#if defined(SOC_BY_HW_FG)
 	static kal_uint32 timer_counter = (NPERCENT_TRACKING_TIME/BAT_TASK_PERIOD);	
 
     if (BMT_status.nPrecent_UI_SOC_check_point == 0)
@@ -1312,7 +1293,6 @@ static kal_bool mt_battery_nPercent_tracking_check(void)
 	{
 		timer_counter=(NPERCENT_TRACKING_TIME/BAT_TASK_PERIOD);
 	}
-#endif	
 	return resetBatteryMeter;
 
 }
@@ -1369,11 +1349,7 @@ static void mt_battery_Sync_UI_Percentage_to_Real(void)
 
 	if(BMT_status.UI_SOC <= 0 )
 	{
-	#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 		BMT_status.UI_SOC=0;
-	#else
-		BMT_status.UI_SOC=1;
-	#endif
 		battery_xlog_printk(BAT_LOG_CRTI, "[Battery]UI_SOC get 0 first (%d)\r\n", BMT_status.UI_SOC);
 	}
 }
@@ -1388,12 +1364,10 @@ static void battery_update(struct battery_data *bat_data)
     bat_data->BAT_batt_vol = BMT_status.bat_vol;
     bat_data->BAT_batt_temp= BMT_status.temperature * 10;
 	bat_data->BAT_PRESENT = BMT_status.bat_exist;
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	if(g_fg_battery_id == 0)
 	bat_data->charge_full_design = Q_MAX_POS_25_ATL*1000;
 	else
 	bat_data->charge_full_design = Q_MAX_POS_25_COS*1000;
-#endif
     if( (BMT_status.charger_exist == KAL_TRUE) && (BMT_status.bat_charging_state != CHR_ERROR) )
     {     
         if ( BMT_status.bat_exist )  /* charging */               
@@ -1790,7 +1764,6 @@ void mt_battery_GetBatteryData(void)
 	ZCV = battery_meter_get_battery_zcv();
 
 	BMT_status.ICharging = mt_battery_average_method(&batteryCurrentBuffer[0],ICharging, &icharging_sum, batteryIndex);	
-	#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 	if ((BMT_status.temperature>10) && (BMT_status.temperature<=45))
 	{
 		BMT_status.ICharging = 960;
@@ -1799,7 +1772,6 @@ void mt_battery_GetBatteryData(void)
 	{
 		BMT_status.ICharging = 576;
 	}
-	#endif	
 	BMT_status.bat_vol = mt_battery_average_method(&batteryVoltageBuffer[0],bat_vol, &bat_sum, batteryIndex);
 	BMT_status.temperature = mt_battery_average_method(&batteryTempBuffer[0],temperature, &temperature_sum, batteryIndex);
 	BMT_status.Vsense = Vsense;
@@ -1834,17 +1806,6 @@ static PMU_STATUS mt_battery_CheckBatteryTemp(void)
 {	
 	PMU_STATUS status = PMU_STATUS_OK;
 	
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-
-    battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] support JEITA, temperature=%d\n", BMT_status.temperature);            
-
-    if( do_jeita_state_machine() == PMU_STATUS_FAIL)
-    {
-        battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] JEITA : fail\n");
-        status = PMU_STATUS_FAIL;
-    }
-
-#else
 
 #if defined(MTK_TEMPERATURE_RECHARGE_SUPPORT)
 	if (do_batt_temp_state_machine() == PMU_STATUS_FAIL)
@@ -1867,7 +1828,6 @@ static PMU_STATUS mt_battery_CheckBatteryTemp(void)
     }    
 #endif
 
-#endif
 
 	return status;
 }
@@ -2038,13 +1998,6 @@ static void mt_battery_notify_VBatTemp_check(void)
 	#endif
         battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] bat_temp(%d) out of range(too high)\n", BMT_status.temperature);		
     }
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-	else if (BMT_status.temperature < TEMP_NEG_10_THRESHOLD)
-	{
-        //g_BatteryNotifyCode |= 0x0020;
-        battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] bat_temp(%d) out of range(too low)\n", BMT_status.temperature);
-	}
-#else
 #ifdef BAT_LOW_TEMP_PROTECT_ENABLE
 	else if (BMT_status.temperature < MIN_CHARGE_TEMPERATURE)
     {
@@ -2062,7 +2015,6 @@ static void mt_battery_notify_VBatTemp_check(void)
 	#endif
         battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] bat_temp(%d) out of range(too low)\n", BMT_status.temperature);
     }
-#endif
 #endif
 #if defined(BAT_OVER_TEMP_POWER_OFF)
 	if(BMT_status.temperature == OVER_TEMP_POWER_OFF_TEMPERATURE)
@@ -2174,9 +2126,6 @@ static void mt_battery_thermal_check(void)
             battery_xlog_printk(BAT_LOG_FULL, "[Battery] In thermal_test_mode , Tbat=%d\n", BMT_status.temperature);
         }
     
-#if defined(MTK_JEITA_STANDARD_SUPPORT)
-        //ignore default rule
-#else    
 		if(BMT_status.temperature >= 60)
         {
             {
@@ -2206,7 +2155,6 @@ static void mt_battery_thermal_check(void)
                 }
             }
         }
-#endif
         
     }
 
@@ -2224,7 +2172,6 @@ CHARGER_TYPE mt_charger_type_detection(void)
         battery_charging_control(CHARGING_CMD_GET_CHARGER_TYPE,&CHR_Type_num);
         BMT_status.charger_type = CHR_Type_num;	
     }	
-#endif
 
     mutex_unlock(&charger_type_mutex);
 	
@@ -2249,7 +2196,6 @@ static void mt_battery_charger_detect_check(void)
 	           		mt_usb_connect();
 			}
 		}
-#endif        
 
 		battery_xlog_printk(BAT_LOG_CRTI, "[BAT_thread]Cable in, CHR_Type_num=%d\r\n", BMT_status.charger_type);
 		

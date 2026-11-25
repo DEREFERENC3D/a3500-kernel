@@ -6,27 +6,18 @@
 // ============================================================
 // define
 // ============================================================
-//#define SOC_BY_AUXADC
-//#define SOC_BY_HW_FG
 #define SOC_BY_SW_FG
 
 
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
 #define MTK_MULTI_BAT_PROFILE_SUPPORT
 #define MTK_GET_BATTERY_ID_BY_AUXADC
-#endif
 
 #define BAT_VOL_USE_ISENSE
 #define SWCHR_POWER_PATH //for hw ocv use
 /* ADC Channel Number */
 #define CUST_TABT_NUMBER 17
-#if defined(BAT_VOL_USE_ISENSE)
 #define VBAT_CHANNEL_NUMBER      6
 #define ISENSE_CHANNEL_NUMBER	 7
-#else
-#define VBAT_CHANNEL_NUMBER      7
-#define ISENSE_CHANNEL_NUMBER	 6
-#endif
 #define VCHARGER_CHANNEL_NUMBER  4
 #define VBATTEMP_CHANNEL_NUMBER  5
 
@@ -44,9 +35,6 @@
 
 #define FG_METER_RESISTANCE 	0
 
-/* For multi-battery support */
-
-#if defined(MTK_MULTI_BAT_PROFILE_SUPPORT)
 /* Qmax for battery  */
 #define Q_MAX_POS_50_COS	3517
 #define Q_MAX_POS_25_COS	3528
@@ -68,27 +56,6 @@
 #define Q_MAX_POS_25_H_CURRENT_ATL	3560
 #define Q_MAX_POS_0_H_CURRENT_ATL	3301
 #define Q_MAX_NEG_10_H_CURRENT_ATL	2736
-#else
-/* Qmax for battery  */
-#define Q_MAX_POS_50	3895
-#define Q_MAX_POS_25	3895
-#define Q_MAX_POS_0		3895
-#define Q_MAX_NEG_10	3895
-
-#define Q_MAX_POS_50_H_CURRENT	3865
-#define Q_MAX_POS_25_H_CURRENT	3865
-#define Q_MAX_POS_0_H_CURRENT	3865
-#define Q_MAX_NEG_10_H_CURRENT	3865
-#endif
-
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
-/* Discharge Percentage */
-#define OAM_D5		 0		//  1 : D5,   0: D2
-#else
-/* Discharge Percentage */
-#define OAM_D5		 1		//  1 : D5,   0: D2
-#endif
-
 
 /* battery meter parameter */
 #define CUST_TRACKING_POINT  14
