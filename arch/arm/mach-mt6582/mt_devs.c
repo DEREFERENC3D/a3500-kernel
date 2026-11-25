@@ -23,6 +23,7 @@
 #include <mach/mt_boot.h>
 #include <linux/version.h>
 #include <mach/mtk_memcfg.h>
+#include <mach/atag_mt6582.h>
 #include <mach/dfo_boot.h>
 #include <mach/dfo_boot_default.h>
 #include <linux/aee.h>
@@ -1045,7 +1046,7 @@ static int __init parse_tag_videofb_fixup(const struct tag *tags)
 	return 0;
 }
 
-static int __init parse_tag_devinfo_data_fixup(const struct tag *tags)
+static int __init parse_tag_devinfo_data_fixup(const struct mtk_tag *tags)
 {
     int i=0;
     int size = tags->u.devinfo_data.devinfo_data_size;
@@ -1061,6 +1062,18 @@ static int __init parse_tag_devinfo_data_fixup(const struct tag *tags)
 }
 
 extern unsigned int mtkfb_parse_dfo_setting(void *dfo_tbl, int num);
+
+/* Bootloader-supplied battery voltage, used by the MT6582 fuel gauge. */
+#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
+unsigned int UbVbat;
+
+static int __init parse_tag_revision_vbat(const struct tag *tag)
+{
+	UbVbat = ((const struct mtk_tag *)tag)->u.revision.vbat;
+	return 0;
+}
+__tagtable(ATAG_REVISION, parse_tag_revision_vbat);
+#endif
 
 void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
 {
@@ -1114,18 +1127,18 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
         else if (tags->hdr.tag == ATAG_CMDLINE) {
             cmdline_tag = tags;
         } else if (tags->hdr.tag == ATAG_BOOT) {
-            g_boot_mode = tags->u.boot.bootmode;
+            g_boot_mode = ((struct mtk_tag *)tags)->u.boot.bootmode;
         } else if (tags->hdr.tag == ATAG_VIDEOLFB) {
             parse_tag_videofb_fixup(tags);
         }else if (tags->hdr.tag == ATAG_DEVINFO_DATA){
-            parse_tag_devinfo_data_fixup(tags);
+            parse_tag_devinfo_data_fixup((struct mtk_tag *)tags);
         }
         else if(tags->hdr.tag == ATAG_META_COM)
         {
-          g_meta_com_type = tags->u.meta_com.meta_com_type;
-          g_meta_com_id = tags->u.meta_com.meta_com_id;
+          g_meta_com_type = ((struct mtk_tag *)tags)->u.meta_com.meta_com_type;
+          g_meta_com_id = ((struct mtk_tag *)tags)->u.meta_com.meta_com_id;
         } else if (tags->hdr.tag == ATAG_DFO_DATA) {
-            mtkfb_parse_dfo_setting(&tags->u.dfo_data, DFO_BOOT_COUNT);
+            mtkfb_parse_dfo_setting(&((struct mtk_tag *)tags)->u.dfo_data, DFO_BOOT_COUNT);
         }
     }
 

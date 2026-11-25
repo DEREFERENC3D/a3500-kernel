@@ -15,9 +15,6 @@
 #define __ASMARM_SETUP_H
 
 #include <linux/types.h>
-#ifdef CONFIG_ARCH_MT6582
-#include <mach/atag_mt6582.h>
-#endif
 
 #define COMMAND_LINE_SIZE 1024
 
@@ -98,9 +95,6 @@ struct tag_serialnr {
 
 struct tag_revision {
 	__u32 rev;
-#if defined(CONFIG_SLT_DRV_P3550_CONFIG)
-	__u32 Vbat;
-#endif
 };
 
 /* initial values for vesafb-type framebuffers. see struct screen_info
@@ -171,12 +165,6 @@ struct tag {
 		 * DC21285 specific
 		 */
 		struct tag_memclk	memclk;
-#ifdef CONFIG_ARCH_MT6582
-		struct tag_boot	boot;
-		struct tag_meta_com	meta_com;
-		struct tag_devinfo_data	devinfo_data;
-		tag_dfo_boot	dfo_data;
-#endif
 	} u;
 };
 
