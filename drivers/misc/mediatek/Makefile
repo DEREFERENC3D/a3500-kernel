@@ -54,7 +54,6 @@ endif
 obj-y	+= video/
 
 obj-y	+= dispsys/
-obj-y	+= hdmitx/
 obj-y	+= m4u/
 obj-y	+= smi/
 obj-y	+= jpeg/

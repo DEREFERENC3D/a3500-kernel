@@ -495,13 +495,6 @@ static struct platform_device mtk_multibridge_dev = {
     .id   = 0,
 };
 #endif
-#ifdef MTK_HDMI_SUPPORT
-static struct platform_device mtk_hdmi_dev = {
-    .name = "hdmitx",
-    .id   = 0,
-};
-#endif
-
 
 #ifdef MTK_MT8193_SUPPORT
 static struct platform_device mtk_ckgen_dev = {
@@ -1645,13 +1638,6 @@ if (retval != 0) {
 	if (retval != 0)
 		return retval;
 	printk("bei:device LEDS register\n");
-#endif
-
-#ifdef MTK_HDMI_SUPPORT
-	retval = platform_device_register(&mtk_hdmi_dev);
-	if (retval != 0){
-		return retval;
-	}
 #endif
 
 

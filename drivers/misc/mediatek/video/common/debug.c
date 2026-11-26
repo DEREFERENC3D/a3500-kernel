@@ -333,16 +333,11 @@ void DBG_OnHDMIDone(void)
 //  Command Processor
 // ---------------------------------------------------------------------------
 extern void mtkfb_clear_lcm(void);
-extern void hdmi_force_init(void);
 extern unsigned int mtkfb_fm_auto_test(void);
 extern UINT32 color;
 static void process_dbg_opt(const char *opt)
 {
-    if (0 == strncmp(opt, "hdmion", 6))
-    {
-        //	hdmi_force_init();
-    }
-    else if (0 == strncmp(opt, "fps:", 4))
+    if (0 == strncmp(opt, "fps:", 4))
     {
         if (0 == strncmp(opt + 4, "on", 2)) {
             dbg_opt.en_fps_log = 1;
