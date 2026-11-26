@@ -24,7 +24,6 @@ int mt_cirq_test(void);
 void mt_cirq_dump_reg(void);
 #define CIRQ_DEBUG   0
 #define CIRQ_LOG_LEVEL KERN_DEBUG
-#define LDVT
 
 #if(CIRQ_DEBUG == 1)
 #ifdef CTP
@@ -367,45 +366,6 @@ void mt_cirq_clone_gic(void)
 }
 
 
-#if defined(LDVT)
-/*
- * cirq_dvt_show: To show usage.
- */
-static ssize_t cirq_dvt_show(struct device_driver *driver, char *buf)
-{
-    return snprintf(buf, PAGE_SIZE, "CIRQ dvt test\n");
-}
-
-/*
- * mci_dvt_store: To select mci test case.
- */
-static ssize_t cirq_dvt_store(struct device_driver *driver, const char *buf,
-			      size_t count)
-{
-    char *p = (char *)buf;
-    unsigned int num;
-
-    num = simple_strtoul(p, &p, 10);
-    switch(num){
-        case 1:
-            mt_cirq_clone_gic();
-            mt_cirq_dump_reg();
-            break;
-        case 2:
-            mt_cirq_test();
-            break;
-        case 3:
-            mt_cirq_disable();
-            break;
-        default:
-            break;
-    }
-
-    return count;
-}
-DRIVER_ATTR(cirq_dvt, 0664, cirq_dvt_show, cirq_dvt_store);
-#endif //!LDVT
-
 /*
  * CIRQ interrupt service routine.
  */
@@ -429,113 +389,12 @@ static int __init mt_cirq_init(void){
             printk("CIRQ handler init success.");
         }
         ret = driver_register(&mt_cirq_drv.driver);
-#ifdef LDVT
-	ret = driver_create_file(&mt_cirq_drv.driver, &driver_attr_cirq_dvt);
-#endif
         if (ret == 0)
         printk("CIRQ init done...\n");
 	return 0;
 
 }
 
-#if defined(LDVT)
-#define __CHECK_IRQ_TYPE
-#if defined(__CHECK_IRQ_TYPE)
-#define X_DEFINE_IRQ(__name, __num, __polarity, __sensitivity) \
-        { .num = __num, .polarity = __polarity, .sensitivity = __sensitivity, },
-#define L 0
-#define H 1
-#define EDGE MT_EDGE_SENSITIVE
-#define LEVEL MT_LEVEL_SENSITIVE
-struct __check_irq_type
-{
-    int num;
-    int polarity;
-    int sensitivity;
-};
-struct __check_irq_type __check_irq_type[] =
-{
-#include <mach/x_define_irq.h>
-    { .num = -1, },
-};
-#undef X_DEFINE_IRQ
-#undef L
-#undef H
-#undef EDGE
-#undef LEVEL
-#endif
-
-void mt_cirq_dump_reg(void)
-{
-    int cirq_num;
-    int pol,sens,mask;
-    int irq_iter;
-    
-    printk("IRQ:\tPOL\tSENS\tMASK\n");
-    for (cirq_num = 0; cirq_num < MT_NR_CIRQ; cirq_num++)
-    {
-        pol = mt_cirq_get_pol(cirq_num);
-        sens = mt_cirq_get_sens(cirq_num);
-        mask = mt_cirq_get_mask(cirq_num);
-#if defined(__CHECK_IRQ_TYPE)
-        //only check unmask irq
-        if (0 == mask){
-            irq_iter = 0;
-            while (__check_irq_type[irq_iter].num >= 0) {
-                if (__check_irq_type[irq_iter].num == (cirq_num+64)){
-                    if(__check_irq_type[irq_iter].sensitivity != sens){
-                        printk("[CIRQ] Error sens in irq:%d\n",cirq_num+64); 
-                    }
-                    if(__check_irq_type[irq_iter].polarity != (pol)){
-                        printk("[CIRQ] Error polarity in irq:%d\n",cirq_num+64); 
-                    }
-                    break;
-                }  
-                irq_iter++;
-            }
-        }
-#endif
-        printk("IRQ:%d\t%d\t%d\t%d\n",cirq_num+64,pol,sens,mask);
-
-    }
-}
-int mt_cirq_test(void)
-{
-    int cirq_num = 100; 
-    mt_cirq_enable();
-
-    /*test polarity*/
-    mt_cirq_set_pol(cirq_num,MT_CIRQ_POL_NEG);
-    if ( MT_CIRQ_POL_NEG != mt_cirq_get_pol(cirq_num))
-        printk("mt_cirq_set_pol test failed!!\n");
-    mt_cirq_set_pol(cirq_num,MT_CIRQ_POL_POS);
-    if ( MT_CIRQ_POL_POS != mt_cirq_get_pol(cirq_num))
-        printk("mt_cirq_set_pol test failed!!\n");
-
-    /*test sensitivity*/
-    mt_cirq_set_sens(cirq_num,MT_EDGE_SENSITIVE);
-    if ( MT_EDGE_SENSITIVE != mt_cirq_get_sens(cirq_num))
-        printk("mt_cirq_set_sens test failed!!\n");
-    mt_cirq_set_sens(cirq_num,MT_LEVEL_SENSITIVE);
-    if ( MT_LEVEL_SENSITIVE != mt_cirq_get_sens(cirq_num))
-        printk("mt_cirq_set_sens test failed!!\n");
-
-    /*test mask*/
-    mt_cirq_mask(cirq_num);
-    if ( 1 != mt_cirq_get_mask(cirq_num))
-        printk("mt_cirq_mask test failed!!\n");
-    mt_cirq_unmask(cirq_num);
-    mt_cirq_set_sens(cirq_num,MT_LEVEL_SENSITIVE);
-    if ( 0 != mt_cirq_get_mask(cirq_num))
-        printk("mt_cirq_unmask test failed!!\n");
-
-
-    mt_cirq_clone_gic();
-    mt_cirq_dump_reg();
-
-    return 0;
-}
-#endif //!LDVT
 arch_initcall(mt_cirq_init);
 EXPORT_SYMBOL(mt_cirq_enable);
 EXPORT_SYMBOL(mt_cirq_disable);

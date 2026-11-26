@@ -1,21 +1,4 @@
 menu "Drivers Configurations"
-menuconfig MTK_LDVT
-        bool "LDVT"
-	depends on ARCH_MT6589 || ARCH_MT6582
-        default n
-        ---help---
-          Say Y here for supporting LDVT
-
-if MTK_LDVT
-
-config MTK_LDVT_PMIC_WRAP
-        bool "MediaTek PMIC_WRAP driver for LDVT"
-        default y
-        ---help---
-          MediaTek PMIC_WRAP driver for LDVT
-
-endif
-
 # Accdet
 config MTK_ACCDET # ACCDET
         bool "MediaTek Accessory Detection Support"

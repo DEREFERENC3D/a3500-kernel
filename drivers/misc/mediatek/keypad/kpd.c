@@ -612,7 +612,6 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 	int i, r;
 	int err = 0;
 	
-	kpd_ldvt_test_init();//API 2 for kpd LFVT test enviroment settings
 
 	/* initialize and register input device (/dev/input/eventX) */
 	kpd_input_dev = input_allocate_device();

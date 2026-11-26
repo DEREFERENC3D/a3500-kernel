@@ -16,15 +16,9 @@
 /**************************************
  * only for internal debug
  **************************************/
-#ifdef CONFIG_MTK_LDVT
-#define SLP_SLEEP_DPIDLE_EN         1
-#define SLP_REPLACE_DEF_WAKESRC     1
-#define SLP_SUSPEND_LOG_EN          1
-#else
 #define SLP_SLEEP_DPIDLE_EN         0
 #define SLP_REPLACE_DEF_WAKESRC     0
 #define SLP_SUSPEND_LOG_EN          0
-#endif
 
 
 /**************************************

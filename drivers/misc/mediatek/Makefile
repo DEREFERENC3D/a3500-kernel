@@ -64,7 +64,6 @@ obj-y	+= mmc-host/
 obj-y	+= sound/
 obj-y	+= devinfo/
 obj-y	+= devapc/
-obj-y	+= ldvt/
 obj-y	+= masp/
 obj-y	+= vibrator/
 obj-y	+= wmt/

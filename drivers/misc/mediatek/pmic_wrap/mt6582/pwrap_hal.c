@@ -333,9 +333,6 @@ static S32 pwrap_wacs2_hal( U32  write, U32  adr, U32  wdata, U32 *rdata )
 	U32 return_value=0;
 	unsigned long flags=0;
 	//PWRAPFUC();
-	//#ifndef CONFIG_MTK_LDVT_PMIC_WRAP
-	//PWRAPLOG("wrapper access,write=%x,add=%x,wdata=%x,rdata=%x\n",write,adr,wdata,rdata);
-	//#endif
 	// Check argument validation
 	if( (write & ~(0x1))    != 0)  return E_PWR_INVALID_RW;
 	if( (adr   & ~(0xffff)) != 0)  return E_PWR_INVALID_ADDR;
@@ -1018,12 +1015,10 @@ S32 pwrap_init ( void )
 	//###############################
 	//TBD: Should be configured by MD MCU
 	//###############################
-#if 1 //CONFIG_MTK_LDVT_PMIC_WRAP
 	WRAP_WR32(PMIC_WRAP_INIT_DONE0 ,1);
 	WRAP_WR32(PMIC_WRAP_INIT_DONE1 , 1);
 	//WRAP_WR32(PERI_PWRAP_BRIDGE_INIT_DONE3 , 1);
 	//WRAP_WR32(PERI_PWRAP_BRIDGE_INIT_DONE4 , 1);
-#endif
 	return 0;
 }
 //EXPORT_SYMBOL(pwrap_init);

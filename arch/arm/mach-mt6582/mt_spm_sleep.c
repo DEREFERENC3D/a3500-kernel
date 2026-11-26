@@ -17,15 +17,9 @@
 /**************************************
  * only for internal debug
  **************************************/
-#ifdef CONFIG_MTK_LDVT
-#define SPM_PWAKE_EN            0
-#define SPM_PCMWDT_EN           0
-#define SPM_BYPASS_SYSPWREQ     1
-#else
 #define SPM_PWAKE_EN            1
 #define SPM_PCMWDT_EN           1
 #define SPM_BYPASS_SYSPWREQ     0
-#endif
 
 #ifdef IS_VCORE_USE_6333VCORE
 #define SPM_CTRL_33VCORE        1

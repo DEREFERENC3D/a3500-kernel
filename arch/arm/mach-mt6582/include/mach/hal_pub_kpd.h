@@ -13,7 +13,6 @@
 
 /*function define*/
 void kpd_slide_qwerty_init(void);
-void kpd_ldvt_test_init(void);
 void long_press_reboot_function_setting(void);
 void kpd_auto_test_for_factorymode(void);
 void kpd_wakeup_src_setting(int enable);
