@@ -24,7 +24,6 @@
 #include <linux/sched.h>
 #include <linux/input.h>
 #include <linux/slab.h>
-#include <linux/du_timer_observer.h>
 
 /*
  * dbs is used in this file as a shortform for demandbased switching
@@ -169,7 +168,6 @@ int g_cpu_rush_count = 0;
 static void hp_reset_strategy_nolock(void);
 static void hp_reset_strategy(void);
 
-static void hp_to_callback(void);
 
 #else //#ifdef CONFIG_HOTPLUG_CPU
 
@@ -484,7 +482,6 @@ static void update_sampling_rate(unsigned int new_rate)
 			cancel_delayed_work_sync(&dbs_info->work);
 			mutex_lock(&dbs_info->timer_mutex);
 
-			to_init(0, "dvfs kworker", new_rate * 1000 * 10, NULL);
 			schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work,
 						 usecs_to_jiffies(new_rate));
 
@@ -749,7 +746,6 @@ static ssize_t store_cpu_num_base(struct kobject *a, struct attribute *b,
 
 		dbs_freq_increase(policy, policy->max);
 		g_trigger_hp_work = CPU_HOTPLUG_WORK_TYPE_BASE;
-		to_init(11, "hotplug kworker", 100, NULL);
 		schedule_delayed_work_on(0, &hp_work, 0);
 	}
 #endif
@@ -1046,7 +1042,6 @@ void hp_based_cpu_num(int num)
 
 		dbs_freq_increase(policy, policy->max);
 		g_trigger_hp_work = CPU_HOTPLUG_WORK_TYPE_BASE;
-		to_init(11, "hotplug kworker", 100, NULL);
 		schedule_delayed_work_on(0, &hp_work, 0);
 	}
 #endif
@@ -1118,7 +1113,6 @@ static void hp_reset_strategy(void)
 
 static void hp_work_handler(struct work_struct *work)
 {
-	to_update_jiffies(11);
 	if (mutex_trylock(&hp_onoff_mutex))
 	{
 		if (!dbs_tuners_ins.is_cpu_hotplug_disable)
@@ -1135,17 +1129,13 @@ static void hp_work_handler(struct work_struct *work)
 				case CPU_HOTPLUG_WORK_TYPE_RUSH:
 					for (i = online_cpus_count; i < min(g_next_hp_action, dbs_tuners_ins.cpu_num_limit); ++i)
 					{
-						to_init(12, "cpu_up", 3000, NULL);
 						cpu_up(i);
-						to_update_jiffies(12);
 					}
 					break;
 				case CPU_HOTPLUG_WORK_TYPE_BASE:
 					for (i = online_cpus_count; i < min(dbs_tuners_ins.cpu_num_base, dbs_tuners_ins.cpu_num_limit); ++i)
 					{
-						to_init(13, "cpu_up", 3000, NULL);
 						cpu_up(i);
-						to_update_jiffies(13);
 					}
 					break;
 				case CPU_HOTPLUG_WORK_TYPE_LIMIT:
@@ -1155,9 +1145,7 @@ static void hp_work_handler(struct work_struct *work)
 				case CPU_HOTPLUG_WORK_TYPE_UP:
 					for (i = online_cpus_count; i < g_next_hp_action; ++i)
 					{
-						to_init(14, "cpu_up", 3000, NULL);
 						cpu_up(i);
-						to_update_jiffies(14);
 					}
 					break;
 				case CPU_HOTPLUG_WORK_TYPE_DOWN:
@@ -1167,9 +1155,7 @@ static void hp_work_handler(struct work_struct *work)
 				default:
 					for (i = online_cpus_count; i < min(dbs_tuners_ins.cpu_input_boost_num, dbs_tuners_ins.cpu_num_limit); ++i)
 					{
-						to_init(15, "cpu_up", 3000, NULL);
 						cpu_up(i);
-						to_update_jiffies(15);
 					}
 					//printk("[power/hotplug] cpu input boost\n");
 					break;
@@ -1341,9 +1327,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		if (policy->cur < policy->max)
 			this_dbs_info->rate_mult =
 				dbs_tuners_ins.sampling_down_factor;
-		to_init(2, "dvfs up", 5, NULL);
 		dbs_freq_increase(policy, policy->max);
-		to_update_jiffies(2);
 		goto hp_check;
 	}
 
@@ -1373,17 +1357,13 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 
 		if (!dbs_tuners_ins.powersave_bias) {
 			//20140115 marc.huang, always run this path
-			to_init(3, "dvfs down", 5, NULL);
 			__cpufreq_driver_target(policy, freq_next,
 					CPUFREQ_RELATION_L);
-			to_update_jiffies(3);
 		} else {
 			int freq = powersave_bias_target(policy, freq_next,
 					CPUFREQ_RELATION_L);
-			to_init(4, "dvfs down", 5, NULL);
 			__cpufreq_driver_target(policy, freq,
 				CPUFREQ_RELATION_L);
-			to_update_jiffies(4);
 		}
 	}
 
@@ -1404,9 +1384,7 @@ hp_check:
 
 	online_cpus_count = num_online_cpus();
 
-	to_init(10, "get tlp", 5, NULL);
 	sched_get_nr_running_avg(&g_tlp_avg_current, &g_tlp_iowait_av);
-	to_update_jiffies(10);
 
 	v_tlp_avg_last = g_tlp_avg_history[g_tlp_avg_index];
 	g_tlp_avg_history[g_tlp_avg_index] = g_tlp_avg_current;
@@ -1423,7 +1401,6 @@ hp_check:
 	}
 	g_tlp_avg_average = g_tlp_avg_sum / dbs_tuners_ins.cpu_rush_tlp_times;
 
-	to_update_jiffies(5);
 	if (dbs_tuners_ins.cpu_rush_boost_enable)
 	{
 		//printk("@@@@@@@@@@@@@@@@@@@@@@@@@@@ tlp: %d @@@@@@@@@@@@@@@@@@@@@@@@@@@\n", g_tlp_avg_average);
@@ -1444,7 +1421,6 @@ hp_check:
 			if (g_next_hp_action > num_possible_cpus())
 				g_next_hp_action = num_possible_cpus();
 			g_trigger_hp_work = CPU_HOTPLUG_WORK_TYPE_RUSH;
-			to_init(11, "hotplug kworker", 100, NULL);
 			schedule_delayed_work_on(0, &hp_work, 0);
 
 			goto hp_check_end;
@@ -1456,7 +1432,6 @@ hp_check:
 		dbs_freq_increase(policy, policy->max);
 		printk("dbs_check_cpu: turn on CPU\n");
 		g_trigger_hp_work = CPU_HOTPLUG_WORK_TYPE_BASE;
-		to_init(11, "hotplug kworker", 100, NULL);
 		schedule_delayed_work_on(0, &hp_work, 0);
 
 		goto hp_check_end;
@@ -1467,7 +1442,6 @@ hp_check:
 		dbs_freq_increase(policy, policy->max);
 		printk("dbs_check_cpu: turn off CPU\n");
 		g_trigger_hp_work = CPU_HOTPLUG_WORK_TYPE_LIMIT;
-		to_init(11, "hotplug kworker", 100, NULL);
 		schedule_delayed_work_on(0, &hp_work, 0);
 
 		goto hp_check_end;
@@ -1503,7 +1477,6 @@ hp_check:
 					printk("dbs_check_cpu: turn on CPU\n");
 					g_next_hp_action = online_cpus_count + 1;
 					g_trigger_hp_work = CPU_HOTPLUG_WORK_TYPE_UP;
-					to_init(11, "hotplug kworker", 100, NULL);
 					schedule_delayed_work_on(0, &hp_work, 0);
 
 					goto hp_check_end;
@@ -1553,7 +1526,6 @@ hp_check:
 				dbs_freq_increase(policy, policy->max);
 				printk("dbs_check_cpu: turn off CPU\n");
 				g_trigger_hp_work = CPU_HOTPLUG_WORK_TYPE_DOWN;
-				to_init(11, "hotplug kworker", 100, NULL);
 				schedule_delayed_work_on(0, &hp_work, 0);
 			}
 		}
@@ -1582,16 +1554,13 @@ static void do_dbs_timer(struct work_struct *work)
 
 	int delay;
 
-	to_update_jiffies(0);
 	mutex_lock(&dbs_info->timer_mutex);
 
 	/* Common NORMAL_SAMPLE setup */
 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
 	if (!dbs_tuners_ins.powersave_bias ||
 	    sample_type == DBS_NORMAL_SAMPLE) {
-		to_init(1, "dbs_check_cpu", 10, NULL);
 		dbs_check_cpu(dbs_info);
-		to_update_jiffies(1);
 		if (dbs_info->freq_lo) {
 			/* Setup timer for SUB_SAMPLE */
 			dbs_info->sample_type = DBS_SUB_SAMPLE;
@@ -1613,15 +1582,12 @@ static void do_dbs_timer(struct work_struct *work)
 		delay = dbs_info->freq_lo_jiffies;
 	}
 
-	to_init(0, "dvfs kworker", jiffies_to_msecs(delay) * 10, NULL);
 	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
 	mutex_unlock(&dbs_info->timer_mutex);
 
 	if(cpufreq_freq_check != NULL)
 	{
-		to_init(6, "cpufreq_freq_check", 10, NULL);
 		cpufreq_freq_check();
-		to_update_jiffies(6);
 	}
 }
 
@@ -1635,9 +1601,7 @@ static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
 
 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
 	INIT_DELAYED_WORK_DEFERRABLE(&dbs_info->work, do_dbs_timer);
-	to_init(0, "dvfs kworker", jiffies_to_msecs(delay) * 10, NULL);
 #ifdef CONFIG_HOTPLUG_CPU
-	to_init(5, "dvfs kworker(hotplug)", 1000, hp_to_callback);
 #endif //#ifdef CONFIG_HOTPLUG_CPU
 	schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work, delay);
 }
@@ -1694,7 +1658,6 @@ static void dbs_input_event(struct input_handle *handle, unsigned int type,
 			unsigned int online_cpus_count = num_online_cpus();
 			if (online_cpus_count < dbs_tuners_ins.cpu_input_boost_num && online_cpus_count < dbs_tuners_ins.cpu_num_limit)
 			{
-				to_init(11, "hotplug kworker", 100, NULL);
 				schedule_delayed_work_on(0, &hp_work, 0);
 			}
 
@@ -1967,15 +1930,3 @@ module_init(cpufreq_gov_dbs_init);
 #endif
 module_exit(cpufreq_gov_dbs_exit);
 
-/*******************************************************************************
- * timer observer callback
- ******************************************************************************/
-#ifdef CONFIG_HOTPLUG_CPU
-static void hp_to_callback(void)
-{
-	printk("[power/hotplug] hp_to_callback(%d)(%d)(%d)(%d)(%d)(%ld)(%d)(%ld)(%d)(%d)(%d)\n",
-	    g_trigger_hp_work, g_tlp_avg_average, g_tlp_avg_current, g_cpu_rush_count,
-		g_cpus_sum_load_current, g_cpu_up_sum_load, g_cpu_up_count, g_cpu_down_sum_load, g_cpu_down_count,
-		dbs_tuners_ins.cpu_num_base, dbs_tuners_ins.cpu_num_limit);
-}
-#endif //#ifdef CONFIG_HOTPLUG_CPU

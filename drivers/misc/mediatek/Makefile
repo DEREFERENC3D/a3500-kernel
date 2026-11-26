@@ -88,4 +88,3 @@ endif
 obj-y	+= common_detect/
 endif
 
-obj-y	+= debug_util/
