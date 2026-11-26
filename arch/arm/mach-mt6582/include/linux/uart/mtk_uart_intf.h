@@ -4,14 +4,6 @@
 #include "platform_uart.h"
 #include <linux/platform_device.h>
 /*---------------------------------------------------------------------------*/
-//fiq debugger
-/*---------------------------------------------------------------------------*/
-int fiq_uart_getc(struct platform_device *pdev);
-void fiq_uart_putc(struct platform_device *pdev, unsigned int c);
-void fiq_uart_fixup(int uart_port);
-irqreturn_t mt_debug_signal_irq(int irq, void *dev_id);
-int mt_fiq_init(void *arg);
-/*---------------------------------------------------------------------------*/
 struct mtk_uart_setting* get_uart_default_settings(int idx);
 unsigned long get_uart_evt_mask(int idx);
 void mtk_uart_switch_tx_to_gpio(struct mtk_uart *uart);

@@ -63,8 +63,6 @@ extern void printascii(char *);
 
 static int console_log_max = 400000;
 
-bool printk_disable_uart = 0;
-
 static bool log_in_resume = 0;
 
 /* printk's without a loglevel use this.. */
@@ -574,12 +572,9 @@ static void __call_console_drivers(unsigned start, unsigned end)
 	struct console *con;
 
 	for_each_console(con) {
-		int conenable;
-
 		if (exclusive_console && con != exclusive_console)
 			continue;
-		conenable = (con->flags & CON_ENABLED) && !(printk_disable_uart && (con->flags & CON_CONSDEV));
-		if (conenable && con->write &&
+		if ((con->flags & CON_ENABLED) && con->write &&
 				(cpu_online(smp_processor_id()) ||
 				(con->flags & CON_ANYTIME)))
 			con->write(con, &LOG_BUF(start), end - start);
@@ -779,7 +774,6 @@ static bool printk_time = 1;
 static bool printk_time = 0;
 #endif
 module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
-module_param_named(disable_uart, printk_disable_uart, bool, S_IRUGO | S_IWUSR);
 
 static bool always_kmsg_dump;
 module_param_named(always_kmsg_dump, always_kmsg_dump, bool, S_IRUGO | S_IWUSR);

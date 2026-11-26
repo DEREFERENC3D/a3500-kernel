@@ -255,12 +255,6 @@ static struct platform_device mtk_device_uart[] = {
     },
     #endif
 };
-//FIX-ME: marked for early porting
-#if defined(CONFIG_FIQ_DEBUGGER)
-extern void fiq_uart_fixup(int uart_port);
-extern struct platform_device mt_fiq_debugger;
-#endif
-
 /* ========================================================================= */
 /* implementation of serial number attribute                                 */
 /* ========================================================================= */
@@ -1229,17 +1223,6 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
 	char *br_ptr;
         // This function may modify ttyMT3 to ttyMT0 if needed
         adjust_kernel_cmd_line_setting_for_console(cmdline_tag->u.cmdline.cmdline, *cmdline);
-#ifdef CONFIG_FIQ_DEBUGGER
-        if ((console_ptr=strstr(*cmdline, "ttyMT")) != 0)
-        {
-            uart_port = console_ptr[5] - '0';
-            if (uart_port > 3)
-                uart_port = -1;
-
-            fiq_uart_fixup(uart_port);
-        }
-#endif
-
         cmdline_filter(cmdline_tag, *cmdline);
 		if ((br_ptr = strstr(*cmdline, "boot_reason=")) != 0) {
 			/* get boot reason */
@@ -1431,13 +1414,6 @@ __init int mt_board_init(void)
         }
     }
 #endif
-#ifdef CONFIG_FIQ_DEBUGGER
-        retval = platform_device_register(&mt_fiq_debugger);
-        if (retval != 0){
-                return retval;
-        }
-#endif
-
 	{
 		uint64_t key;
 #if defined(CONFIG_MTK_USB_UNIQUE_SERIAL) || defined(MTK_SEC_FASTBOOT_UNLOCK_SUPPORT)
