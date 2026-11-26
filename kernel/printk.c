@@ -142,7 +142,7 @@ static DEFINE_RAW_SPINLOCK(logbuf_lock);
  */
 static unsigned log_start;	/* Index into log_buf: next char to be read by syslog() */
 static unsigned con_start;	/* Index into log_buf: next char to be sent to consoles */
-unsigned log_end;	/* Index into log_buf: most-recently-written-char + 1 */
+static unsigned log_end;	/* Index into log_buf: most-recently-written-char + 1 */
 
 /*
  * If exclusive_console is non-NULL then only this console is to be printed to.
@@ -366,26 +366,6 @@ int log_buf_copy(char *dest, int idx, int len)
 		raw_spin_unlock_irq(&logbuf_lock);
 
 	return ret;
-}
-
-int log_buf_copy2(char *dest, int dest_len, int log_copy_start, int log_copy_end)
-{
-	bool took_lock = false;
-	int count;
-
-	if (!oops_in_progress) {
-		raw_spin_lock_irq(&logbuf_lock);
-		took_lock = true;
-	}
-
-	for (count = 0; (log_copy_start != log_end) && (log_copy_start != log_copy_end) && (count < dest_len); log_copy_start++) {
-		dest[count++] = LOG_BUF(log_copy_start);
-	}
-
-	if (took_lock)
-		raw_spin_unlock_irq(&logbuf_lock);
-
-	return count;
 }
 
 #ifdef CONFIG_SECURITY_DMESG_RESTRICT
