@@ -41,12 +41,8 @@ subdir-ccflags-y += -I$(MTK_PROJECT_PATH_ROOT)/core \
              -I$(MTK_PROJECT_PATH_ROOT)/hdmi/inc \
              -I$(MTK_PROJECT_PATH_ROOT)/lcm/inc \
              -I$(MTK_PROJECT_PATH_ROOT)/sound/inc \
-             -I$(MTK_PROJECT_PATH_ROOT)/common \
-             -I$(MTK_PROJECT_PATH_ROOT)/keypad \
              -I$(MTK_PROJECT_PATH_ROOT)/vibrator \
-             -I$(MTK_PROJECT_PATH_ROOT)/accdet \
              -I$(MTK_PROJECT_PATH_ROOT)/rtc \
-             -I$(MTK_PROJECT_PATH_ROOT)/power \
              -I$(MTK_PROJECT_PATH_ROOT)/imgsensor/inc \
              -I$(MTK_PROJECT_PATH_ROOT)/leds/mt65xx
 
@@ -77,20 +73,9 @@ subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
 # Generic MediaTek include trees
 subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/sync \
              -I$(MTK_CUSTOM_PATH)/video \
-             -I$(MTK_CUSTOM_PATH)/ssw/inc \
-             -I$(MTK_CUSTOM_PATH)/lens/inc \
-             -I$(MTK_CUSTOM_PATH)/imgsensor/inc \
-             -I$(MTK_CUSTOM_PATH)/flashlight/inc \
-             -I$(MTK_CUSTOM_PATH)/cam_cal/inc \
-             -I$(MTK_CUSTOM_PATH)/alsps/inc \
-             -I$(MTK_CUSTOM_PATH)/accelerometer/inc \
-             -I$(MTK_CUSTOM_PATH)/gyroscope/inc \
-             -I$(MTK_CUSTOM_PATH)/magnetometer/inc \
-             -I$(MTK_CUSTOM_PATH)/met \
              -I$(MTK_CUSTOM_PATH)/conn_soc/common/linux/include \
              -I$(MTK_CUSTOM_PATH)/conn_soc/common/linux/pri/include \
-             -I$(MTK_CUSTOM_PATH)/conn_soc/common/include \
-             -I$(MTK_CUSTOM_PATH)/combo/common/linux/include
+             -I$(MTK_CUSTOM_PATH)/conn_soc/common/include
 
 # Generated headers (dfo_boot*.h, PTGEN/NANDGEN output) live in the build out tree.
 subdir-ccflags-y += -I$(objtree)/include
