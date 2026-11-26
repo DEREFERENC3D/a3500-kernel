@@ -23,7 +23,6 @@ obj-y := core.o irq.o timer.o mt_dbg.o
 obj-y += mt_devs.o mt_gpt.o mt_boot.o board.o 
 obj-y += ca7_timer.o
 obj-y += mt_dma.o
-obj-y += mt_reg_dump.o
 obj-y += mt_pm_init.o
 ifeq ($(CONFIG_SMP),y)
 ccflags-y += -I$(srctree)

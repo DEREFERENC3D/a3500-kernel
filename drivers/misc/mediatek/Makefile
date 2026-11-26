@@ -72,7 +72,6 @@ obj-y	+= pmt/
 obj-y	+= accdet/
 obj-y	+= pwm/
 obj-y	+= freqhopping/
-obj-y	+= dbg_dump/
 
 ifeq ($(TRUSTONIC_TEE_SUPPORT),yes)
 endif
