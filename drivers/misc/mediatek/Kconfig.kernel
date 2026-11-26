@@ -83,18 +83,6 @@ config MT_PRINTK_UART_CONSOLE
 config MT_ENG_BUILD
     bool "flag for MTK eng/usr build verification"
     default n
-config RAMDISK_OFFSET
-        hex "Uboot allocate memory offset for RAMDISK"
-        default 0xF00000
-        help
-        Used to check decompressed kernel overwrite ramdisk.
-        (DO NOT MODIFY IT YOURSELF.)
-
-config EARLY_LINUX_PORTING
-       bool "Support For Linux Early Porting"
-       default n
-       help
-
 config MTK_ETM
        bool "Support For Embedded Trace Macrocell"
        default y
@@ -104,10 +92,6 @@ menu "MT load balance and schedule enhancement"
 config MT_SCHED
 	bool "Enhance CPU affinity in hotplug"	
  	depends on HOTPLUG
-
-config MT_LOAD_BALANCE_ENHANCEMENT
-	bool "mt load balance enhancement"
-	depends on  SMP
 
 config MT_LOAD_BALANCE_PROFILER
 	bool "mt load balance profiler"

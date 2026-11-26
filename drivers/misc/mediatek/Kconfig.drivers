@@ -50,20 +50,6 @@ config MTK_GPS # MT6516_GPS --> TODO should change to use modulized settings!
 endif # GPS
 
 
-menuconfig MTK_NFC
-        tristate "NFC drivers"
-        default n
-        ---help---
-          Say Y here for supporting NFC.
-
-if MTK_NFC
-
-config NFC_MT6605 
-        tristate "MediaTek NFC driver"
-        default n
-
-endif # NFC
-
 config MTK_BTIF
         tristate"MediaTek BTIF Driver"
 
@@ -89,30 +75,7 @@ config MTK_FM
         tristate "MediaTek FM Chip Support"
         default n
 
-config MTK_IDLE_TIME_FIX
-        tristate "MediaTek fix top get idle time issue"
-        default n
-        
-# Graphics 2D
-config MTK_G2D # MT6516_G2D
-        bool "MediaTek G2D Driver"
-        default y
-        ---help---
-          MT6516 G2D Driver
-
 # Video Related
-config MTK_MPEG4_DEC_DRIVER # MT6516_Mpeg4_Decoder_Driver
-        tristate "MediaTek MPEG4 Decoder Driver"
-        default y
-config MTK_MPEG4_ENC_DRIVER # MT6516_Mpeg4_Encoder_Driver
-        tristate "MediaTek MPEG4 Encoder Driver"
-        default y
-config MTK_H264_DEC_DRIVER # MT6516_H264_Decoder_Driver
-        tristate "MediaTek H264 Decoder Driver"
-        default y
-config MTK_MFLEXVIDEO_DRIVER # MT6573_MFlexVideo_Driver
-        tristate "MediaTek MFlexVideo Driver"
-        default y
 config MTK_VIDEOCODEC_DRIVER # MT6575_Video_Codec_Driver
         tristate "MediaTek VideoCodec Driver"
         default y
@@ -245,11 +208,6 @@ config MTK_SERIAL_MODEM_TEST # SERIAL_MT6516_MODEM_TEST (will add in MT6573)
           option, UART4 will be switched to modem side. Hence, the command
           line parameter should be also modified.
 
-
-# SIM2 # TODO Driver like this, add depends on ARCH_MT6516
-config MTK_SIM2 # MT6516_SIM2
-        bool "MediaTek SIM2 Driver"
-        default y
 
 # Sound
 config MTK_SOUND # SOUND MT6573 SOUND_MT6516

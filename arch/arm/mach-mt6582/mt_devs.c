@@ -1396,14 +1396,6 @@ static struct platform_device mt65xx_leds_device = {
 	.name = "leds-mt65xx",
 	.id = -1
 };
-/*=======================================================================*/
-/* NFC                                                                          */
-/*=======================================================================*/
-static struct platform_device mtk_nfc_6605_dev = {
-    .name   = "mt6605",
-    .id     = -1,
-};
-
 //#ifdef CONFIG_MTK_WIFI
 /*=======================================================================*/
 /* MT6572/82 WIFI module                                                 */
@@ -1966,14 +1958,6 @@ retval = platform_device_register(&dummychar_device);
 		return retval;
 	}
 
-
-#if 1//defined(CONFIG_MTK_NFC) //NFC
-	retval = platform_device_register(&mtk_nfc_6605_dev);
-	printk("mtk_nfc_6605_dev register ret %d", retval);
-	if (retval != 0){
-		return retval;
-	}
-#endif
 
 //#if defined(CONFIG_MTK_WIFI)
 	retval = platform_device_register(&mt_device_wifi);

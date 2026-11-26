@@ -75,14 +75,6 @@ config LCM_HEIGHT
 	string "LCM height"
 	default "1280"
 
-config MTK_SIM1_SOCKET_TYPE
-	string "SIM1 socket type"
-	default "1"
-
-config MTK_SIM2_SOCKET_TYPE
-	string "SIM2 socket type"
-	default "1"
-
 config MTK_TABLET_PLATFORM
 	string "Tablet platform name"
 	default "MT8382"
