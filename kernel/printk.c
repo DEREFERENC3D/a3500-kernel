@@ -43,14 +43,11 @@
 #include <linux/notifier.h>
 #include <linux/rculist.h>
 
-#include <linux/mt_sched_mon.h>
-#include <linux/preempt.h>
 #include <asm/uaccess.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/printk.h>
 
-#include <linux/irqflags.h>
 /*
  * Architectures can override it:
  */
@@ -64,25 +61,12 @@ void asmlinkage __attribute__((weak)) early_printk(const char *fmt, ...)
 extern void printascii(char *);
 #endif
 
-#ifdef CONFIG_PRINTK_PROCESS_INFO
-static int printk_prefix = 2;
-#else
-static int printk_prefix = 1;
-#endif
 static int console_log_max = 400000;
 
 bool printk_disable_uart = 0;
 
 static bool log_in_resume = 0;
 
-#ifdef CONFIG_MT_PRINTK_UART_CONSOLE
-extern int mt_need_uart_console;
-inline void mt_disable_uart(void)
-{
-    if (mt_need_uart_console == 0)
-        printk_disable_uart = 1;
-}
-#endif
 /* printk's without a loglevel use this.. */
 #define DEFAULT_MESSAGE_LOGLEVEL CONFIG_DEFAULT_MESSAGE_LOGLEVEL
 
@@ -1040,37 +1024,6 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 				printed_len += tlen;
 			}
 
-			switch (printk_prefix) {
-			case 1:
-				emit_log_char('(');
-				/* We don't expect to support CPU# > 16 */
-				if (this_cpu < 16) {
-					char cbuf = hex_asc_lo(this_cpu);
-					emit_log_char(cbuf);
-				} else {
-					emit_log_char('X');
-				}
-				emit_log_char(')');
-
-				printed_len += 4;
-				break;
-
-			case 2: {
-				char tbuf[50], *tp;
-				unsigned tlen;
-				if (console_suspended == 0) {
-					tlen = snprintf(tbuf, sizeof(tbuf), "(%x)[%d:%s]",
-						this_cpu, current->pid, current->comm);
-				} else {
-					tlen = snprintf(tbuf, sizeof(tbuf), "%x)", this_cpu);
-				}
-				for (tp = tbuf; tp < tbuf + tlen; tp++)
-					emit_log_char(*tp);
-				printed_len += tlen;
-				break;
-			}
-			}
-
 			if (!*p)
 				break;
 		}
@@ -1268,13 +1221,9 @@ void resume_console(void)
 	down(&console_sem);
 	console_suspended = 0;
 
-    /* Prepare monitor: do not monitor it */
-    /* May occurr ISR/Softirq during this chaos duration */
-    __raw_get_cpu_var(MT_trace_in_resume_console) = 1;
-    log_in_resume = 1;
-    console_unlock();
-    log_in_resume = 0;
-    __raw_get_cpu_var(MT_trace_in_resume_console) = 0;
+	log_in_resume = 1;
+	console_unlock();
+	log_in_resume = 0;
 }
 EXPORT_SYMBOL_GPL(resume_console);
 

@@ -9,7 +9,6 @@ include $(srctree)/drivers/misc/mediatek/Makefile.custom
 obj-y	+= kernel/
 
 obj-y	+= keypad/
-obj-y	+= mtprof/
 obj-y	+= clock/
 obj-y	+= sched/
 obj-y	+= mmp/
