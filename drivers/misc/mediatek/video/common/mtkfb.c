@@ -756,9 +756,6 @@ static int mtkfb_pan_display_impl(struct fb_var_screeninfo *var, struct fb_info 
 
 static int mtkfb_pan_display_proxy(struct fb_var_screeninfo *var, struct fb_info *info)
 {
-#ifdef CONFIG_MTPROF_APPLAUNCH  // eng enable, user disable
-    LOG_PRINT(ANDROID_LOG_INFO, "AppLaunch", "mtkfb_pan_display_proxy.\n");
-#endif
     return mtkfb_pan_display_impl(var, info);
 }
 

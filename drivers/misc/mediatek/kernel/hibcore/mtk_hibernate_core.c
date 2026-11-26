@@ -15,7 +15,6 @@
 #include <linux/suspend.h>
 #include <linux/reboot.h>
 #include <linux/xlog.h>
-#include <linux/mtk_ftrace.h>
 
 #define HIB_CORE_DEBUG 0
 #define _TAG_HIB_M "HIB/CORE"

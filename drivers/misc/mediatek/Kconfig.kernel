@@ -68,11 +68,6 @@ config MTK_RAM_CONSOLE_DRAM_ADDR
 	default 0
 	depends on MTK_RAM_CONSOLE           
 
-config MTK_ETM
-       bool "Support For Embedded Trace Macrocell"
-       default y
-       help
-
 menu "MT load balance and schedule enhancement"
 config MT_SCHED
 	bool "Enhance CPU affinity in hotplug"	

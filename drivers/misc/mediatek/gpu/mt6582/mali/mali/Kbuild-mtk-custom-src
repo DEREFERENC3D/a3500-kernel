@@ -16,7 +16,6 @@ ccflags-y += \
 #Add MTK custom source code
 ccflags-y += -I$(DRIVER_DIR)/../../mediatek
 mali-y    += ../../mediatek/mtk_mali_kernel.o
-mali-y    += ../../mediatek/mtk_mali_trace.o
 
 ccflags-y += -DMALI_FAKE_PLATFORM_DEVICE
 
@@ -33,6 +32,4 @@ mali-y += platform/platform_pmm.o
 ccflags-y += -I$(DRIVER_DIR)/mtk_common
 
 mali-y += mtk_common/mtk_mem_record.o
-mali-$(MTK_DEBUG) += mtk_common/mtk_debug.o
-mali-$(MTK_DEBUG_PROC_PRINT) += mtk_common/mtk_pp.o
 

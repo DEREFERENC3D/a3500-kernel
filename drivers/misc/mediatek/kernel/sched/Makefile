@@ -1,6 +1,4 @@
 
-obj-$(CONFIG_MT_PRIO_TRACER) += prio_tracer.o
-
 #
 # RQ stats for TLP estimation
 #

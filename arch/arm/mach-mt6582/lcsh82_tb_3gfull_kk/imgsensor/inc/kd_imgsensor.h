@@ -298,9 +298,6 @@
 *
 ********************************************************************************/
 
-void KD_IMGSENSOR_PROFILE_INIT(void); 
-void KD_IMGSENSOR_PROFILE(char *tag); 
-
 #define mDELAY(ms)     mdelay(ms) 
 #define uDELAY(us)       udelay(us) 
 #endif //_KD_IMGSENSOR_H

@@ -66,41 +66,6 @@ char mtk_ccm_name[128] = {0};
 #endif
 
 /*******************************************************************************
-* Proifling
-********************************************************************************/
-#define PROFILE 1
-#if PROFILE
-static struct timeval tv1, tv2;
-/*******************************************************************************
-*
-********************************************************************************/
-inline void KD_IMGSENSOR_PROFILE_INIT(void)
-{
-    do_gettimeofday(&tv1);
-}
-
-/*******************************************************************************
-*
-********************************************************************************/
-inline void KD_IMGSENSOR_PROFILE(char *tag)
-{
-    unsigned long TimeIntervalUS;
-
-	spin_lock(&kdsensor_drv_lock);
-
-    do_gettimeofday(&tv2);
-    TimeIntervalUS = (tv2.tv_sec - tv1.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
-    tv1 = tv2;
-
-	spin_unlock(&kdsensor_drv_lock);
-    PK_DBG("[%s]Profile = %lu\n",tag, TimeIntervalUS);
-}
-#else
-inline static void KD_IMGSENSOR_PROFILE_INIT() {}
-inline static void KD_IMGSENSOR_PROFILE(char *tag) {}
-#endif
-
-/*******************************************************************************
 *
 ********************************************************************************/
 extern int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx, char *currSensorName,BOOL On, char* mode_name);
@@ -243,7 +208,6 @@ int iWriteReg(u16 a_u2Addr , u32 a_u4Data , u32 a_u4Bytes , u16 i2cId)
 
 //    PK_DBG("Addr : 0x%x,Val : 0x%x \n",a_u2Addr,a_u4Data);
 
-    //KD_IMGSENSOR_PROFILE_INIT();
     spin_lock(&kdsensor_drv_lock);
 
 
@@ -281,7 +245,6 @@ int iWriteReg(u16 a_u2Addr , u32 a_u4Data , u32 a_u4Bytes , u16 i2cId)
         }
         uDELAY(50);
     } while ((retry --) > 0);
-    //KD_IMGSENSOR_PROFILE("iWriteReg");
     return 0;
 }
 
@@ -370,7 +333,6 @@ int iWriteRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u16 i2cId)
 
 //    PK_DBG("Addr : 0x%x,Val : 0x%x \n",a_u2Addr,a_u4Data);
 
-    //KD_IMGSENSOR_PROFILE_INIT();
     spin_lock(&kdsensor_drv_lock);
     g_pstI2Cclient->addr = (i2cId >> 1);
     g_pstI2Cclient->ext_flag = (g_pstI2Cclient->ext_flag)&(~I2C_DMA_FLAG);
@@ -387,7 +349,6 @@ int iWriteRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u16 i2cId)
     	}
         uDELAY(50);
     } while ((retry--) > 0);
-    //KD_IMGSENSOR_PROFILE("iWriteRegI2C");
     return 0;
 }
 
@@ -427,7 +388,6 @@ MINT32 i = 0;
             }
             //wait for power stable
             mDELAY(10);
-            KD_IMGSENSOR_PROFILE("kdModulePowerOn");
 
             //
             //set i2c slave ID
@@ -897,7 +857,6 @@ inline static int adopt_CAMERA_HW_Open(void)
 {
     UINT32 err = 0;
 
-        KD_IMGSENSOR_PROFILE_INIT();
         //power on sensor
     if (atomic_read(&g_CamHWOpend) == 0  ) {
         //move into SensorOpen() for 2on1 driver
@@ -905,7 +864,6 @@ inline static int adopt_CAMERA_HW_Open(void)
         //kdModulePowerOn((CAMERA_DUAL_CAMERA_SENSOR_ENUM*) g_invokeSocketIdx, g_invokeSensorNameStr,true, CAMERA_HW_DRVNAME);
         //wait for power stable
         //mDELAY(10);
-        //KD_IMGSENSOR_PROFILE("kdModulePowerOn");
         //
         if (g_pSensorFunc) {
             err = g_pSensorFunc->SensorOpen();
@@ -917,7 +875,6 @@ inline static int adopt_CAMERA_HW_Open(void)
         else {
             PK_DBG(" ERROR:NULL g_pSensorFunc\n");
         }
-        KD_IMGSENSOR_PROFILE("SensorOpen");
     }
 	else {
 		PK_ERR("adopt_CAMERA_HW_Open Fail, g_CamHWOpend = %d\n ",atomic_read(&g_CamHWOpend) );
@@ -943,12 +900,10 @@ inline static int adopt_CAMERA_HW_CheckIsAlive(void)
     MUINT32 retLen = 0;
 
 
-    KD_IMGSENSOR_PROFILE_INIT();
     //power on sensor
     kdModulePowerOn((CAMERA_DUAL_CAMERA_SENSOR_ENUM*)g_invokeSocketIdx, g_invokeSensorNameStr,true, CAMERA_HW_DRVNAME1);
     //wait for power stable
     mDELAY(10);
-    KD_IMGSENSOR_PROFILE("kdModulePowerOn");
 
     if (g_pSensorFunc) {
 		for ( i = KDIMGSENSOR_INVOKE_DRIVER_0 ; i < KDIMGSENSOR_MAX_INVOKE_DRIVERS ; i++ ) {
@@ -996,7 +951,6 @@ inline static int adopt_CAMERA_HW_CheckIsAlive(void)
     //
     kdModulePowerOn((CAMERA_DUAL_CAMERA_SENSOR_ENUM*)g_invokeSocketIdx, g_invokeSensorNameStr, false, CAMERA_HW_DRVNAME1);    
     //
-    KD_IMGSENSOR_PROFILE("CheckIsAlive");
 
     return err?-EIO:err;
 }	/* adopt_CAMERA_HW_Open() */

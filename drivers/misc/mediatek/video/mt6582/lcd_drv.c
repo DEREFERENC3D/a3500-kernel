@@ -163,9 +163,6 @@ static irqreturn_t _LCD_InterruptHandler(int irq, void *dev_id)
 
     if (status.COMPLETED)
     {
-#ifdef CONFIG_MTPROF_APPLAUNCH  // eng enable, user disable   	
-        LOG_PRINT(ANDROID_LOG_INFO, "AppLaunch", "LCD frame buffer update done !\n");
-#endif
         wake_up_interruptible(&_lcd_wait_queue);
 
         if(_lcdContext.pIntCallback)
