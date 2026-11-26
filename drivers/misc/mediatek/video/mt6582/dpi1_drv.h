@@ -3,7 +3,6 @@
 
 #include "dpi_drv.h"
 #include "lcm_drv.h"
-#include "hdmi_drv.h"
 #include "disp_intr.h"
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +35,6 @@ typedef enum
 } DPI_OUTPUT_YC_MAP;
 
 // ---------------------------------------------------------------------------
-DPI_STATUS DPI1_Init_PLL(HDMI_VIDEO_RESOLUTION resolution);
 DPI_STATUS DPI1_Init(BOOL isDpiPoweredOn);
 DPI_STATUS DPI1_Deinit(void);
 

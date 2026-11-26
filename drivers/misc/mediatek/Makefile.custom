@@ -38,7 +38,6 @@ subdir-ccflags-y += -I$(MTK_PROJECT_PATH_ROOT)/core \
              -I$(MTK_PROJECT_PATH_ROOT)/core/src \
              -I$(MTK_PROJECT_PATH_ROOT)/camera/camera \
              -I$(MTK_PROJECT_PATH_ROOT)/dct/dct \
-             -I$(MTK_PROJECT_PATH_ROOT)/hdmi/inc \
              -I$(MTK_PROJECT_PATH_ROOT)/lcm/inc \
              -I$(MTK_PROJECT_PATH_ROOT)/sound/inc \
              -I$(MTK_PROJECT_PATH_ROOT)/vibrator \

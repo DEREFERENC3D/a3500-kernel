@@ -34,8 +34,6 @@
 #define ION_FUNC_LEAVE
 #define DEFAULT_PAGE_SIZE 0x1000
 #define PAGE_ORDER 12
-extern int record_ion_info(int from_kernel,ion_sys_record_t *param);
-extern char *get_userString_from_hashTable(char *string_name,unsigned int len);
 extern struct ion_heap *ion_mm_heap_create(struct ion_platform_heap *unused);
 
 

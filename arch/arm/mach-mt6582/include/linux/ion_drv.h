@@ -1,7 +1,37 @@
 #ifndef __ION_DRV_H__
 #define __ION_DRV_H__
 #include <linux/ion.h>
-#include <linux/ion_debugger.h>
+
+/* Record payload for ion_sys_data_t. Kept inline to preserve its 252-byte
+ * layout, which ion_sys_ioctl() uses for copy_from_user()/copy_to_user().
+ */
+#define ION_BACKTRACE_SIZE 10
+
+struct ion_sys_mapping {
+	char *name;
+	unsigned int address;
+	unsigned int size;
+};
+
+typedef struct ion_sys_record_param
+{
+	pid_t group_id;
+	pid_t pid;
+	unsigned int action;
+	unsigned int address_type;
+	unsigned int address;
+	unsigned int length;
+	unsigned int backtrace[ION_BACKTRACE_SIZE];
+	unsigned int kernel_symbol[ION_BACKTRACE_SIZE];
+	struct ion_sys_mapping mapping_record[ION_BACKTRACE_SIZE];
+	unsigned int backtrace_num;
+	struct ion_handle *handle;
+	struct ion_client *client;
+	struct ion_buffer *buffer;
+	struct file *file;
+	int fd;
+} ion_sys_record_t;
+
 // Structure definitions
 
 typedef enum 
