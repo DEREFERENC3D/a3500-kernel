@@ -39,7 +39,6 @@ endif
 obj-y	+= fmradio/
 obj-y	+= gps/
 obj-y	+= hwmon/
-obj-y	+= almk/
 obj-y	+= btcvsd/
 obj-y	+= bthid/
 ifeq ($(MTK_WFD_SUPPORT),yes)
