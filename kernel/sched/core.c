@@ -2164,7 +2164,8 @@ unsigned long this_cpu_load(void)
 	return this->cpu_load[0];
 }
 
-// TODO: MTK Nuke after removing dependency
+/* Only remaining scheduler-side MTK hook: needs cpu_rq(), which is private
+ * to the scheduler. Consumed by the MT6582 videocodec driver. */
 unsigned long get_cpu_load(int cpu)
 {
     struct rq *this = cpu_rq(cpu);
@@ -8438,23 +8439,3 @@ struct cgroup_subsys cpuacct_subsys = {
 	.subsys_id = cpuacct_subsys_id,
 };
 #endif	/* CONFIG_CGROUP_CPUACCT */
-
-// TODO: MTK Nuke after fixing dependency - used in "mediatek/platform/mt6582/kernel/drivers/videocodec/videocodec_kernel_driver.c"
-unsigned long long mt_get_thread_cputime(pid_t pid)
-{
-    struct task_struct *p;
-    p = pid ? find_task_by_vpid(pid) : current;
-    return task_sched_runtime(p);
-}
-unsigned long long mt_get_cpu_idle(int cpu)
-{
-    unsigned long long *unused = 0;
-    return get_cpu_idle_time_us(cpu, unused);
-}
-unsigned long long mt_sched_clock(void)
-{
-    return sched_clock();
-}
-EXPORT_SYMBOL(mt_get_thread_cputime);
-EXPORT_SYMBOL(mt_get_cpu_idle);
-EXPORT_SYMBOL(mt_sched_clock);

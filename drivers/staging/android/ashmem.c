@@ -313,7 +313,6 @@ static int ashmem_mmap(struct file *file, struct vm_area_struct *vma)
 			name = asma->name;
 
 		/* ... and allocate the backing shmem file */
-		// TODO: MTK Remove this patch after nuking TuxOnIce
 		vmfile = shmem_file_setup(name, asma->size, vma->vm_flags, 0);
 		if (unlikely(IS_ERR(vmfile))) {
 			ret = PTR_ERR(vmfile);

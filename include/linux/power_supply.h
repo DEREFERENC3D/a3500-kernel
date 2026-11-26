@@ -139,10 +139,6 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_BatterySenseVoltage,
 	POWER_SUPPLY_PROP_ISenseVoltage,
 	POWER_SUPPLY_PROP_ChargerVoltage,
-	/* Dual battery */
-	POWER_SUPPLY_PROP_status_2nd,
-	POWER_SUPPLY_PROP_capacity_2nd,
-	POWER_SUPPLY_PROP_present_2nd,
 	/* Properties of type `const char *' */
 	POWER_SUPPLY_PROP_MODEL_NAME,
 	POWER_SUPPLY_PROP_MANUFACTURER,
@@ -158,7 +154,6 @@ enum power_supply_type {
 	POWER_SUPPLY_TYPE_USB_DCP,	/* Dedicated Charging Port */
 	POWER_SUPPLY_TYPE_USB_CDP,	/* Charging Downstream Port */
 	POWER_SUPPLY_TYPE_USB_ACA,	/* Accessory Charger Adapters */
-	POWER_SUPPLY_TYPE_WIRELESS,	/* Wireless Charger */
 };
 
 union power_supply_propval {

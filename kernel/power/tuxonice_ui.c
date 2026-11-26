@@ -85,8 +85,8 @@ static char toi_wait_for_keypress(int timeout)
 void toi_early_boot_message(int message_detail, int default_answer,
 	char *warning_reason, ...)
 {
-#if defined(CONFIG_VT) || defined(CONFIG_SERIAL_CONSOLE)
 	unsigned long orig_state = get_toi_state(), continue_req = 0;
+#if defined(CONFIG_VT) || defined(CONFIG_SERIAL_CONSOLE)
 	unsigned long orig_loglevel = console_loglevel;
 	int can_ask = 1;
 #else

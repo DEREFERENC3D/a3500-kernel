@@ -527,7 +527,7 @@ static int addrconf_fixup_forwarding(struct ctl_table *table, int *p, int newf)
 	} else if ((!newf) ^ (!old))
 		dev_forward_change((struct inet6_dev *)table->extra1);
 	rtnl_unlock();
-#ifdef MTK_TETHERINGIPV6_SUPPORT
+#ifdef CONFIG_MTK_TETHERINGIPV6_SUPPORT
 	/* skip purge default route for tethering over IPv6 */
 #else
 	if (newf)

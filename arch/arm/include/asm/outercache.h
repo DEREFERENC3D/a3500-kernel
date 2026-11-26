@@ -95,9 +95,6 @@ static inline void outer_disable(void) { }
 
 #endif
 
-/* No outer-cache clean_all implementation exists in this tree. */
-static inline void outer_clean_all(void) { }
-
 #ifdef CONFIG_OUTER_CACHE_SYNC
 static inline void outer_sync(void)
 {

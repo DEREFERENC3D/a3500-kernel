@@ -792,7 +792,5 @@ out:
 	return ret;
 }
 
-// TODO: MTK remove after nuking "ipanic"
-int panic_dump_android_log(char *buf, size_t size, int type) {}
 
 device_initcall(logger_init);

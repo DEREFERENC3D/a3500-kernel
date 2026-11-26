@@ -18,23 +18,8 @@
 
 #include "power.h"
 
-#define HIB_PM_DEBUG 0
-extern bool console_suspend_enabled; // from printk.c
-#define _TAG_HIB_M "HIB/PM"
-#if (HIB_PM_DEBUG)
-#undef hib_log
-#define hib_log(fmt, ...)	pr_warn("[%s][%s]" fmt, _TAG_HIB_M, __func__, ##__VA_ARGS__);
-#else
-#define hib_log(fmt, ...)
-#endif
-#undef hib_warn
-#define hib_warn(fmt, ...)  pr_warn("[%s][%s]" fmt, _TAG_HIB_M, __func__, ##__VA_ARGS__);
-
 DEFINE_MUTEX(pm_mutex);
 EXPORT_SYMBOL_GPL(pm_mutex);
-
-unsigned int pm_flags;
-EXPORT_SYMBOL(pm_flags);
 
 #ifdef CONFIG_PM_SLEEP
 

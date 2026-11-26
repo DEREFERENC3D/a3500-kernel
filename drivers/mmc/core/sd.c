@@ -922,7 +922,7 @@ void mmc_sd_go_highspeed(struct mmc_card *card)
  * In the case of a resume, "oldcard" will contain the card
  * we're trying to reinitialise.
  */
-static int mmc_sd_init_card(struct mmc_host *host, u32 ocr,
+int mmc_sd_init_card(struct mmc_host *host, u32 ocr,
 	struct mmc_card *oldcard)
 {
 	struct mmc_card *card;
@@ -1164,11 +1164,6 @@ static int mmc_sd_resume(struct mmc_host *host)
 	mmc_release_host(host);
 
 	return err;
-}
-
-int mmc_sd_power_cycle(struct mmc_host *host, u32 ocr, struct mmc_card *card)
-{
-	return mmc_sd_init_card(host, ocr, card);
 }
 
 static int mmc_sd_power_restore(struct mmc_host *host)

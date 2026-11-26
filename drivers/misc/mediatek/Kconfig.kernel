@@ -1,0 +1,109 @@
+# TODO naming refine
+menu "Kernel Configurations"
+
+menu "Tracer Related"
+config MTK_SCHED_TRACERS
+        bool "MTK Sched Tracers"
+        depends on TRACING
+        select CONTEXT_SWITCH_TRACER
+        default n
+        help
+           Trace context swicth, set_scheduler, Interrupt Handler
+
+config MTK_KERNEL_MARKER
+        bool "MTK Kernel Marker API"
+        depends on TRACING && KALLSYMS
+        default n
+        help
+            Mark the user-defined points, such as systrace events in
+            user space, to visualize via systrace html files
+
+config GENERIC_TRACER
+        bool "Scheduler Switch Tracer"
+
+menu "MET"
+
+config MTK_MET
+    tristate "MET core driver"
+    default n
+    help
+      The core module of MTK MET profiling tool
+
+endmenu
+
+endmenu
+
+config CPUTIME_SUPPORT
+	bool "cputime profiling support for functions"
+	default n
+
+config MTK_RAM_CONSOLE
+	bool "mt ram console"     
+        
+config MTK_RAM_CONSOLE_USING_SRAM
+	bool "Using SRAM as ram console storage"
+	depends on MTK_RAM_CONSOLE
+
+config MTK_RAM_CONSOLE_USING_DRAM
+	bool "Using DRAM as ram console storage"
+	depends on MTK_RAM_CONSOLE
+
+config MTK_RAM_CONSOLE_SIZE
+	hex "MTK RAM console  address"
+	default 0
+	depends on MTK_RAM_CONSOLE
+
+config MTK_RAM_CONSOLE_ADDR
+	hex "MTK RAM console buffer size"
+	default 0
+	depends on MTK_RAM_CONSOLE           
+
+config MTK_RAM_CONSOLE_DRAM_SIZE
+	hex "MTK RAM console dram address"
+	default 0
+	depends on MTK_RAM_CONSOLE
+
+config MTK_RAM_CONSOLE_DRAM_ADDR
+	hex "MTK RAM console dram size"
+	default 0
+	depends on MTK_RAM_CONSOLE           
+
+config MTK_ETM
+       bool "Support For Embedded Trace Macrocell"
+       default y
+       help
+
+menu "MT load balance and schedule enhancement"
+config MT_SCHED
+	bool "Enhance CPU affinity in hotplug"	
+ 	depends on HOTPLUG
+
+endmenu
+
+config MTK_CIRQ
+       bool "Support For System CIRQ"
+       default n
+       help
+
+config MTK_HIBERNATION
+        bool "Support MTK hibernation"
+        depends on HIBERNATION && PM_WAKELOCKS
+        default y
+        help
+
+config MTK_SCHED_RQAVG_KS
+       bool "Enable runqueue staticsic calculation used in kernel space operation"
+       depends on SMP
+       default n
+       help
+        TLP estimation for kernel space CPUfreq governors, e.g., hotplug
+
+config L1C_OPT
+    bool "L1C OPT"
+    default y
+
+config VFP_OPT
+    bool "VFP OPT"
+    default y
+endmenu
+

@@ -18,7 +18,6 @@ endif
 OBJCOPYFLAGS	:=-O binary -R .comment -S
 GZFLAGS		:=-9
 #KBUILD_CFLAGS	+=-pipe
-KBUILD_CFLAGS   += -fno-pic
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
 KBUILD_CFLAGS	+=$(call cc-option,-marm,)
 
@@ -158,6 +157,7 @@ machine-$(CONFIG_ARCH_KS8695)		:= ks8695
 machine-$(CONFIG_ARCH_LPC32XX)		:= lpc32xx
 machine-$(CONFIG_ARCH_MMP)		:= mmp
 machine-$(CONFIG_ARCH_MSM)		:= msm
+machine-$(CONFIG_ARCH_MT6582)		:= mt6582
 machine-$(CONFIG_ARCH_MV78XX0)		:= mv78xx0
 machine-$(CONFIG_ARCH_IMX_V4_V5)	:= imx
 machine-$(CONFIG_ARCH_IMX_V6_V7)	:= imx
@@ -232,10 +232,11 @@ MACHINE  :=
 endif
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
+
+# Generated MediaTek custom headers (previously supplied by the MTK build).
+LINUXINCLUDE += $(addprefix -I,$(sort $(dir $(shell find $(srctree)/arch/arm/mach-mt6582/lcsh82_tb_3gfull_kk -type f -name '*.h'))))
+LINUXINCLUDE += -I$(srctree)/drivers/misc/mediatek/pmt/mt6582
 platdirs := $(patsubst %,arch/arm/plat-%/,$(plat-y))
-
-include $(srctree)/mediatek/Makefile
-
 
 ifeq ($(KBUILD_SRC),)
 KBUILD_CPPFLAGS += $(patsubst %,-I%include,$(machdirs) $(platdirs))
