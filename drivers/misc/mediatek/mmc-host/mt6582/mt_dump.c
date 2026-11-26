@@ -573,9 +573,6 @@ static int simp_msdc_cmd(struct simp_msdc_host *host, unsigned int cmd, unsigned
     sdr_write32(MSDC_INT, intsts); /* clear interrupts */    
 
     if (intsts & MSDC_INT_CMDRDY) {
-		#if MTK_MMC_DUMP_DBG
-        printk(KERN_EMERG "msdc cmd<%d> arg<0x%x> Ready \r\n", cmd,arg);
-		#endif
         /* get the response */
         switch (rsptyp) {
         case RESP_NONE:
@@ -598,9 +595,6 @@ static int simp_msdc_cmd(struct simp_msdc_host *host, unsigned int cmd, unsigned
 
     if (rsptyp == RESP_R1B) {
         while ((sdr_read32(MSDC_PS) & MSDC_PS_DAT0) != MSDC_PS_DAT0);
-		#if MTK_MMC_DUMP_DBG
-		printk(KERN_EMERG "msdc cmd<%d> done \r\n", cmd);
-		#endif
     }
     
 end:
@@ -1668,10 +1662,6 @@ static int simp_emmc_dump_write(unsigned char* buf, unsigned int len, unsigned i
         return ret;
     }
 
-#if MTK_MMC_DUMP_DBG
-    printk(KERN_EMERG "write start address=%llu\n", 
-                        PartInfo[l_dest_num].start_address - PartInfo[l_user_begin_num].start_address);
-#endif 
 
     l_start_offset = (u64)offset + PartInfo[l_dest_num].start_address - PartInfo[l_user_begin_num].start_address;
    
@@ -1694,9 +1684,6 @@ static int simp_emmc_dump_write(unsigned char* buf, unsigned int len, unsigned i
         l_addr = (l_start_offset >> 9) + i; //blk address
         l_buf  = (buf + i * 512);
 
-#if MTK_MMC_DUMP_DBG
-        printk("l_start_offset = 0x%x\n", l_addr);
-#endif  
 		
         err = simp_mmc_single_write(pmmc_boot_host, l_addr, l_buf, 512);
 		do{
@@ -1735,9 +1722,6 @@ static int simp_sd_dump_write(unsigned char* buf, unsigned int len, unsigned int
 				 l_addr = offset; 
 			}	
 
-#if MTK_MMC_DUMP_DBG
-        printk("l_start_offset = 0x%x len = %d buf<0x%x>\n", l_addr,len,l_buf);
-#endif  
 		
 		if(len == 512)      
         	err = simp_mmc_single_write(pmmc_extend_host, l_addr, l_buf, 512);
@@ -1760,9 +1744,6 @@ static int sd_dump_read(unsigned char* buf, unsigned int len, unsigned int offse
 	//unsigned int l_start_offset;
     unsigned int ret = SIMP_FAILED;
 	int err = 0;
-#if MTK_MMC_DUMP_DBG
-        printk("1 l_start_offset = 0x%x len =0x \n", l_addr,len);
-#endif  	
 	if (0 != len % 512) {
 			printk("debug: parameter error!\n");
 			return ret;
@@ -1775,9 +1756,6 @@ if (sd_init == 0) {
 	 //l_start_offset = offset;
      l_buf  = buf;
 
-#if MTK_MMC_DUMP_DBG
-        printk("l_start_offset = 0x%x len = %d\n", offset,len);
-#endif  
 		if(pmsdc_extend_host->card->card_cap == standard_capacity) {
 						 l_addr = offset << 9;	
 					} else {
@@ -1799,9 +1777,6 @@ int card_dump_func_write(unsigned char* buf, unsigned int len, unsigned long lon
     //local_irq_disable();
     //preempt_disable();
     unsigned int sec_offset = 0;
-	#if MTK_MMC_DUMP_DBG
-	printk(KERN_EMERG "card_dump_func_write len<%d> addr<%lld> type<%d>\n",len,offset,dev);
-	#endif
     if(offset % 512){
 			 printk("Address isn't 512 alignment!\n");
 			return SIMP_FAILED;
@@ -1918,9 +1893,6 @@ int card_dump_func_read(unsigned char* buf, unsigned int len, unsigned long long
 //    unsigned int l_slot;
     unsigned int ret = SIMP_FAILED;
 	unsigned int sec_offset = 0;
-	#if MTK_MMC_DUMP_DBG
-	printk(KERN_EMERG "card_dump_func_read len<%d> addr<%lld> type<%d>\n",len,offset,dev);
-	#endif
 	if(offset % 512){
 			 printk("Address isn't 512 alignment!\n");
 			return SIMP_FAILED;

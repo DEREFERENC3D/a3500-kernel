@@ -3,7 +3,6 @@
 #define __EMMC_INIT__
 
 #include <linux/mmc/card.h>
-#define MTK_MMC_DUMP_DBG	(0)
 
 struct simp_mmc_card;
 struct simp_msdc_host;

@@ -1918,10 +1918,6 @@ musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
 	if (status < 0)
 		goto fail3;
 
-	status = musb_init_debugfs(musb);
-	if (status < 0)
-		goto fail4;
-
 #ifdef CONFIG_SYSFS
 	status = sysfs_create_group(&musb->controller->kobj, &musb_attr_group);
 	if (status)
@@ -1934,10 +1930,7 @@ musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
 
 #ifdef CONFIG_SYSFS
 fail5:
-	musb_exit_debugfs(musb);
 #endif
-
-fail4:
 	musb_gadget_cleanup(musb);
 
 fail3:
@@ -2002,7 +1995,6 @@ static int musb_remove(struct platform_device *pdev)
 	 *  - Peripheral mode: peripheral is deactivated (or never-activated)
 	 *  - OTG mode: both roles are deactivated (or never-activated)
 	 */
-	musb_exit_debugfs(musb);
 	musb_shutdown(pdev);
 
 	musb_free(musb);

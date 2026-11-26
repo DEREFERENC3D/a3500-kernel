@@ -29,7 +29,6 @@ BOOL fbconfig_start_LCM_config;
 #define dsi_set_cmdq(pdata, queue_size, force_update)		fbconfig_lcm_utils.dsi_set_cmdq(pdata, queue_size, force_update)
 //#define read_reg_v2(cmd, buffer, buffer_size)   			fbconfig_lcm_utils.dsi_dcs_read_lcm_reg_v2
 #define FBCONFIG_KEEP_NEW_SETTING 1
-#define FBCONFIG_DEBUG 0
 /* IOCTL commands. */
 
 #define FBCONFIG_IOW(num, dtype)     _IOW('X', num, dtype)
@@ -133,14 +132,6 @@ static void free_backup_list_memory(void)
     return ;
 }
 
-static void print_record (CONFIG_RECORD * record_head)
-{
-    int z =0 ;
-    printk("sxk=>[PRINT_RECORD] type is %d\n",record_head->type);
-    for(z=0;z<record_head->ins_num;z++)
-        printk("sxk=>[PRINT_RECORD]data is 0x%x\n",record_head->ins_array[z]);
-}
-
 static void record_list_init(void)
 {
     printk("sxk=>call record_list_init!!\n");
@@ -168,9 +159,6 @@ static void record_list_add(void )
     
     tmp_last = record_add ;	
     tmp_last->next = NULL ;	
-    #if FBCONFIG_DEBUG
-        print_record(tmp_last);		
-    #endif
     /*clear the data content in record_tmp */	
     memset(record_tmp->ins_array,0x00,sizeof(int)*MAX_INSTRUCTION);
 }
@@ -697,7 +685,7 @@ return 0 ;
 else
 {
 record_list_initialed = 0;
-#if 1//FBCONFIG_DEBUG
+#if 1
 print_from_head_to_tail();
 fbconfig_backup_lcm_setting();
 print_from_head_to_tail_backup();
