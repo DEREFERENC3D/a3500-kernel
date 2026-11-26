@@ -24,44 +24,10 @@ source "arch/arm/mach-mt6582/Kconfig.platform"
 
 endchoice
 
-config HAVE_MTK_IN_HOUSE_TEE_SUPPORT
-	def_bool n
-
-config MTK_IN_HOUSE_TEE_SUPPORT
-	bool "Enable MTK In House TEE Support"
-	depends on HAVE_MTK_IN_HOUSE_TEE_SUPPORT
-	default n
-	help
-	  This enable MTK TEE support.
-
-config HAVE_TRUSTONIC_TEE_SUPPORT
-	def_bool n
-	
-#
-# TRUSTONIC TEE configuration
-#
-config TRUSTONIC_TEE_SUPPORT
-    bool "Enable Trustonic TEE Support"
-    depends on HAVE_TRUSTONIC_TEE_SUPPORT
-    default n
-    ---help---
-      Enable Trustonic TEE Support   
-
-config MTK_SEC_VIDEO_PATH_SUPPORT
-	bool "Enable MTK Secure Video Path Support"
-	depends on (MTK_IN_HOUSE_TEE_SUPPORT) || (TRUSTONIC_TEE_SUPPORT)
-	default n
-	help
-	  This enable MTK Secure Video Path Support. (depending on MTK In-House TEE Support or Trustonic TEE Support)
-
 source "drivers/misc/mediatek/Kconfig.kernel"
 source "arch/arm/mach-mt6582/Kconfig"
 source "drivers/misc/mediatek/Kconfig.drivers"
 source "drivers/misc/mediatek/Kconfig.buildflags"
 
 endif
-
-config MD32_SUPPORT
-	bool "Specifiy If Platform Support MD32"
-	default n
 

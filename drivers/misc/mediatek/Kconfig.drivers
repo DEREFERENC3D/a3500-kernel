@@ -121,25 +121,6 @@ config MTK_MMC # MMC_MT6516 MMC_MT6573
           If you have a machine with a integrated SD/MMC card reader, say Y or M here.
           If unsure, say N.
 
-# Mouse
-# if INPUT_MOUSE
-menu "MediaTek OFN / Jogball Related Drivers"
-config MOUSE_PANASONIC_EVQWJN
-        bool "Panasonic EVQWJN Jogball Support"
-        ---help---
-          Say Y here if you have Panasonic EVQWJN Jogball
-          If unsure, say N.
-
-endmenu
-# endif
-
-
-# Nand
-menuconfig MTK_MTD_NAND # MTD_NAND_MT6516
-        tristate "MediaTek Nand Support"
-        depends on MTD_NAND
-        ---help---
-          Enables support for NAND Flash chips wired to MediaTek chips.
 # Power Related
 if POWER_SUPPLY
 config MTK_SMART_BATTERY # 
@@ -181,16 +162,6 @@ config MTK_SERIAL_CONSOLE # SERIAL_MT6516_CONSOLE SERIAL_MT6573_CONSOLE
           Say Y here if you wish to use MT6516 internal UART as the system
           console. You should alter the default console setting by kernel
           command line option "console=ttyMT0" or "console=ttyMT1".
-
-config MTK_SERIAL_MODEM_TEST # SERIAL_MT6516_MODEM_TEST (will add in MT6573)
-        bool "Support modem test"
-        depends on MTK_SERIAL=y
-        default n
-        ---help---
-          Say Y here is you want to enable modem test. After enabling this
-          option, UART4 will be switched to modem side. Hence, the command
-          line parameter should be also modified.
-
 
 # Sound
 config MTK_SOUND # SOUND MT6573 SOUND_MT6516
@@ -240,22 +211,11 @@ config USB_MTK_HDRC_GADGET
 config USB_MTK_OTG
         tristate "MediaTek MUSB OTG support"
         
-config USB_MTK_DEBUG_FS
-        tristate "MediaTek MUSB Debug FS support"
-	depends on DEBUG_FS
-        
 config USB_MTK_HDRC_HCD
          tristate "MediaTek MUSB Debug support"         
 
 config MTK_USB_UNIQUE_SERIAL
          tristate "MediaTek USB unique serial number"
-
-config MTK_USBFSH # USBFSH
-	bool "MediaTek USB fullspeed Host driver"
-	default n
-config MUSBFSH_PIO_ONLY # USBFSH_transfer mode
-	bool "Transfer mode of MediaTek USB fullspeed Host driver"
-	default n
 
 config AMPC_CDEV_NUM
         int "AMPC chard device number(never change this value)"

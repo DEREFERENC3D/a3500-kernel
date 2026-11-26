@@ -26,10 +26,6 @@
 #include <mach/mt_clkmgr.h>
 
 
-#if (defined(CONFIG_MT6582_FPGA))
-#define  CONFIG_MT_SPI_FPGA_ENABLE
-#endif
-
 /*open base log out*/
 //#define SPI_DEBUG 
 

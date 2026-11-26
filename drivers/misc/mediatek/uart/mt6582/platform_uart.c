@@ -102,12 +102,6 @@ static unsigned long mtk_uart_lsr_status[] = {
     0,	/* UART4 */
 };
 /*---------------------------------------------------------------------------*/
-#if defined(CONFIG_MTK_SERIAL_MODEM_TEST)
-    //#define HW_MISC     (CONFIG_BASE+0x0020)    // mtk does NOT has this register
-    //unsigned char mask[UART_NR] = { 1 << 3, 1 << 4, 1 << 5, 1 << 6};           
-static unsigned int modem_uart[UART_NR] = {1, 0, 0, 1};
-#endif 
-/*---------------------------------------------------------------------------*/
 /* uart control blocks */
 static struct mtk_uart mtk_uarts[UART_NR];
 /*---------------------------------------------------------------------------*/
@@ -136,15 +130,6 @@ void set_uart_lsr_status(int idx, int value)
 {
     mtk_uart_lsr_status[idx] = value;
     return;
-}
-/*---------------------------------------------------------------------------*/
-unsigned int get_modem_uart(int idx)
-{
-    #if defined(CONFIG_MTK_SERIAL_MODEM_TEST)
-    return modem_uart[idx];
-    #else
-    return 0;
-    #endif
 }
 /*---------------------------------------------------------------------------*/
 #ifdef UART_FCR_USING_SW_BACK_UP

@@ -54,10 +54,6 @@ extern void msdc_get_cache_region ();
 
 static unsigned int major;
 
-#ifdef CONFIG_MTK_MTD_NAND	
-extern struct mtd_info *__mtd_next_device(int i);
-#endif
-
 
 
 int IsEmmc(void){

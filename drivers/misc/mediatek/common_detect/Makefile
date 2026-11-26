@@ -1,4 +1,4 @@
-# combo driver: MT6620
+# combo driver: MediaTek connectivity combos
 # If KERNELRELEASE is defined, we've been invoked from the
 # kernel build system and can use its language.
 ifneq ($(KERNELRELEASE),)
@@ -18,17 +18,6 @@ ifeq ($(CONFIG_MTK_COMBO),y)
 	
 	obj-y += drv_init/
 	
-endif
-	
-ifeq ($(CONFIG_MTK_COMBO),m)
-	obj-y += mtk_wcn_stub_alps.o
-	obj-y += wmt_stp_exp.o
-	
-	obj-$(CONFIG_MTK_COMBO) += mtk_wmt_detect.o
-	mtk_wmt_detect-objs := wmt_detect.o
-	mtk_wmt_detect-objs += sdio_detect.o
-	mtk_wmt_detect-objs += wmt_detect_pwr.o
-
 endif
   
 # Otherwise we were called directly from the command

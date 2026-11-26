@@ -73,10 +73,6 @@ static void (*dpiIntCallback)(DISP_INTERRUPT_EVENTS);
 #define DPI_REG_OFFSET(r)       offsetof(DPI_REGS, r)
 #define REG_ADDR(base, offset)  (((BYTE *)(base)) + (offset))
 
-#if !(defined(CONFIG_MT6582_FPGA) || defined(BUILD_UBOOT))
-//#define DPI_MIPI_API
-#endif
-
 extern LCM_PARAMS *lcm_params;
 
 const UINT32 BACKUP_DPI_REG_OFFSETS[] =

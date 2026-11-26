@@ -61,11 +61,6 @@
 //#define ONLINE_TUNING_DVTTEST
 //#define OT_LATENCY_TEST
 #endif  // MTK_SDIOAUTOK_SUPPORT
-//#define CONFIG_MT6582_FPGA
-
-#ifdef CONFIG_MT6582_FPGA
-#define FPGA_PLATFORM
-#endif
 #define MSDC_AUTOCMD12          (0x0001)
 #define MSDC_AUTOCMD23          (0x0002)
 #define MSDC_AUTOCMD19          (0x0008)

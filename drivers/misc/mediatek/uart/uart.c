@@ -700,11 +700,9 @@ static struct uart_driver mtk_uart_drv;
 static struct console mtk_uart_console =
 {
     .name       = "ttyMT",
-#if !defined(CONFIG_MTK_SERIAL_MODEM_TEST)    
     /*don't configure UART4 as console*/
     .write      = mtk_uart_console_write,
     .setup      = mtk_uart_console_setup,
-#endif     
     .device     = uart_console_device,
     .flags      = CON_PRINTBUFFER,
     .index      = -1,
@@ -1887,7 +1885,7 @@ static struct uart_driver mtk_uart_drv =
     .major          = UART_MAJOR,
     .minor          = UART_MINOR,
     .nr             = UART_NR,
-#if defined(CONFIG_MTK_SERIAL_CONSOLE) && !defined(CONFIG_MTK_SERIAL_MODEM_TEST)
+#if defined(CONFIG_MTK_SERIAL_CONSOLE)
     .cons           = &mtk_uart_console,
 #endif
 };
@@ -2131,14 +2129,6 @@ static int mtk_uart_init_ports(void)
 	uart->registers.guard = 0;
      	uart->registers.rx_sel = 0;
 
-#if defined(CONFIG_MTK_SERIAL_MODEM_TEST)
-        if (get_modem_uart(i)) {            
-            //u32 dat = UART_READ32(HW_MISC); // mtk does NOT has this register
-            mtk_uart_power_up(uart); //power up
-            //reg_sync_writel(dat | mask[i], HW_MISC);
-            continue;
-        }
-#else        
         //mtk_uart_power_up(uart);
         mtk_uart_disable_intrs(uart, UART_IER_ALL_INTS);
 
@@ -2151,14 +2141,7 @@ static int mtk_uart_init_ports(void)
         mtk_uart_fifo_init(uart);
         mtk_uart_set_mode(uart, uart->dma_mode);
         //mtk_uart_power_down(uart);
-#endif        
     }
-#if defined(CONFIG_MTK_SERIAL_MODEM_TEST)
-    /*NOTICE: for enabling modem test, UART4 needs to be disabled. Howerver, if CONFIG_MTK_SERIAL_CONSOLE
-              is defined, resume will fail. Since the root cause is not clear, only disable the console-related
-              function.*/
-    //printk("HW_MISC: 0x%08X\n", UART_READ32(HW_MISC)); // mtk does NOT has this register
-#endif 
     return 0;
 }
 /*---------------------------------------------------------------------------*/

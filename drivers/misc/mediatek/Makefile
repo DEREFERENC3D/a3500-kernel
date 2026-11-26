@@ -43,7 +43,6 @@ obj-y	+= bthid/
 ifeq ($(MTK_WFD_SUPPORT),yes)
 obj-y	+= uibc/
 endif
-obj-$(CONFIG_GATOR_DRIVER) += $(call all-subdirs-with-makefile,gator-driver)
 obj-y	+= leds/
 obj-y	+= auxadc/
 obj-y	+= ram_console/
@@ -70,13 +69,6 @@ obj-y	+= pmt/
 obj-y	+= accdet/
 obj-y	+= pwm/
 obj-y	+= freqhopping/
-
-ifeq ($(TRUSTONIC_TEE_SUPPORT),yes)
-endif
-
-ifeq ($(MTK_NFC_SUPPORT),yes)
-endif
-
 
 ifneq ($(CONFIG_MTK_COMBO),)
 subdir-ccflags-y += -DMTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT

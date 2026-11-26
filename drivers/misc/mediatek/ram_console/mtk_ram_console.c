@@ -395,62 +395,13 @@ static int __init ram_console_init(struct ram_console_buffer *buffer,
 	return 0;
 }
 
-#if defined(CONFIG_MTK_RAM_CONSOLE_USING_DRAM)
-static void *remap_lowmem(phys_addr_t start, phys_addr_t size)
-{
-	struct page **pages;
-	phys_addr_t page_start;
-	unsigned int page_count;
-	pgprot_t prot;
-	unsigned int i;
-	void *vaddr;
-
-	page_start = start - offset_in_page(start);
-	page_count = DIV_ROUND_UP(size + offset_in_page(start), PAGE_SIZE);
-
-	prot = pgprot_noncached(PAGE_KERNEL);
-
-	pages = kmalloc(sizeof(struct page *) * page_count, GFP_KERNEL);
-	if (!pages) {
-		pr_err("%s: Failed to allocate array for %u pages\n", __func__,
-			page_count);
-		return NULL;
-	}
-
-	for (i = 0; i < page_count; i++) {
-		phys_addr_t addr = page_start + i * PAGE_SIZE;
-		pages[i] = pfn_to_page(addr >> PAGE_SHIFT);
-	}
-	vaddr = vmap(pages, page_count, VM_MAP, prot);
-	kfree(pages);
-	if (!vaddr) {
-		pr_err("%s: Failed to map %u pages\n", __func__, page_count);
-		return NULL;
-	}
-
-	return vaddr + offset_in_page(start);
-}
-#endif
-
 static int __init ram_console_early_init(void)
 {
-	struct ram_console_buffer *bufp = NULL;
-	size_t buffer_size = 0;
+	struct ram_console_buffer *bufp;
+	size_t buffer_size;
 
-#if defined(CONFIG_MTK_RAM_CONSOLE_USING_SRAM)
 	bufp = (struct ram_console_buffer *)CONFIG_MTK_RAM_CONSOLE_ADDR;
 	buffer_size = CONFIG_MTK_RAM_CONSOLE_SIZE;
-#elif defined(CONFIG_MTK_RAM_CONSOLE_USING_DRAM)
-
-	bufp = remap_lowmem(CONFIG_MTK_RAM_CONSOLE_DRAM_ADDR, CONFIG_MTK_RAM_CONSOLE_DRAM_SIZE);
-	if (bufp == NULL) {
-		printk("ioremap failed, no ram console available\n");
-		return 0;
-	}
-	buffer_size = CONFIG_MTK_RAM_CONSOLE_DRAM_SIZE;
-#else
-	return 0;
-#endif
 
 	printk(KERN_ERR "%s: start: 0x%p, size: %d\n", __func__, bufp, buffer_size);
 	mtk_cpu_num = num_present_cpus();

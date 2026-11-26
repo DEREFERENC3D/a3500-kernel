@@ -3,12 +3,7 @@
 
 #include <asm/arch/disp_drv_platform.h>
 #else
-    #if defined(CONFIG_MT6582_FPGA)
-        #define ENABLE_LCD_INTERRUPT 0
-    #else
-        // modify_by_xx
-        #define ENABLE_LCD_INTERRUPT 0
-    #endif
+    #define ENABLE_LCD_INTERRUPT 0
 
 #include "lcd_reg.h"
 #include "lcd_drv.h"
@@ -111,10 +106,7 @@ void dbi_log_enable(int enable)
 	DBI_LOG("lcd log %s\n", enable?"enabled":"disabled");
 }
 
-#if defined(CONFIG_MT6582_FPGA)
-#else
-	#define LCD_BASE (0xF4012000)
-#endif
+#define LCD_BASE (0xF4012000)
 
 static PLCD_REGS const LCD_REG = (PLCD_REGS)(LCD_BASE);
 static const UINT32 TO_BPP[LCD_FB_FORMAT_NUM] = {2, 3, 4};

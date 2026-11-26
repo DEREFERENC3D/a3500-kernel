@@ -37,13 +37,10 @@ static void __init mt6582_timer_init(void)
             clockevents_register_device(&(clock->clockevent));
     }
 
-#ifndef CONFIG_MT6582_FPGA
-    err = generic_timer_register(); 
+    err = generic_timer_register();
     if (err) {
         pr_err("generic_timer_register failed, err=%d\n", err);
     }
-  // printk("fwq no generic timer");
-#endif
 }
 
 

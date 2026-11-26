@@ -24,10 +24,6 @@ mt6627-objs	:= core/fm_module.o \
 				$(FM_CHIP_PATH)_fm_cmd.o \
 				$(FM_CHIP_PATH)_fm_config.o
 mtk_fm_drv-objs += $(mt6627-objs)
-$(warning $(mtk_fm_drv-objs))
-	#obj-$(CONFIG_MTK_FM) += private/
 
 endif
-
-obj-y += dummy.o
 

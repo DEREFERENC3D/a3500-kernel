@@ -53,7 +53,6 @@ void __init mt_init_early(void)
 
 static struct map_desc mt_io_desc[] __initdata = 
 {
-#if !defined(CONFIG_MT6582_FPGA)
     {
         .virtual = INFRA_BASE,
         .pfn = __phys_to_pfn(IO_VIRT_TO_PHYS(INFRA_BASE)),
@@ -137,64 +136,6 @@ static struct map_desc mt_io_desc[] __initdata =
         .length = SZ_64K,
         .type = MT_MEMORY_NONCACHED
     },
-#else
-    {
-        .virtual = INFRA_BASE,
-        .pfn = __phys_to_pfn(IO_VIRT_TO_PHYS(INFRA_BASE)),
-        .length = SZ_4M,
-        .type = MT_DEVICE
-    },
-    {
-        .virtual = AP_DMA_BASE,
-        .pfn = __phys_to_pfn(IO_VIRT_TO_PHYS(AP_DMA_BASE)),
-        .length = SZ_2M + SZ_1M,
-        .type = MT_DEVICE
-    },
-    {
-        /* From: 0xF2000000 to 0xF2020000*/
-        .virtual = SYSRAM_BASE,
-        .pfn = __phys_to_pfn(0x00200000),
-        .length = SZ_128K,
-        .type = MT_MEMORY_NONCACHED
-    },    
-    {
-        .virtual = DISPSYS_BASE,
-        .pfn = __phys_to_pfn(IO_VIRT_TO_PHYS(DISPSYS_BASE)),
-        .length = SZ_16M,
-        .type = MT_DEVICE
-    },
-    {
-        .virtual = IMGSYS_CONFG_BASE,
-        .pfn = __phys_to_pfn(IO_VIRT_TO_PHYS(IMGSYS_CONFG_BASE)),
-        .length = SZ_16M,
-        .type = MT_DEVICE
-    },
-    /* G3DSYS */
-    {
-        .virtual = G3D_CONFIG_BASE,
-        .pfn = __phys_to_pfn(IO_VIRT_TO_PHYS(G3D_CONFIG_BASE)),
-        .length = SZ_4K,
-        .type = MT_DEVICE
-    },
-    {
-        .virtual = DEVINFO_BASE,
-        .pfn = __phys_to_pfn(0x08000000),
-        .length = SZ_64K,
-        .type = MT_DEVICE
-    },
-    {
-        .virtual = MALI_BASE,
-        .pfn = __phys_to_pfn(IO_VIRT_TO_PHYS(MALI_BASE)),
-        .length = SZ_64K,
-        .type = MT_DEVICE
-    },
-    {
-        .virtual = INTER_SRAM,
-        .pfn = __phys_to_pfn(0x00100000),
-        .length = SZ_64K,
-        .type = MT_MEMORY_NONCACHED
-    },
-#endif
 };
 
 void __init mt_map_io(void)

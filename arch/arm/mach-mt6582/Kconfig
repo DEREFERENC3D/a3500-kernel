@@ -5,13 +5,6 @@ menu "MT6582 Board Support Package"
 choice
 	bool "Board"
 
-config MT6582_FPGA
-	bool "MT6582 FPGA"
-	select ARM_GIC
-	select ARM_L1_CACHE_SHIFT_6
-	help
-	  Select if you are using the FPGA board.
-
 config MT6582_EVB_BOARD
 	bool "MT6582 EVB BOARD"
 	select ARM_GIC
@@ -20,13 +13,6 @@ config MT6582_EVB_BOARD
 	 Select if you are using an EVB board.
 
 endchoice
-
-config MT6582_FPGA_CA7
-	tristate "MT6582 FPGA CA7" 
-	depends on MT6582_FPGA
-	default n
-	help
-	    Select if you are using the CA7 FPGA board.
 
 config MAX_DRAM_SIZE_SUPPORT
 	hex "The maximum size of the DRAM can be supported in the kernel"

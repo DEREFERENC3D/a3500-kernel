@@ -20,17 +20,9 @@
     #define I2C_BUG_ON(a)
   #endif
 
-  #ifdef CONFIG_MT6582_FPGA
-    #define CONFIG_MT_I2C_FPGA_ENABLE
-  #endif
-
-  #if (defined(CONFIG_MT_I2C_FPGA_ENABLE))
-    #define I2C_CLK_RATE        12000     /* kHz for FPGA I2C work frequency */
-  #else
     #include <mach/mt_clkmgr.h>
     #include <mach/upmu_common.h>
     extern kal_uint32 mt_get_bus_freq(void);
-  #endif
 #else
   #define I2C_MB()
   #define I2C_BUG_ON(a)

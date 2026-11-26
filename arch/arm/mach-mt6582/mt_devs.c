@@ -76,37 +76,6 @@ struct platform_device mt_device_usb = {
 };
 
 /*=======================================================================*/
-/* MT6589 USB11 Host                      */
-/*=======================================================================*/
-#if defined(CONFIG_MTK_USBFSH)
-static u64 usb11_dmamask = DMA_BIT_MASK(32);
-extern void musbfsh_hcd_release (struct device *dev);
-
-static struct musbfsh_hdrc_config musbfsh_config_mt65xx = {
-	.multipoint     = false,
-	.dyn_fifo       = true,
-	.soft_con       = true,
-	.dma            = true,
-	.num_eps        = 6,
-	.dma_channels   = 4,
-};
-static struct musbfsh_hdrc_platform_data usb_data_mt65xx = {
-	.mode           = 1,
-	.config         = &musbfsh_config_mt65xx,
-};
-static struct platform_device mt_usb11_dev = {
-	.name           = "musbfsh_hdrc",
-	.id             = -1,
-	.dev = {
-		.platform_data          = &usb_data_mt65xx,
-		.dma_mask               = &usb11_dmamask,
-		.coherent_dma_mask      = DMA_BIT_MASK(32),
-		.release		= musbfsh_hcd_release,
-	},
-};
-#endif
-
-/*=======================================================================*/
 /* MT6589 UART Ports                                                     */
 /*=======================================================================*/
 #if defined(CFG_DEV_UART1)
@@ -689,17 +658,6 @@ static struct platform_device mtk_tpd_dev = {
 };
 
 /*=======================================================================*/
-/* MT6575 ofn                                                           */
-/*=======================================================================*/
-#if defined(CUSTOM_KERNEL_OFN)
-static struct platform_device ofn_driver =
-{
-    .name = "mtofn",
-    .id   = -1,
-};
-#endif
-
-/*=======================================================================*/
 /* CPUFreq                                                               */
 /*=======================================================================*/
 #ifdef CONFIG_CPU_FREQ
@@ -759,44 +717,6 @@ static struct platform_device masp_device =
        .id             = -1,
 };
 
-
-/*=======================================================================*/
-/* MT6589 NAND                                                           */
-/*=======================================================================*/
-#if defined(CONFIG_MTK_MTD_NAND)
-#define NFI_base    NFI_BASE//0x80032000
-#define NFIECC_base NFIECC_BASE//0x80038000
-static struct resource mtk_resource_nand[] = {
-	{
-		.start		= IO_VIRT_TO_PHYS(NFI_base),
-		.end		= IO_VIRT_TO_PHYS(NFI_base) + 0x1A0,
-		.flags		= IORESOURCE_MEM,
-	},
-	{
-		.start		= IO_VIRT_TO_PHYS(NFIECC_base),
-		.end		= IO_VIRT_TO_PHYS(NFIECC_base) + 0x150,
-		.flags		= IORESOURCE_MEM,
-	},
-	{
-		.start		= MT_NFI_IRQ_ID,
-		.flags		= IORESOURCE_IRQ,
-	},
-	{
-		.start		= MT_NFIECC_IRQ_ID,
-		.flags		= IORESOURCE_IRQ,
-	},
-};
-
-static struct platform_device mtk_nand_dev = {
-    .name = "mtk-nand",
-    .id   = 0,
-   	.num_resources	= ARRAY_SIZE(mtk_resource_nand),
-   	.resource		= mtk_resource_nand,
-    .dev            = {
-        .platform_data = &mtk_nand_hw,
-    },
-};
-#endif
 
 /*=======================================================================*/
 /* Audio                                                 */
@@ -1350,16 +1270,6 @@ static struct platform_device actuator_dev = {
 	.id		  = -1,
 };
 /*=======================================================================*/
-/* MT6575 jogball                                                        */
-/*=======================================================================*/
-#ifdef CONFIG_MOUSE_PANASONIC_EVQWJN
-static struct platform_device jbd_pdev = {
-	.name = "mt6575-jb",
-	.id = -1,
-};
-#endif
-
-/*=======================================================================*/
 /* MT6582 Pipe Manager                                                         */
 /*=======================================================================*/
 static struct platform_device camera_pipemgr_dev = {
@@ -1425,14 +1335,6 @@ __init int mt_board_init(void)
 			printk("[%s] fail to add kobject\n", "sys_info");
 	}
 
-#if defined(CONFIG_MTK_MTD_NAND)
-    retval = platform_device_register(&mtk_nand_dev);
-    if (retval != 0) {
-        printk(KERN_ERR "register nand device fail\n");
-        return retval;
-    }
-#endif
-
 	retval = platform_device_register(&gpio_dev);
 	if (retval != 0){
 		return retval;
@@ -1443,13 +1345,6 @@ __init int mt_board_init(void)
 	}
 #ifdef CONFIG_MTK_KEYPAD
 	retval = platform_device_register(&kpd_pdev);
-	if (retval != 0) {
-		return retval;
-	}
-#endif
-
-#ifdef CONFIG_MOUSE_PANASONIC_EVQWJN
-	retval = platform_device_register(&jbd_pdev);
 	if (retval != 0) {
 		return retval;
 	}
@@ -1728,33 +1623,6 @@ if (retval != 0) {
 		return retval;
 #endif
 
-#if defined(CUSTOM_KERNEL_MAGNETOMETER)
-	retval = platform_device_register(&sensor_msensor);
-		printk("sensor_msensor device!");
-	if (retval != 0)
-		return retval;
-
-	retval = platform_device_register(&sensor_orientation);
-		printk("sensor_osensor device!");
-	if (retval != 0)
-		return retval;
-
-#endif
-
-#if defined(CUSTOM_KERNEL_GYROSCOPE)
-	retval = platform_device_register(&sensor_gyroscope);
-		printk("sensor_gyroscope device!");
-	if (retval != 0)
-		return retval;
-#endif
-
-#if defined(CUSTOM_KERNEL_BAROMETER)
-	retval = platform_device_register(&sensor_barometer);
-		printk("sensor_barometer device!");
-	if (retval != 0)
-		return retval;
-#endif
-
 #if defined(CONFIG_CUSTOM_KERNEL_ALSPS)
 	retval = platform_device_register(&sensor_alsps);
 		printk("sensor_alsps device!");
@@ -1762,22 +1630,6 @@ if (retval != 0) {
 		return retval;
 #endif
 
-#if defined(CUSTOM_KERNEL_CAPTOUCH)
-	retval = platform_device_register(&sensor_captouch);
-		printk("sensor_captouch device!");
-	if (retval != 0)
-		return retval;
-#endif
-
-#endif
-
-#if defined(CONFIG_MTK_USBFSH)
-	printk("register musbfsh device\n");
-	retval = platform_device_register(&mt_usb11_dev);
-	if (retval != 0){
-		printk("register musbfsh device fail!\n");
-		return retval;
-	}
 #endif
 
 #if defined(CONFIG_USB_MTK_HDRC)
@@ -1795,14 +1647,7 @@ if (retval != 0) {
         return retval;
     }
 #endif
-#if defined(CUSTOM_KERNEL_OFN)
-    retval = platform_device_register(&ofn_driver);
-    if (retval != 0){
-        return retval;
-    }
-#endif
-
-#if (defined(CONFIG_MTK_MTD_NAND) ||defined(CONFIG_MTK_MMC))
+#if defined(CONFIG_MTK_MMC)
 retval = platform_device_register(&dummychar_device);
 	if (retval != 0){
 		return retval;
@@ -1996,10 +1841,6 @@ void __weak mtk_wcn_consys_memory_reserve(void)
 
 void mt_reserve(void)
 {
-
-#if defined(CONFIG_MTK_RAM_CONSOLE_USING_DRAM)
-    memblock_reserve(CONFIG_MTK_RAM_CONSOLE_DRAM_ADDR, CONFIG_MTK_RAM_CONSOLE_DRAM_SIZE);
-#endif
 
     /* 
      * Dynamic reserved memory (by arm_memblock_steal) 
