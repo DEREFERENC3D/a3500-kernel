@@ -16,7 +16,6 @@ obj-y	+= xlog/
 obj-y	+= uart/
 obj-y	+= eint/
 obj-y	+= boot/
-obj-$(CONFIG_ZRAM) += mlog/
 obj-y	+= gpu/
 obj-y	+= gpio/
 obj-y	+= wdk/

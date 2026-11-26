@@ -92,7 +92,6 @@ struct sched_param {
 #include <linux/llist.h>
 
 #include <asm/processor.h>
-#include <linux/rtpm_prio.h>
 
 struct exec_domain;
 struct futex_pi_state;
@@ -1404,10 +1403,6 @@ struct task_struct {
 	struct timespec real_start_time;	/* boot based time */
 /* mm fault and swap info: this can arguably be seen as either mm-specific or thread-specific */
 	unsigned long min_flt, maj_flt;
-/* for thrashing accounting */
-#ifdef CONFIG_ZRAM
-    unsigned long fm_flt, swap_in, swap_out;
-#endif
 
 	struct task_cputime cputime_expires;
 	struct list_head cpu_timers[3];
