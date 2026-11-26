@@ -20,6 +20,31 @@
 #include <mach/mt_power_gs.h>
 #include <mach/mt_ptp.h>
 
+/* Keep MCI idle from being entered while a CPU is being hotplugged. */
+static atomic_t is_in_hotplug = ATOMIC_INIT(0);
+
+static int mt_idle_hotplug_notifier(struct notifier_block *nb,
+				    unsigned long action, void *hcpu)
+{
+	switch (action) {
+	case CPU_UP_PREPARE:
+	case CPU_DOWN_PREPARE:
+		atomic_inc(&is_in_hotplug);
+		break;
+	case CPU_ONLINE:
+	case CPU_DEAD:
+	case CPU_UP_CANCELED:
+	case CPU_DOWN_FAILED:
+		atomic_dec(&is_in_hotplug);
+		break;
+	}
+	return NOTIFY_OK;
+}
+
+static struct notifier_block mt_idle_hotplug_nb = {
+	.notifier_call = mt_idle_hotplug_notifier,
+};
+
 #define USING_XLOG
 
 #ifdef USING_XLOG 
@@ -1001,6 +1026,7 @@ void mt_idle_init(void)
     
     idle_info("[%s]entry!!\n", __func__);
     arm_pm_idle = arch_idle;
+    register_cpu_notifier(&mt_idle_hotplug_nb);
 
 #ifndef SPM_SODI_ENABLED
     idle_switch[IDLE_TYPE_MC] = 0;
