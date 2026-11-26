@@ -61,10 +61,6 @@ void asmlinkage __attribute__((weak)) early_printk(const char *fmt, ...)
 extern void printascii(char *);
 #endif
 
-static int console_log_max = 400000;
-
-static bool log_in_resume = 0;
-
 /* printk's without a loglevel use this.. */
 #define DEFAULT_MESSAGE_LOGLEVEL CONFIG_DEFAULT_MESSAGE_LOGLEVEL
 
@@ -1214,10 +1210,7 @@ void resume_console(void)
 		return;
 	down(&console_sem);
 	console_suspended = 0;
-
-	log_in_resume = 1;
 	console_unlock();
-	log_in_resume = 0;
 }
 EXPORT_SYMBOL_GPL(resume_console);
 
@@ -1343,20 +1336,11 @@ void wake_up_klogd(void)
  *
  * console_unlock(); may be called from any context.
  */
-static int already_skip_log;
 void console_unlock(void)
 {
 	unsigned long flags;
 	unsigned _con_start, _log_end;
 	unsigned wake_klogd = 0, retry = 0;
-    unsigned long total_log_size = 0;
-    int org_loglevel = console_loglevel;
-    bool should_break = false;
-	int this_cpu;
-
-    preempt_disable();
-	this_cpu = smp_processor_id();
-    preempt_enable();
 
 	if (console_suspended) {
 		up(&console_sem);
@@ -1366,43 +1350,19 @@ void console_unlock(void)
 	console_may_schedule = 0;
 
 again:
-	retry = 0;
 	for ( ; ; ) {
 		raw_spin_lock_irqsave(&logbuf_lock, flags);
 		wake_klogd |= log_start - log_end;
-		if (should_break || con_start == log_end)
+		if (con_start == log_end)
 			break;			/* Nothing to print */
 		_con_start = con_start;
 		_log_end = log_end;
 		con_start = log_end;		/* Flush */
 		raw_spin_unlock(&logbuf_lock);
 		stop_critical_timings();	/* don't trace print latency */
-
-        /*
-            For uart console, 10us/per chars
-            400,000 chars = need to wait 4.0 sec
-                normal case: 4sec
-        */
-        if (log_in_resume) {
-            org_loglevel = console_loglevel;
-            console_loglevel = 4;
-        }
-        total_log_size += _log_end - _con_start;
-        if(total_log_size < console_log_max)
-            call_console_drivers(_con_start, _log_end);
-        else if(!already_skip_log){
-            already_skip_log = 1;
-        }
-        /**/
-
+		call_console_drivers(_con_start, _log_end);
 		start_critical_timings();
-        if (log_in_resume) {
-            console_loglevel = org_loglevel;
-        }
 		local_irq_restore(flags);
-
-        if (this_cpu == 0)
-            should_break = true;
 	}
 	console_locked = 0;
 
@@ -1425,7 +1385,7 @@ again:
 		retry = 1;
 	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
 
-	if (!should_break && retry && console_trylock())
+	if (retry && console_trylock())
 		goto again;
 
 	if (wake_klogd)
