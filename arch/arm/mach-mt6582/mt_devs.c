@@ -22,7 +22,6 @@
 #include <mach/devs.h>
 #include <mach/mt_boot.h>
 #include <linux/version.h>
-#include <mach/mtk_memcfg.h>
 #include <mach/atag_mt6582.h>
 #include <mach/dfo_boot.h>
 #include <mach/dfo_boot_default.h>
@@ -1190,7 +1189,7 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
     } else // we should always have reserved memory
     	BUG();
 
-    MTK_MEMCFG_LOG_AND_PRINTK(KERN_ALERT
+    printk(KERN_ALERT
             "[PHY layout]avaiable DRAM size (lk) = 0x%llx\n"
             "[PHY layout]avaiable DRAM size = 0x%llx\n"
             "[PHY layout]FB       :   0x%llx - 0x%llx  (0x%llx)\n",
@@ -1200,13 +1199,13 @@ void mt_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
             (unsigned long long)(FB_START + FB_SIZE - 1), 
             (unsigned long long)FB_SIZE);
     if(g_boot_mode == FACTORY_BOOT)
-        MTK_MEMCFG_LOG_AND_PRINTK(KERN_ALERT
+        printk(KERN_ALERT
                 "[PHY layout]3D       :   0x%llx - 0x%llx  (0x%llx)\n",
                 (unsigned long long)TEST_3D_START, 
                 (unsigned long long)(TEST_3D_START + TEST_3D_SIZE - 1), 
                 (unsigned long long)TEST_3D_SIZE);
     if (PMEM_MM_SIZE) {
-        MTK_MEMCFG_LOG_AND_PRINTK(KERN_ALERT
+        printk(KERN_ALERT
                 "[PHY layout]PMEM     :   0x%llx - 0x%llx  (0x%llx)\n",
                 (unsigned long long)PMEM_MM_START, 
                 (unsigned long long)(PMEM_MM_START + PMEM_MM_SIZE - 1), 

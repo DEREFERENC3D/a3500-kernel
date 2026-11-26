@@ -25,9 +25,6 @@
 // 1: turn on adaptive AP cooler; 0: turn off
 #define CPT_ADAPTIVE_AP_COOLER (0)
 
-// 1: turn on supports to MET logging; 0: turn off
-#define CONFIG_SUPPORT_MET_MTKTSCPU (0)
-
 // Thermal controller HW filtering function. Only 1, 2, 4, 8, 16 are valid values, they means one reading is a avg of X samples
 #define THERMAL_CONTROLLER_HW_FILTER (16) // 1, 2, 4, 8, 16
 
@@ -1468,12 +1465,6 @@ static int P_adaptive(int total_power, unsigned int gpu_loading)
 	{
 		set_adaptive_cpu_power_limit(0);
 		//mt_gpufreq_thermal_protect(0);
-#if CONFIG_SUPPORT_MET_MTKTSCPU
-		if(met_mtktscpu_dbg)
-		{
-			trace_printk("%d,%d\n", 5000, 5000);
-		}
-#endif
 		return 0;
 	}
 
@@ -1511,12 +1502,6 @@ static int P_adaptive(int total_power, unsigned int gpu_loading)
 	}       
 
 	mtktscpu_dprintk("P_adaptive: cpu %d, gpu %d\n", cpu_power, gpu_power);
-#if CONFIG_SUPPORT_MET_MTKTSCPU
-	if(met_mtktscpu_dbg)
-	{
-		trace_printk("%d,%d\n", cpu_power, gpu_power);
-	}
-#endif
 
 	return 0;
 }

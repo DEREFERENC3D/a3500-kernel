@@ -65,8 +65,3 @@ config MD32_SUPPORT
 	bool "Specifiy If Platform Support MD32"
 	default n
 
-config MTK_MEMCFG
-       bool "Support enhanced memory configurations"
-       default n
-       help
-

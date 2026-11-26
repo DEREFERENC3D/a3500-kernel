@@ -330,55 +330,16 @@ void hal_rtc_set_pwron_alarm(void)
 	rtc_write_trigger();
 }
 
-#ifndef CONFIG_USER_BUILD_KERNEL
-static void rtc_lp_exception(void)
-{
-	u16 bbpu, irqsta, irqen, osc32;
-	u16 pwrkey1, pwrkey2, prot, con, sec1, sec2;
-
-	bbpu = rtc_read(RTC_BBPU);
-	irqsta = rtc_read(RTC_IRQ_STA);
-	irqen = rtc_read(RTC_IRQ_EN);
-	osc32 = rtc_read(RTC_OSC32CON);
-	pwrkey1 = rtc_read(RTC_POWERKEY1);
-	pwrkey2 = rtc_read(RTC_POWERKEY2);
-	prot = rtc_read(RTC_PROT);
-	con = rtc_read(RTC_CON);
-	sec1 = rtc_read(RTC_TC_SEC);
-	mdelay(2000);
-	sec2 = rtc_read(RTC_TC_SEC);
-
-	hal_rtc_xfatal("!!! 32K WAS STOPPED !!!\n"
-	           "RTC_BBPU      = 0x%x\n"
-	           "RTC_IRQ_STA   = 0x%x\n"
-	           "RTC_IRQ_EN    = 0x%x\n"
-	           "RTC_OSC32CON  = 0x%x\n"
-	           "RTC_POWERKEY1 = 0x%x\n"
-	           "RTC_POWERKEY2 = 0x%x\n"
-	           "RTC_PROT      = 0x%x\n"
-	           "RTC_CON       = 0x%x\n"
-	           "RTC_TC_SEC    = %02d\n"
-	           "RTC_TC_SEC    = %02d\n",
-	           bbpu, irqsta, irqen, osc32,
-	           pwrkey1, pwrkey2, prot, con, sec1, sec2);
-}
-#endif
-
 bool hal_rtc_is_lp_irq(void) 
 {
 	u16 irqsta;
 
 	irqsta = rtc_read(RTC_IRQ_STA);		/* read clear */
-	if (unlikely(!(irqsta & RTC_IRQ_STA_AL))) {
-#ifndef CONFIG_USER_BUILD_KERNEL
-		if (irqsta & RTC_IRQ_STA_LP)
-			rtc_lp_exception();
-#endif
+	if (unlikely(!(irqsta & RTC_IRQ_STA_AL)))
 		return true;
-	}
 
 	return false;
-	}
+}
 
 void hal_rtc_reload_power(void) {
 	/* set AUTO bit because AUTO = 0 when PWREN = 1 and alarm occurs */
@@ -495,11 +456,7 @@ void hal_rtc_set_lp_irq(void) {
 	u16 irqen;
 
 	rtc_writeif_unlock();
-#ifndef CONFIG_USER_BUILD_KERNEL
-	irqen = rtc_read(RTC_IRQ_EN) | RTC_IRQ_EN_LP;
-#else
 	irqen = rtc_read(RTC_IRQ_EN) & ~RTC_IRQ_EN_LP;
-#endif
 	rtc_write(RTC_IRQ_EN, irqen);
 	rtc_write_trigger();
 }

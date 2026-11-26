@@ -172,22 +172,8 @@ static void hib_hotplug_mode(int en)
 #endif /* CONFIG_CPU_FREQ_GOV_HOTPLUG */
 }
 
-static void hib_ftrace_buffer(int en)
-{
-#if defined(CONFIG_MTK_SCHED_TRACERS)
-    int fterr = 0;
-
-    hib_warn("%s ftrace mode\n", (en ? "enable" : "disable"));
-    fterr = resize_ring_buffer_for_hibernation(en);
-    if (fterr < 0)
-        hib_warn("calling resize_ring_buffer_for_hibernation() failed (%d)\n", fterr);
-#endif
-}
-
 static void hibernate_recover(void)
 {
-    hib_ftrace_buffer(1);
-
     hib_hotplug_mode(1);
 
     // userspace recover if hibernation failed
@@ -196,8 +182,6 @@ static void hibernate_recover(void)
 
 static void hibernate_restore(void)
 {
-    hib_ftrace_buffer(1);
-
     hib_hotplug_mode(1);
 
     hib_warn("start trigger ipod\n");
@@ -320,8 +304,6 @@ int bad_memory_status(void)
 int pre_hibernate(void)
 {
     int err = 0;
-
-    hib_ftrace_buffer(0);
 
     // check free memory status.
     if (bad_memory_status()) {

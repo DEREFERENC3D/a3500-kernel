@@ -1,42 +1,6 @@
 # TODO naming refine
 menu "Kernel Configurations"
 
-menu "Tracer Related"
-config MTK_SCHED_TRACERS
-        bool "MTK Sched Tracers"
-        depends on TRACING
-        select CONTEXT_SWITCH_TRACER
-        default n
-        help
-           Trace context swicth, set_scheduler, Interrupt Handler
-
-config MTK_KERNEL_MARKER
-        bool "MTK Kernel Marker API"
-        depends on TRACING && KALLSYMS
-        default n
-        help
-            Mark the user-defined points, such as systrace events in
-            user space, to visualize via systrace html files
-
-config GENERIC_TRACER
-        bool "Scheduler Switch Tracer"
-
-menu "MET"
-
-config MTK_MET
-    tristate "MET core driver"
-    default n
-    help
-      The core module of MTK MET profiling tool
-
-endmenu
-
-endmenu
-
-config CPUTIME_SUPPORT
-	bool "cputime profiling support for functions"
-	default n
-
 config MTK_RAM_CONSOLE
 	bool "mt ram console"     
         

@@ -7,12 +7,6 @@
 #include <mach/mt_spm_idle.h>
 #include <mach/wd_api.h>
 
-#ifdef CONFIG_MTK_SCHED_TRACERS
-#include <trace/events/mtk_events.h>
-#include "kernel/trace/trace.h"
-DEFINE_PER_CPU(unsigned long long, last_event_ts);
-#endif
-
 
 /* 
  * extern function 
@@ -153,11 +147,6 @@ void platform_cpu_die(unsigned int cpu)
     get_wd_api(&wd_api);
     if (wd_api)
         wd_api->wd_cpu_hot_plug_off_notify(cpu);
-
-#ifdef CONFIG_MTK_SCHED_TRACERS
-    trace_cpu_hotplug(cpu, 0, per_cpu(last_event_ts, cpu));
-    per_cpu(last_event_ts, cpu) = ns2usecs(ftrace_now(cpu));
-#endif
 
     /*
      * we're ready for shutdown now, so do it

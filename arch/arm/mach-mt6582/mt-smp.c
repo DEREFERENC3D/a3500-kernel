@@ -23,11 +23,6 @@
 #include <mach/mt_secure_api.h>
 #endif
 
-#ifdef CONFIG_MTK_SCHED_TRACERS
-#include <trace/events/mtk_events.h>
-#include "kernel/trace/trace.h"
-#endif
-
 #if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
 #define SLAVE1_MAGIC_REG (0xF0002000 + 0x38)
 #define SLAVE2_MAGIC_REG (0xF0002000 + 0x3C)
@@ -124,11 +119,6 @@ void __cpuinit platform_secondary_init(unsigned int cpu)
 
 #ifdef SPM_MCDI_FUNC
     spm_hot_plug_in_before(cpu);
-#endif
-
-#ifdef CONFIG_MTK_SCHED_TRACERS
-    trace_cpu_hotplug(cpu, 1, per_cpu(last_event_ts, cpu));
-    per_cpu(last_event_ts, cpu) = ns2usecs(ftrace_now(cpu));
 #endif
 
     /*
