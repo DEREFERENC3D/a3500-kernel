@@ -211,11 +211,6 @@ extern void cmdqForceFreeAll(int cmdqThread);
 extern void cmdqForceFree_SW(int taskID);
 bool checkMdpEngineStatus(unsigned int engineFlag);
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && (CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-extern unsigned int init_tplay_handle(void);
-extern int write_tplay_handle(unsigned int handle_value);
-extern int set_tplay_handle_addr_request(void);
-#endif
 
 
 unsigned int* pRegBackup = NULL;
@@ -1747,17 +1742,6 @@ static long disp_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lo
             disp_path_enable();
 #endif			
             break;            
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-        case DISP_IOCTL_SET_TPLAY_HANDLE:
-            if(copy_from_user(&value, (void*)arg , sizeof(unsigned int)))
-            {
-                DISP_ERR("DISP_IOCTL_SET_TPLAY_HANDLE, copy_from_user failed\n");
-                return -EFAULT;
-            }
-            set_tplay_handle_addr_request();
-            write_tplay_handle(value);
-            break;
-#endif
         default :
             DISP_ERR("Ddp drv dose not have such command : %d\n" , cmd);
             break; 
@@ -2025,13 +2009,6 @@ static int __init disp_init(void)
 
     cmdqInitialize();
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && (CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-// secure video path implementation: a physical address is allocated to place a handle for decryption buffer.
-    if (0 != init_tplay_handle()) // non-zero value for valid VA
-    {
-        ;
-    }
-#endif
 
     return 0;
 }

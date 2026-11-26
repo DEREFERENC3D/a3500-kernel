@@ -1704,11 +1704,6 @@ static int _DISP_ConfigUpdateKThread(void *data)
         wait_event_interruptible(config_update_wq, config_update_task_wakeup);
         config_update_task_wakeup = 0;
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-        // the config thread is wake up by frame done irqs
-        // we need to check if we should switch secure port to non-secure
-        disp_path_update_secure_port();
-#endif
         dirty = 0;
         memset(&dirty_flag, 0, sizeof(dirty_flag));
 

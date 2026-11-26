@@ -25,17 +25,6 @@
 #include <mach/m4u.h>
 #include "disp_drv.h"
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-#include "mobicore_driver_api.h"
-extern unsigned int tplay_handle_virt_addr;
-extern unsigned int init_tplay_handle(void);
-extern unsigned int get_tplay_handle();
-extern int set_tplay_handle_addr_request(void);
-
-extern enum mc_result late_init_session_tl(void);
-extern enum mc_result late_init_session_drv(void);
-extern enum mc_result late_open_mobicore_device(void);
-#endif
 
 // ---------------------------------------------------------------------------
 //  External variable declarations
@@ -421,33 +410,6 @@ static void process_dbg_opt(const char *opt)
         DISP_MSG("Set color_win: %u, %u, %u, %u\n", sat_upper, sat_lower, hue_upper, hue_lower);
         disp_color_set_window(sat_upper, sat_lower, hue_upper, hue_lower);
     }
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-    else if (0 == strncmp(opt, "handle_init", 11))
-    {
-        unsigned int va = init_tplay_handle();
-        DISP_MSG("debug handle_init, tplay_handle_virt_addr=0x%x \n", va);
-    }
-    else if (0 == strncmp(opt, "handle_check", 12))
-    {
-        unsigned int va = get_tplay_handle();
-        DISP_MSG("debug handle_check, tplay_handle_virt_addr=0x%x \n", va);
-        unsigned int *x = (unsigned int *)va;
-        *x = 0xff;
-        DISP_MSG("debug handle_check, write and read 0x%x \n", *x);
-    }
-    else if (0 == strncmp(opt, "handle_set", 10))
-    {
-        int ret = set_tplay_handle_addr_request();
-        DISP_MSG("debug handle_set, ret=%d \n", ret);
-    }
-    else if (0 == strncmp(opt, "svp_init", 8))
-    {
-        DISP_MSG("initialize svp-ddp sessions \n");
-        late_open_mobicore_device();
-        late_init_session_drv();
-        late_init_session_tl();
-    }
-#endif
     else
     {
 	    goto Error;

@@ -154,7 +154,4 @@ int disp_path_get_mem_write_mutex (void);
 int disp_path_release_mem_write_mutex (void);
 int disp_path_clear_config(int mutexId);
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-int disp_path_update_secure_port(void);
-#endif
 #endif

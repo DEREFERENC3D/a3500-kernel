@@ -17,9 +17,6 @@
 #include <mach/mt_boot.h>
 #include <mach/mt_reg_base.h>
 #include <mach/mt_typedefs.h>
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-#include <mach/mtk_boot_share_page.h>
-#endif
 
 //#include <mach/sbchk_base.h>
 
@@ -122,38 +119,22 @@ static struct device *boot_device;
 /* return hardware version */
 unsigned int get_chip_code(void)
 {     
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-    return *(unsigned int*)(BOOT_SHARE_BASE+BOOT_SHARE_DEV_INFO_OFST+0x00000000);    
-#else     
     return DRV_Reg32(APHW_CODE);
-#endif
 }
 
 unsigned int get_chip_hw_ver_code(void)
 {   
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-    return *(unsigned int*)(BOOT_SHARE_BASE+BOOT_SHARE_DEV_INFO_OFST+0x00000008);    
-#else      
     return DRV_Reg32(APHW_VER);
-#endif
 }
 
 unsigned int get_chip_sw_ver_code(void)
 {  
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-    return *(unsigned int*)(BOOT_SHARE_BASE+BOOT_SHARE_DEV_INFO_OFST+0x0000000c);  
-#else     
     return DRV_Reg32(APSW_VER);
-#endif
 }
 
 unsigned int get_chip_hw_subcode(void)
 {
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-    return *(unsigned int*)(BOOT_SHARE_BASE+BOOT_SHARE_DEV_INFO_OFST+0x00000004);   
-#else   
     return DRV_Reg32(APHW_SUBCODE);
-#endif
 }
 
 unsigned int mt_get_chip_id(void)

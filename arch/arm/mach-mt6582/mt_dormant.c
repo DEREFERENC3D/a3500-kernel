@@ -12,9 +12,6 @@
 #include <mach/mt_irq.h>
 #include <mach/sync_write.h>
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-#include <mach/mt_secure_api.h>
-#endif
 
 /*********************************
 * macro
@@ -1491,11 +1488,7 @@ int cpu_power_down(int mode)
        
     cpu_id = read_cpuid();
 
-#if !defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
 	reg_write(BOOTROM_BOOT_ADDR, __pa(restore_ptr));
-#else //#if !defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-    mt_secure_call(MC_FC_SLEEP, __pa(restore_ptr), cpu_id, 0);
-#endif //#if !defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
 
     power_state[cpu_id] = mode;
     
@@ -1555,14 +1548,6 @@ void cpu_check_dormant_abort(void)
         generic_timer_context *cp15_timer_ctx;
 
         //__enable_cache();
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-        printk("[Power/cpu_dormant]: abort before SMC [cpu_id == 0x%x]\n", cpu_id);
-        if (cpu_id == 0)
-        {
-            printk("[Power/cpu_dormant]: MC_FC_SLEEP_CANCELLED \n");
-            mt_secure_call(MC_FC_SLEEP_CANCELLED, 0, 0, 0);
-        }
-#endif
 
         //cpu_id = read_cpuid();
         cluster_id = read_clusterid();

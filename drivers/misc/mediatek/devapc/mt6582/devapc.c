@@ -47,14 +47,6 @@ static void clear_vio_status(unsigned int module);
  * @permission_control: specified permission
  * no return value.
  */
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-
-int start_devapc(void)
-{
-	mt65xx_reg_sync_writel(readl(DEVAPC0_PD_APC_CON) & (0xFFFFFFFF ^ (1<<2)), DEVAPC0_PD_APC_CON);
-}
-
-#else
 
 
 static void set_module_apc(unsigned int module, E_MASK_DOM domain_num , APC_ATTR permission_control)
@@ -259,7 +251,6 @@ void start_devapc(void)
     
 }
 
-#endif
 
 /*
  * clear_vio_status: clear violation status for each module.

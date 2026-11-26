@@ -4,10 +4,6 @@
 #include <linux/jiffies.h>
 #include <linux/delay.h>
 #include <asm/localtimer.h>
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-#include <asm/hardware/gic.h>
-#include <mach/mtk_boot_share_page.h>
-#endif
 #include <asm/fiq_glue.h>
 #include <mach/mt_reg_base.h>
 #include <mach/smp.h>
@@ -19,31 +15,16 @@
 #include <mach/mt_spm_idle.h>
 #include <mach/wd_api.h>
 
-#if defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
-#include <mach/mt_secure_api.h>
-#endif
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-#define SLAVE1_MAGIC_REG (0xF0002000 + 0x38)
-#define SLAVE2_MAGIC_REG (0xF0002000 + 0x3C)
-#define SLAVE3_MAGIC_REG (0xF0002000 + 0x40)
-#else
 #define SLAVE1_MAGIC_REG (SRAMROM_BASE+0x38)
 #define SLAVE2_MAGIC_REG (SRAMROM_BASE+0x3C)
 #define SLAVE3_MAGIC_REG (SRAMROM_BASE+0x40)
-#endif
 
 #define SLAVE1_MAGIC_NUM 0x534C4131
 #define SLAVE2_MAGIC_NUM 0x4C415332
 #define SLAVE3_MAGIC_NUM 0x41534C33
 #define SLAVE_JUMP_REG  (SRAMROM_BASE+0x34)
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-// Secure world location, using SRAM now.
-#define NS_SLAVE_JUMP_REG  (BOOT_SHARE_BASE+1020)
-#define NS_SLAVE_MAGIC_REG (BOOT_SHARE_BASE+1016)
-#define NS_SLAVE_BOOT_ADDR (BOOT_SHARE_BASE+1012)
-#endif
 
 extern void mt_secondary_startup(void);
 extern void irq_raise_softirq(const struct cpumask *mask, unsigned int irq);
@@ -131,9 +112,6 @@ void __cpuinit platform_secondary_init(unsigned int cpu)
 static void __cpuinit mt_wakeup_cpu(int cpu)
 {
     mt65xx_reg_sync_writel(secure_magic_num[cpu-1], secure_magic_reg[cpu-1]);
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-    *((unsigned int*)NS_SLAVE_MAGIC_REG) = secure_magic_num[cpu-1];
-#endif
     HOTPLUG_INFO("SLAVE%d_MAGIC_NUM:%x\n", cpu, secure_magic_num[cpu-1]);
 #ifdef CONFIG_HOTPLUG_WITH_POWER_CTRL
     if (is_secondary_cpu_first_boot)
@@ -145,9 +123,6 @@ static void __cpuinit mt_wakeup_cpu(int cpu)
     {
     	printk("mt_wakeup_cpu: not first boot!(%d)\n", cpu);
         mt65xx_reg_sync_writel(virt_to_phys(mt_secondary_startup), BOOT_ADDR);        
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-        *((unsigned int*)NS_SLAVE_BOOT_ADDR) = virt_to_phys(mt_secondary_startup);
-#endif
         (*secure_ctrl_func[cpu-1])(STA_POWER_ON, 1);
     }
 #endif
@@ -189,24 +164,14 @@ int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
         case 1:
         case 2:
         case 3:
-#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
             mt_wakeup_cpu(cpu);
-#else //#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
-            printk("mt_wakeup_cpu: not first boot!(%d)\n", cpu);
-			//mt65xx_reg_sync_writel(virt_to_phys(mt_secondary_startup), BOOT_ADDR);
-			// fixme, to replace SMC with parameter of ns_slave_boot_addr
-            mt_secure_call(MC_FC_SET_RESET_VECTOR, virt_to_phys(mt_secondary_startup), cpu, 0);
-			(*secure_ctrl_func[cpu-1])(STA_POWER_ON, 1);
-#endif //#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
             break;
         default:
             break;
 
     }
 
-#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
     smp_cross_call(cpumask_of(cpu));
-#endif //#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
 
     /*
      * Now the secondary core is starting up let it run its
@@ -229,19 +194,9 @@ int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
     }
     else
     {
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-        //to fix monitor register
-        printk(KERN_EMERG "failed to boot.\n");
-        mt65xx_reg_sync_writel( 0x1, 0xF020021c);
-        printk(KERN_EMERG "CPU2, debug event: 0x%08x, debug monitor: 0x%08x\n", *(volatile u32 *)(0xF020021c), *(volatile u32 *)(0xF0200014));
-        mt65xx_reg_sync_writel( 0x3, 0xF020021c);
-        printk(KERN_EMERG "CPU3, debug event: 0x%08x, debug monitor: 0x%08x\n", *(volatile u32 *)(0xF020021c), *(volatile u32 *)(0xF0200014));
-        on_each_cpu((smp_call_func_t)dump_stack, NULL, 0);
-#else
         mt65xx_reg_sync_writel(cpu + 8, 0xf0200080);
         printk(KERN_EMERG "CPU%u, debug event: 0x%08x, debug monitor: 0x%08x\n", cpu, *(volatile u32 *)(0xf0200080), *(volatile u32 *)(0xf0200084));
         on_each_cpu((smp_call_func_t)dump_stack, NULL, 0);
-#endif
         atomic_dec(&hotplug_cpu_count);
         return -ENOSYS;
     }
@@ -269,10 +224,8 @@ void __init smp_init_cpus(void)
     for (i = 0; i < ncores; i++)
         set_cpu_possible(i, true);
 
-#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
     irq_total_secondary_cpus = num_possible_cpus() - 1;
     is_secondary_cpu_first_boot = num_possible_cpus() - 1;
-#endif //#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
 
     set_smp_cross_call(irq_raise_softirq);
     
@@ -290,18 +243,6 @@ void __init platform_smp_prepare_cpus(unsigned int max_cpus)
     for (i = 0; i < max_cpus; i++)
         set_cpu_present(i, true);
 
-#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
     /* write the address of slave startup into the system-wide flags register */
     mt65xx_reg_sync_writel(virt_to_phys(mt_secondary_startup), SLAVE_JUMP_REG);
-#else //#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
-  
-    //for (i = 1; i < max_cpus; i++)
-		//(*secure_ctrl_func[i-1])(STA_POWER_DOWN, 1);
-  
-    //printk(KERN_CRIT "platform_smp_prepare_cpus !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"); 
-    
-	//reg_write(BOOTROM_PWR_CTRL, reg_read(BOOTROM_PWR_CTRL) | 0x80000000);
-    //BOOTROM_PWR_CTRL not accessible from NW...
-    //mt_secure_call(MC_FC_BOOTROM_PWR_CTRL, 0, 0, 0);
-#endif //#if !defined (CONFIG_TRUSTONIC_TEE_SUPPORT)
 }

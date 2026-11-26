@@ -313,11 +313,7 @@ int __init generic_timer_register(void)
         return -EBUSY;
 
     /* When TEE is enabled, change to use non-secure local timer */
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-    timer_ppi = GIC_PPI_NS_PRIVATE_TIMER;
-#else    
     timer_ppi = GIC_PPI_PRIVATE_TIMER;
-#endif
 
     timer_evt = alloc_percpu(struct clock_event_device *);
 

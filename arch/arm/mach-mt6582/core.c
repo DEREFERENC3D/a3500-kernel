@@ -1,10 +1,5 @@
 #include <linux/pm.h>
 #include <linux/bug.h>
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-#include <linux/memblock.h>
-#include <linux/bootmem.h>
-#include <mach/mtk_boot_share_page.h>
-#endif
 #include <asm/mach/arch.h>
 #include <asm/mach/time.h>
 #include <asm/mach/map.h>
@@ -38,18 +33,6 @@ void __init mt_init(void)
 #endif
 }
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-void __init mt_init_early(void)
-{
-    int ret;
-
-    ret = reserve_bootmem(__pa(BOOT_SHARE_BASE), 0x1000, BOOTMEM_EXCLUSIVE);
-    if (ret < 0)
-    {
-        printk(KERN_WARNING "reserve_bootmem BOOT_SHARE_BASE failed %d\n", ret);
-    }    
-}
-#endif
 
 static struct map_desc mt_io_desc[] __initdata = 
 {
@@ -178,9 +161,6 @@ MACHINE_START(MT6582, "MT6582")
     .map_io         = mt_map_io,
     .init_irq       = mt_init_irq,
     .timer          = &mt6582_timer,
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT)
-    .init_early     = mt_init_early,
-#endif
     .init_machine   = mt_init,
     .fixup          = mt_fixup,
     .restart        = arm_machine_restart,

@@ -77,22 +77,6 @@ extern unsigned char pq_debug_flag;
 static DECLARE_WAIT_QUEUE_HEAD(g_disp_mutex_wq);
 static unsigned int g_disp_mutex_reg_update = 0;
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-extern int debug_svp;
-extern unsigned int is_using_secure_debug_layer;
-extern unsigned int is_secure_port;
-
-extern int ovl_layer_config_secure(void* config, uint32_t len, uint32_t secure);
-extern int switch_ovl_secure_port(unsigned int secure);
-extern int switch_debug_layer(unsigned int is_secure_debug_layer);
-extern void acquireLastLayerInfoMutex(void);
-extern void releaseLastLayerInfoMutex(void);
-extern int update_ovl_layer_info(OVL_CONFIG_STRUCT *pConfig);
-extern void update_layer_flag(unsigned int layer, unsigned int secure);
-extern unsigned int is_ovl_secured(void);
-extern int config_ovl_secure(void);
-extern int config_ovl_nonsecure(void);
-#endif
 
 
 
@@ -764,63 +748,12 @@ int disp_path_config_layer(OVL_CONFIG_STRUCT* pOvlConfig)
     pOvlConfig->aen, // alpha enable
     pOvlConfig->alpha);
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-    update_layer_flag(pOvlConfig->layer, pOvlConfig->security);
-#endif
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-    acquireLastLayerInfoMutex();
-#endif
 
     // config overlay
     OVLLayerSwitch(pOvlConfig->layer, pOvlConfig->layer_en);
     if(pOvlConfig->layer_en!=0)
     {
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-
-#ifdef MANUAL_DEBUG
-        if (1 == debug_svp)
-#else
-        if (LAYER_SECURE_BUFFER == is_ovl_secured())
-#endif // MANUAL_DEBUG
-        {
-            // 0. necessary preparation before ovl layer config secure
-#ifdef MANUAL_DEBUG
-            if (is_secure_port == 0 && is_using_secure_debug_layer == 0)
-#else
-            if (is_secure_port == 0)
-#endif // MANUAL_DEBUG
-            {
-                config_ovl_secure();
-            }
-            // 1. config secure
-            ovl_layer_config_secure(pOvlConfig, sizeof(OVL_CONFIG_STRUCT), pOvlConfig->security);
-            // 2. switch port
-#ifdef MANUAL_DEBUG
-            if (is_secure_port == 0 && is_using_secure_debug_layer == 0)
-#else
-            if (is_secure_port == 0)
-#endif // MANUAL_DEBUG
-            {
-                DISP_MSG("[SEC] switch to accessing secure port \n");
-                switch_ovl_secure_port(1);
-                is_secure_port = 1;
-#ifdef MANUAL_DEBUG
-                DISP_MSG("[SEC] switch to using secure debug layer \n");
-                switch_debug_layer(1);
-#endif // MANUAL_DEBUG
-#ifdef MANUAL_DEBUG
-                is_using_secure_debug_layer = 1;
-#endif // MANUAL_DEBUG
-            }
-        }
-        else if (LAYER_PROTECTED_BUFFER == is_ovl_secured())
-        {
-            ; // now, nothing for PROTECTED buffer
-        }
-        else
-        {
-#endif
         OVLLayerConfig(pOvlConfig->layer,   // layer
                        pOvlConfig->source,   // data source (0=memory)
                        pOvlConfig->fmt, 
@@ -836,25 +769,6 @@ int disp_path_config_layer(OVL_CONFIG_STRUCT* pOvlConfig)
                        pOvlConfig->key,  //color key
                        pOvlConfig->aen, // alpha enable
                        pOvlConfig->alpha); // alpha
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-
-#ifdef MANUAL_DEBUG
-            if (is_secure_port == 1 && is_using_secure_debug_layer == 1 && pOvlConfig->dst_h == 38)
-#else
-            if (is_secure_port == 1)
-#endif // MANUAL_DEBUG
-            {
-                DISP_MSG("[SEC] accessing secure port, will switch to non-secure \n");
-#ifdef MANUAL_DEBUG
-                switch_debug_layer(0);
-#endif // MANUAL_DEBUG
-#ifdef MANUAL_DEBUG
-                is_using_secure_debug_layer = 0;
-#endif // MANUAL_DEBUG
-            }
-            update_ovl_layer_info(pOvlConfig);
-        }
-#endif
     }
     else //reset regsiters
     {
@@ -875,9 +789,6 @@ int disp_path_config_layer(OVL_CONFIG_STRUCT* pOvlConfig)
                        0); // alpha
 
     }
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-    releaseLastLayerInfoMutex();
-#endif
     //printk("[DDP]disp_path_config_layer() done, addr=0x%x \n", pOvlConfig->addr);
 
     return 0;

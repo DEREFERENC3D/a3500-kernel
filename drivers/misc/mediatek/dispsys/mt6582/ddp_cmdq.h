@@ -16,9 +16,6 @@
 
 #include <mach/mt_clkmgr.h>
 
-#if defined(CONFIG_TRUSTONIC_TEE_SUPPORT) && defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
-#define __CMDQ_IWC_IMPL__
-#endif
 
 static atomic_t gCmdqDebugLevel = ATOMIC_INIT(0);
 
