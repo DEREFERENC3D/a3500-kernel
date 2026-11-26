@@ -21,7 +21,6 @@
 
 #include <mach/mtk_thermal_platform.h>
 #include <mach/mt_typedefs.h>
-#include <mach/mt_storage_logger.h>
 
 #include <mach/mt_thermal.h>
 

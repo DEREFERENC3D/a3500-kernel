@@ -454,7 +454,6 @@ static irqreturn_t musb_stage0_irq(struct musb *musb, u8 int_usb,
 	DBG(2, "<== DevCtl=%02x, int_usb=0x%x\n", devctl,
 		int_usb);
 
-	USB_LOGGER(MUSB_STAGE0_IRQ, MUSB_STAGE0_IRQ, power, devctl, int_usb);
 
 	/* in host mode, the peripheral may issue remote wakeup.
 	 * in peripheral mode, the host may resume the link.
@@ -1477,9 +1476,6 @@ irqreturn_t musb_interrupt(struct musb *musb)
 		(devctl & MUSB_DEVCTL_HM) ? "host" : "peripheral",
 		musb->int_usb, musb->int_tx, musb->int_rx);
 
-	USB_LOGGER( MUSB_INTERRUPT, MUSB_INTERRUPT, \
-		(musb->is_host) ? "Host" : "Dev", musb->int_usb, \
-		musb->int_tx, musb->int_rx);
 
 	dumpTime(funcInterrupt, 0);
 

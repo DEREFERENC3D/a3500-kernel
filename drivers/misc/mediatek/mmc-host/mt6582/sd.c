@@ -65,7 +65,6 @@
 #endif
 //static struct workqueue_struct *workqueue;
 
-#include <mach/mt_storage_logger.h>
 #include "partition_define.h"
 
 #define EXT_CSD_BOOT_SIZE_MULT           226 /* R */
@@ -5201,15 +5200,11 @@ static int msdc_do_request(struct mmc_host*mmc, struct mmc_request*mrq)
             //init_completion(&host->xfer_done);
             msdc_dma_setup(host, &host->dma, data->sg, data->sg_len);
             msdc_dma_start(host);
-            if (unlikely(dumpMSDC()))
-                AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_do_request,"msdc_dma_start",host->xfer_size);
             spin_unlock(&host->lock);
             if(!wait_for_completion_timeout(&host->xfer_done, DAT_TIMEOUT)){
                 ERR_MSG("XXX CMD<%d> ARG<0x%x> wait xfer_done<%d> timeout!!", cmd->opcode, cmd->arg,data->blocks * data->blksz);
 
                 host->sw_timeout++;
-                if (unlikely(dumpMSDC()))
-                    AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_do_request,"msdc_dma ERR",host->xfer_size);
                 msdc_dump_info(host->id);
                 data->error = (unsigned int)-ETIMEDOUT;
 
@@ -5223,8 +5218,6 @@ static int msdc_do_request(struct mmc_host*mmc, struct mmc_request*mrq)
                 msdc_clr_int();
             }
 
-            if (unlikely(dumpMSDC()))
-                AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_do_request,"msdc_dma_stop");
         } else {
             /* Firstly: send command */
             host->autocmd &= ~MSDC_AUTOCMD12;  /* need ask the designer, how about autocmd12 or autocmd23 with pio mode */
@@ -5524,18 +5517,10 @@ static int msdc_tune_rw_request(struct mmc_host*mmc, struct mmc_request*mrq)
     msdc_dma_setup(host, &host->dma, data->sg, data->sg_len);
     msdc_dma_start(host);
     //ERR_MSG("1.Power cycle enable(%d)",host->power_cycle_enable);
-#ifdef STO_LOG
-    if (unlikely(dumpMSDC()))
-        AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_tune_rw_request,"msdc_dma_start",host->xfer_size);
-#endif
     spin_unlock(&host->lock);
     if(!wait_for_completion_timeout(&host->xfer_done, DAT_TIMEOUT)){
         ERR_MSG("XXX CMD<%d> ARG<0x%x> wait xfer_done<%d> timeout!!", cmd->opcode, cmd->arg,data->blocks * data->blksz);
         host->sw_timeout++;
-#ifdef STO_LOG
-        if (unlikely(dumpMSDC()))
-            AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_tune_rw_request,"msdc_dma ERR",host->xfer_size);
-#endif
         msdc_dump_info(host->id);
         data->error = (unsigned int)-ETIMEDOUT;
 
@@ -5549,11 +5534,6 @@ static int msdc_tune_rw_request(struct mmc_host*mmc, struct mmc_request*mrq)
         msdc_clr_fifo(host->id);
         msdc_clr_int();
     }
-#ifdef STO_LOG
-    if (unlikely(dumpMSDC()))
-        AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_tune_rw_request,"msdc_dma_stop");
-#endif
-
 stop:
     /* Last: stop transfer */
 
@@ -5967,11 +5947,6 @@ static int msdc_tune_cmdrsp(struct msdc_host *host)
     sdr_get_field(MSDC_PAD_TUNE, MSDC_PAD_TUNE_CMDRDLY, orig_rrdly);
     sdr_get_field(MSDC_PATCH_BIT1, MSDC_PATCH_BIT1_CMD_RSP, orig_cmdrtc);
     sdr_get_field(MSDC_PATCH_BIT0, MSDC_INT_DAT_LATCH_CK_SEL, orig_dl_cksel);
-    if (unlikely(dumpMSDC()))
-    {
-        AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_do_request,"sd_tune_ori RSPL",orig_rsmpl);
-        AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_do_request,"sd_tune_ori RRDLY",orig_rrdly);
-    }
 #if 1
     if (host->mclk >= 100000000){
         sel = 1;
@@ -6039,11 +6014,6 @@ static int msdc_tune_cmdrsp(struct msdc_host *host)
     sdr_get_field(MSDC_PATCH_BIT1, MSDC_PATCH_BIT1_CMD_RSP, orig_cmdrtc);
     sdr_get_field(MSDC_PATCH_BIT0, MSDC_INT_DAT_LATCH_CK_SEL, orig_dl_cksel);
     INIT_MSG("TUNE_CMD: rsmpl<%d> rrdly<%d> cmdrtc<%d> dl_cksel<%d> sfreq.<%d>", orig_rsmpl, orig_rrdly,orig_cmdrtc,orig_dl_cksel,host->sclk);
-    if (unlikely(dumpMSDC()))
-    {
-        AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_do_request,"sd_tune_ok RSPL",orig_rsmpl);
-        AddStorageTrace(STORAGE_LOGGER_MSG_MSDC_DO,msdc_do_request,"sd_tune_ok RRDLY",orig_rrdly);
-    }
     return result;
 }
 

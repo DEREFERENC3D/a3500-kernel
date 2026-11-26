@@ -365,7 +365,6 @@ static void txstate(struct musb *musb, struct musb_request *req)
 			epnum, musb_ep->packet_sz, fifo_count,
 			csr);
 
-	USB_LOGGER(TXSTATE, TXSTATE, epnum, musb_ep->packet_sz, fifo_count, csr);
 
 	if (is_buffer_mapped(req)) {
 		struct dma_controller	*c = musb->dma_controller;
@@ -441,10 +440,7 @@ static void txstate(struct musb *musb, struct musb_request *req)
 			fifo_count,
 			musb_readw(epio, MUSB_TXMAXP));
 
-	USB_LOGGER( TXSTATE_END, TXSTATE, musb_ep->end_point.name, use_dma ? "dma" : "pio",
-			request->actual, request->length, musb_readw(epio, MUSB_TXCSR), fifo_count,
-			musb_readw(epio, MUSB_TXMAXP));
-}
+	}
 
 /*
  * FIFO state update (e.g. data ready).
@@ -468,7 +464,6 @@ void musb_g_tx(struct musb *musb, u8 epnum)
 	DBG(1, "<== %s, txcsr %04x\n", musb_ep->end_point.name, csr);
 
 
-	USB_LOGGER(MUSB_G_TX, MUSB_G_TX, musb_ep->end_point.name, csr);
 
 
 	dma = is_dma_capable() ? musb_ep->dma : NULL;
@@ -903,8 +898,6 @@ void musb_g_rx(struct musb *musb, u8 epnum)
 	DBG(1, "<== %s, rxcsr %04x%s %p\n", musb_ep->end_point.name,
 			csr, dma ? " (dma)" : "", request);
 
-	USB_LOGGER(MUSB_G_RX, MUSB_G_RX, musb_ep->end_point.name, csr, \
-		(dma!=NULL) ? "DMA" : "PIO", request);
 
 	if (csr & MUSB_RXCSR_P_SENTSTALL) {
 		csr |= MUSB_RXCSR_P_WZC_BITS;

@@ -23,7 +23,6 @@
 
 #include <mach/mtk_thermal_monitor.h>
 #include <mach/mt_typedefs.h>
-#include <mach/mt_storage_logger.h>
 #include <mach/mtk_thermal_platform.h>
 
 /*#ifdef CONFIG_MD32_SUPPORT
@@ -128,14 +127,6 @@ static struct delayed_work _mtm_sysinfo_poll_queue;
 //************************************
 //  Macro
 //************************************
-#define THRML_STORAGE_LOG(msg_id, func_name, ...) \
-    do { \
-        if(unlikely(is_dump_mthermal()) && enable_ThermalMonitor) { \
-            AddThrmlTrace(msg_id, func_name, __VA_ARGS__); \
-        } \
-    }while(0)
-
-
 #define THRML_LOG(fmt, args...) \
     do { \
         if (enable_ThermalMonitorXlog) { \
@@ -964,23 +955,15 @@ static int mtk_sysinfo_get_info(unsigned int mask)
     // print extra info
     for (i=0; i<noextraattr; i++)
     {
-        THRML_STORAGE_LOG(THRML_LOGGER_MSG_MISC_EX_INFO, get_misc_ex_info, attrnames[i], attrvalues[i], attrunits[i]);
-    }
+            }
 
     // print batt info
     if (mask & THERMAL_SYS_INFO_BATT)
     {
         THRML_LOG("[mtk_sysinfo_get_info] nBattCurrentCnsmpt=%d nBattVol=%d nBattTemp=%d \n", nBattCurrentCnsmpt, nBattVol, nBattTemp);
     }
-    THRML_STORAGE_LOG(THRML_LOGGER_MSG_BATTERY_INFO, get_battery_info, nBattCurrentCnsmpt, nBattVol, nBattTemp);
 
     /* CPU and GPU to storage logger */
-    THRML_STORAGE_LOG(THRML_LOGGER_MSG_CPU_INFO_EX, get_cpu_info_ex,
-                            cpu_index_list[0].usage, cpu_index_list[1].usage,
-                            cpu_index_list[2].usage, cpu_index_list[3].usage,
-                            cpu_index_list[0].freq , cpu_index_list[1].freq,
-                            cpu_index_list[2].freq , cpu_index_list[3].freq,
-                            gpu_index.usage, gpu_index.freq);
 
     if (mask & THERMAL_SYS_INFO_CPU)
     {
@@ -1070,8 +1053,7 @@ static ssize_t mtkthermal_write(struct file *file, const char __user *buffer, si
          */
         g_nStartRealTime = nReadTime;
 
-        THRML_STORAGE_LOG(THRML_LOGGER_MSG_DEC_NUM, get_real_time, "[realtime]",g_nStartRealTime);
-        xlog_printk(ANDROID_LOG_INFO, "THERMAL/MONITOR", "[mtkthermal_monitor] nCtrlCmd=%d enable_ThermalMonitor=%d \n", nCtrlCmd, enable_ThermalMonitor);
+                xlog_printk(ANDROID_LOG_INFO, "THERMAL/MONITOR", "[mtkthermal_monitor] nCtrlCmd=%d enable_ThermalMonitor=%d \n", nCtrlCmd, enable_ThermalMonitor);
         xlog_printk(ANDROID_LOG_INFO, "THERMAL/MONITOR", "[mtkthermal_monitor] g_nStartRealTime=%d \n", g_nStartRealTime);
 
         return count;
@@ -1847,8 +1829,7 @@ static int mtk_thermal_wrapper_bind
     THRML_LOG("[.bind]- tz: %s cdev: %s tz_data:%d cl_data:%d \n", thermal->type, cdev->type, thermal->devdata, cdev->devdata);
 
     /* Log in mtk_thermal_zone_bind_cooling_device_wrapper() */
-    //THRML_STORAGE_LOG(THRML_LOGGER_MSG_BIND, bind, thermal->type, cdev->type);
-
+    //
     return ret;
 }
 
@@ -1997,8 +1978,7 @@ static int mtk_thermal_wrapper_get_temp
     }
 
     /* Monitor Temperature to StoreLogger */
-    THRML_STORAGE_LOG(THRML_LOGGER_MSG_ZONE_TEMP, get_temp, thermal->type, (int) *temperature);
-    THRML_LOG("[.get_temp] tz: %s raw: %d sma: %d\n", thermal->type, nTemperature, *temperature);
+        THRML_LOG("[.get_temp] tz: %s raw: %d sma: %d\n", thermal->type, nTemperature, *temperature);
 
 #if MTK_THERMAL_MONITOR_MEASURE_GET_TEMP_OVERHEAD
     dur = _get_current_time_us() - t;
@@ -2122,7 +2102,6 @@ static int mtk_thermal_wrapper_get_trip_temp
         ret = ops->get_trip_temp(thermal, trip, temperature);
 
     THRML_LOG("[.get_trip_temp] tz: %s trip: %d temp: %d \n", thermal->type, trip, *temperature);
-    THRML_STORAGE_LOG(THRML_LOGGER_MSG_TRIP_POINT, get_trip_temp, thermal->type, trip, *temperature);
 
     return ret;
 }
@@ -2447,7 +2426,6 @@ int mtk_thermal_zone_bind_cooling_device_wrapper
     THRML_LOG("[mtk_thermal_zone_bind_cooling_device_wrapper] thermal_type:%s trip:%d cdev_type:%s  ret:%d\n",
                 thermal->type, trip, cdev->type, ret);
 
-    THRML_STORAGE_LOG(THRML_LOGGER_MSG_BIND, bind, thermal->type, trip, cdev->type);
 
     return ret;
 }
@@ -2610,7 +2588,6 @@ static int mtk_cooling_wrapper_set_cur_state
 #endif
 
     THRML_LOG("[.set_cur_state] tz_type:%s cdev_type:%s trip:%d state:%d \n", mcdata->tz->type, cdev->type, mcdata->trip, state);
-    THRML_STORAGE_LOG(THRML_LOGGER_MSG_COOL_STAE, set_cur_state, mcdata->tz->type, mcdata->trip, cdev->type, state);
 
     if(ops->set_cur_state)
         ret =ops->set_cur_state(cdev, state);
