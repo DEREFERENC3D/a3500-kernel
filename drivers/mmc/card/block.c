@@ -1411,8 +1411,11 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 	return 0;
 }
 
+/* modify for build warning*/
+#ifdef CONFIG_MMC_BLOCK_DEFERRED_RESUME
 static int
 mmc_blk_set_blksize(struct mmc_blk_data *md, struct mmc_card *card);
+#endif
 
 static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
 {
@@ -1810,6 +1813,10 @@ static const struct mmc_fixup blk_fixups[] =
 	END_FIXUP
 };
 
+// TODO: Remove after fixing fstab
+#if defined(CONFIG_MTK_EMMC_SUPPORT)
+	extern void emmc_create_sys_symlink (struct mmc_card *card);
+#endif
 static int mmc_blk_probe(struct mmc_card *card)
 {
 	struct mmc_blk_data *md, *part_md;
@@ -1847,6 +1854,10 @@ static int mmc_blk_probe(struct mmc_card *card)
 		if (mmc_add_disk(part_md))
 			goto out;
 	}
+// TODO: Remove after fixing fstab
+#if defined(CONFIG_MTK_EMMC_SUPPORT)
+	emmc_create_sys_symlink(card);
+#endif
 	return 0;
 
  out:

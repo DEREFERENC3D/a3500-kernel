@@ -25,6 +25,7 @@
 #include <linux/posix-timers.h>
 #include <linux/workqueue.h>
 #include <linux/freezer.h>
+#include <mach/mtk_rtc.h>
 
 /**
  * struct alarm_base - Alarm timer bases
@@ -84,8 +85,6 @@ static int alarmtimer_rtc_add_device(struct device *dev,
 
 	if (!rtc->ops->set_alarm)
 		return -1;
-	if (!device_may_wakeup(rtc->dev.parent))
-		return -1;
 
 	spin_lock_irqsave(&rtcdev_lock, flags);
 	if (!rtcdev) {
@@ -125,6 +124,42 @@ static inline int alarmtimer_rtc_interface_setup(void) { return 0; }
 static inline void alarmtimer_rtc_interface_remove(void) { }
 static inline void alarmtimer_rtc_timer_init(void) { }
 #endif
+
+void alarm_set_power_on(struct timespec new_pwron_time, bool logo)
+{
+	unsigned long pwron_time;
+	struct rtc_wkalrm alm;
+	struct rtc_device *alarm_rtc_dev;
+
+#ifdef RTC_PWRON_SEC
+	/* round down the second */
+	new_pwron_time.tv_sec = (new_pwron_time.tv_sec / 60) * 60;
+#endif
+	if (new_pwron_time.tv_sec > 0) {
+		pwron_time = new_pwron_time.tv_sec;
+#ifdef RTC_PWRON_SEC
+		pwron_time += RTC_PWRON_SEC;
+#endif
+		alm.enabled = (logo ? 3 : 2);
+	} else {
+		pwron_time = 0;
+		alm.enabled = 4;
+	}
+	alarm_rtc_dev = alarmtimer_get_rtcdev();
+	rtc_time_to_tm(pwron_time, &alm.time);
+	rtc_timer_cancel(alarm_rtc_dev, &rtctimer);
+	rtc_set_alarm(alarm_rtc_dev, &alm);
+	rtc_set_alarm_poweron(alarm_rtc_dev, &alm);
+}
+
+void alarm_get_power_on(struct rtc_wkalrm *alm)
+{
+	if (!alm)
+		return;
+
+	memset(alm, 0, sizeof(struct rtc_wkalrm));
+	rtc_read_pwron_alarm(alm);
+}
 
 /**
  * alarmtimer_enqueue - Adds an alarm timer to an alarm_base timerqueue

@@ -2164,6 +2164,15 @@ unsigned long this_cpu_load(void)
 	return this->cpu_load[0];
 }
 
+/* Only remaining scheduler-side MTK hook: needs cpu_rq(), which is private
+ * to the scheduler. Consumed by the MT6582 videocodec driver. */
+unsigned long get_cpu_load(int cpu)
+{
+    struct rq *this = cpu_rq(cpu);
+    return this->cpu_load[0];
+}
+EXPORT_SYMBOL(get_cpu_load);
+
 
 /*
  * Global load-average calculations

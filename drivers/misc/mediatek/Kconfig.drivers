@@ -1,0 +1,305 @@
+menu "Drivers Configurations"
+menuconfig MTK_LDVT
+        bool "LDVT"
+	depends on ARCH_MT6589 || ARCH_MT6582
+        default n
+        ---help---
+          Say Y here for supporting LDVT
+
+if MTK_LDVT
+
+config MTK_LDVT_PMIC_WRAP
+        bool "MediaTek PMIC_WRAP driver for LDVT"
+        default y
+        ---help---
+          MediaTek PMIC_WRAP driver for LDVT
+
+endif
+
+# Accdet
+config MTK_ACCDET # ACCDET
+        bool "MediaTek Accessory Detection Support"
+        default n
+
+
+# Frame Buffer Related
+menuconfig MTK_FB # FB_MT6516 FB_MT6573
+        bool "MediaTek Framebuffer Driver"
+        depends on FB
+        select FB_CFB_FILLRECT
+        select FB_CFB_COPYAREA
+        select FB_CFB_IMAGEBLIT
+        select FB_SOFT_CURSOR
+        ---help---
+          This selects the MediaTek(R) frame buffer driver.
+          If you want to use MediaTek(R) frame buffer diver, say Y here.
+          If unsure, say N.
+
+menuconfig GPS
+        tristate "GPS drivers"
+        default y
+        ---help---
+          Say Y here for supporting GPS.
+
+if GPS
+config MTK_GPS # MT6516_GPS --> TODO should change to use modulized settings!
+        tristate "MediaTek 3326 GPS driver"
+        default y
+        ---help---
+          MT3326 GPS driver
+endif # GPS
+
+
+config MTK_BTIF
+        tristate"MediaTek BTIF Driver"
+
+config MTK_COMBO
+        tristate"MediaTek Connectivity Combo Chip Support"
+
+config MTK_COMBO_BT
+        tristate "MediaTek Combo Chip BT Support"
+        depends on MTK_COMBO
+
+config MTK_COMBO_GPS
+        tristate "MediaTek Combo Chip GPS Support"
+        depends on MTK_COMBO
+
+config MTK_COMBO_WIFI
+        tristate "MediaTek combo chip Wi-Fi support"
+        depends on MTK_COMBO
+        depends on !mt592x
+        select WIRELESS_EXT
+        select WEXT_PRIV
+
+config MTK_FM
+        tristate "MediaTek FM Chip Support"
+        default n
+
+# Video Related
+config MTK_VIDEOCODEC_DRIVER # MT6575_Video_Codec_Driver
+        tristate "MediaTek VideoCodec Driver"
+        default y
+
+
+# I2C Bus
+config MTK_I2C #I2C_MT6516 I2C_MT6573
+        tristate "MediaTek I2C adapter"
+        depends on I2C
+        default y
+        ---help---
+          This selects the MediaTek(R) Integrated Inter Circuit bus driver.
+          If you want to use MediaTek(R) I2C interface, say Y or M here.
+          If unsure, say N.
+
+#SPI
+config MTK_SPI 
+        tristate "MediaTek SPI controller"
+        depends on SPI
+        default y
+        ---help---
+          This selects the MediaTek(R) SPI bus driver.
+          If you want to use MediaTek(R) SPI interface, say Y or M here.  If unsure, say N.
+
+# Jpeg
+config MTK_JPEG # JPEG_MT6516 (no JPEG_MT6573, but 6573 is supported!)
+        tristate "MediaTek JPEG driver"
+        default y
+
+# Keyboard
+config MTK_KEYPAD # KEYBOARD_MT6516 KEYBOARD_MT6573
+        tristate "MediaTek Keypad Support"
+        help
+          Say Y here if you want to use the keypad.
+          To compile this driver as a module, choose M here: the
+          module will be called mt6516_kpd.
+
+config KEYBOARD_HID # TODO depends on ARCH_MT6516
+        tristate "MediaTek hid keyboard support"
+        help
+          Say Y here if you want to use the hid keyboard.
+
+          To compile this driver as a module, choose M here: the
+          module will be called hid_keyboard.
+
+# Leds
+config MTK_LEDS # LEDS_MT65XX
+        tristate "MediaTek LED Support"
+        depends on LEDS_CLASS
+        ---help---
+          This selects the MediaTek(R) LEDs connected to MediaTek chips.
+          If you want to use MediaTek(R) LEDs support, say Y or M here.
+          If unsure, say N.
+
+# Memory Card
+config MTK_MMC # MMC_MT6516 MMC_MT6573
+        tristate "MediaTek SD/MMC Card Interface support"
+        ---help---
+          This selects the MediaTek(R) Secure digital and Multimedia card Interface.
+          If you have a machine with a integrated SD/MMC card reader, say Y or M here.
+          If unsure, say N.
+
+# Mouse
+# if INPUT_MOUSE
+menu "MediaTek OFN / Jogball Related Drivers"
+config MOUSE_PANASONIC_EVQWJN
+        bool "Panasonic EVQWJN Jogball Support"
+        ---help---
+          Say Y here if you have Panasonic EVQWJN Jogball
+          If unsure, say N.
+
+endmenu
+# endif
+
+
+# Nand
+menuconfig MTK_MTD_NAND # MTD_NAND_MT6516
+        tristate "MediaTek Nand Support"
+        depends on MTD_NAND
+        ---help---
+          Enables support for NAND Flash chips wired to MediaTek chips.
+# Power Related
+if POWER_SUPPLY
+config MTK_SMART_BATTERY # 
+        tristate "MediaTek Smart Battery Driver"
+        default y
+
+config MTK_PMIC # 
+        tristate "MediaTek Power Management Unit Driver"
+        default y
+config MTK_PMIC_WRAP
+        bool "MediaTek PMIC_WRAP driver "
+        default y
+        ---help---
+          MediaTek pmic_wrap driver 
+        
+endif #POWER_SUPPLY
+
+# RTC
+config MTK_RTC # RTC_DRV_MT6516 RTC_DRV_MT6573
+        bool "MediaTek Real Time Clock Support"
+        default y
+
+# Serial Port Driver
+menuconfig MTK_SERIAL # SERIAL_MT6516 SERIAL_MT6573
+        tristate "MediaTek Serial Port Support"
+        select SERIAL_CORE
+        default y
+        ---help---
+          This selects MediaTek(R) internal UART driver.
+          If you want to use MediaTek(R) internal UART driver, say Y or M here.
+          If unsure, say N.
+
+config MTK_SERIAL_CONSOLE # SERIAL_MT6516_CONSOLE SERIAL_MT6573_CONSOLE
+        bool "MediaTek Console on Serial Port Support"
+        depends on MTK_SERIAL=y
+        select SERIAL_CORE_CONSOLE
+        default y
+        ---help---
+          Say Y here if you wish to use MT6516 internal UART as the system
+          console. You should alter the default console setting by kernel
+          command line option "console=ttyMT0" or "console=ttyMT1".
+
+config MTK_SERIAL_MODEM_TEST # SERIAL_MT6516_MODEM_TEST (will add in MT6573)
+        bool "Support modem test"
+        depends on MTK_SERIAL=y
+        default n
+        ---help---
+          Say Y here is you want to enable modem test. After enabling this
+          option, UART4 will be switched to modem side. Hence, the command
+          line parameter should be also modified.
+
+
+# Sound
+config MTK_SOUND # SOUND MT6573 SOUND_MT6516
+        bool "MediaTek Sound Driver"
+
+# Touch Panel
+config MTK_TOUCHPANEL # TOUCHSCREEN_MT6516 TOUCHSCREEN_MT6573
+        tristate "MediaTek Touch Panel Driver"
+        help
+          Say Y here if you have MediaTek MT6516 touch panel.
+          If unsure, say N.
+
+
+# USB # TODO Check Choice
+config MTK_USB_GADGET # USB_GADGET_MT6516 USB_GADGET_MT6573
+        boolean "MediaTek USB Gadget Driver"
+        select USB_GADGET_SELECTED
+        select USB_GADGET_DUALSPEED
+        default y
+
+# Vibrator
+config MTK_VIBRATOR # MT6516_VIBRATOR MT6573_VIBRATOR
+        bool "MediaTek Vibrator Driver"
+        default y
+
+# WatchDog
+config MTK_WD_KICKER # WD_KICKER
+        tristate "WatchDog Kicer"
+        default y
+        ---help---
+        Watch dog kicker is a module in the kernel for kicking the watch dog
+
+# Wireless
+config USB_MTK_ACM_TEMP
+	tristate "MediaTek USB ACM Temp support"
+	default y
+
+config USB_MTK_HDRC
+        tristate "MediaTek MUSB support"
+        select USB_GADGET_SELECTED
+        select USB_GADGET_DUALSPEED
+        default y
+
+config USB_MTK_HDRC_GADGET
+         tristate "MediaTek MUSB Gadget support"
+        
+config USB_MTK_OTG
+        tristate "MediaTek MUSB OTG support"
+        
+config USB_MTK_DEBUG_FS
+        tristate "MediaTek MUSB Debug FS support"
+	depends on DEBUG_FS
+        
+config USB_MTK_HDRC_HCD
+         tristate "MediaTek MUSB Debug support"         
+
+config MTK_USB_UNIQUE_SERIAL
+         tristate "MediaTek USB unique serial number"
+
+config MTK_USBFSH # USBFSH
+	bool "MediaTek USB fullspeed Host driver"
+	default n
+config MUSBFSH_PIO_ONLY # USBFSH_transfer mode
+	bool "Transfer mode of MediaTek USB fullspeed Host driver"
+	default n
+
+config AMPC_CDEV_NUM
+        int "AMPC chard device number(never change this value)"
+	default 151
+        help
+          AMPC char device number.
+endmenu
+config ION_MTK
+        bool "Mediatek ION Memory Manager"
+config MTK_STAGING
+	bool "Select which staging drivers you want"
+	depends on SWAP
+	select ZSMALLOC
+	select ZRAM
+	select ZRAM_DEBUG
+	default n
+	
+#
+# add for power loss test
+#
+menuconfig PWR_LOSS_MTK_TEST
+        tristate "Power Loss Test"
+        default n
+        help
+         Say Y here if you want do Power loss test for NAND Or EMMC
+         If unsure, say N.
+
+if PWR_LOSS_MTK_TEST
+endif 
+

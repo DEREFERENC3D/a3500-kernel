@@ -19,6 +19,7 @@ struct call_single_data {
 	struct list_head list;
 	smp_call_func_t func;
 	void *info;
+	cpumask_var_t cpumask;
 	u16 flags;
 	u16 priv;
 };

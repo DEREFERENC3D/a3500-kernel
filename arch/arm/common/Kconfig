@@ -1,6 +1,6 @@
 config ARM_GIC
 	select IRQ_DOMAIN
-	select MULTI_IRQ_HANDLER
+	select MULTI_IRQ_HANDLER if !ARCH_MT6582
 	bool
 
 config GIC_NON_BANKED

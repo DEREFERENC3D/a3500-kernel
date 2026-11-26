@@ -791,4 +791,6 @@ static int __init logger_init(void)
 out:
 	return ret;
 }
+
+
 device_initcall(logger_init);

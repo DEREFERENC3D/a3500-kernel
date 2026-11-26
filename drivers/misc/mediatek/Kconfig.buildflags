@@ -1,0 +1,132 @@
+# Build selections that used to be injected into KBUILD_CPPFLAGS by
+# MediaTek's ProjectConfig.mk / makeMtk.  The A3500 is the only supported
+# board (lcsh82_tb_3gfull_kk), so the values below simply record the choices
+# that used to live in the build environment.  Keeping them in Kconfig makes
+# a3500_defconfig a complete description of the build, as in MediaTek's
+# later in-tree kernel layout.
+
+comment "Feature selections (formerly ProjectConfig.mk flags)"
+
+config MTK_GPS_SUPPORT
+	bool "MediaTek GPS support"
+	default y
+
+config MTK_WFD_SUPPORT
+	bool "MediaTek Wi-Fi display support"
+	default y
+
+config MTK_WLAN_SUPPORT
+	bool "MediaTek WLAN support"
+	default y
+
+config MTK_BT_SUPPORT
+	bool "MediaTek Bluetooth support"
+	default y
+
+config MTK_TETHERINGIPV6_SUPPORT
+	bool "MediaTek IPv6 tethering support"
+	default y
+
+config MTK_SHARED_SDCARD
+	bool "MediaTek shared SD card layout"
+	default y
+
+config MTK_KERNEL_POWER_OFF_CHARGING
+	bool "MediaTek kernel power-off charging"
+	default y
+
+config MTK_UART_USB_SWITCH
+	bool "MediaTek UART/USB switch"
+	default y
+
+config MTK_BQ24196_SUPPORT
+	bool "MediaTek BQ24196 charger"
+	default y
+
+config MTK_SENSOR_SUPPORT
+	bool "MediaTek sensor support"
+	default y
+
+config CUSTOM_KERNEL_ACCELEROMETER
+	bool "Custom kernel accelerometer"
+	default y
+
+config CUSTOM_KERNEL_ALSPS
+	bool "Custom kernel ALSPS"
+	default y
+
+config MTK_M4U_SUPPORT
+	bool "MediaTek M4U support"
+	default y
+
+config MTK_EMMC_SUPPORT
+	bool "MediaTek eMMC support"
+	default y
+
+config MTK_LCM_PHYSICAL_ROTATION
+	string "LCM physical rotation"
+	default "0"
+
+config LCM_WIDTH
+	string "LCM width"
+	default "800"
+
+config LCM_HEIGHT
+	string "LCM height"
+	default "1280"
+
+config MTK_TABLET_PLATFORM
+	string "Tablet platform name"
+	default "MT8382"
+
+comment "Project-specific selections"
+
+config HAVE_XLOG_FEATURE
+	bool "MediaTek XLog feature"
+	default y
+
+config SLT_DRV_P3550_CONFIG
+	bool "SLT P3550 driver configuration"
+	default y
+
+config SLT_DRV_P3550_WIFI_ONLY_CONFIG
+	bool "SLT P3550 Wi-Fi only configuration"
+	default y
+
+config USER_BUILD_KERNEL
+	bool "User build kernel"
+	default y
+
+comment "Board components"
+
+config A5142_MIPI_RAW
+	bool "A5142 MIPI RAW camera sensor"
+	default y
+
+config GC2235_RAW
+	bool "GC2235 RAW camera sensor"
+	default y
+
+config HI257_YUV
+	bool "HI257 YUV camera sensor"
+	default y
+
+config DUMMY_FLASHLIGHT
+	bool "Dummy flashlight"
+	default y
+
+config CPT_CLAA070WP0B_HIMAX
+	bool "CPT CLAA070WP0B Himax LCM"
+	default y
+
+config AUO_B070EAN014_HIMAX
+	bool "AUO B070EAN014 Himax LCM"
+	default y
+
+config FM_DIGITAL_INPUT
+	bool "FM digital input"
+	default y
+
+config FM_DIGITAL_OUTPUT
+	bool "FM digital output"
+	default y

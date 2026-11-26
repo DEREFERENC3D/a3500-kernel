@@ -1,0 +1,3 @@
+ccflags-y += -I$(MTK_CUSTOM_PATH)/wdk
+obj-$(CONFIG_LOCAL_WDT) += mpcore_wdt.o
+obj-y += mtk_wdt.o

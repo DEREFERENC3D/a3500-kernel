@@ -227,7 +227,9 @@ struct i2c_client {
 	struct i2c_driver *driver;	/* and our access routines	*/
 	struct device dev;		/* the device structure		*/
 	int irq;			/* irq issued by device		*/
+	__u32 timing;			/* paramters of timings		*/
 	struct list_head detected;
+	__u32 ext_flag;
 };
 #define to_i2c_client(d) container_of(d, struct i2c_client, dev)
 
@@ -547,6 +549,8 @@ struct i2c_msg {
 #define I2C_M_RECV_LEN		0x0400	/* length will be first received byte */
 	__u16 len;		/* msg length				*/
 	__u8 *buf;		/* pointer to msg data			*/
+	__u32 timing;			/* paramters of timings		*/
+	__u32 ext_flag;
 };
 
 /* To determine what functionality is present */

@@ -1613,7 +1613,13 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 	if (!capable(CAP_SYS_ADMIN))
 		return -EPERM;
 
+#ifdef CONFIG_TOI
+	/* current->mm may be NULL in kernel space when sys_swapoff() is
+	 * called from disable_swapfile() in tuxonice_swap.c */
+	WARN_ON(!current->mm);
+#else
 	BUG_ON(!current->mm);
+#endif
 
 	pathname = getname(specialfile);
 	err = PTR_ERR(pathname);

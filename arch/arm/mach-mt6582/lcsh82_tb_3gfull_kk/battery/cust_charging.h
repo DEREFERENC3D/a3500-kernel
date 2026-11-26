@@ -1,0 +1,71 @@
+#ifndef _CUST_BAT_H_
+#define _CUST_BAT_H_
+
+/* stop charging while in talking mode */
+#define STOP_CHARGING_IN_TAKLING
+#define TALKING_RECHARGE_VOLTAGE 3800
+#define TALKING_SYNC_TIME		   60
+
+/* Battery Temperature Protection */
+#define MTK_TEMPERATURE_RECHARGE_SUPPORT
+#define MAX_CHARGE_TEMPERATURE  50
+#define MAX_CHARGE_TEMPERATURE_MINUS_X_DEGREE	48
+#define MIN_CHARGE_TEMPERATURE  0
+#define MIN_CHARGE_TEMPERATURE_PLUS_X_DEGREE	2
+#define ERR_CHARGE_TEMPERATURE  0xFF
+
+/* Linear Charging Threshold */
+#define V_PRE2CC_THRES	 		3400	//mV
+#define V_CC2TOPOFF_THRES		4050
+#define RECHARGING_VOLTAGE      4110
+#define CHARGING_FULL_CURRENT    150	//mA
+
+/* Charging Current Setting */
+
+#define USB_CHARGER_CURRENT					CHARGE_CURRENT_500_00_MA	//500mA
+
+#define AC_CHARGER_CURRENT					205600 //2A
+#define NON_STD_AC_CHARGER_CURRENT			CHARGE_CURRENT_500_00_MA
+#define CHARGING_HOST_CHARGER_CURRENT       CHARGE_CURRENT_650_00_MA
+#define APPLE_0_5A_CHARGER_CURRENT          CHARGE_CURRENT_500_00_MA
+#define APPLE_1_0A_CHARGER_CURRENT          CHARGE_CURRENT_650_00_MA
+#define APPLE_2_1A_CHARGER_CURRENT          CHARGE_CURRENT_800_00_MA
+
+
+/* Precise Tunning */
+#define BATTERY_AVERAGE_DATA_NUMBER	3	
+#define BATTERY_AVERAGE_SIZE 	30
+
+/* charger error check */
+#define BAT_LOW_TEMP_PROTECT_ENABLE         // stop charging if temp < MIN_CHARGE_TEMPERATURE
+#define V_CHARGER_MAX 6500				// 6.5 V
+#define V_CHARGER_MIN 4400				// 4.4 V
+
+/* Tracking TIME */
+#define ONEHUNDRED_PERCENT_TRACKING_TIME	10	// 10 second
+#define NPERCENT_TRACKING_TIME	   			20	// 20 second
+#define SYNC_TO_REAL_TRACKING_TIME  		60	// 60 second
+#define V_0PERCENT_TRACKING							3450 //3450mV
+
+/* Battery Notify */
+#define BATTERY_NOTIFY_CASE_0001_VCHARGER
+#define BATTERY_NOTIFY_CASE_0002_VBATTEMP
+#define BATTERY_NOTIFY_CASE_0005_TOTAL_CHARGINGTIME
+
+/* High battery support */
+#define HIGH_BATTERY_VOLTAGE_SUPPORT
+
+
+#define BAT_OVER_TEMP_POWER_OFF
+#define BAT_OVER_SOC_RECHARGE
+
+#if defined(BAT_OVER_TEMP_POWER_OFF)
+#define OVER_TEMP_POWER_OFF_TEMPERATURE  59
+#endif
+
+#if defined(BAT_OVER_SOC_RECHARGE)
+#define MAX_CHARGE_SOC		70
+#define OVER_SOC_RECHARGE_PERCENT	60
+#endif
+
+#endif /* _CUST_BAT_H_ */ 

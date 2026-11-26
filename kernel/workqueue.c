@@ -262,6 +262,11 @@ EXPORT_SYMBOL_GPL(system_unbound_wq);
 EXPORT_SYMBOL_GPL(system_freezable_wq);
 EXPORT_SYMBOL_GPL(system_nrt_freezable_wq);
 
+/* When this boolean is true, it means something wrong in cpu on/off callbacks.
+ * From this moment, we don't handle any cpu on/off events.
+ */
+static bool wq_cpuonoff_chaos = false;
+
 #define CREATE_TRACE_POINTS
 #include <trace/events/workqueue.h>
 
@@ -3551,8 +3556,10 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
 	case CPU_DOWN_PREPARE:
 		new_trustee = kthread_create(trustee_thread, gcwq,
 					     "workqueue_trustee/%d\n", cpu);
-		if (IS_ERR(new_trustee))
+		if (IS_ERR(new_trustee)) {
+			wq_cpuonoff_chaos = true;
 			return notifier_from_errno(PTR_ERR(new_trustee));
+		}
 		kthread_bind(new_trustee, cpu);
 		/* fall through */
 	case CPU_UP_PREPARE:
@@ -3561,9 +3568,14 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
 		if (!new_worker) {
 			if (new_trustee)
 				kthread_stop(new_trustee);
+			wq_cpuonoff_chaos = true;
 			return NOTIFY_BAD;
 		}
+		wq_cpuonoff_chaos = false;
 	}
+
+	if (wq_cpuonoff_chaos)
+		return NOTIFY_BAD;
 
 	/* some are called w/ irq disabled, don't disturb irq status */
 	spin_lock_irqsave(&gcwq->lock, flags);
@@ -3636,6 +3648,15 @@ static int __devinit workqueue_cpu_up_callback(struct notifier_block *nfb,
 					       unsigned long action,
 					       void *hcpu)
 {
+	if (wq_cpuonoff_chaos) {
+		/* suppose here only runs once when CPU_DOWN_PREPARE failed in DOWN callback, and
+		 * then reverse notifier to UP callback with CPU_DOWN_FAILED action. */
+		switch (action & ~CPU_TASKS_FROZEN) {
+			case CPU_DOWN_FAILED:
+				return NOTIFY_OK;
+		}
+	}
+
 	switch (action & ~CPU_TASKS_FROZEN) {
 	case CPU_UP_PREPARE:
 	case CPU_UP_CANCELED:
