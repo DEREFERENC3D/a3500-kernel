@@ -196,43 +196,6 @@ void init_dpi(BOOL isDpiPoweredOn)
     DPI_CHECK_RET(DPI_EnableClk());
 }
 
-#if defined(MTK_HDMI_SUPPORT)
-void init_dpi_new(BOOL isDpiPoweredOn)
-{
-    const LCM_DPI_PARAMS *dpi = &(lcm_params->dpi);
-    UINT32 i;
-    if(!reinitializing)
-        DPI_CHECK_RET(DPI_Init(isDpiPoweredOn));
-    DPI_CHECK_RET(DPI_EnableSeqOutput(FALSE));
-    DPI_CHECK_RET(DPI_ConfigPixelClk((DPI_POLARITY)dpi->clk_pol,
-                                     dpi->dpi_clk_div, dpi->dpi_clk_duty));
-    DPI_CHECK_RET(DPI_ConfigDataEnable((DPI_POLARITY)dpi->de_pol));
-    DPI_CHECK_RET(DPI_ConfigHsync((DPI_POLARITY)dpi->hsync_pol,
-                                  dpi->hsync_pulse_width,
-                                  dpi->hsync_back_porch,
-                                  dpi->hsync_front_porch));
-    DPI_CHECK_RET(DPI_ConfigVsync((DPI_POLARITY)dpi->vsync_pol,
-                                  dpi->vsync_pulse_width,
-                                  dpi->vsync_back_porch,
-                                  dpi->vsync_front_porch));
-	DPI_CHECK_RET(DPI_ConfigLVDS(lcm_params));
-    DPI_CHECK_RET(DPI_FBSetSize(DISP_GetScreenWidth(), DISP_GetScreenHeight()));
-    for (i = 0; i < dpi->intermediat_buffer_num; ++ i)
-    {
-        DPI_CHECK_RET(DPI_FBSetAddress(DPI_FB_0 + i, s_tmpBuffers[i].pa));
-        DPI_CHECK_RET(DPI_FBSetPitch(DPI_FB_0 + i, s_tmpBuffers[i].pitchInBytes));
-        DPI_CHECK_RET(DPI_FBEnable(DPI_FB_0 + i, TRUE));
-    }
-    DPI_CHECK_RET(DPI_FBSetFormat(dpiTmpBufFormat));
-    DPI_CHECK_RET(DPI_FBSyncFlipWithLCD(TRUE));
-    if (LCM_COLOR_ORDER_BGR == dpi->rgb_order) {
-        DPI_CHECK_RET(DPI_SetRGBOrder(DPI_RGB_ORDER_RGB, DPI_RGB_ORDER_BGR));
-    } else {
-        DPI_CHECK_RET(DPI_SetRGBOrder(DPI_RGB_ORDER_RGB, DPI_RGB_ORDER_RGB));
-    }
-    DPI_CHECK_RET(DPI_EnableClk());
-}
-#endif
 
 // ---------------------------------------------------------------------------
 //  DPI Display Driver Public Functions

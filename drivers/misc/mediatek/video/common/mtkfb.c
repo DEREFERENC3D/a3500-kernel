@@ -181,10 +181,6 @@ static int mtkfb_get_overlay_layer_info(struct fb_overlay_layer_info* layerInfo)
 static int mtkfb_update_screen(struct fb_info *info);
 static void mtkfb_update_screen_impl(void);
 unsigned int mtkfb_fm_auto_test(void);
-#if defined(MTK_HDMI_SUPPORT)
-extern void hdmi_setorientation(int orientation);
-extern void	MTK_HDMI_Set_Security_Output(int enable);
-#endif
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
 static void mtkfb_late_resume(struct early_suspend *h);
@@ -1153,16 +1149,6 @@ static int mtkfb_set_overlay_layer(struct fb_info *info, struct fb_overlay_layer
         max_buf_index_setted[id] = temp[id].buff_idx;
 
 {
-#if defined(MTK_HDMI_SUPPORT)
-    int tl = 0;
-    int cnt_security_layer = 0;
-    for(tl=0;tl<HW_OVERLAY_COUNT;tl++)
-    {
-        cnt_security_layer += temp[tl].security;
-    }
-    MTKFB_LOG("Totally %d security layer is set now\n", cnt_security_layer);
-    MTK_HDMI_Set_Security_Output(!!cnt_security_layer);
-#endif
 }
     temp[id].identity = layerInfo->identity;
     temp[id].connected_type = layerInfo->connected_type;
@@ -1795,10 +1781,6 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
         // is different than DISP_TV_ROT
         if (arg & 0x1) arg ^= 0x2;
         arg *=90;
-#if defined(MTK_HDMI_SUPPORT)
-		//for MT6589, the orientation of DDPK is changed from 0123 to 0/90/180/270
-		hdmi_setorientation((int)arg);
-#endif
         return 0;
     }
     case MTKFB_META_RESTORE_SCREEN:

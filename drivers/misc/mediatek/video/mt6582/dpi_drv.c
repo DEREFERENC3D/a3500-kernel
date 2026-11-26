@@ -12,9 +12,6 @@
 #error "ENABLE_DPI_REFRESH_RATE_LOG should be also ENABLE_DPI_INTERRUPT"
 #endif
 
-#if defined(MTK_HDMI_SUPPORT) && !ENABLE_DPI_INTERRUPT
-//#error "enable MTK_HDMI_SUPPORT should be also ENABLE_DPI_INTERRUPT"
-#endif
 
 #include <linux/kernel.h>
 #include <linux/string.h>

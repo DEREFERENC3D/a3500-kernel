@@ -22,11 +22,6 @@
 #define SWITCH_CHARGER 1
 #endif
 
-#if defined (CONFIG_MT6589_FPGA)\
-    || defined(CONFIG_MT6582_FPGA)
-#define FPGA_PLATFORM 1
-#endif
-
 struct mt_usb_glue {
 	struct device		*dev;
 	struct platform_device	*musb;

@@ -698,16 +698,3 @@ struct msdc_hw msdc1_hw = {
 	#endif
 #endif
 
-/* MT6575 NAND Driver */
-#if defined(CONFIG_MTK_MTD_NAND)
-struct mt6575_nand_host_hw mt6575_nand_hw = {
-    .nfi_bus_width          = 8,
-	.nfi_access_timing		= NFI_DEFAULT_ACCESS_TIMING,
-	.nfi_cs_num				= NFI_CS_NUM,
-	.nand_sec_size			= 512,
-	.nand_sec_shift			= 9,
-	.nand_ecc_size			= 2048,
-	.nand_ecc_bytes			= 32,
-	.nand_ecc_mode			= NAND_ECC_HW,
-};
-#endif

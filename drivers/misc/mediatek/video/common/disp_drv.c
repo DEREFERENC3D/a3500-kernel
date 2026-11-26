@@ -1444,12 +1444,6 @@ void DISP_UnRegisterExTriggerSource(int u4ID)
 
     ReleaseUpdateMutex();
 }
-#if defined (MTK_HDMI_SUPPORT)
-extern bool is_hdmi_active(void);
-#if defined (SINGLE_PANEL_OUTPUT)
-extern void hdmi_config_overlay_wdma(void); 
-#endif
-#endif
 
 static void _DISP_VSyncCallback(void* pParam);
 
@@ -1611,15 +1605,6 @@ static int _DISP_ConfigDlinkDatapath (disp_path_config_dirty *dirty_flag, struct
 	disp_path_get_mutex();
 
 
-#if defined(SINGLE_PANEL_OUTPUT) && defined(MTK_HDMI_SUPPORT)
-	//This is only for 82 HDMI feature using
-	//Because only one RDMA can be used for main display and HDMI
-	//Replace OVL->RDMA with OVL->WDMA to release RDMA and consume ovl output
-	if(is_hdmi_active())
-	{
-		hdmi_config_overlay_wdma();
-	}
-#endif
 
 	if (dirty_flag->ovl_dirty) {
 		for (i=0; i<DDP_OVL_LAYER_MUN; i++) {
@@ -2459,9 +2444,6 @@ DISP_STATUS DISP_Capture_Framebuffer( unsigned int pvbuf, unsigned int bpp, unsi
 		DISP_LOG("[WaitQ] wait_event_interruptible() ret = %d, %d\n", wait_ret, __LINE__);
 	}
 
-#if defined(MTK_HDMI_SUPPORT)
-	deinit_o2m &= !is_hdmi_active();
-#endif
 
 	if(deinit_o2m)
 	{
@@ -2863,9 +2845,6 @@ DISP_STATUS DISP_Auto_Capture_FB( unsigned int pvbuf, unsigned int wdma_out_fmt,
 			DISP_LOG("[WaitQ] wait_event_interruptible() ret = %d, %d\n", wait_ret, __LINE__);
 		}
 
-#if defined(MTK_HDMI_SUPPORT)
-		deinit_o2m &= !is_hdmi_active();
-#endif
 
 
 		if(deinit_o2m)

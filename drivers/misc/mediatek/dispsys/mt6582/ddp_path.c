@@ -1037,9 +1037,6 @@ int disp_path_config(struct disp_path_config_struct* pConfig)
 }
 
 DISP_MODULE_ENUM g_dst_module;
-#if defined(MTK_HDMI_SUPPORT)
-extern bool is_hdmi_active(void);
-#endif
 
 
 int disp_path_config_(struct disp_path_config_struct* pConfig, int mutexId)
@@ -1150,9 +1147,6 @@ int disp_path_config_(struct disp_path_config_struct* pConfig, int mutexId)
             case DISP_MODULE_DPI0:
 				printk("DISI_MODULE_DPI0\n");
             	if (DISP_IsDecoupleMode()
-#if defined(MTK_HDMI_SUPPORT)
-            	    || is_hdmi_active()
-#endif
             	) {
             		DISP_REG_SET(DISP_REG_CONFIG_DISP_OVL_MOUT_EN, 1<<1);  // OVL-->WDMA0
             	} else {
@@ -1338,13 +1332,6 @@ int disp_path_config_(struct disp_path_config_struct* pConfig, int mutexId)
         else  //src module is RDMA1
         {
             printk("from rdma1\n");
-#if defined(MTK_HDMI_SUPPORT)
-            disp_bls_init(pConfig->srcROI.width, pConfig->srcROI.height);
-            //=============================config PQ start==================================
-            DpEngine_COLORonInit();
-            DpEngine_COLORonConfig(pConfig->srcROI.width,  //width
-                           pConfig->srcROI.height); //height
-#endif
             ///config RDMA
             RDMAStop(1);
             RDMAReset(1);

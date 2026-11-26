@@ -18,16 +18,11 @@
 //#define CONFIG_CLKSRC_64_BIT 
 
 
-#ifdef CONFIG_MT6582_FPGA
-#define SYS_CLK_RATE        (6000000)    /* FPGA clock source is 6M */
-#else
 #define SYS_CLK_RATE        (13000000)
-#endif
 
 /* MT6582 GPT Usage Allocation */
-#ifndef CONFIG_MT6582_FPGA
+
 #define CONFIG_HAVE_SYSCNT
-#endif
 
 #ifdef CONFIG_HAVE_SYSCNT
 //#define CONFIG_SYSCNT_ASSIST
@@ -673,14 +668,8 @@ static inline void setup_clkevt(void)
     evt->max_delta_ns = clockevent_delta2ns(0xffffffff, evt);
     evt->min_delta_ns = clockevent_delta2ns(3, evt);
     evt->cpumask = cpumask_of(0);
-#ifndef CONFIG_MT6582_FPGA
-
     setup_gpt_dev_locked(dev, GPT_REPEAT, GPT_CLK_SRC_SYS, GPT_CLK_DIV_1,
                 SYS_CLK_RATE / HZ, clkevt_handler, GPT_ISR);
-#else 
-    setup_gpt_dev_locked(dev, GPT_REPEAT, GPT_CLK_SRC_SYS, GPT_CLK_DIV_1,
-                SYS_CLK_RATE / HZ, clkevt_handler, GPT_ISR);
-#endif
 
     __gpt_get_cmp(dev, &cmp); 
     printk("GPT1_CMP = %d, HZ = %d\n", cmp, HZ);
@@ -729,11 +718,7 @@ unsigned long long notrace sched_clock(void)
 	{
 	  cycles = mt_gpt_read(cs);
 	  cycles *= 1000 << 1;
-#ifndef CONFIG_MT6582_FPGA
       do_div(cycles, 13 << 1);
-#else
-      do_div(cycles, 6 << 1);
-#endif
 	  return cycles;
 	  //return cyc_to_ns(cycles,cs->mult, cs->shift);
 	}
@@ -745,16 +730,10 @@ static inline void setup_clksrc(void)
     struct gpt_device *dev = id_to_dev(GPT_CLKSRC_ID);
 
     cs->mult = clocksource_hz2mult(SYS_CLK_RATE, cs->shift);
-#ifndef CONFIG_MT6582_FPGA
-
-    setup_gpt_dev_locked(dev, GPT_FREE_RUN, GPT_CLK_SRC_SYS, GPT_CLK_DIV_1,
-                0, NULL, 0);
-#else
 
      setup_gpt_dev_locked(dev, GPT_FREE_RUN, GPT_CLK_SRC_SYS, GPT_CLK_DIV_1,
                 0, NULL, 0);
 
-#endif
 	g_clksrc_init = 1;
 }
 #endif
@@ -764,15 +743,9 @@ static inline void setup_syscnt(void)
 {
     struct gpt_device *dev = id_to_dev(GPT_SYSCNT_ID);
 	
-#ifndef CONFIG_MT6582_FPGA
-
-    setup_gpt_dev_locked(dev, GPT_FREE_RUN, GPT_CLK_SRC_SYS, GPT_CLK_DIV_1,
-                0, NULL, 0);
-#else
    //use div2 for 6Mhz
    setup_gpt_dev_locked(dev, GPT_FREE_RUN, GPT_CLK_SRC_SYS, GPT_CLK_DIV_1,
                 0, NULL, 0);
-#endif
 
     printk("fwq sysc count \n");
 }

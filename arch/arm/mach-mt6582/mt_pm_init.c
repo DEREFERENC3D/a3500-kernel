@@ -209,7 +209,6 @@ static int __init mt_power_management_init(void)
 
 		pm_power_off = mt_power_off;
 		
-    #if !defined (CONFIG_MT6582_FPGA_CA7)
     xlog_printk(ANDROID_LOG_INFO, "Power/PM_INIT", "Bus Frequency = %d KHz\n", mt_get_bus_freq());
 
     //cpu dormant driver init
@@ -254,7 +253,6 @@ static int __init mt_power_management_init(void)
             entry->read_proc = bus_speed_dump_read;
         }
     }
-    #endif
     
     return 0;
 }

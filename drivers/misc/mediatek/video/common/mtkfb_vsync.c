@@ -54,9 +54,6 @@ DEFINE_SEMAPHORE(mtkfb_vsync_sem);
 extern void mtkfb_waitVsync(void);
 extern void mtkfb_disable_non_fb_layer(void);
 
-#if defined(MTK_HDMI_SUPPORT)
-extern void hdmi_waitVsync();
-#endif
 
 void mtkfb_vsync_log_enable(int enable)
 {
@@ -103,19 +100,8 @@ static long mtkfb_vsync_unlocked_ioctl(struct file *file, unsigned int cmd, unsi
 
 			if(arg == MTKFB_VSYNC_SOURCE_HDMI)
 			{
-#if defined(MTK_HDMI_SUPPORT)
-                if (down_interruptible(&mtkfb_vsync_sem)) {
-         			printk("[mtkfb_vsync_ioctl] can't get semaphore,%d\n", __LINE__);
-    				msleep(20);
-         			return ret;
-        		}
-                hdmi_waitVsync();
-    			up(&mtkfb_vsync_sem);
-    			MTKFB_VSYNC_LOG("[MTKFB_VSYNC]: leave MTKFB_VSYNC_IOCTL, %d\n", __LINE__);
-#else
                 MTKFB_VSYNC_LOG("[MTKFB_VSYNC]: NS leave MTKFB_VSYNC_IOCTL, %d\n", __LINE__);
                 ret = -EFAULT;
-#endif                
                 return ret;
 			}
 			

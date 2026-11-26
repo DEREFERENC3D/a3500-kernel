@@ -1,5 +1,3 @@
-#define MT6582_FPGA
-//#define FPGA_VERSION
 
 #include <linux/kernel.h>
 #include <linux/mm.h>
