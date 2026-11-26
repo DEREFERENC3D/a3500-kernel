@@ -959,9 +959,6 @@ int dumchar_probe(struct platform_device * dev)
 	int result, i,m,l;
 	dev_t devno;
 	loff_t misc_addr=0;
-#ifdef CONFIG_MTK_MTD_NAND
-	struct mtd_info *mtd;
-#endif
 #ifdef CONFIG_MTK_EMMC_SUPPORT
 	struct storage_info s_info = {0};
 	//struct msdc_host *host_ctl;
@@ -1049,33 +1046,6 @@ int dumchar_probe(struct platform_device * dev)
 			//}
 			printk("[Dumchar] %s start address=%llx size=%llx\n",dumchar_devices[i].dumname,dumchar_devices[i].start_address,dumchar_devices[i].size);
 #endif
-		}else{
-#ifdef CONFIG_MTK_MTD_NAND
-			char *mtdname = dumchar_devices[i].dumname;		
-			if(!strcmp(dumchar_devices[i].dumname,"seccfg"))
-				mtdname = "seccnfg";
-
-			if(!strcmp(dumchar_devices[i].dumname,"bootimg"))
-				mtdname = "boot";
-			
-			if(!strcmp(dumchar_devices[i].dumname,"sec_ro"))
-				mtdname = "secstatic";
-			
-			if(!strcmp(dumchar_devices[i].dumname,"android"))
-				mtdname = "system";
-			
-			if(!strcmp(dumchar_devices[i].dumname,"usrdata"))
-				mtdname = "userdata";
-		
-			mtd_for_each_device(mtd) {
-				if(!strcmp(mtd->name,mtdname)){
-					dumchar_devices[i].mtd_index = mtd->index;
-					sprintf(dumchar_devices[i].actname,"/dev/mtd/mtd%d",mtd->index); 
-					dumchar_devices[i].size = mtd->size;
-					break;
-				}
-			}
-#endif		
 		}
 		
 	}
@@ -1102,9 +1072,6 @@ int dumchar_probe(struct platform_device * dev)
 		}
 	}
 	env_init(misc_addr);
-#ifdef CONFIG_MTK_MTD_NAND
-	mtd_create_symlink();
-#endif
 
 	return 0;
 	
