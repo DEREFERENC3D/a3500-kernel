@@ -19,12 +19,10 @@ void DBG_Deinit(void);
 extern void hdmi_log_enable(int enable);
 extern void hdmi_cable_fake_plug_in(void);
 extern void hdmi_cable_fake_plug_out(void);
-extern void hdmi_mmp_enable(int enable);
 extern void hdmi_power_on(void);
 extern void hdmi_power_off(void);
 extern void hdmi_suspend(void);
 extern void hdmi_resume(void);
-extern void init_hdmi_mmp_events(void);
 
 extern int hdmi_disc_disp_path(void);
 extern int hdmi_conn_disp_path(void);
@@ -32,7 +30,6 @@ extern void hdmi_config_main_disp();
 extern int disp_dump_reg(DISP_MODULE_ENUM module);
 
 
-extern int mmp_image_scale;
 extern unsigned int decouple_addr;
 
 // ---------------------------------------------------------------------------
@@ -122,29 +119,6 @@ static void process_dbg_opt(const char *opt)
     }
 
 #endif
-    else if (0 == strncmp(opt, "hdmimmp:", 8))
-    {
-        if (0 == strncmp(opt + 8, "on", 2))
-        {
-            hdmi_mmp_enable(1);
-        }
-        else if (0 == strncmp(opt + 8, "off", 3))
-        {
-            hdmi_mmp_enable(0);
-        }
-        else if (0 == strncmp(opt + 8, "img", 3))
-        {
-            hdmi_mmp_enable(7);
-        }
-        else if (0 == strncmp(opt + 8, "init", 4))
-        {
-            init_hdmi_mmp_events();
-        }
-        else
-        {
-            goto Error;
-        }
-    }
     else if (0 == strncmp(opt, "disconnect", 10))
     {
         hdmi_disc_disp_path();
@@ -200,29 +174,6 @@ static void process_dbg_opt(const char *opt)
             disp_dump_reg(DISP_MODULE_CONFIG);
         }
 		
-    }
-	else if (0 == strncmp(opt, "imgscale:", 9))
-    {
-        char *p = (char *)opt + 9;
-        unsigned int level = (unsigned int) simple_strtoul(p, &p, 3);
-
-        if (level)
-        {
-            if (level > 10)
-            {
-                level = 10;
-            }
-            if (level < 1)
-            {
-                level = 1;
-            }
-            mmp_image_scale = level;
-            printk("[hdmitx] imgscale set to %d\n", mmp_image_scale);
-        }
-        else
-        {
-            goto Error;
-        }
     }
     else
     {

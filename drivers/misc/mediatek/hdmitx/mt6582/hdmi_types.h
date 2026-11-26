@@ -1,7 +1,6 @@
 #ifndef     _HDMI_TYPES_H_
 #define     _HDMI_TYPES_H_
 
-#include <linux/mmprofile.h>
 #include <linux/ion_drv.h>
 #include <linux/list.h>
 #include <asm/atomic.h>
@@ -55,59 +54,6 @@ typedef struct _hdmi_buffer_list
     struct list_head list;
 } hdmi_video_buffer_list;
 
-typedef struct
-{
-    MMP_Event HDMI;
-    MMP_Event DDPKBitblt;
-    MMP_Event OverlayDone;
-    MMP_Event SwitchRDMABuffer;
-    MMP_Event SwitchOverlayBuffer;
-    MMP_Event StopOverlayBuffer;
-    MMP_Event RDMA1RegisterUpdated;
-    MMP_Event WDMA1RegisterUpdated;
-    MMP_Event WaitVSync;
-    MMP_Event BufferPost;
-    MMP_Event BufferInsert;
-    MMP_Event BufferAdd;
-    MMP_Event BufferUsed;
-    MMP_Event BufferRemove;
-    MMP_Event FenceCreate;
-    MMP_Event FenceSignal;
-    MMP_Event HDMIState;
-    MMP_Event GetDevInfo;
-    MMP_Event ErrorInfo;
-    MMP_Event MutexErr;
-    MMP_Event BufferCfg;
-    MMP_Event BufferUpdate;
-} HDMI_MMP_Events_t;
-
-typedef enum
-{
-    insert_Buffer_Err1 = 0xeff0,
-    insert_Buffer_Err2 ,
-    insert_Buffer_Err3 ,
-    insert_Buffer_Err4,
-    insert_Buffer_Err5,
-    Buffer_INFO_Err,     //5
-    Timeline_Err,
-    Buffer_Not_Enough,
-    Buffer_Empt_Err,
-    Fence_Err,           
-    Mutex_Err1,          //10->0xeffa
-    Mutex_Err2,
-    Mutex_Err3,
-    Buff_Dup_Err1,
-    Buff_ION_Err1
-
-} HDMI_MMP_Err;
-
-typedef enum
-{
-    Plugout ,
-    Plugin ,
-    ResChange
-
-} HDMI_State;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~the definition~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

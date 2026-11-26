@@ -417,7 +417,6 @@ exit:
 static void mtkfb_update_screen_impl(void)
 {
     BOOL down_sem = FALSE;
-    MMProfileLog(MTKFB_MMP_Events.UpdateScreenImpl, MMProfileFlagStart);
     if (down_interruptible(&sem_overlay_buffer)) {
         printk("[FB Driver] can't get semaphore in mtkfb_update_screen_impl()\n");
     }
@@ -432,7 +431,6 @@ static void mtkfb_update_screen_impl(void)
         sem_overlay_buffer_cnt++;
         up(&sem_overlay_buffer);
     }
-    MMProfileLog(MTKFB_MMP_Events.UpdateScreenImpl, MMProfileFlagEnd);
 }
 
 
@@ -663,7 +661,6 @@ static int mtkfb_pan_display_impl(struct fb_var_screeninfo *var, struct fb_info 
         first_update = false;
         return ret;
     }
-    MMProfileLogStructure(MTKFB_MMP_Events.PanDisplay, MMProfileFlagStart, var, struct fb_var_screeninfo);
     if(0!=cnt){
         printk("LCD:%dx%d\n",MTK_FB_XRES,MTK_FB_YRES);
         cnt--;
@@ -677,7 +674,6 @@ static int mtkfb_pan_display_impl(struct fb_var_screeninfo *var, struct fb_info 
 
     if (down_interruptible(&sem_flipping)) {
         printk("[FB Driver] can't get semaphore in mtkfb_pan_display_impl()\n");
-        MMProfileLogMetaString(MTKFB_MMP_Events.PanDisplay, MMProfileFlagEnd, "Can't get semaphore in mtkfb_pan_display_impl()");
         return -ERESTARTSYS;
     }
     sem_flipping_cnt--;
@@ -753,7 +749,6 @@ static int mtkfb_pan_display_impl(struct fb_var_screeninfo *var, struct fb_info 
         esd_recovery_pause(FALSE);
         first_enable_esd = false;
     }
-    MMProfileLog(MTKFB_MMP_Events.PanDisplay, MMProfileFlagEnd);
 
     return ret;
 }
@@ -1046,7 +1041,6 @@ static int mtkfb_set_overlay_layer(struct fb_info *info, struct fb_overlay_layer
     static unsigned int max_buf_index_setted[DDP_OVL_LAYER_MUN] = {0,0,0,0};
     memcpy(temp, cached_layer_config, sizeof(temp));
 
-    MMProfileLogEx(MTKFB_MMP_Events.SetOverlayLayer, MMProfileFlagStart, (id<<24)|(enable<<16)|layerInfo->next_buff_idx, (unsigned int)layerInfo->src_phy_addr);
 
     MTKFB_LOG_D("L%d set_overlay:%d,%d\n", layerInfo->layer_id, layerInfo->layer_enable, layerInfo->next_buff_idx);
 
@@ -1321,7 +1315,6 @@ LeaveOverlayMode:
     }
 
     MSG_FUNC_LEAVE();
-    MMProfileLog(MTKFB_MMP_Events.SetOverlayLayer, MMProfileFlagEnd);
 
     return ret;
 }
@@ -1348,7 +1341,6 @@ static int mtkfb_get_overlay_layer_info(struct fb_overlay_layer_info* layerInfo)
     layerInfo->curr_conn_type = layer.curr_conn_type;
     layerInfo->next_conn_type = layer.next_conn_type;
     layerInfo->hw_conn_type = layer.hw_conn_type;
-    MMProfileLogEx(MTKFB_MMP_Events.LayerInfo[layerInfo->layer_id], MMProfileFlagPulse, (layerInfo->next_idx<<16)+((layerInfo->curr_idx)&0xFFFF), (layerInfo->hw_idx<<16)+(layerInfo->next_en<<8)+(layerInfo->curr_en<<4)+layerInfo->hw_en);
     return 0;
 }
 
@@ -1366,11 +1358,9 @@ static int mtkfb_auto_capture_framebuffer(struct fb_info *info,struct fb_slt_cat
 	unsigned int bpp = 32;
     printk("mtkfb_auto_capture_framebuffer\n");
 
-	MMProfileLogEx(MTKFB_MMP_Events.CaptureFramebuffer, MMProfileFlagStart, pvbuf, 0);
 	MTKFB_FUNC();
 	if (down_interruptible(&sem_flipping)) {
 		printk("[FB Driver] can't get semaphore:%d\n", __LINE__);
-		MMProfileLogEx(MTKFB_MMP_Events.CaptureFramebuffer, MMProfileFlagEnd, 0, 1);
 		return -ERESTARTSYS;
 	}
 	sem_flipping_cnt--;
@@ -1399,17 +1389,14 @@ static int mtkfb_auto_capture_framebuffer(struct fb_info *info,struct fb_slt_cat
     sem_flipping_cnt++;
 	up(&sem_flipping);
     MSG_FUNC_LEAVE();
-    MMProfileLogEx(MTKFB_MMP_Events.CaptureFramebuffer, MMProfileFlagEnd, 0, 0);
 
     return ret;
 }
 static int mtkfb_capture_framebuffer(struct fb_info *info, unsigned int pvbuf)
 {
     int ret = 0;
-    MMProfileLogEx(MTKFB_MMP_Events.CaptureFramebuffer, MMProfileFlagStart, pvbuf, 0);
     if (down_interruptible(&sem_flipping)) {
         printk("[FB Driver] can't get semaphore:%d\n", __LINE__);
-        MMProfileLogEx(MTKFB_MMP_Events.CaptureFramebuffer, MMProfileFlagEnd, 0, 1);
         return -ERESTARTSYS;
     }
     sem_flipping_cnt--;
@@ -1463,7 +1450,6 @@ EXIT:
     sem_flipping_cnt++;
     up(&sem_flipping);
     MSG_FUNC_LEAVE();
-    MMProfileLogEx(MTKFB_MMP_Events.CaptureFramebuffer, MMProfileFlagEnd, 0, 0);
 
     return ret;
 }
@@ -1530,8 +1516,6 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
     DISP_STATUS ret = 0;
     int r = 0;
 
-	/// M: dump debug mmprofile log info
-	MMProfileLogEx(MTKFB_MMP_Events.IOCtrl, MMProfileFlagPulse, _IOC_NR(cmd), arg);
 	//printk("mtkfb_ioctl, info=0x%08x, cmd=0x%08x, arg=0x%08x\n", (unsigned int)info, (unsigned int)cmd, (unsigned int)arg);
 
     switch (cmd)
@@ -1703,10 +1687,8 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
         };
         struct fb_overlay_layer layerInfo[VIDEO_LAYER_COUNT];
         MTKFB_LOG(" mtkfb_ioctl():MTKFB_SET_VIDEO_LAYERS\n");
-        MMProfileLog(MTKFB_MMP_Events.SetVideoLayers, MMProfileFlagStart);
         if (copy_from_user(&layerInfo, (void __user *)arg, sizeof(layerInfo))) {
             MTKFB_LOG("[FB]: copy_from_user failed! line:%d \n", __LINE__);
-            MMProfileLogMetaString(MTKFB_MMP_Events.SetVideoLayers, MMProfileFlagEnd, "Copy_from_user failed!");
             r = -EFAULT;
         } else {
             int32_t i;
@@ -1719,7 +1701,6 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
             	DISP_StartOverlayTransfer();
             }
             is_ipoh_bootup = false;
-            MMProfileLogStructure(MTKFB_MMP_Events.SetVideoLayers, MMProfileFlagEnd, layerInfo, struct mmp_fb_overlay_layers);
         }
 
         return (r);
@@ -1736,10 +1717,8 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
     	};
     	struct fb_overlay_layer layerInfo[HW_OVERLAY_COUNT];
     	MTKFB_LOG(" mtkfb_ioctl():MTKFB_SET_MULTIPLE_LAYERS\n");
-    	MMProfileLog(MTKFB_MMP_Events.SetMultipleLayers, MMProfileFlagStart);
     	if (copy_from_user(&layerInfo, (void __user *)arg, sizeof(layerInfo))) {
     		MTKFB_LOG("[FB]: copy_from_user failed! line:%d \n", __LINE__);
-    		MMProfileLogMetaString(MTKFB_MMP_Events.SetMultipleLayers, MMProfileFlagEnd, "Copy_from_user failed!");
     		r = -EFAULT;
     	} else {
     		int32_t i, layerId;
@@ -1773,7 +1752,6 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
             	DISP_StartOverlayTransfer();
             }
     		is_ipoh_bootup = false;
-    		MMProfileLogStructure(MTKFB_MMP_Events.SetMultipleLayers, MMProfileFlagEnd, layerInfo, struct mmp_fb_overlay_layers);
     	}
 
     	return (r);
@@ -1782,7 +1760,6 @@ static int mtkfb_ioctl(struct file *file, struct fb_info *info, unsigned int cmd
     case MTKFB_TRIG_OVERLAY_OUT:
 	{
         MTKFB_LOG(" mtkfb_ioctl():MTKFB_TRIG_OVERLAY_OUT\n");
-        MMProfileLog(MTKFB_MMP_Events.TrigOverlayOut, MMProfileFlagPulse);
         return mtkfb_update_screen(info);
 	}
 
@@ -2202,7 +2179,6 @@ int m4u_reclaim_mva_callback_ovl(int moduleID, unsigned int va, unsigned int siz
 {
     int id;
     unsigned int dirty = 0;
-    MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagStart, mva, size);
     for (id = 0; id < DDP_OVL_LAYER_MUN; id++)
     {
         if (cached_layer_config[id].layer_en == 0)
@@ -2223,7 +2199,6 @@ int m4u_reclaim_mva_callback_ovl(int moduleID, unsigned int va, unsigned int siz
         memset(mtkfb_fbi->screen_base, 0, DISP_GetVRamSize());
         mtkfb_pan_display_impl(&mtkfb_fbi->var, mtkfb_fbi);
     }
-    MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagEnd, dirty, 0);
     return 0;
 }
 
@@ -2949,7 +2924,6 @@ static void mtkfb_early_suspend(struct early_suspend *h)
     }
 
     sem_early_suspend_cnt--;
-    //MMProfileLogEx(MTKFB_MMP_Events.EarlySuspend, MMProfileFlagStart, 0, 0);
 
     if(is_early_suspended){
         is_early_suspended = TRUE;
@@ -2960,7 +2934,6 @@ static void mtkfb_early_suspend(struct early_suspend *h)
         return;
     }
 
-    MMProfileLog(MTKFB_MMP_Events.EarlySuspend, MMProfileFlagStart);
     is_early_suspended = TRUE;
 
     DISP_PrepareSuspend();
@@ -2986,7 +2959,6 @@ static void mtkfb_early_suspend(struct early_suspend *h)
 #if defined (MTK_FB_SYNC_SUPPORT)
 	//disp_sync_deinit();
 #endif
-    //MMProfileLogEx(MTKFB_MMP_Events.EarlySuspend, MMProfileFlagEnd, 0, 0);
     sem_early_suspend_cnt++;
     up(&sem_early_suspend);
     mutex_unlock(&ScreenCaptureMutex);
@@ -3020,9 +2992,7 @@ static void mtkfb_late_resume(struct early_suspend *h)
         return;
     }
 	sem_early_suspend_cnt--;
-    //MMProfileLogEx(MTKFB_MMP_Events.EarlySuspend, MMProfileFlagStart, 0, 0);
 
-    MMProfileLog(MTKFB_MMP_Events.EarlySuspend, MMProfileFlagEnd);
     if (is_ipoh_bootup)
     {
         atomic_set(&OverlaySettingDirtyFlag, 0);
@@ -3096,16 +3066,9 @@ int mtkfb_pm_resume(struct device *device)
     return mtkfb_resume((struct device *)pdev);
 }
 
-#ifdef DEFAULT_MMP_ENABLE
-void MMProfileStart(int start);
-#endif
 int mtkfb_pm_restore_noirq(struct device *device)
 {
 
-#ifdef DEFAULT_MMP_ENABLE
-    MMProfileStart(0);
-    MMProfileStart(1);
-#endif
 
     disphal_pm_restore_noirq(device);
     is_ipoh_bootup = true;
@@ -3168,26 +3131,12 @@ static struct early_suspend mtkfb_early_suspend_handler =
 };
 #endif
 
-#ifdef DEFAULT_MMP_ENABLE
-void MMProfileEnable(int enable);
-void MMProfileStart(int start);
-void init_mtkfb_mmp_events(void);
-void init_ddp_mmp_events(void);
-#endif
-
 /* Register both the driver and the device */
 int __init mtkfb_init(void)
 {
     int r = 0;
 
     MSG_FUNC_ENTER();
-
-#ifdef DEFAULT_MMP_ENABLE
-    MMProfileEnable(1);
-	init_mtkfb_mmp_events();
-    init_ddp_mmp_events();
-    MMProfileStart(1);
-#endif
 
     /* Register the driver with LDM */
 

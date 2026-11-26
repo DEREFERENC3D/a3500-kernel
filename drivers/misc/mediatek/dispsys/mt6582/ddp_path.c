@@ -248,7 +248,6 @@ int disp_path_get_mutex_(int mutexID)
 #endif
     //DISP_MSG("disp_path_get_mutex %d, %d\n", disp_mutex_lock_cnt[mutexID]++, mutexID);
     //mutex_lock(&DpEngineMutexLock);
-    MMProfileLog(DDP_MMP_Events.Mutex[mutexID], MMProfileFlagStart);
     DISP_REG_SET(DISP_REG_CONFIG_MUTEX_EN(mutexID), 1);
     
     DISP_REG_SET(DISP_REG_CONFIG_MUTEX(mutexID), 1);
@@ -274,7 +273,6 @@ int disp_path_get_mutex_(int mutexID)
             disp_dump_reg(DISP_MODULE_MUTEX);
             disp_dump_reg(DISP_MODULE_OVL);
             
-            MMProfileLogEx(DDP_MMP_Events.Mutex[mutexID], MMProfileFlagPulse, 0, 0);
             break;
         }
     }
@@ -442,7 +440,6 @@ int disp_path_release_mutex_(int mutexID)
     DISP_REG_SET(DISP_REG_CONFIG_MUTEX(mutexID), 0);
     
    
-    MMProfileLog(DDP_MMP_Events.Mutex[mutexID], MMProfileFlagEnd);
     //mutex_unlock(&DpEngineMutexLock);
     //DISP_MSG("disp_path_release_mutex %d \n", disp_mutex_unlock_cnt[mutexID]++);
 
@@ -456,7 +453,6 @@ int disp_path_release_mutex1_(int mutexID)
     DISP_REG_SET(DISP_REG_CONFIG_MUTEX(mutexID), 0);
 
 
-    MMProfileLog(DDP_MMP_Events.Mutex[mutexID], MMProfileFlagEnd);
 
     return 0;
 }

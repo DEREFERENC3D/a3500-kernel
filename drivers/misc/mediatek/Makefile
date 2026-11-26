@@ -11,7 +11,6 @@ obj-y	+= kernel/
 obj-y	+= keypad/
 obj-y	+= clock/
 obj-y	+= sched/
-obj-y	+= mmp/
 obj-y	+= xlog/
 obj-y	+= uart/
 obj-y	+= eint/

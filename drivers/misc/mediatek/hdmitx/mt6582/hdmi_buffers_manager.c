@@ -10,7 +10,6 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~the static variable~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 static int hdmi_log_on  = 1;
-static int hdmi_mmp_level = 7;
 
 static atomic_t timeline_counter = ATOMIC_INIT(0);
 static atomic_t fence_counter = ATOMIC_INIT(0);
@@ -26,7 +25,6 @@ DEFINE_SPINLOCK(hdmi_lock);
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~extern declare~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-extern HDMI_MMP_Events_t HDMI_MMP_Events;
 extern int hdmi_rdma_address_config(bool enable, hdmi_video_buffer_info buffer_info);
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -212,7 +210,6 @@ static struct fence_data hdmi_create_fence()
         printk(" error: there is no Timeline to create Fence! \n");
     }
 
-    MMProfileLogEx(HDMI_MMP_Events.FenceCreate, MMProfileFlagPulse, fenceFd, data.value);
     return data;
 }
 
@@ -232,7 +229,6 @@ static void hdmi_release_fence()
     }
 
     atomic_add(inc, &timeline_counter);
-    MMProfileLogEx(HDMI_MMP_Events.FenceSignal, MMProfileFlagPulse, atomic_read(&fence_counter), inc);
 }
 
 /**
@@ -257,10 +253,6 @@ unsigned int hdmi_timeline_inc()
 
     if (inc < 0 || inc > 5)
     {
-        if (hdmi_mmp_level > 0)
-        {
-            MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, Timeline_Err, inc);
-        }
 
         HDMI_LOG("fence error: inc=%d, fence_cnt=%d, timeline_cnt=%d! \n", inc, fence_cnt, timeline_cnt);
         inc = 0;
@@ -286,10 +278,6 @@ static void hdmi_signal_fence()
         inc = 1;  ///hdmi_get_timeline_counter_inc();
         timeline_inc(hdmi_timeline, inc);
 
-        if (hdmi_mmp_level > 0)
-        {
-            MMProfileLogEx(HDMI_MMP_Events.FenceSignal, MMProfileFlagPulse, atomic_read(&timeline_counter), atomic_read(&fence_counter));
-        }
 
         ///HDMI_LOG("  %s:%d, tl %d, fd %d\n", hdmi_timeline->obj.name, hdmi_timeline->value, hdmi_timeline, fence_counter);
     }
@@ -379,14 +367,6 @@ void hdmi_buffer_to_RDMA()
         {
             ///HDMI_LOG(" rdma config(pBuffList %x) error to exit\n", pBuffList);
 
-            if (pBuffList && (hdmi_mmp_level > 0))
-            {
-                MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, Buffer_Not_Enough, pBuffList);
-            }
-            else if (hdmi_mmp_level > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, Buffer_Not_Enough, buf_configed);
-            }
 
             if ((pBuffList != NULL) && (pBuffList->buf_state == insert_new))
             {
@@ -402,16 +382,11 @@ void hdmi_buffer_to_RDMA()
 
             buf_configed = 1;
 
-            if (hdmi_mmp_level > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.BufferUsed, MMProfileFlagPulse, pBuffList, buf_configed);
-            }
         }
 
     }
     else
     {
-        MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, Buffer_Empt_Err, Buffer_Empt_Err);
         HDMI_LOG(" rdma config buffer is NULL\n");
     }
 }
@@ -475,10 +450,6 @@ void hdmi_buffer_state_update()
             {
                 do
                 {
-                    if (hdmi_mmp_level > 0)
-                    {
-                        MMProfileLogEx(HDMI_MMP_Events.BufferRemove, MMProfileFlagPulse, pBuffList, pBuffList->buffer_info.src_phy_addr);
-                    }
                     else
                     {
                         HDMI_LOG("remove list %x-->buffer %x \n", pBuffList, pBuffList->buffer_info.src_phy_addr);
@@ -525,10 +496,6 @@ void hdmi_buffer_state_update()
 
         if (remove_buffer_cnt > 1)
         {
-            if (hdmi_mmp_level > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, Buff_Dup_Err1, remove_buffer_cnt);
-            }
 
             printk("[hdmi] %s, %d remove two buffer one time", __func__, __LINE__);
         }
@@ -547,10 +514,6 @@ void hdmi_remove_buffers()
         pBuffList = list_first_entry(&HDMI_Buffer_List, hdmi_video_buffer_list, list);
         spin_unlock_bh(&hdmi_lock);
 
-        if (hdmi_mmp_level > 0)
-        {
-            MMProfileLogEx(HDMI_MMP_Events.BufferRemove, MMProfileFlagPulse, pBuffList, pBuffList->buffer_info.src_phy_addr);
-        }
         else
         {
             HDMI_LOG("delete list %x-->buffer %x \n", pBuffList, pBuffList->buffer_info.src_phy_addr);
@@ -621,10 +584,6 @@ int hdmi_insert_buffer(hdmi_buffer_info *buffer_info)
     spin_unlock_bh(&hdmi_lock);
     HDMI_LOG(": add list :%x, index %d, fd %d\n", pBuffList, pBuffList->idx, pBuffList->fence);
 
-    if (hdmi_mmp_level > 0)
-    {
-        MMProfileLogEx(HDMI_MMP_Events.FenceCreate, MMProfileFlagEnd, buffer_info->fence_fd, pBuffList);
-    }
 
     return 0;
 }
@@ -651,7 +610,6 @@ int hdmi_post_buffer(hdmi_video_buffer_info *buffer_info, bool clock_on)
                 if (buffer_info->src_phy_addr != NULL)
                 {
                     HDMI_LOG("Warning: ion enable, but phy is not null \n");
-                    MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, Buff_ION_Err1, 1);
                 }
                 else
                 {
@@ -667,7 +625,6 @@ int hdmi_post_buffer(hdmi_video_buffer_info *buffer_info, bool clock_on)
         else
         {
             spin_unlock_bh(&hdmi_lock);
-            MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, Buff_ION_Err1, 0);
             HDMI_LOG("Warning: buffer list no buffers! \n");
             return -1;
         }
@@ -681,28 +638,8 @@ int hdmi_post_buffer(hdmi_video_buffer_info *buffer_info, bool clock_on)
         spin_unlock_bh(&hdmi_lock);
     }
 
-    if (hdmi_mmp_level > 0)
-    {
-        MMProfileLogEx(HDMI_MMP_Events.BufferInsert, MMProfileFlagPulse, pBuffList, buffer_info->next_buff_idx);
-    }
-
-    if (hdmi_mmp_level > 0)
-    {
-        if (pBuffList)
-        {
-            MMProfileLogEx(HDMI_MMP_Events.BufferPost, MMProfileFlagEnd, pBuffList, pBuffList->buffer_info.src_phy_addr);
-        }
-        else
-        {
-            MMProfileLogEx(HDMI_MMP_Events.BufferPost, MMProfileFlagEnd, pBuffList, 0);
-        }
-    }
 
     return 0;
 }
 
-void hdmi_mmp_debug_enable(int mmp_debug_level)
-{
-    hdmi_mmp_level = mmp_debug_level;
-}
 #endif

@@ -65,7 +65,6 @@ static bool otg_enable_status = false;
 static int dp_mutex_src = -1;
 static int dp_mutex_dst = -1;
 static int hdmi_log_on  = 1;
-static int hdmi_bufferdump_on = 7;
 static unsigned long hdmi_reschange = HDMI_VIDEO_RESOLUTION_NUM;
 
 static wait_queue_head_t hdmi_vsync_wq;
@@ -101,8 +100,6 @@ static DEFINE_SEMAPHORE(hdmi_update_mutex);
 BOOL hdmi_is_active = FALSE;
 bool smarbook_enable = FALSE;
 
-int mmp_image_scale = 10;
-HDMI_MMP_Events_t HDMI_MMP_Events;
 
 HDMI_PARAMS _s_hdmi_params = {0};
 HDMI_PARAMS *hdmi_params = &_s_hdmi_params;
@@ -164,45 +161,6 @@ void hdmi_log_enable(int enable)
     printk("hdmi log %s\n", enable ? "enabled" : "disabled");
     hdmi_log_on = enable;
     hdmi_drv->log_enable(enable);
-}
-
-void hdmi_mmp_enable(int enable)
-{
-    printk("hdmi log %s\n", enable ? "enabled" : "disabled");
-    hdmi_mmp_debug_enable(enable);
-    hdmi_bufferdump_on = enable;
-}
-
-void init_hdmi_mmp_events(void)
-{
-    if (HDMI_MMP_Events.HDMI == 0)
-    {
-        HDMI_MMP_Events.HDMI = MMProfileRegisterEvent(MMP_RootEvent, "HDMI");
-        HDMI_MMP_Events.OverlayDone = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "OverlayDone");
-        HDMI_MMP_Events.DDPKBitblt = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "DDPKBitblt");
-        HDMI_MMP_Events.SwitchRDMABuffer = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "SwitchRDMABuffer");
-        HDMI_MMP_Events.SwitchOverlayBuffer = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "SwitchOverlayBuffer");
-        HDMI_MMP_Events.WDMA1RegisterUpdated = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "WDMA1RegisterUpdated");
-        HDMI_MMP_Events.WaitVSync = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "WaitVSync");
-        HDMI_MMP_Events.StopOverlayBuffer = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "StopOverlayBuffer");
-        HDMI_MMP_Events.RDMA1RegisterUpdated = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "RDMA1RegisterUpdated");
-
-        HDMI_MMP_Events.FenceCreate = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "FenceCreate");
-        HDMI_MMP_Events.BufferPost = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "BufferPost");
-        HDMI_MMP_Events.BufferInsert = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "BufferInsert");
-        HDMI_MMP_Events.BufferCfg = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "BufferCfg");
-        HDMI_MMP_Events.BufferUsed = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "BufferUsed");
-        HDMI_MMP_Events.BufferUpdate = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "BufferUpdate");
-        HDMI_MMP_Events.BufferRemove = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "BufferRemove");
-        HDMI_MMP_Events.FenceSignal = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "FenceSignal");
-        HDMI_MMP_Events.HDMIState = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "HDMIState");
-        HDMI_MMP_Events.GetDevInfo = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "GetDevInfo");
-        HDMI_MMP_Events.ErrorInfo = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "ErrorInfo");
-        HDMI_MMP_Events.MutexErr = MMProfileRegisterEvent(HDMI_MMP_Events.HDMI, "MutexErr");
-
-        MMProfileEnableEventRecursive(HDMI_MMP_Events.HDMI, 1);
-        MMProfileEnableEvent(HDMI_MMP_Events.DDPKBitblt, 0);
-    }
 }
 
 int get_hdmi_support_info(void)
@@ -308,12 +266,9 @@ static int hdmi_rdma_config_kthread(void *data)
         wait_event_interruptible(hdmi_rdma_config_wq, atomic_read(&hdmi_rdma_config_event));
         atomic_set(&hdmi_rdma_config_event, 0);
 
-        MMProfileLogEx(HDMI_MMP_Events.BufferCfg, MMProfileFlagStart, p->is_clock_on, 1);
 
         if (down_interruptible(&hdmi_update_mutex))
         {
-            MMProfileLogEx(HDMI_MMP_Events.MutexErr, MMProfileFlagPulse, Mutex_Err1, Mutex_Err1);
-            MMProfileLogEx(HDMI_MMP_Events.BufferCfg, MMProfileFlagEnd, p->is_clock_on, 1);
             HDMI_LOG("[HDMI] can't get semaphore in\n");
             continue; /// continue  return EAGAIN
         }
@@ -324,7 +279,6 @@ static int hdmi_rdma_config_kthread(void *data)
         }
 
         up(&hdmi_update_mutex);
-        MMProfileLogEx(HDMI_MMP_Events.BufferCfg, MMProfileFlagEnd, p->is_clock_on, 1);
 
         if (kthread_should_stop())
         {
@@ -347,12 +301,9 @@ static int hdmi_rdma_update_kthread(void *data)
         wait_event_interruptible(hdmi_rdma_update_wq, atomic_read(&hdmi_rdma_update_event));
         atomic_set(&hdmi_rdma_update_event, 0);
 
-        MMProfileLogEx(HDMI_MMP_Events.BufferUpdate, MMProfileFlagStart, p->is_clock_on, 1);
 
         if (down_interruptible(&hdmi_update_mutex))
         {
-            MMProfileLogEx(HDMI_MMP_Events.MutexErr, MMProfileFlagPulse, Mutex_Err1, Mutex_Err1);
-            MMProfileLogEx(HDMI_MMP_Events.BufferUpdate, MMProfileFlagEnd, p->is_clock_on, 1);
             HDMI_LOG("[HDMI] can't get semaphore in\n");
             continue;
         }
@@ -367,7 +318,6 @@ static int hdmi_rdma_update_kthread(void *data)
         }
 
         up(&hdmi_update_mutex);
-        MMProfileLogEx(HDMI_MMP_Events.BufferUpdate, MMProfileFlagEnd, p->is_clock_on, /*pUpdateList*/0);
 
         if (kthread_should_stop())
         {
@@ -380,13 +330,11 @@ static int hdmi_rdma_update_kthread(void *data)
 
 void hdmi_waitVsync(void)
 {
-    MMProfileLogEx(HDMI_MMP_Events.WaitVSync, MMProfileFlagStart, hdmi_vsync_cnt, p->is_clock_on);
 
     if (p->is_clock_on == false)
     {
         printk("[hdmi]:hdmi has suspend, return directly\n");
         msleep(19);
-        MMProfileLogEx(HDMI_MMP_Events.WaitVSync, MMProfileFlagEnd, hdmi_vsync_cnt, p->is_clock_on);
         return;
     }
 
@@ -399,7 +347,6 @@ void hdmi_waitVsync(void)
         printk("[hdmi] Wait VSync timeout. early_suspend=%d\n", p->is_clock_on);
     }
 
-    MMProfileLogEx(HDMI_MMP_Events.WaitVSync, MMProfileFlagEnd, hdmi_vsync_cnt, p->is_clock_on);
     hdmi_vsync_cnt--;
     return;
 }
@@ -774,7 +721,6 @@ static void _rdma1_irq_handler(unsigned int param)
 
     if (param & 0x20) // taget line
     {
-        MMProfileLogEx(HDMI_MMP_Events.RDMA1RegisterUpdated, MMProfileFlagPulse, param, 0x20);
 
         atomic_set(&hdmi_rdma_config_event, 1);
         wake_up_interruptible(&hdmi_rdma_config_wq);
@@ -782,7 +728,6 @@ static void _rdma1_irq_handler(unsigned int param)
 
     if ((param & 2) && (hdmi_params->cabletype == MHL_SMB_CABLE)) // rdma1 register updated
     {
-        MMProfileLogEx(HDMI_MMP_Events.RDMA1RegisterUpdated, MMProfileFlagPulse, param, 2);
 
         hdmi_vsync_flag = 1;
         wake_up_interruptible(&hdmi_vsync_wq);
@@ -791,7 +736,6 @@ static void _rdma1_irq_handler(unsigned int param)
 
     if (param & 1) // rdma1 register updated
     {
-        MMProfileLogEx(HDMI_MMP_Events.RDMA1RegisterUpdated, MMProfileFlagPulse, param, 1);
         atomic_set(&hdmi_rdma_update_event, 1);
         wake_up_interruptible(&hdmi_rdma_update_wq);
 
@@ -940,10 +884,6 @@ static  HDMI_STATUS hdmi_drv_deinit(void)
     HDMI_FUNC();
     RET_VOID_IF(IS_HDMI_NOT_ON());
 
-    if (hdmi_bufferdump_on > 0)
-    {
-        MMProfileLogEx(HDMI_MMP_Events.HDMIState, MMProfileFlagStart, Plugout, 0);
-    }
 
     if (down_interruptible(&hdmi_update_mutex))
     {
@@ -961,10 +901,6 @@ static  HDMI_STATUS hdmi_drv_deinit(void)
 
     disp_module_clock_off(HDMI_SRC_RDMA, "HDMI");
     up(&hdmi_update_mutex);
-    if (hdmi_bufferdump_on > 0)
-    {
-        MMProfileLogEx(HDMI_MMP_Events.HDMIState, MMProfileFlagEnd, Plugout, 0);
-    }
 
     hdmi_dpi_disable_MipiClk();
     hdmi_conn_disp_path();
@@ -981,10 +917,6 @@ static  HDMI_STATUS hdmi_drv_deinit(void)
     hdmi_disc_disp_path();
     disp_path_clear_config(gMutexID);
 
-    if (hdmi_bufferdump_on > 0)
-    {
-        MMProfileLogEx(HDMI_MMP_Events.HDMIState, MMProfileFlagStart, Plugin, 0);
-    }
 
     if (down_interruptible(&hdmi_update_mutex))
     {
@@ -997,10 +929,6 @@ static  HDMI_STATUS hdmi_drv_deinit(void)
     hdmi_dpi_power_switch(true);
     hdmi_drv->resume();
     up(&hdmi_update_mutex);
-    if (hdmi_bufferdump_on > 0)
-    {
-        MMProfileLogEx(HDMI_MMP_Events.HDMIState, MMProfileFlagEnd, Plugin, 0);
-    }
 }
 
 /* Set HDMI orientation, will be called in mtkfb_ioctl(SET_ORIENTATION) */
@@ -1303,10 +1231,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
             RETIF(!p->is_enabled, 0);
             RETIF(IS_HDMI_NOT_ON(), 0);
 
-            if (hdmi_bufferdump_on > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.HDMIState, MMProfileFlagStart, ResChange, arg);
-            }
 
             if (down_interruptible(&hdmi_update_mutex))
             {
@@ -1341,10 +1265,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
                 switch_set_state(&hdmires_switch_data, hdmi_reschange + 1);
             }
 
-            if (hdmi_bufferdump_on > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.HDMIState, MMProfileFlagEnd, ResChange, hdmi_reschange + 1);
-            }
 
             HDMI_LOG("video resolution (%d) configuration done\n", hdmi_reschange + 1);
 
@@ -1388,7 +1308,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
             ///struct hdmi_video_buffer_list *buffer_list;
             if ((p->is_enabled == false) || (p->is_clock_on == false) || IS_HDMI_NOT_ON())
             {
-                MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, insert_Buffer_Err1, insert_Buffer_Err1);
                 RETIF(!p->is_enabled, 0);
                 RETIF(!p->is_clock_on, -1);
                 RETIF(IS_HDMI_NOT_ON(), 0);
@@ -1396,16 +1315,11 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
             if (copy_from_user(&video_buffer_info, (void __user *)argp, sizeof(video_buffer_info)))
             {
-                MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, insert_Buffer_Err2, insert_Buffer_Err2);
                 HDMI_LOG("copy_from_user failed! line\n");
                 r = -EFAULT;
                 break;
             }
 
-            if (hdmi_bufferdump_on > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.BufferPost, MMProfileFlagStart, p->is_enabled, p->is_clock_on);
-            }
 
             DBG_OnTriggerHDMI();
 
@@ -1423,32 +1337,10 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
                     wake_up_interruptible(&hdmi_rdma_config_wq);
                 }
 
-                MMP_MetaDataBitmap_t Bitmap;
-                if ((capture_screen == true) || (hdmi_bufferdump_on >= 0x7))
-                {
-                    Bitmap.data1 = video_buffer_info.src_width;
-                    Bitmap.data2 = video_buffer_info.src_pitch;
-                    Bitmap.width = video_buffer_info.src_width;
-                    Bitmap.height = video_buffer_info.src_height;
-                    Bitmap.format = MMProfileBitmapBGRA8888;
-                    Bitmap.start_pos = 0;// (video_buffer_info.src_pitch - video_buffer_info.src_width) / 2 * 4;
-                    Bitmap.pitch = video_buffer_info.src_pitch * 4;
-
-                    Bitmap.data_size = Bitmap.pitch * Bitmap.height;
-                    Bitmap.down_sample_x = mmp_image_scale;
-                    Bitmap.down_sample_y = mmp_image_scale;
-                    Bitmap.pData = video_buffer_info.src_base_addr;
-                    Bitmap.bpp = 32;
-                }
-
-                if (hdmi_bufferdump_on >= 0x7)
-                {
-                    MMProfileLogMetaBitmap(HDMI_MMP_Events.DDPKBitblt, MMProfileFlagPulse, &Bitmap);
-                }
-
                 if (capture_screen == true)
                 {
-                    memcpy(capture_addr, video_buffer_info.src_base_addr, Bitmap.data_size);
+                    unsigned int capture_size = video_buffer_info.src_pitch * 4 * video_buffer_info.src_height;
+                    memcpy(capture_addr, video_buffer_info.src_base_addr, capture_size);
                     capture_screen = false;
                 }
             }
@@ -1535,19 +1427,11 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         {
             int displayid = 0;
 
-            if (hdmi_bufferdump_on > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.GetDevInfo, MMProfileFlagStart, p->is_enabled, p->is_clock_on);
-            }
 
             HDMI_LOG("DEV_INFO configuration get + \n");
 
             if (copy_from_user(&displayid, (void __user *)arg, sizeof(displayid)))
             {
-                if (hdmi_bufferdump_on > 0)
-                {
-                    MMProfileLogEx(HDMI_MMP_Events.GetDevInfo, MMProfileFlagEnd, 0xff, 0xff1);
-                }
 
                 HDMI_LOG(": copy_from_user failed! line:%d \n", __LINE__);
                 return -EAGAIN;
@@ -1555,10 +1439,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
             if (displayid != MTKFB_DISPIF_HDMI)
             {
-                if (hdmi_bufferdump_on > 0)
-                {
-                    MMProfileLogEx(HDMI_MMP_Events.GetDevInfo, MMProfileFlagPulse, 0xff, 0xff2);
-                }
 
                 HDMI_LOG(": invalid display id:%d \n", displayid);
                 ///return -EAGAIN;
@@ -1595,19 +1475,11 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
             if (copy_to_user((void __user *)arg, &hdmi_info, sizeof(hdmi_info)))
             {
-                if (hdmi_bufferdump_on > 0)
-                {
-                    MMProfileLogEx(HDMI_MMP_Events.GetDevInfo, MMProfileFlagEnd, 0xff, 0xff2);
-                }
 
                 HDMI_LOG("copy_to_user failed! line:%d \n", __LINE__);
                 r = -EFAULT;
             }
 
-            if (hdmi_bufferdump_on > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.GetDevInfo, MMProfileFlagEnd, p->is_enabled, hdmi_info.displayType);
-            }
 
             HDMI_LOG("DEV_INFO configuration get displayType-%d \n", hdmi_info.displayType);
 
@@ -1621,10 +1493,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 #ifdef MTK_HDMI_FENCE_SUPPORT
             struct fence_data data;
 
-            if (hdmi_bufferdump_on > 0)
-            {
-                MMProfileLogEx(HDMI_MMP_Events.FenceCreate, MMProfileFlagStart, 0, 0);
-            }
             if (copy_from_user(&hdmi_buffer, (void __user *)arg, sizeof(hdmi_buffer)))
             {
                 printk("[HDMI]: copy_from_user failed! line:%d \n", __LINE__);
@@ -1633,7 +1501,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
             }
             if (down_interruptible(&hdmi_update_mutex))
             {
-                MMProfileLogEx(HDMI_MMP_Events.MutexErr, MMProfileFlagPulse, Mutex_Err2, Mutex_Err2);
                 HDMI_LOG("[HDMI] Warning can't get semaphore in\n");
                 r = -EFAULT;
                 break;
@@ -1651,7 +1518,6 @@ static long hdmi_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
             }
             else
             {
-                MMProfileLogEx(HDMI_MMP_Events.ErrorInfo, MMProfileFlagPulse, Fence_Err, 0);
             }
 
             up(&hdmi_update_mutex);
@@ -1872,7 +1738,6 @@ static int __init hdmi_init(void)
     memset((void *)&hdmi_context, 0, sizeof(_t_hdmi_context));
     SET_HDMI_OFF();
 
-    init_hdmi_mmp_events();
 
     if (!hdmi_drv_init_context())
     {

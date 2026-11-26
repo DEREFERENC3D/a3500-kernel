@@ -188,11 +188,9 @@ void disp_sync_signal_fence(UINT layer, UINT cur_idx) {
 		mutex_lock(&info->lock);
     	num_fence = cur_idx - info->timeline_idx;
 		if (num_fence > 0) {
-			MMProfileLogEx(MTKFB_MMP_Events.SignalSyncFence, MMProfileFlagStart, layer, info->timeline_idx);
 			timeline_inc(timeline, num_fence);
 			info->timeline_idx = cur_idx;
 			XLOG_DBG("L%d signal idx=%d,cnt=%d\n", layer, info->timeline_idx, num_fence);
-			MMProfileLogEx(MTKFB_MMP_Events.SignalSyncFence, MMProfileFlagEnd, layer, timeline->value);
 		}
 		mutex_unlock(&info->lock);
 		if(cur_idx != timeline->value) {
@@ -473,7 +471,6 @@ static struct sw_sync_timeline* disp_sync_create_timeline (UINT layer) {
 	sprintf(name, "%s-%d", prefix, layer);
 
 	ASSERT(layer < DDP_OVL_LAYER_COUNT, "layer_id(%d) overflow!", layer);
-	MMProfileLogEx(MTKFB_MMP_Events.CreateSyncTimeline, MMProfileFlagPulse, layer, 0);
 
 	timeline = timeline_create(name);
 	sync_timelines[layer] = timeline;
@@ -506,7 +503,6 @@ static struct fence_data disp_sync_create_fence(UINT layer) {
 		disp_sync_init_layer_info(layer);
 	}
 
-	MMProfileLogEx(MTKFB_MMP_Events.CreateSyncFence, MMProfileFlagStart, layer, 0);
 
 	if (timeline != NULL) {
 		if (fence_create(timeline, &data)) {
@@ -520,7 +516,6 @@ static struct fence_data disp_sync_create_fence(UINT layer) {
 		XLOG_ERR("L%d has no Timeline!\n", layer);
 	}
 
-	MMProfileLogEx(MTKFB_MMP_Events.CreateSyncFence, MMProfileFlagEnd, data.value, fenceFd);
 
 	return data;
 }

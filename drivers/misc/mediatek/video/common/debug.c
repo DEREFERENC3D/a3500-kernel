@@ -16,7 +16,6 @@
 #include "ddp_path.h"
 #include "disp_drv.h"
 
-struct MTKFB_MMP_Events_t MTKFB_MMP_Events;
 
 extern LCM_DRIVER *lcm_drv;
 extern unsigned int EnableVSyncLog;
@@ -40,22 +39,6 @@ extern void mtkfb_show_sem_cnt(void);
 extern void mtkfb_hang_test(bool en);
 extern void mtkfb_switch_normal_to_factory(void);
 extern void mtkfb_switch_factory_to_normal(void);
-
-extern unsigned int gCaptureLayerEnable;
-extern unsigned int gCaptureLayerDownX;
-extern unsigned int gCaptureLayerDownY;
-
-extern unsigned int gCaptureOvlThreadEnable;
-extern unsigned int gCaptureOvlDownX;
-extern unsigned int gCaptureOvlDownY;
-extern struct task_struct *captureovl_task;
-
-extern unsigned int gCaptureFBEnable;
-extern unsigned int gCaptureFBDownX;
-extern unsigned int gCaptureFBDownY;
-extern unsigned int gCaptureFBPeriod;
-extern struct task_struct *capturefb_task;
-extern wait_queue_head_t gCaptureFBWQ;
 
 #ifdef MTKFB_DEBUG_FS_CAPTURE_LAYER_CONTENT_SUPPORT
 struct dentry *mtkfb_layer_dbgfs[DDP_OVL_LAYER_MUN];
@@ -158,16 +141,6 @@ static char STR_HELP[] =
     "       HQA:[NormalToFactory|FactoryToNormal]\n"
     "             for HQA requirement\n"
     "\n"     
-    "       mmp\n"
-    "             Register MMProfile events\n"
-    "\n"
-    "       dump_fb:[on|off[,down_sample_x[,down_sample_y,[delay]]]]\n"
-    "             Start/end to capture framebuffer every delay(ms)\n"
-    "\n"
-    "       dump_ovl:[on|off[,down_sample_x[,down_sample_y]]]\n"
-    "             Start to capture OVL every frame\n"
-    "\n"
-    "       dump_layer:[on|off[,down_sample_x[,down_sample_y]]]\n"
     "             Start/end to capture current enabled OVL layer every frame\n"
     ;
 
@@ -175,73 +148,6 @@ static char STR_HELP[] =
 // ---------------------------------------------------------------------------
 //  Information Dump Routines
 // ---------------------------------------------------------------------------
-
-void init_mtkfb_mmp_events(void)
-{
-    if (MTKFB_MMP_Events.MTKFB == 0)
-    {
-        MTKFB_MMP_Events.MTKFB = MMProfileRegisterEvent(MMP_RootEvent, "MTKFB");
-        MTKFB_MMP_Events.PanDisplay = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "PanDisplay");
-        MTKFB_MMP_Events.CreateSyncTimeline = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "CreateSyncTimeline");
-        MTKFB_MMP_Events.SetOverlayLayer = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "SetOverlayLayer");
-        MTKFB_MMP_Events.SetVideoLayers = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "SetVideoLayers");
-        MTKFB_MMP_Events.SetMultipleLayers = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "SetMultipleLayers");
-        MTKFB_MMP_Events.CreateSyncFence = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "CreateSyncFence");
-        MTKFB_MMP_Events.IncSyncTimeline = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "IncSyncTimeline");
-        MTKFB_MMP_Events.SignalSyncFence = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "SignalSyncFence");
-        MTKFB_MMP_Events.UpdateScreenImpl = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "UpdateScreenImpl");
-        MTKFB_MMP_Events.VSync = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "VSync");
-        MTKFB_MMP_Events.UpdateConfig = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "UpdateConfig");
-        MTKFB_MMP_Events.BypassOVL = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "BypassOVL");
-
-        MTKFB_MMP_Events.UsingBufIdx[0][0] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "ovl_layer0");
-        MTKFB_MMP_Events.UsingBufIdx[0][1] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "ovl_layer1");
-        MTKFB_MMP_Events.UsingBufIdx[0][2] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "ovl_layer2");
-        MTKFB_MMP_Events.UsingBufIdx[0][3] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "ovl_layer3");
-        MTKFB_MMP_Events.UsingBufIdx[1][0] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "rdma_layer0");
-        MTKFB_MMP_Events.UsingBufIdx[1][1] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "rdma_layer1");
-        MTKFB_MMP_Events.UsingBufIdx[1][2] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "rdma_layer2");
-        MTKFB_MMP_Events.UsingBufIdx[1][3] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "rdma_layer3");
-        
-        MTKFB_MMP_Events.MaxCleanIdx[0] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "MaxCleanIdx0");
-        MTKFB_MMP_Events.MaxCleanIdx[1] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "MaxCleanIdx1");
-        MTKFB_MMP_Events.MaxCleanIdx[2] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "MaxCleanIdx2");
-        MTKFB_MMP_Events.MaxCleanIdx[3] = MMProfileRegisterEvent(MTKFB_MMP_Events.BypassOVL, "MaxCleanIdx3");
-
-        
-        MTKFB_MMP_Events.EsdCheck = MMProfileRegisterEvent(MTKFB_MMP_Events.UpdateConfig, "EsdCheck");
-        MTKFB_MMP_Events.ConfigOVL = MMProfileRegisterEvent(MTKFB_MMP_Events.UpdateConfig, "ConfigOVL");
-        MTKFB_MMP_Events.ConfigAAL = MMProfileRegisterEvent(MTKFB_MMP_Events.UpdateConfig, "ConfigAAL");
-        MTKFB_MMP_Events.ConfigMemOut = MMProfileRegisterEvent(MTKFB_MMP_Events.UpdateConfig, "ConfigMemOut");
-        MTKFB_MMP_Events.ScreenUpdate = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "ScreenUpdate");
-        MTKFB_MMP_Events.CaptureFramebuffer = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "CaptureFB");
-        MTKFB_MMP_Events.TrigOverlayOut = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "TrigOverlayOut");
-        MTKFB_MMP_Events.RegUpdate = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "RegUpdate");
-        MTKFB_MMP_Events.OverlayOutDone = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "OverlayOutDone");
-        MTKFB_MMP_Events.SwitchMode = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "SwitchMode");
-        MTKFB_MMP_Events.EarlySuspend = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "EarlySuspend");
-        MTKFB_MMP_Events.DispDone = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "DispDone");
-        MTKFB_MMP_Events.DSICmd = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "DSICmd");
-        MTKFB_MMP_Events.DSIIRQ = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "DSIIrq");
-        MTKFB_MMP_Events.WaitVSync = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "WaitVSync");
-        MTKFB_MMP_Events.LayerDump = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "LayerDump");
-        MTKFB_MMP_Events.Layer[0] = MMProfileRegisterEvent(MTKFB_MMP_Events.LayerDump, "Layer0");
-        MTKFB_MMP_Events.Layer[1] = MMProfileRegisterEvent(MTKFB_MMP_Events.LayerDump, "Layer1");
-        MTKFB_MMP_Events.Layer[2] = MMProfileRegisterEvent(MTKFB_MMP_Events.LayerDump, "Layer2");
-        MTKFB_MMP_Events.Layer[3] = MMProfileRegisterEvent(MTKFB_MMP_Events.LayerDump, "Layer3");
-        MTKFB_MMP_Events.OvlDump = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "OvlDump");
-        MTKFB_MMP_Events.FBDump = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "FBDump");
-        MTKFB_MMP_Events.DSIRead = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "DSIRead");
-        MTKFB_MMP_Events.GetLayerInfo = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "GetLayerInfo");
-        MTKFB_MMP_Events.LayerInfo[0] = MMProfileRegisterEvent(MTKFB_MMP_Events.GetLayerInfo, "LayerInfo0");
-        MTKFB_MMP_Events.LayerInfo[1] = MMProfileRegisterEvent(MTKFB_MMP_Events.GetLayerInfo, "LayerInfo1");
-        MTKFB_MMP_Events.LayerInfo[2] = MMProfileRegisterEvent(MTKFB_MMP_Events.GetLayerInfo, "LayerInfo2");
-        MTKFB_MMP_Events.LayerInfo[3] = MMProfileRegisterEvent(MTKFB_MMP_Events.GetLayerInfo, "LayerInfo3");
-        MTKFB_MMP_Events.IOCtrl = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "IOCtrl");
-        MTKFB_MMP_Events.Debug = MMProfileRegisterEvent(MTKFB_MMP_Events.MTKFB, "Debug");
-        MMProfileEnableEventRecursive(MTKFB_MMP_Events.MTKFB, 1);
-    }
-}
 
 static __inline int is_layer_enable(unsigned int roi_ctl, unsigned int layer)
 {
@@ -679,55 +585,6 @@ static void process_dbg_opt(const char *opt)
         {
             mtkfb_switch_factory_to_normal();
         }
-    }
-    else if (0 == strncmp(opt, "mmp", 3))
-    {
-        init_mtkfb_mmp_events();
-    }
-    else if (0 == strncmp(opt, "dump_layer:", 11))
-    {
-        if (0 == strncmp(opt + 11, "on", 2))
-        {
-            char *p = (char *)opt + 14;
-            gCaptureLayerDownX = simple_strtoul(p, &p, 10);
-            gCaptureLayerDownY = simple_strtoul(p+1, &p, 10);
-            gCaptureLayerEnable = 1;
-        }
-        else if (0 == strncmp(opt + 11, "off", 3))
-        {
-            gCaptureLayerEnable = 0;
-        }
-    }
-    else if (0 == strncmp(opt, "dump_ovl:", 9))
-    {
-        if (0 == strncmp(opt + 9, "on", 2))
-        {
-            char *p = (char *)opt + 12;
-            gCaptureOvlDownX = simple_strtoul(p, &p, 10);
-            gCaptureOvlDownY = simple_strtoul(p+1, &p, 10);
-            gCaptureOvlThreadEnable = 1;
-            wake_up_process(captureovl_task);
-        }
-        else if (0 == strncmp(opt + 9, "off", 3))
-        {
-            gCaptureOvlThreadEnable = 0;
-        }
-    }
-    else if (0 == strncmp(opt, "dump_fb:", 8))
-    {
-        if (0 == strncmp(opt + 8, "on", 2))
-        {
-            char *p = (char *)opt + 11;
-            gCaptureFBDownX = simple_strtoul(p, &p, 10);
-            gCaptureFBDownY = simple_strtoul(p+1, &p, 10);
-            gCaptureFBPeriod = simple_strtoul(p+1, &p, 10);
-            gCaptureFBEnable = 1;
-            wake_up_interruptible(&gCaptureFBWQ);
-        }
-        else if (0 == strncmp(opt + 8, "off", 3))
-        {
-            gCaptureFBEnable = 0;
-        }   
     }
     else if (0 == strncmp(opt, "decouple:", 9))
     {

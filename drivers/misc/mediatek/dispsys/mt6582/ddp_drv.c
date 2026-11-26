@@ -395,7 +395,6 @@ static int disp_wait_intr(DISP_MODULE_ENUM module, unsigned int timeout_ms)
     unsigned long long end_time = 0;
     unsigned long long start_time = sched_clock();
         
-    MMProfileLogEx(DDP_MMP_Events.WAIT_INTR, MMProfileFlagStart, 0, module);
     // wait until irq done or timeout
     ret = wait_event_interruptible_timeout(
                     g_disp_irq_done_queue, 
@@ -405,8 +404,6 @@ static int disp_wait_intr(DISP_MODULE_ENUM module, unsigned int timeout_ms)
     /*wake-up from sleep*/
     if(ret==0) // timeout
     {
-        MMProfileLogEx(DDP_MMP_Events.WAIT_INTR, MMProfileFlagPulse, 0, module);
-        MMProfileLog(DDP_MMP_Events.WAIT_INTR, MMProfileFlagEnd);
         DISP_ERR("Wait Done Timeout! pid=%d, module=%d \n", current->pid ,module);
         ddp_dump_info(module);
         ddp_dump_info(DISP_MODULE_CONFIG);
@@ -416,14 +413,11 @@ static int disp_wait_intr(DISP_MODULE_ENUM module, unsigned int timeout_ms)
     }
     else if(ret<0) // intr by a signal
     {
-        MMProfileLogEx(DDP_MMP_Events.WAIT_INTR, MMProfileFlagPulse, 1, module);
-        MMProfileLog(DDP_MMP_Events.WAIT_INTR, MMProfileFlagEnd);
         DISP_ERR("Wait Done interrupted by a signal! pid=%d, module=%d \n", current->pid ,module);
         ddp_dump_info(module);
         return -EAGAIN;                 
     }
 
-    MMProfileLogEx(DDP_MMP_Events.WAIT_INTR, MMProfileFlagEnd, 0, module);
     spin_lock_irqsave( &g_disp_irq.irq_lock , flags );
     g_disp_irq.irq_src &= ~(1<<module);    
     spin_unlock_irqrestore( &g_disp_irq.irq_lock , flags );
@@ -628,7 +622,6 @@ static /*__tcmfunc*/ irqreturn_t disp_irq_handler(int irq, void *dev_id)
                 }                                                                                                  
                 //clear intr
                 DISP_REG_SET(DISP_REG_OVL_INTSTA, ~reg_val);     
-                MMProfileLogEx(DDP_MMP_Events.OVL_IRQ, MMProfileFlagPulse, reg_val, 0);
                 disp_invoke_irq_callbacks(DISP_MODULE_OVL, reg_val);
             break;
             
@@ -647,7 +640,6 @@ static /*__tcmfunc*/ irqreturn_t disp_irq_handler(int irq, void *dev_id)
                 }  
                 //clear intr
                 DISP_REG_SET(DISP_REG_WDMA_INTSTA, ~reg_val);           
-                MMProfileLogEx(DDP_MMP_Events.WDMA0_IRQ, MMProfileFlagPulse, reg_val, DISP_REG_GET(DISP_REG_WDMA_CLIP_SIZE));
                 disp_invoke_irq_callbacks(DISP_MODULE_WDMA0, reg_val);
             break;
             
@@ -733,7 +725,6 @@ static /*__tcmfunc*/ irqreturn_t disp_irq_handler(int irq, void *dev_id)
                 }
                 //clear intr
                 DISP_REG_SET(DISP_REG_RDMA_INT_STATUS + index*DISP_INDEX_OFFSET, ~reg_val);
-                MMProfileLogEx(DDP_MMP_Events.RDMA1_IRQ, MMProfileFlagPulse, reg_val, 0);
                 disp_invoke_irq_callbacks(DISP_MODULE_RDMA, reg_val);
             break;  
 
@@ -751,7 +742,6 @@ static /*__tcmfunc*/ irqreturn_t disp_irq_handler(int irq, void *dev_id)
 
             //clear intr
             DISP_REG_SET(DISPSYS_COLOR_BASE+0x0F08, ~reg_val);
-            MMProfileLogEx(DDP_MMP_Events.COLOR_IRQ, MMProfileFlagPulse, reg_val, 0);
 //            disp_invoke_irq_callbacks(DISP_MODULE_COLOR, reg_val);
             break;
                         
@@ -767,7 +757,6 @@ static /*__tcmfunc*/ irqreturn_t disp_irq_handler(int irq, void *dev_id)
 
             //clear intr
             DISP_REG_SET(DISP_REG_BLS_INTSTA, ~reg_val);
-            MMProfileLogEx(DDP_MMP_Events.BLS_IRQ, MMProfileFlagPulse, reg_val, 0);
             break;
 
         case MT6582_DISP_MUTEX_IRQ_ID:  // can not do reg update done status after release mutex(for ECO requirement), 
@@ -856,7 +845,6 @@ static /*__tcmfunc*/ irqreturn_t disp_irq_handler(int irq, void *dev_id)
                     // and we can early-exit if no more threads being asserted
                     reg_val |= (1 << i);
                 }
-                MMProfileLogEx(DDP_MMP_Events.CMDQ_IRQ, MMProfileFlagPulse, reg_val, i);
             }
             break;
         default: DISP_ERR("invalid irq=%d \n ", irq); break;

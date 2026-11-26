@@ -10,7 +10,6 @@
 #include <linux/sensors_io.h>
 #endif
 
-#include <linux/mmprofile.h>
 #include <linux/device.h>
 extern struct tpd_device *tpd;
 #ifdef VELOCITY_CUSTOM
@@ -1393,7 +1392,6 @@ static void tpd_down(s32 x, s32 y, s32 size, s32 id)
     input_mt_sync(tpd->dev);
     TPD_EM_PRINT(x, y, x, y, id, 1);
 
-    MMProfileLogEx(MMP_TouchPanelEvent, MMProfileFlagPulse, 1, x+y);
 #ifdef TPD_HAVE_BUTTON
 
     if (FACTORY_BOOT == get_boot_mode() || RECOVERY_BOOT == get_boot_mode())
@@ -1411,7 +1409,6 @@ static void tpd_up(s32 x, s32 y, s32 id)
     //input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, 0);
     input_mt_sync(tpd->dev);
     TPD_EM_PRINT(x, y, x, y, id, 0);
-    MMProfileLogEx(MMP_TouchPanelEvent, MMProfileFlagPulse, 0, x+y);
 
 #ifdef TPD_HAVE_BUTTON
 

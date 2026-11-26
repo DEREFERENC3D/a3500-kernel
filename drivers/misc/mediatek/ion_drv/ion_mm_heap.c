@@ -15,7 +15,6 @@
 #include <mach/m4u.h>
 #include <linux/ion_drv.h>
 #include <linux/mutex.h>
-#include <linux/mmprofile.h>
 
 typedef struct  
 {
@@ -28,9 +27,8 @@ typedef struct
     ion_mm_buf_debug_info_t dbg_info;
 } ion_mm_buffer_info;
 
-
-#define ION_FUNC_ENTER  //MMProfileLogMetaString(MMP_ION_DEBUG, MMProfileFlagStart, __func__);
-#define ION_FUNC_LEAVE  //MMProfileLogMetaString(MMP_ION_DEBUG, MMProfileFlagEnd, __func__);
+#define ION_FUNC_ENTER
+#define ION_FUNC_LEAVE
 
 #define ION_PRINT_LOG_OR_SEQ(seq_file, fmt, args...) \
     do{\

@@ -1050,16 +1050,13 @@ static void _DPI_RDMA0_IRQ_Handler(unsigned int param)
 {
     if (param & 4)
     {
-        MMProfileLog(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagEnd);
         dpiIntCallback(DISP_DPI_SCREEN_UPDATE_END_INT);
     }
     if (param & 8)
     {
-        MMProfileLog(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagEnd);
     }
     if (param & 2)
     {
-        MMProfileLog(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagStart);
         dpiIntCallback(DISP_DPI_SCREEN_UPDATE_START_INT);
 #if (ENABLE_DPI_INTERRUPT == 0)
         if(dpiIntCallback)

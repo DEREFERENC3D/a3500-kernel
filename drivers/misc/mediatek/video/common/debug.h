@@ -31,51 +31,6 @@ void DBG_OnTriggerLcd(void);
 void DBG_OnTeDelayDone(void);
 void DBG_OnLcdDone(void);
 
-#include <linux/mmprofile.h>
-extern struct MTKFB_MMP_Events_t
-{
-    MMP_Event MTKFB;
-    MMP_Event CreateSyncTimeline;
-    MMP_Event PanDisplay;
-    MMP_Event SetOverlayLayer;
-    MMP_Event SetVideoLayers;
-    MMP_Event SetMultipleLayers;
-    MMP_Event CreateSyncFence;
-    MMP_Event IncSyncTimeline;
-    MMP_Event SignalSyncFence;
-    MMP_Event UpdateScreenImpl;
-    MMP_Event VSync;
-    MMP_Event UpdateConfig;
-    MMP_Event ConfigOVL;
-    MMP_Event ConfigAAL;
-    MMP_Event ConfigMemOut;
-    MMP_Event ScreenUpdate;
-    MMP_Event CaptureFramebuffer;
-    MMP_Event TrigOverlayOut;
-    MMP_Event RegUpdate;
-    MMP_Event OverlayOutDone;
-    MMP_Event SwitchMode;
-    MMP_Event BypassOVL;
-    MMP_Event UsingBufIdx[2][4];
-    MMP_Event MaxCleanIdx[4];
-    
-    MMP_Event EarlySuspend;
-    MMP_Event DispDone;
-    MMP_Event DSICmd;
-    MMP_Event DSIIRQ;
-    MMP_Event EsdCheck;
-    MMP_Event WaitVSync;
-    MMP_Event LayerDump;
-    MMP_Event Layer[4];
-    MMP_Event OvlDump;
-    MMP_Event FBDump;
-    MMP_Event DSIRead;
-    MMP_Event GetLayerInfo;
-    MMP_Event LayerInfo[4];
-    MMP_Event IOCtrl;
-    MMP_Event Debug;
-} MTKFB_MMP_Events;
-
 #ifdef MTKFB_DBG
 #include "disp_drv_log.h"
 

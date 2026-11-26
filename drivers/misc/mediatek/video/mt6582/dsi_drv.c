@@ -188,7 +188,6 @@ static irqreturn_t _DSI_InterruptHandler(int irq, void *dev_id)
     DSI_INT_STATUS_REG status = DSI_REG->DSI_INTSTA;
     static unsigned int prev_error = 0;
 
-    MMProfileLogEx(MTKFB_MMP_Events.DSIIRQ, MMProfileFlagPulse, *(unsigned int*)&status, lcdStartTransfer);
 	if(dsi_log_on)
 		printk("DSI IRQ, value = 0x%x!!\n", INREG32(0xF400C00C));
 
@@ -219,8 +218,6 @@ static irqreturn_t _DSI_InterruptHandler(int irq, void *dev_id)
 						printk("[DSI] Detect DSI error. prev:0x%08X new:0x%08X\n", prev_error, read_data[1]);
 				}
             }
-            MMProfileLogEx(MTKFB_MMP_Events.DSIRead, MMProfileFlagStart, read_data[0], read_data[1]);
-            MMProfileLogEx(MTKFB_MMP_Events.DSIRead, MMProfileFlagEnd, read_data[2], read_data[3]);
         }
 #endif
 		do
@@ -338,7 +335,6 @@ static irqreturn_t _DSI_InterruptHandler(int irq, void *dev_id)
 		//DSI_REG->DSI_INTSTA.VM_DONE= 0;
 		wake_up_interruptible(&_dsi_wait_vm_done_queue);
 		if(dsi_glitch_enable){
-	  		MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 1, 22);
 			if(!is_early_suspended && !wait_vm_done_irq){
 				if(1 == DSI_Detect_CLK_Glitch()){
 					printk("VM Done detect glitch fail!!,%d\n",__LINE__);
@@ -1056,7 +1052,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 	while(DSI_REG->DSI_INTSTA.CMD_DONE == 0);
 	OUTREGBIT(DSI_INT_STATUS_REG,DSI_REG->DSI_INTSTA,CMD_DONE,0);
 
-	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 0);
 #if 1
 	OUTREG32(&DSI_CMDQ_REG->data[0], 0x00ff1500);
 	OUTREG32(&DSI_REG->DSI_CMDQ_SIZE, 1);
@@ -1070,22 +1065,18 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 	{
 		DSI_clk_HS_mode(0);
 
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 9);
 		while((INREG32(&DSI_REG->DSI_STATE_DBG0)&0x1) == 0);	 // polling bit0
 
 		OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,0);
 		OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,1);//reset
 		OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,0);
 
-		MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 10);
 		if(i>0)
 			 {
 			  MASKREG32(MIPI_CONFIG_BASE + 0x04, 0x20, 0x0);
 			 }
 		  DSI_clk_HS_mode(1);
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 1);
 		  while((INREG32(&DSI_REG->DSI_STATE_DBG0)&0x40000) == 0);	 // polling bit18 start
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 2);
 		  if(i>0)
 			 {
 			  MASKREG32(MIPI_CONFIG_BASE + 0x04, 0x20, 0x20);
@@ -1097,7 +1088,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 		  OUTREGBIT(DSI_START_REG,DSI_REG->DSI_START,DSI_START,0);
 	      OUTREGBIT(DSI_START_REG,DSI_REG->DSI_START,DSI_START,1);
 			read_timeout_cnt=1000000;
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 3);
 			start_time = sched_clock();
 			while(DSI_REG->DSI_INTSTA.BUSY) {
 				end_time = sched_clock();
@@ -1109,7 +1099,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 			}
 			OUTREG32(&DSI_REG->DSI_INTSTA, 0x0);
 //			spin_unlock_irq(&dsi_glitch_detect_lock);
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 4);
 
 		  t0.CONFG = 0x04;
 		  t0.Data0 = 0;
@@ -1126,7 +1115,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 		 DSI_RX_DATA_REG read_data1;
 
 			read_timeout_cnt=1000;
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 5);
 		start_time = sched_clock();
 		  while(DSI_REG->DSI_INTSTA.RD_RDY == 0)  ///read clear
 				 {
@@ -1136,7 +1124,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 					    if(glitch_log_on)
 		                   printk("Test log 4:Polling DSI read ready timeout,%d us\n", (unsigned int)sched_clock() - (unsigned int)start_time);
 
-    					MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 13);
 #if 1
 						 OUTREGBIT(DSI_RACK_REG,DSI_REG->DSI_RACK,DSI_RACK,1);
 						 DSI_Reset();
@@ -1150,7 +1137,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 //			return 1;
 			continue;
 		}
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 6);
 		  OUTREGBIT(DSI_RACK_REG,DSI_REG->DSI_RACK,DSI_RACK,1);
        	OUTREGBIT(DSI_INT_STATUS_REG,DSI_REG->DSI_INTSTA,RD_RDY,0);
 
@@ -1186,7 +1172,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 		printk("detect times:%d\n",i);
 #endif
 
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 7);
 #if 1
 	switch(lcm_params->dsi.LANE_NUM)
 	{
@@ -1228,7 +1213,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Default(void)
 	OUTREGBIT(DSI_INT_ENABLE_REG,DSI_REG->DSI_INTEN,CMD_DONE,1);
 	DSI_RestoreCmdQ();
 	DSI_SetMode(lcm_params->dsi.mode);
-    MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 8);
 #if 1
 //	if(glitch_log_on)
 	if(i == try_times){
@@ -1261,7 +1245,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
 	DSI_SetMode(CMD_MODE);
 	OUTREGBIT(DSI_INT_ENABLE_REG,DSI_REG->DSI_INTEN,RD_RDY,0);
 	OUTREGBIT(DSI_INT_ENABLE_REG,DSI_REG->DSI_INTEN,CMD_DONE,0);
-	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 0);
 	for(i=0;i<try_times*4;i++)
 	{
         if(read_IC_ID == 0) // slave
@@ -1269,23 +1252,19 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
 
 		DSI_clk_HS_mode(0);
 
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 9);
 		while((INREG32(&DSI_REG->DSI_STATE_DBG0)&0x1) == 0);	 // polling bit0
 
 		OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,0);
 		OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,1);//reset
 		OUTREGBIT(DSI_COM_CTRL_REG,DSI_REG->DSI_COM_CTRL,DSI_RESET,0);
 
-		MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 10);
 		if(i>0)
 			 {
 			  MASKREG32(MIPI_CONFIG_BASE + 0x04, 0x20, 0x0);
 			 }
 		  DSI_clk_HS_mode(1);
 
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 1);
 		  while((INREG32(&DSI_REG->DSI_STATE_DBG0)&0x40000) == 0);	 // polling bit18 start
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 2);
 		  if(i>0)
 			 {
 			  MASKREG32(MIPI_CONFIG_BASE + 0x04, 0x20, 0x20);
@@ -1302,7 +1281,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
         OUTREGBIT(DSI_START_REG,DSI_REG->DSI_START,DSI_START,1);
 
 		read_timeout_cnt=1000000;
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 3);
 		start_time = sched_clock();
 		while(DSI_REG->DSI_INTSTA.BUSY) {
 			end_time = sched_clock();
@@ -1314,7 +1292,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
 		}
 		OUTREG32(&DSI_REG->DSI_INTSTA, 0x0);
 		// spin_unlock_irq(&dsi_glitch_detect_lock);
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 4);
 
 #endif
         // LP command
@@ -1352,7 +1329,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
 		 DSI_RX_DATA_REG read_data1;
 
 			read_timeout_cnt=1000;
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 5);
 		start_time = sched_clock();
 		  while(DSI_REG->DSI_INTSTA.RD_RDY == 0)  ///read clear
 				 {
@@ -1362,7 +1338,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
 					    if(glitch_log_on)
 		                   printk("Test log 4:Polling DSI read ready timeout,%d us\n", (unsigned int)sched_clock() - (unsigned int)start_time);
 
-    					MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 13);
 #if 1
 						 OUTREGBIT(DSI_RACK_REG,DSI_REG->DSI_RACK,DSI_RACK,1);
 						 DSI_Reset();
@@ -1377,7 +1352,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
             read_IC_ID = 0;
 			continue;
 		}
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 6);
 		  OUTREGBIT(DSI_RACK_REG,DSI_REG->DSI_RACK,DSI_RACK,1);
        	OUTREGBIT(DSI_INT_STATUS_REG,DSI_REG->DSI_INTSTA,RD_RDY,0);
 
@@ -1429,7 +1403,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
 		printk("detect times:%d\n",i);
 #endif
 
-    	MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 7);
 #if 1
 	switch(lcm_params->dsi.LANE_NUM)
 	{
@@ -1471,7 +1444,6 @@ static unsigned int DSI_Detect_CLK_Glitch_Parallel(void)
 	OUTREGBIT(DSI_INT_ENABLE_REG,DSI_REG->DSI_INTEN,CMD_DONE,1);
 	DSI_RestoreCmdQ();
 	DSI_SetMode(lcm_params->dsi.mode);
-    MMProfileLogEx(MTKFB_MMP_Events.Debug, MMProfileFlagPulse, 0, 8);
 #if 1
 //	if(glitch_log_on)
 	if(i == try_times*4){
@@ -1548,16 +1520,13 @@ static void _DSI_RDMA0_IRQ_Handler(unsigned int param)
     {
         if (param & 4)
         {
-            MMProfileLogEx(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagEnd, param, 0);
         	_dsiContext.pIntCallback(DISP_DSI_SCREEN_UPDATE_END_INT);
         }
         if (param & 8)
         {
-            MMProfileLogEx(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagEnd, param, 0);
         }
         if (param & 2)
         {
-            MMProfileLogEx(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagStart, param, 0);
             _dsiContext.pIntCallback(DISP_DSI_SCREEN_UPDATE_START_INT);
         }
         if (param & 0x20)
@@ -2425,11 +2394,9 @@ void DSI_set_cmdq_V2(unsigned cmd, unsigned char count, unsigned char *para_list
 		}
 		//start DSI VM CMDQ
 		if(force_update){
-			MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagStart, *(unsigned int*)(&DSI_VM_CMD_REG->data[0]), *(unsigned int*)(&DSI_VM_CMD_REG->data[1]));
 			DSI_EnableVM_CMD();
 
 			//must wait VM CMD done?
-	        MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagEnd, *(unsigned int*)(&DSI_VM_CMD_REG->data[2]), *(unsigned int*)(&DSI_VM_CMD_REG->data[3]));
 		}
 	}
 	else{
@@ -2541,11 +2508,9 @@ void DSI_set_cmdq_V2(unsigned cmd, unsigned char count, unsigned char *para_list
 
 		if(force_update)
         {
-            MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagStart, *(unsigned int*)(&DSI_CMDQ_REG->data[0]), *(unsigned int*)(&DSI_CMDQ_REG->data[1]));
             DSI_Start();
             for(i=0; i<10; i++) ;
             _WaitForEngineNotBusy();
-            MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagEnd, *(unsigned int*)(&DSI_CMDQ_REG->data[2]), *(unsigned int*)(&DSI_CMDQ_REG->data[3]));
         }
 	}
 
@@ -2621,11 +2586,9 @@ void DSI_set_cmdq_V3(LCM_setting_table_V3 *para_tbl, unsigned int size, unsigned
 			}
 		//start DSI VM CMDQ
 			if(force_update){
-				MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagStart, *(unsigned int*)(&DSI_VM_CMD_REG->data[0]), *(unsigned int*)(&DSI_VM_CMD_REG->data[1]));
 				DSI_EnableVM_CMD();
 
 			//must wait VM CMD done?
-	        	MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagEnd, *(unsigned int*)(&DSI_VM_CMD_REG->data[2]), *(unsigned int*)(&DSI_VM_CMD_REG->data[3]));
 			}
 		}
 		else{
@@ -2682,11 +2645,9 @@ void DSI_set_cmdq_V3(LCM_setting_table_V3 *para_tbl, unsigned int size, unsigned
 
 			if(force_update)
             {
-                MMProfileLog(MTKFB_MMP_Events.DSICmd, MMProfileFlagStart);
                 DSI_Start();
                 for(i=0; i<10; i++) ;
                 _WaitForEngineNotBusy();
-                MMProfileLog(MTKFB_MMP_Events.DSICmd, MMProfileFlagEnd);
             }
 		}
 		}
@@ -2723,11 +2684,9 @@ void DSI_set_cmdq(unsigned int *pdata, unsigned int queue_size, unsigned char fo
 		}
 		//start DSI VM CMDQ
 		if(force_update){
-	        MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagStart, *(unsigned int*)(&DSI_VM_CMD_REG->data[0]), *(unsigned int*)(&DSI_VM_CMD_REG->data[1]));
 			DSI_EnableVM_CMD();
 
 			//must wait VM CMD done?
-	        MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagEnd, *(unsigned int*)(&DSI_VM_CMD_REG->data[2]), *(unsigned int*)(&DSI_VM_CMD_REG->data[3]));
 		}
 	}
 	else{
@@ -2756,11 +2715,9 @@ void DSI_set_cmdq(unsigned int *pdata, unsigned int queue_size, unsigned char fo
 
 	if(force_update)
     {
-        MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagStart, *(unsigned int*)(&DSI_CMDQ_REG->data[0]), *(unsigned int*)(&DSI_CMDQ_REG->data[1]));
 		DSI_Start();
         for(i=0; i<10; i++) ;
         _WaitForEngineNotBusy();
-        MMProfileLogEx(MTKFB_MMP_Events.DSICmd, MMProfileFlagEnd, *(unsigned int*)(&DSI_CMDQ_REG->data[2]), *(unsigned int*)(&DSI_CMDQ_REG->data[3]));
     }
 	}
 }

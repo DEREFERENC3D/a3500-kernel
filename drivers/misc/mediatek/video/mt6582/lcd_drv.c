@@ -558,15 +558,12 @@ static void _DBI_RDMA0_IRQ_Handler(unsigned int param)
     {
         if (param & 4)
         {
-            MMProfileLogEx(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagEnd, param, 0);
         }
         if (param & 8)
         {
-            MMProfileLogEx(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagEnd, param, 0);
         }
         if (param & 2)
         {
-            MMProfileLogEx(MTKFB_MMP_Events.ScreenUpdate, MMProfileFlagStart, param, 0);
             _lcdContext.pIntCallback(DISP_LCD_SYNC_INT);
         }
     }
@@ -1401,7 +1398,6 @@ LCD_STATUS LCD_ConfigOVL()
     unsigned int dirty = 0;
 
     DBI_FUNC();
-    MMProfileLogEx(MTKFB_MMP_Events.ConfigOVL, MMProfileFlagStart, 1, 0);
 	for(i = 0;i<DDP_OVL_LAYER_MUN;i++)
     {
         if (cached_layer_config[i].isDirty)
@@ -1411,7 +1407,6 @@ LCD_STATUS LCD_ConfigOVL()
             cached_layer_config[i].isDirty = false;
         }
     }
-    MMProfileLogEx(MTKFB_MMP_Events.ConfigOVL, MMProfileFlagEnd, 1, 0);
     return LCD_STATUS_OK;
 }
 

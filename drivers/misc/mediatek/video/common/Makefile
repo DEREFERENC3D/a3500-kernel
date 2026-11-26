@@ -34,8 +34,4 @@ ifeq ($(MTK_GPU_SUPPORT), yes)
 ccflags-y += -DHWGPU_SUPPORT
 endif
 
-ifeq ($(CONFIG_MMPROFILE),y)
-ccflags-y += -DDEFAULT_MMP_ENABLE
-endif
-
 

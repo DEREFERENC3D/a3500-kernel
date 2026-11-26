@@ -5,7 +5,6 @@
 
 #include <mach/m4u.h>
 #include "m4u_reg.h"
-#include <linux/m4u_profile.h>
 #include "m4u_priv.h"
 
 
@@ -109,9 +108,7 @@ int m4u_insert_seq_range(M4U_MODULE_ID_ENUM eModuleID,
 
     int ret;
     
-    MMProfileLogEx(M4U_MMP_Events[PROFILE_INSERT_TLB], MMProfileFlagStart, eModuleID, MVAStart);
     ret = m4u_do_insert_seq_range(eModuleID, MVAStart, MVAEnd, entryCount);
-    MMProfileLogEx(M4U_MMP_Events[PROFILE_INSERT_TLB], MMProfileFlagEnd, eModuleID, MVAEnd-MVAStart+1);
     
     return ret;
     

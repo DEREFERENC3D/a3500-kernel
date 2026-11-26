@@ -26,13 +26,12 @@
 #include <linux/dma-mapping.h>
 #include <linux/err.h>
 #include <linux/export.h>
-#include <linux/mmprofile.h>
 #include <linux/debugfs.h>
 
 
-#define ION_FUNC_ENTER  //MMProfileLogMetaString(MMP_ION_DEBUG, MMProfileFlagStart, __func__);
-#define ION_FUNC_LEAVE  //MMProfileLogMetaString(MMP_ION_DEBUG, MMProfileFlagEnd, __func__);
 //#pragma GCC optimize ("O0")
+#define ION_FUNC_ENTER
+#define ION_FUNC_LEAVE
 #define DEFAULT_PAGE_SIZE 0x1000
 #define PAGE_ORDER 12
 extern int record_ion_info(int from_kernel,ion_sys_record_t *param);

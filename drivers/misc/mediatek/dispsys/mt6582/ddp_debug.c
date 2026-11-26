@@ -44,7 +44,6 @@ extern enum mc_result late_open_mobicore_device(void);
 //  Debug Options
 // ---------------------------------------------------------------------------
 
-struct DDP_MMP_Events_t DDP_MMP_Events;
 
 struct dentry *debugfs = NULL;
 unsigned int gUltraLevel = 4; // RDMA ultra aggressive level
@@ -97,42 +96,6 @@ void ddp_enable_bls(int BLS_switch)
     DISP_MSG("aal_debug_flag changed,aal_debug_flag=%d, set BLS_EN=%x", aal_debug_flag, DISP_REG_GET(DISP_REG_BLS_EN));
     DISP_REG_SET(DISP_REG_BLS_DEBUG, 0x00000000);
     
-}
-
-void init_ddp_mmp_events(void)
-{
-    if (DDP_MMP_Events.DDP == 0)
-    {
-        DDP_MMP_Events.DDP = MMProfileRegisterEvent(MMP_RootEvent, "DDP");
-        DDP_MMP_Events.MutexParent = MMProfileRegisterEvent(DDP_MMP_Events.DDP, "Mutex");
-        DDP_MMP_Events.Mutex[0] = MMProfileRegisterEvent(DDP_MMP_Events.MutexParent, "Mutex0");
-        DDP_MMP_Events.Mutex[1] = MMProfileRegisterEvent(DDP_MMP_Events.MutexParent, "Mutex1");
-        DDP_MMP_Events.Mutex[2] = MMProfileRegisterEvent(DDP_MMP_Events.MutexParent, "Mutex2");
-        DDP_MMP_Events.Mutex[3] = MMProfileRegisterEvent(DDP_MMP_Events.MutexParent, "Mutex3");
-        DDP_MMP_Events.Mutex[4] = MMProfileRegisterEvent(DDP_MMP_Events.MutexParent, "Mutex4");
-        DDP_MMP_Events.Mutex[5] = MMProfileRegisterEvent(DDP_MMP_Events.MutexParent, "Mutex5");
-        DDP_MMP_Events.BackupReg = MMProfileRegisterEvent(DDP_MMP_Events.DDP, "BackupReg");
-        DDP_MMP_Events.DDP_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP, "DDP_IRQ");
-        DDP_MMP_Events.SCL_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "SCL_IRQ");
-        DDP_MMP_Events.ROT_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "ROT_IRQ");
-        DDP_MMP_Events.OVL_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "OVL_IRQ");
-        DDP_MMP_Events.WDMA0_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "WDMA0_IRQ");
-        DDP_MMP_Events.WDMA1_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "WDMA1_IRQ");
-        DDP_MMP_Events.RDMA0_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "RDMA0_IRQ");
-        DDP_MMP_Events.RDMA1_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "RDMA1_IRQ");
-        DDP_MMP_Events.COLOR_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "COLOR_IRQ");
-        DDP_MMP_Events.BLS_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "BLS_IRQ");
-        DDP_MMP_Events.TDSHP_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "TDSHP_IRQ");
-        DDP_MMP_Events.CMDQ_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "CMDQ_IRQ");
-        DDP_MMP_Events.Mutex_IRQ = MMProfileRegisterEvent(DDP_MMP_Events.DDP_IRQ, "Mutex_IRQ");
-        DDP_MMP_Events.WAIT_INTR = MMProfileRegisterEvent(DDP_MMP_Events.DDP, "WAIT_IRQ");
-        DDP_MMP_Events.Debug = MMProfileRegisterEvent(DDP_MMP_Events.DDP, "Debug");
-
-        MMProfileEnableEventRecursive(DDP_MMP_Events.MutexParent, 1);
-        MMProfileEnableEventRecursive(DDP_MMP_Events.BackupReg, 1);
-        //MMProfileEnableEventRecursive(DDP_MMP_Events.DDP_IRQ, 1);
-        MMProfileEnableEventRecursive(DDP_MMP_Events.WAIT_INTR, 1);
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -399,10 +362,6 @@ static void process_dbg_opt(const char *opt)
         }
     }
     
-    else if (0 == strncmp(opt, "mmp", 3))
-    {
-        init_ddp_mmp_events();
-    }
     else if (0 == strncmp(opt, "dpfd_ut1:", 9))
     {
         //char *p = (char *)opt + 9;
