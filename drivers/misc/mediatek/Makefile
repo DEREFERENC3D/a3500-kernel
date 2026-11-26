@@ -50,7 +50,6 @@ obj-y	+= leds/
 obj-y	+= auxadc/
 obj-y	+= ram_console/
 obj-y	+= thermal/
-obj-y	+= evdo_support/
 endif
 
 # MediaTek display driver (common core + MT6582 panel HAL)
@@ -73,7 +72,6 @@ obj-y	+= vibrator/
 obj-y	+= wmt/
 obj-y	+= pmt/
 obj-y	+= accdet/
-obj-y	+= vibrator/
 obj-y	+= pwm/
 obj-y	+= freqhopping/
 obj-y	+= dbg_dump/
@@ -84,7 +82,6 @@ endif
 ifeq ($(MTK_NFC_SUPPORT),yes)
 endif
 
-obj-y	+= gpu/
 
 ifneq ($(CONFIG_MTK_COMBO),)
 subdir-ccflags-y += -DMTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT

@@ -31,7 +31,6 @@ obj-y += mt-smp.o hotplug.o mt-headsmp.o mt_hotplug.o mt_hotplug_mechanism.o
 endif
 # TO-FIX add # for do early porting in JB migration
 obj-y += eint.o mt_freqhopping.o
-obj-$(CONFIG_MT65XX_TRACER) += pmu_v7.o mon_interface.o mt_mon.o mt_emi_bm.o
 obj-y += emi_bwl.o emi_mpu.o
 obj-y += camera_isp.o
 obj-y += camera_sysram.o 
